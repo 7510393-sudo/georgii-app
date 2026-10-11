@@ -108,18 +108,21 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
             // более медленным поворотом уже после того, как вихрь кончился
             // (P314).
             if leaves > 1, let page = pages.viewControllers?.first?.view {
+                // Нужная страница встаёт под листья сразу, а они улетают,
+                // открывая её (P475). Раньше вихрь летел над прежним днём и
+                // в конце книга резко, без движения, вставала на сегодня —
+                // щелчок против плавного хода. Листья — снимки прежней
+                // страницы; назад, как и вперёд, они уходят к корешку.
                 Coordinator.whirl(over: page, in: pages.view, leaves: leaves,
-                                  forward: step > 0) { [weak self] in
-                    self?.land(pages, step)
-                }
+                                  begin: { [weak self] in self?.land(pages, step) })
             } else {
                 turn(pages, step)
             }
         }
 
-        /// Вихрь долистал до места — книга встаёт на нужный день сразу, тем
-        /// же кадром, каким исчез последний летящий лист: ничего не
-        /// переворачивается отдельно (P314).
+        /// Книга встаёт на нужный день — в начале вихря, под летящими
+        /// листьями (P475, прежде в конце — P314): ничего не
+        /// переворачивается отдельно, и резкой смены в конце нет.
         private func land(_ pages: UIPageViewController, _ step: Int) {
             let host = make(step)
             pages.setViewControllers([host], direction: step > 0 ? .forward : .reverse,
@@ -139,7 +142,9 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
         /// поднимаются от корешка — или прилетают к нему, если идём назад.
         /// Каждый шелестит сам.
         static func whirl(over page: UIView, in host: UIView, leaves: Int,
-                          forward: Bool, done: @escaping () -> Void) {
+                          begin: @escaping () -> Void) {
+            let forward = true
+            let done: () -> Void = {}
             var perspective = CATransform3DIdentity
             perspective.m34 = -1.0 / 1400
             let away = CATransform3DRotate(perspective, -.pi / 2 * 0.98, 0, 1, 0)
@@ -160,7 +165,13 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
                 host.addSubview(leaf)
                 flying.append(leaf)
             }
-            guard !flying.isEmpty else { return done() }
+            guard !flying.isEmpty else { return begin() }
+            // Книга встаёт на нужный день под листьями — они закрывают её,
+            // пока не улетят; сама книга может добавить свои виды поверх —
+            // листья выносим на самый верх.
+            begin()
+            flying.forEach { host.bringSubviewToFront($0) }
+            DispatchQueue.main.async { flying.forEach { host.bringSubviewToFront($0) } }
             let each = 0.30
             let gap = 0.075
             for (i, leaf) in flying.enumerated() {

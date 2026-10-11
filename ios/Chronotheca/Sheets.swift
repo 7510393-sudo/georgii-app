@@ -214,7 +214,11 @@ struct SettingsSticker: View {
                 paper: Look.sticker, edge: Look.stickerEdge, width: Self.width, close: close) {
           // Длинная бумажка прокручивается: разделов стало много (P249).
           ScrollView {
-           VStack(spacing: 0) {
+           // Ленивая стопка (P475): листок строился целиком — все девять
+           // частей, с десятками переключателей, — ещё до того, как он
+           // начинал выезжать; экран замирал на это время, а потом
+           // дёргался. Теперь строится то, что видно.
+           LazyVStack(spacing: 0) {
             // Вид — тетрадь на голубой записке (P367): кружки-выбор,
             // «Открыть ›», одна главная кнопка. Нажимается только кнопка.
             //
@@ -282,7 +286,9 @@ struct SettingsSticker: View {
                  + T("новая папка, «Открыть»: она переживёт удаление приложения, но живёт только на этом телефоне. ", "a new folder, “Open”: it outlives deleting the app but lives only on this phone. ")
                  + T("Записи, что уже есть, приложение предложит перенести.", "The app will offer to move the entries you already have."))
         }
-        .onAppear(perform: measureStorage)
+        // Объём памяти считается, когда листок уже выехал (P475): ответ
+        // менял строку и размер листка посреди движения — отсюда дёргание.
+        .onAppear { DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { measureStorage() } }
     }
 
     @ViewBuilder private var languagePart: some View {
