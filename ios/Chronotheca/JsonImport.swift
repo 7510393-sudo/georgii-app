@@ -226,9 +226,23 @@ enum JsonImport {
     /// сколько дней из скольких пройдено.
     static func run(at url: URL, app: String, vault: Vault,
                     step: @escaping (Int, Int) -> Void) -> Result<DayOneImport.Report, DayOneImport.Failure> {
+        // Архив Diarium — база SQLite: читается своим разбором (P476).
+        var reader: DiariumReader?
         let list: [Entry]
-        do { list = try entries(at: url, app: app) } catch let f as DayOneImport.Failure { return .failure(f) } catch {
-            return .failure(.unreadable(error.localizedDescription))
+        if app == "Diarium", DiariumReader.looksLikeDatabase(url) {
+            do {
+                let r = try DiariumReader(copying: url)
+                list = try r.entries()
+                reader = r
+            } catch DiariumReader.Failure.problem(let why) {
+                return .failure(.unreadable(why))
+            } catch {
+                return .failure(.unreadable(error.localizedDescription))
+            }
+        } else {
+            do { list = try entries(at: url, app: app) } catch let f as DayOneImport.Failure { return .failure(f) } catch {
+                return .failure(.unreadable(error.localizedDescription))
+            }
         }
         guard let root = vault.root else { return .failure(.unreadable("—")) }
         var done = alreadyDone()
@@ -239,12 +253,14 @@ enum JsonImport {
         }
         // Файлы выгрузки по имени — где бы в папке они ни лежали.
         var files: [String: URL] = [:]
-        var isDir: ObjCBool = false
-        let base = FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir) && isDir.boolValue
-            ? url : url.deletingLastPathComponent()
-        let walk = FileManager.default.enumerator(at: base, includingPropertiesForKeys: nil)
-        while let next = walk?.nextObject() as? URL {
-            files[next.lastPathComponent.lowercased()] = next
+        if reader == nil {
+            var isDir: ObjCBool = false
+            let base = FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir) && isDir.boolValue
+                ? url : url.deletingLastPathComponent()
+            let walk = FileManager.default.enumerator(at: base, includingPropertiesForKeys: nil)
+            while let next = walk?.nextObject() as? URL {
+                files[next.lastPathComponent.lowercased()] = next
+            }
         }
 
         let byDay = Dictionary(grouping: fresh, by: \.day)
@@ -263,7 +279,8 @@ enum JsonImport {
             for e in entries {
                 blocks.append(DayOneImport.block(e) { id in
                     guard let m = e.media[id] else { return nil }
-                    guard let source = files[m.file.lowercased()],
+                    let found = reader != nil ? reader?.extract(m.file) : files[m.file.lowercased()]
+                    guard let source = found,
                           let l = DayOneImport.copy(source, folder: m.folder, date: date, root: root, tag: tag)
                     else {
                         report.missing += 1
@@ -322,8 +339,8 @@ struct JsonImportView: View {
                     T("3. Здесь — «Выбрать выгрузку…» и эта папка.",
                       "3. Here — “Choose the export…” and that folder.")]
         }
-        return [T("1. В Diarium: экспорт записей в формате JSON (это часть Diarium Pro — у неё неделя бесплатно). Сохраните файл в «Файлы».",
-                  "1. In Diarium: export entries as JSON (part of Diarium Pro, which has a free week). Save the file to Files."),
+        return [T("1. В Diarium: Настройки → «Архивировать дневник». Сохраните файл в «Файлы» (экспорт в JSON тоже годится).",
+                  "1. In Diarium: Settings → “Archive diary”. Save the file to Files (a JSON export works too)."),
                 T("2. Здесь — «Выбрать выгрузку…» и этот файл или папка с ним.",
                   "2. Here — “Choose the export…” and that file or its folder.")]
     }
@@ -374,7 +391,7 @@ struct JsonImportView: View {
         .navigationTitle(app)
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(progress != nil)
-        .fileImporter(isPresented: $choosing, allowedContentTypes: [.folder, .json]) { picked in
+        .fileImporter(isPresented: $choosing, allowedContentTypes: app == "Diarium" ? [.folder, .json, .data] : [.folder, .json]) { picked in
             guard case .success(let url) = picked else { return }
             start(url)
         }
