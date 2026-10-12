@@ -211,7 +211,11 @@ struct RootView: View {
                 .environmentObject(store)
                 .environmentObject(archive)
         }
-        .onAppear { purchase.start() }
+        .onAppear {
+            purchase.start()
+            // Объём папки — заранее, чтобы листок настроек не менялся (P486).
+            DispatchQueue.main.asyncAfter(deadline: .now() + 6) { SettingsSticker.warm(vault.root) }
+        }
         .sheet(isPresented: $purchase.asking) { PurchaseSheet(purchase: purchase) }
         .fileImporter(isPresented: $shell.picking, allowedContentTypes: [.folder]) { result in
             if case .success(let url) = result {

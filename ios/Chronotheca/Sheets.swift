@@ -205,6 +205,34 @@ struct SettingsSticker: View {
         return max(300, shell.barTop + 1.5 - top)
     }
 
+    /// Объём папки, посчитанный заранее (P486): пока листок открывался, объём
+    /// дописывался в подпись «Резервной копии», и строки ниже съезжали.
+    /// Теперь он известен до открытия — приложение считает его вскоре после
+    /// запуска, а листок берёт готовое.
+    static var cachedBytes: Int64?
+
+    static func warm(_ root: URL?) {
+        guard let root, cachedBytes == nil else { return }
+        DispatchQueue.global(qos: .utility).async {
+            let total = folderBytes(root)
+            DispatchQueue.main.async { cachedBytes = total }
+        }
+    }
+
+    static func folderBytes(_ root: URL) -> Int64 {
+        var total: Int64 = 0
+        let keys: Set<URLResourceKey> = [.fileAllocatedSizeKey, .isDirectoryKey]
+        if let walker = FileManager.default.enumerator(
+            at: root, includingPropertiesForKeys: Array(keys)) {
+            for case let url as URL in walker {
+                guard let values = try? url.resourceValues(forKeys: keys),
+                      values.isDirectory != true else { continue }
+                total += Int64(values.fileAllocatedSize ?? 0)
+            }
+        }
+        return total
+    }
+
     /// Ширина записки: шире прежних 330, но так, чтобы справа оставалась
     /// полоска страницы, — по ней видно, где человек остался (P383).
     static var width: CGFloat { min(360, UIScreen.main.bounds.width - 40) }
@@ -634,7 +662,7 @@ struct SettingsSticker: View {
         }
     }
 
-    @State private var storageBytes: Int64?
+    @State private var storageBytes: Int64? = SettingsSticker.cachedBytes
     @State private var showingLeave = false
 
     /// Сколько места занимает вся папка — не только записи, но и снимки,
@@ -644,21 +672,13 @@ struct SettingsSticker: View {
     private func measureStorage() {
         guard let root = vault.root else { return }
         DispatchQueue.global(qos: .utility).async {
-            var total: Int64 = 0
-            let keys: Set<URLResourceKey> = [.fileAllocatedSizeKey, .isDirectoryKey]
-            if let walker = FileManager.default.enumerator(
-                at: root, includingPropertiesForKeys: Array(keys)) {
-                for case let url as URL in walker {
-                    guard let values = try? url.resourceValues(forKeys: keys),
-                          values.isDirectory != true else { continue }
-                    total += Int64(values.fileAllocatedSize ?? 0)
-                }
-            }
+            let total = SettingsSticker.folderBytes(root)
             DispatchQueue.main.async {
                 // Без движения (P485): строки ниже не должны ехать.
                 var still = Transaction()
                 still.disablesAnimations = true
                 withTransaction(still) { storageBytes = total }
+                SettingsSticker.cachedBytes = total
             }
         }
     }
