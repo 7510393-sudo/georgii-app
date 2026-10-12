@@ -4,12 +4,12 @@
 import math
 from PIL import ImageDraw
 
-def _frame(px, tip, angle):
+def _frame(px, tip, angle, k=1.0):
     a = math.radians(angle)
     u = (math.cos(a), -math.sin(a))      # от острия к хвосту
     v = (math.sin(a), math.cos(a))       # поперёк
     def P(x, y):
-        return (px(tip[0] + x * u[0] + y * v[0]), px(tip[1] + x * u[1] + y * v[1]))
+        return (px(tip[0] + k * (x * u[0] + y * v[0])), px(tip[1] + k * (x * u[1] + y * v[1])))
     return P
 
 def _poly(d, P, pts, fill, outline=None, w=0):
@@ -18,9 +18,9 @@ def _poly(d, P, pts, fill, outline=None, w=0):
     if outline:
         d.line(xy + [xy[0]], fill=outline, width=w, joint="curve")
 
-def draw(kind, layer, px, tip, angle):
+def draw(kind, layer, px, tip, angle, k=1.0):
     d = ImageDraw.Draw(layer)
-    P = _frame(px, tip, angle)
+    P = _frame(px, tip, angle, k)
     ink = (28, 33, 40, 255)
     w = max(1, px(.5))
     if kind == "ручка":

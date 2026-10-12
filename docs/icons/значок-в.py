@@ -1,10 +1,10 @@
 """Значок «В»: листок с рваным краем на крафт-бумаге (P472).
 Запуск: python3 docs/icons/значок-в.py [куда.png]  (нужны numpy, Pillow)."""
-import sys, math, random
+import os, sys, math, random
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageChops
 
-N, S = 1024, 2            # итог 1024, рисуем вдвое крупнее
+N, S = int(os.environ.get("ICON_N", 1024)), 2            # итог 1024, рисуем вдвое крупнее
 W = N * S
 rnd = random.Random(7)
 np.random.seed(7)
