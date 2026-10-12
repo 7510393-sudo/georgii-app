@@ -116,12 +116,19 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
             // (P314).
             // Вперёд по дням (из прошлого домой) издалека — вихрь листьев,
             // которые улетают и открывают сегодняшнюю страницу (P475). Назад
-            // (из будущего домой) — настоящий поворот системы в обратную
-            // сторону: страница ложится слева направо, а не улетает, как при
-            // дороге из прошлого (P483). Раньше обе дороги шли одним вихрем.
-            if leaves > 1, step > 0, let page = pages.viewControllers?.first?.view {
-                Coordinator.whirl(over: page, in: pages.view, leaves: leaves,
-                                  begin: { [weak self] in self?.land(pages, step) })
+            // (из будущего домой) — столько же листов, но в обратную
+            // сторону: они прилетают к корешку и ложатся на прежнюю
+            // страницу сегодняшней (P485). Один настоящий поворот системы
+            // давал одну страницу вместо вихря (замечание к 115).
+            if leaves > 1, let page = pages.viewControllers?.first?.view {
+                if step > 0 {
+                    Coordinator.whirl(over: page, in: pages.view, leaves: leaves,
+                                      begin: { [weak self] in self?.land(pages, step) })
+                } else {
+                    Coordinator.gather(over: page, in: pages.view, leaves: leaves,
+                                       fresh: { [weak pages] in pages?.viewControllers?.first?.view },
+                                       begin: { [weak self] in self?.land(pages, step) })
+                }
             } else {
                 turn(pages, step)
             }
@@ -212,6 +219,70 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
             DispatchQueue.main.asyncAfter(deadline: .now() + total) {
                 flying.forEach { $0.removeFromSuperview() }
                 done()
+            }
+        }
+
+        /// Вихрь в обратную сторону (P485): прежняя страница остаётся
+        /// снимком, книга под ним встаёт на нужный день, а снимки новой
+        /// страницы по одному прилетают к корешку и ложатся сверху. Когда
+        /// последний лёг, снимки уходят — под ними та же страница, и
+        /// резкой смены нет.
+        static func gather(over page: UIView, in host: UIView, leaves: Int,
+                           fresh: @escaping () -> UIView?,
+                           begin: @escaping () -> Void) {
+            let frame = page.convert(page.bounds, to: host)
+            let cover = page.snapshotView(afterScreenUpdates: false)
+            if let cover {
+                cover.frame = frame
+                cover.isUserInteractionEnabled = false
+                host.addSubview(cover)
+            }
+            DispatchQueue.main.async {
+                begin()
+                if let cover { host.bringSubviewToFront(cover) }
+                // Новой странице нужен такт, чтобы нарисоваться.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                    guard let target = fresh() else { cover?.removeFromSuperview(); return }
+                    var perspective = CATransform3DIdentity
+                    perspective.m34 = -1.0 / 1400
+                    let away = CATransform3DRotate(perspective, -.pi / 2 * 0.98, 0, 1, 0)
+                    var flying: [UIView] = []
+                    for _ in 0..<leaves {
+                        guard let leaf = target.snapshotView(afterScreenUpdates: true) else { continue }
+                        leaf.frame = frame
+                        leaf.layer.anchorPoint = CGPoint(x: 0, y: 0.5)
+                        leaf.layer.position = CGPoint(x: frame.minX, y: frame.midY)
+                        leaf.layer.shadowColor = UIColor.black.cgColor
+                        leaf.layer.shadowOpacity = 0.2
+                        leaf.layer.shadowRadius = 8
+                        leaf.isUserInteractionEnabled = false
+                        leaf.layer.transform = away
+                        leaf.alpha = 0.4
+                        host.addSubview(leaf)
+                        flying.append(leaf)
+                    }
+                    guard !flying.isEmpty else { cover?.removeFromSuperview(); return }
+                    if let cover { host.insertSubview(cover, belowSubview: flying[0]) }
+                    let each = 0.30
+                    let gap = 0.075
+                    for (i, leaf) in flying.enumerated() {
+                        let start = Double(i) * gap
+                        UIView.animate(withDuration: each, delay: start, options: [.curveEaseOut]) {
+                            leaf.layer.transform = perspective
+                            leaf.alpha = 1
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + start) {
+                            let tone = 0.9 + Float(i % 3) * 0.1 - 0.04
+                            Sounds.flip(volume: 0.15, rate: tone)
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred(intensity: 0.5)
+                        }
+                    }
+                    let total = each + gap * Double(flying.count - 1)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + total + 0.02) {
+                        cover?.removeFromSuperview()
+                        flying.forEach { $0.removeFromSuperview() }
+                    }
+                }
             }
         }
 

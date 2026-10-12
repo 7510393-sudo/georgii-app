@@ -33,20 +33,37 @@ struct NoteRow<Trailing: View>: View {
     let title: String
     var detail: String? = nil
     var detailColor: Color = Look.inkSoft
+    /// Кнопка всегда справа, подпись переносится (P485) — для строк, у которых
+    /// подпись дополняется уже на открытом листке.
+    var pinned = false
     @ViewBuilder let trailing: () -> Trailing
 
     var body: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(spacing: 8) {
-                label
-                Spacer(minLength: 4)
-                trailing()
+        Group {
+            if pinned, detail != nil {
+                // Со второй строкой кнопка стоит справа всегда (P485): через
+                // секунду после открытия листка к подписи добавлялся объём
+                // памяти, строка переставала помещаться в ряд, и кнопка
+                // прыгала влево и вниз. Теперь подпись сама переносится в
+                // своём месте, а кнопка не двигается.
+                HStack(alignment: .center, spacing: 8) {
+                    label.frame(maxWidth: .infinity, alignment: .leading)
+                    trailing().fixedSize()
+                }
+            } else {
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 8) {
+                        label
+                        Spacer(minLength: 4)
+                        trailing()
+                    }
+                    VStack(alignment: .leading, spacing: 6) {
+                        label
+                        trailing()
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
-            VStack(alignment: .leading, spacing: 6) {
-                label
-                trailing()
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)

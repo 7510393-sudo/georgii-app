@@ -344,7 +344,7 @@ struct SettingsSticker: View {
         // Резервная копия (P368): когда была, сколько, куда. Пора — кнопка
         // мигает красным «Пора сделать» (P428).
         NoteRow(title: T("Резервная копия", "Backup"), detail: Backup.detail(size: storageBytes),
-                detailColor: Backup.healthy ? Look.inkSoft : .orange) {
+                detailColor: Backup.healthy ? Look.inkSoft : .orange, pinned: true) {
             if Backup.healthy {
                 NoteButton(title: T("Сделать", "Make"), main: true) { showingBackup = true }
             } else {
@@ -654,7 +654,12 @@ struct SettingsSticker: View {
                     total += Int64(values.fileAllocatedSize ?? 0)
                 }
             }
-            DispatchQueue.main.async { storageBytes = total }
+            DispatchQueue.main.async {
+                // Без движения (P485): строки ниже не должны ехать.
+                var still = Transaction()
+                still.disablesAnimations = true
+                withTransaction(still) { storageBytes = total }
+            }
         }
     }
 
@@ -736,7 +741,7 @@ struct SettingsSticker: View {
     /// Раньше это было две строки — теперь одна (P305).
     private var place: some View {
         VStack(alignment: .leading, spacing: 0) {
-            NoteRow(title: T("Хранилище", "Storage"), detail: vault.friendlyPath + "\n" + count) {
+            NoteRow(title: T("Хранилище", "Storage"), detail: vault.friendlyPath + "\n" + count, pinned: true) {
                 NoteButton(title: T("Где ›", "Show ›")) {
                     close()
                     if let link = vault.filesLink { openURL(link) }
