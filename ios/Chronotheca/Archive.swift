@@ -97,9 +97,45 @@ final class Archive: ObservableObject {
         days.values.filter { $0.hasSomething }.sorted { $0.stamp > $1.stamp }
     }
 
+    /// Перечитать папку на месте — тот, кто зовёт, ждёт готовую опись.
     func reload() {
         guard let root = vault.root else { days = [:]; return }
         scanning = true
+        scanTicket += 1          // чтение «в стороне», ещё не кончившееся, устарело
+        let result = Archive.scan(root)
+        publish(result)
+    }
+
+    /// Перечитать папку в стороне от экрана (P483): чтение каждого файла на
+    /// главной очереди держало нажатие на нижнюю кнопку — чем больше
+    /// дневник, тем дольше. Опись обновится, когда чтение кончится; если за
+    /// это время запросили ещё одно — берётся только последнее.
+    func reloadSoon() {
+        guard let root = vault.root else { days = [:]; return }
+        scanning = true
+        scanTicket += 1
+        let ticket = scanTicket
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let result = Archive.scan(root)
+            DispatchQueue.main.async {
+                guard let self, ticket == self.scanTicket else { return }
+                self.publish(result)
+            }
+        }
+    }
+
+    private var scanTicket = 0
+
+    private func publish(_ r: (found: [String: Day], counted: Int, away: [URL])) {
+        days = r.found
+        files = r.counted
+        awayFiles = r.away.count
+        scanning = false
+        if r.away.isEmpty { fetchRounds = 0 } else { fetch(r.away) }
+    }
+
+    /// Прочитать все дни папки — не трогая ничего общего.
+    private static func scan(_ root: URL) -> (found: [String: Day], counted: Int, away: [URL]) {
         var found: [String: Day] = [:]
         var counted = 0
         var away: [URL] = []
@@ -163,11 +199,7 @@ final class Archive: ObservableObject {
             }
         }
 
-        days = found
-        files = counted
-        awayFiles = away.count
-        scanning = false
-        if away.isEmpty { fetchRounds = 0 } else { fetch(away) }
+        return (found, counted, away)
     }
 
     /// Докачать выгруженные файлы и перечитать опись.

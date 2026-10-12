@@ -708,7 +708,7 @@ struct RootView: View {
         // возвращает на «Сегодня» — туда, где было (P262).
         if target != .today, shell.screen == target {
             open(.today)
-            DispatchQueue.main.async { store.save() }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { store.save() }
             return
         }
         if target == .today {
@@ -721,13 +721,13 @@ struct RootView: View {
                 store.go(to: DayStore.today())
             }
             open(target)
-            if !changesDay { DispatchQueue.main.async { store.save() } }
+            if !changesDay { DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { store.save() } }
         } else {
             open(target)
-            DispatchQueue.main.async {
-                store.save()
-                archive.reload()
-            }
+            // Опись читается в стороне, запись дня — после того, как раздел
+            // уже поехал (P483): ничто не стоит между касанием и ходом.
+            archive.reloadSoon()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { store.save() }
         }
     }
 
