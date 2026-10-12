@@ -312,8 +312,11 @@ struct ImportSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     /// Как в Diarium: самые частые дневники, по алфавиту.
-    static let apps = ["Apple Journal", "Day One", "Daybook", "Daylio", "Diarium", "Diarly", "Diaro",
-                       "Evernote", "Journey", "Memorize"]
+    /// Ещё семь, куда пишут дневники чаще всего (P477): Apple Notes, Bear,
+    /// Grid Diary, Momento, Notion, Obsidian, Penzu.
+    static let apps = ["Apple Journal", "Apple Notes", "Bear", "Day One", "Daybook", "Daylio", "Diarium",
+                       "Diarly", "Diaro", "Evernote", "Grid Diary", "Journey", "Memorize", "Momento",
+                       "Notion", "Obsidian", "Penzu"]
 
     /// Свой перенос, а не через текст: Day One (P378), Diarium и Journey (P444).
     static let own: Set<String> = ["Day One", "Diarium", "Journey"]

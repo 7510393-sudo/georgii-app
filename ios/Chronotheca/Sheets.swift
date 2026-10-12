@@ -238,10 +238,18 @@ struct SettingsSticker: View {
           // Листок — до нижней неподвижной строки (P291): прикрывает её
           // рваный край, но не значки и не рамку открытого раздела (P424).
           .frame(height: height)
+          // Высота листка не должна меняться плавно, пока он едет (P477):
+          // измеренный верх прокрутки приходил в самом начале выезда, высота
+          // менялась пружиной, и вместе с ней дрожал и сам листок.
+          .animation(nil, value: height)
           .background {
               GeometryReader { g in
                   Color.clear
-                      .onAppear { top = g.frame(in: .global).minY }
+                      .onAppear {
+                          var still = Transaction()
+                          still.disablesAnimations = true
+                          withTransaction(still) { top = g.frame(in: .global).minY }
+                      }
                       .onChange(of: g.frame(in: .global).minY) { _, y in top = y }
               }
           }

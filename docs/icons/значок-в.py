@@ -82,5 +82,19 @@ sheet_img = Image.alpha_composite(shadow, layer)
 sheet_img = sheet_img.rotate(5, resample=Image.BICUBIC, center=(W // 2, W // 2))   # лёгкий наклон
 img = Image.alpha_composite(img, sheet_img)
 
-out = sys.argv[1] if len(sys.argv) > 1 else "значок-в.png"
+PEN = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--pen=")), "")
+if PEN:
+    # Пишущий предмет: остриё — на конце последней строки, сам предмет уходит
+    # за правый край листа. Рисуется в «листовых» координатах 0…100 и ложится
+    # на сам лист, поэтому наклонён вместе с ним.
+    import pen_shapes  # noqa: рядом лежит pen_shapes.py
+    top = Image.new("RGBA", (W, W), (0, 0, 0, 0))
+    pen_shapes.draw(PEN, top, px, tip=(64.2, 66.6), angle=38)
+    shadow = top.filter(ImageFilter.GaussianBlur(px(.9)))
+    sh = Image.new("RGBA", (W, W), (60, 38, 16, 0)); sh.putalpha(shadow.getchannel("A").point(lambda a: int(a * .35)))
+    sh = ImageChops.offset(sh, px(.8), px(1.4))
+    both = Image.alpha_composite(sh, top).rotate(5, resample=Image.BICUBIC, center=(W // 2, W // 2))
+    img = Image.alpha_composite(img, both)
+
+out = next((a for a in sys.argv[1:] if not a.startswith("--")), "значок-в.png")
 img.convert("RGB").resize((N, N), Image.LANCZOS).save(out)
