@@ -122,34 +122,16 @@ struct DayPage: View {
         }
     }
 
-    /// Облачко только на открытом дне (решения P66–P69). На соседних
-    /// страницах его нет: они лишь показываются, пока едут.
-    ///
-    /// Прежде оно сидело на корешке «Дневник»; корешков больше нет (P408)
-    /// — оно стоит там же, справа под шапкой, и свешивается на страницу.
-    @ViewBuilder private var cloud: some View {
-        if live, !shell.hideCloud, archive.remembered(for: date) != nil,
-           !Remembered.has(Vault.stamp(date), in: read) {
-            // Те же размеры, что на прежнем корешке: половина его ширины,
-            // а корешок был в половину страницы.
-            let half = (UIScreen.main.bounds.width - 30) / 2
-            let width = half * 0.50
-            let height = width / RememberCloud.ratio
-            RememberCloud(date: date, width: width) {
-                // Облачко уходит сразу по нажатию, не по закрытию
-                // открывшегося листка (P330).
-                forget()
-                remembering = true
-            }
-            .frame(width: width, height: height)
-            // Сидит над заголовком «Дневник», у правого края, и едет вместе
-            // со страницей (P436; прежде свешивалось с шапки, P434). На
-            // сантиметр правее прежнего места.
-            // Между облачком и краем экрана — несколько миллиметров (P437).
-            // Ниже на две трети толщины своей линии (P456): линия рисунка
-            // при этой ширине — около 2,7 точки.
-            .offset(x: -18, y: -0.2)
-            .transition(.opacity)
+    /// Облачко «А вот когда-то…» — над заголовком «Дневник» (P436). Теперь
+    /// оно есть и на соседних страницах, пока они едут (P484, P114): раньше
+    /// его не было на странице, пока та не становилась открытой, и оно
+    /// выскакивало через полсекунды. Нажимается только открытое.
+    private var cloud: some View {
+        DayCloud(date: date, live: live) {
+            // Облачко уходит сразу по нажатию, не по закрытию открывшегося
+            // листка (P330).
+            forget()
+            remembering = true
         }
     }
 
@@ -936,7 +918,8 @@ struct SideDay: View {
         // Вчерашняя страница, пока её тянут, стоит там же, где встанет
         // открытой: на дневнике, если смотрели в дневник (P424, P114).
         DaySheet(date: date, diaryOpen: date <= DayStore.today(),
-                 landDiary: shell.lookingAtDiary) {
+                 landDiary: shell.lookingAtDiary,
+                 diaryMark: AnyView(DayCloud(date: date, live: false))) {
             plan
         } diary: {
             diary
@@ -1106,5 +1089,40 @@ struct FolderOutline: Shape {
         p.addLine(to: CGPoint(x: right, y: seam))
         p.addLine(to: CGPoint(x: right, y: rect.maxY))
         return p
+    }
+}
+
+
+/// Облачко «А вот когда-то…» одной и той же отрисовки на открытой и на
+/// соседних страницах (P114, P484). Касание — только у открытой.
+struct DayCloud: View {
+
+    let date: Date
+    let live: Bool
+    var open: () -> Void = {}
+
+    @EnvironmentObject private var shell: Shell
+    @EnvironmentObject private var archive: Archive
+
+    /// Дни, чьи облачка уже прочитаны (решение P136).
+    @AppStorage(Remembered.key) private var read = ""
+
+    var body: some View {
+        if !shell.hideCloud, archive.remembered(for: date) != nil,
+           !Remembered.has(Vault.stamp(date), in: read) {
+            // Те же размеры, что на прежнем корешке: половина его ширины,
+            // а корешок был в половину страницы.
+            let half = (UIScreen.main.bounds.width - 30) / 2
+            let width = half * 0.50
+            let height = width / RememberCloud.ratio
+            RememberCloud(date: date, width: width) { if live { open() } }
+                .frame(width: width, height: height)
+                // Сидит над заголовком «Дневник», у правого края, и едет вместе
+                // со страницей (P436); у края несколько миллиметров (P437);
+                // ниже на две трети толщины линии рисунка (P456).
+                .offset(x: -18, y: -0.2)
+                .allowsHitTesting(live)
+                .transition(.opacity)
+        }
     }
 }
