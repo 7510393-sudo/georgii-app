@@ -81,11 +81,11 @@ enum Reminders {
         [
             T("Память — лучшее средство от времени", "Memory is the best remedy for time"),
             T("Записать легче, чем вспомнить", "Writing it down is easier than remembering"),
-            T("Записанная мысль не пропадает", "A thought written down is never lost"),
+            T("Записанная мысль остаётся с вами", "A thought written down stays with you"),
             T("Это электронный дневник — деревья в безопасности", "It’s a digital diary — the trees are safe"),
             T("Пара строк сегодня — целый день через год", "A few lines today — a whole day a year from now"),
-            T("Завтра этот день станет вчерашним — сохраните его", "Tomorrow this day will be yesterday — keep it"),
-            T("Вечер — лучшее время для итогов дня", "Evening is the best time for the day’s outcome"),
+            T("Этот день можно оставить себе — парой строк", "This day can stay with you — in just a couple of lines"),
+            T("Вечером хорошо оглянуться на день", "Evening is a nice time to look back on the day"),
         ]
     }
 

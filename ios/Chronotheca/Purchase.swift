@@ -137,7 +137,7 @@ final class Purchase: ObservableObject {
     var summary: String {
         switch state {
         case .owned: return T("куплено — навсегда", "purchased — for good")
-        case .trial(let n): return T("пробный месяц: осталось дней — \(n)", "trial month: \(n) days left")
+        case .trial(let n): return T("пробный месяц: впереди дней — \(n)", "trial month: \(n) days ahead")
         case .notStarted: return T("пробный месяц не начат", "trial month not started")
         case .expired: return T("месяц прошёл — записи читаются, писать новое после покупки",
                                 "the month is over — entries are readable; writing needs the purchase")
@@ -218,7 +218,7 @@ struct PurchaseSheet: View {
         switch purchase.state {
         case .owned: return T("Куплено. Спасибо!", "Purchased. Thank you!")
         case .expired: return T("Пробный месяц прошёл", "The trial month is over")
-        case .trial(let n): return T("Пробный месяц: осталось дней — \(n)", "Trial month: \(n) days left")
+        case .trial(let n): return T("Пробный месяц: впереди дней — \(n)", "Trial month: \(n) days ahead")
         default: return T("Месяц бесплатно", "A month for free")
         }
     }
