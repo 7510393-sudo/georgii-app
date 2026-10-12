@@ -1034,7 +1034,11 @@ struct PlanPage: View {
                 // Пустая плашка следующего дела — как на открытой странице
                 // (P114, P406); в прошедшем дне её нет (P421).
                 if !isPast, !tasks.contains(where: PlanRow.blank) {
-                    PlanRowLine(number: events.count + tasks.count + 1, row: .task(""),
+                    // Тот же текст, что у открытой страницы (P481): прежде здесь
+                    // стояло пустое название, и бледное «Без названия»
+                    // превращалось в «Напомню о важном деле», когда страница
+                    // становилась открытой, — буквы скакали.
+                    PlanRowLine(number: events.count + tasks.count + 1, row: .task(PlanRow.ghostTitle),
                                 bellColor: bellColor, ghost: true)
                 }
                 // Счёта «запланировано · сделано» нет — как на открытой

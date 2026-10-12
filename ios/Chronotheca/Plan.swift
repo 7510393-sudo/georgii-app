@@ -39,6 +39,10 @@ struct PlanRow: Identifiable, Equatable {
         PlanRow(verbatim: line)
     }
 
+    /// Надпись пустой плашки следующего дела (P452) — одна и та же на открытой
+    /// и на соседних страницах (P114, P481).
+    static var ghostTitle: String { T("Напомню о важном деле", "I’ll remind you of what matters") }
+
     /// Дело ничем не заполнено: ни названия, ни времени, ни
     /// напоминания, ни подробностей (P406).
     static func blank(_ r: PlanRow) -> Bool {
