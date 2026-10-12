@@ -102,6 +102,13 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
         func obey(_ pages: UIPageViewController) {
             guard !busy, let step = parent.plan.wrappedValue.first, step != 0 else { return }
             busy = true
+            // Подстраховка (P480): если ход почему-то не закончился, книга не
+            // должна остаться запертой навсегда.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in
+                guard let self, self.busy else { return }
+                self.busy = false
+                self.parent.plan.wrappedValue = []
+            }
             let leaves = whirlLeaves(step)
             // Издалека — весь путь одним потоком вихря, без выделенного
             // последнего листа: раньше он один ложился отдельным, заметно
@@ -128,13 +135,16 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
             pages.setViewControllers([host], direction: step > 0 ? .forward : .reverse,
                                      animated: false) { [weak self] done in
                 guard let self else { return }
-                self.busy = false
-                guard done else { self.parent.plan.wrappedValue = []; return }
+                guard done else { self.parent.plan.wrappedValue = []; self.busy = false; return }
                 host.offset = 0
-                self.parent.onTurn(step)
+                // Сперва очередь убывает, потом книга свободна: иначе между
+                // двумя строками обновление экрана успевало начать тот же
+                // шаг ещё раз (P480).
                 if !self.parent.plan.wrappedValue.isEmpty {
                     self.parent.plan.wrappedValue.removeFirst()
                 }
+                self.busy = false
+                self.parent.onTurn(step)
             }
         }
 
@@ -165,13 +175,20 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
                 host.addSubview(leaf)
                 flying.append(leaf)
             }
-            guard !flying.isEmpty else { return begin() }
             // Книга встаёт на нужный день под листьями — они закрывают её,
             // пока не улетят; сама книга может добавить свои виды поверх —
-            // листья выносим на самый верх.
-            begin()
-            flying.forEach { host.bringSubviewToFront($0) }
-            DispatchQueue.main.async { flying.forEach { host.bringSubviewToFront($0) } }
+            // листья выносим на самый верх. Это — на следующем такте, а не
+            // прямо здесь (P480): `obey` вызывается изнутри обновления экрана,
+            // и смена дня, запрошенная оттуда же, давала зависание —
+            // очередь шагов не убывала, и вихрь начинался снова и снова.
+            guard !flying.isEmpty else {
+                DispatchQueue.main.async { begin() }
+                return
+            }
+            DispatchQueue.main.async {
+                begin()
+                flying.forEach { host.bringSubviewToFront($0) }
+            }
             let each = 0.30
             let gap = 0.075
             for (i, leaf) in flying.enumerated() {
