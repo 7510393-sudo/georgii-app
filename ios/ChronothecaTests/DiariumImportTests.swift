@@ -89,4 +89,22 @@ final class DiariumImportTests: XCTestCase {
         ])
         XCTAssertThrowsError(try DiariumReader(copying: url).entries())
     }
+
+    /// Вложения, записанные с лишним в начале, сжатые или текстом base64,
+    /// приводятся к настоящему файлу (P487).
+    func testAttachmentsAreNormalised() {
+        let jpeg: [UInt8] = [0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]
+        let plain = DiariumReader.normalized(Data(jpeg))
+        XCTAssertEqual(Array(plain.0), jpeg)
+        XCTAssertNil(plain.1)
+        // Лишние байты впереди.
+        let prefixed = DiariumReader.normalized(Data([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09] + jpeg))
+        XCTAssertEqual(Array(prefixed.0), jpeg)
+        // Base64-текст.
+        let text = DiariumReader.normalized(Data(Data(jpeg + [UInt8](repeating: 0, count: 12)).base64EncodedString().utf8))
+        XCTAssertEqual(Array(text.0.prefix(6)), jpeg)
+        // Неизвестное — как есть и с заметкой.
+        let odd = DiariumReader.normalized(Data([UInt8](repeating: 0x7f, count: 40)))
+        XCTAssertNotNil(odd.1)
+    }
 }

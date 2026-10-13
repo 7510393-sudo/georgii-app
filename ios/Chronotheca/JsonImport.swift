@@ -222,6 +222,32 @@ enum JsonImport {
         if let data = try? JSONEncoder().encode(done.sorted()) { try? data.write(to: url, options: .atomic) }
     }
 
+    /// Починить снимки уже перенесённой записи: тот же файл, что лёг в
+    /// прошлый раз по имени, если он не открывается как картинка (P487).
+    private static func repair(_ e: Entry, reader: DiariumReader, root: URL, tag: String,
+                               report: inout DayOneImport.Report) {
+        guard let date = Vault.date(from: e.day) else { return }
+        let fm = FileManager.default
+        for id in e.media.keys.sorted() {
+            guard let m = e.media[id] else { continue }
+            let ext = (m.file as NSString).pathExtension.lowercased() == "jpeg" ? "jpg"
+                : (m.file as NSString).pathExtension.lowercased()
+            guard ["jpg", "png", "heic", "gif", "webp"].contains(ext) else { continue }
+            guard let source = reader.extract(m.file), UIImage(contentsOfFile: source.path) != nil else { continue }
+            let stamp = Vault.stamp(date)
+            let dir = Vault.folder(DayOneImport.kind(for: m.folder), in: root).appendingPathComponent(String(stamp.prefix(4)))
+            let base = stamp + "_" + tag + "_" + String(source.deletingPathExtension().lastPathComponent.prefix(8))
+            for n in 1..<10 {
+                let target = dir.appendingPathComponent(n == 1 ? "\(base).\(ext)" : "\(base) \(n).\(ext)")
+                guard fm.fileExists(atPath: target.path) else { break }
+                if UIImage(contentsOfFile: target.path) == nil {
+                    if (try? Data(contentsOf: source).write(to: target, options: .atomic)) != nil { report.fixed += 1 }
+                    break
+                }
+            }
+        }
+    }
+
     /// Перенести выгрузку в архив — в стороне от главного потока; `step` —
     /// сколько дней из скольких пройдено.
     static func run(at url: URL, app: String, vault: Vault,
@@ -248,7 +274,13 @@ enum JsonImport {
         var done = alreadyDone()
         var report = DayOneImport.Report()
         let fresh = list.filter { e in
-            if done.contains(e.uuid) { report.again += 1; return false }
+            if done.contains(e.uuid) {
+                report.again += 1
+                // Тексты уже на месте, а снимки в прошлый раз могли лечь
+                // испорченными (P487) — чиним только их.
+                if let reader { repair(e, reader: reader, root: root, tag: app.lowercased().replacingOccurrences(of: " ", with: ""), report: &report) }
+                return false
+            }
             return true
         }
         // Файлы выгрузки по имени — где бы в папке они ни лежали.
@@ -429,6 +461,14 @@ struct JsonImportView: View {
                     }
                     if r.missing > 0 {
                         text += T(" Не нашлось в выгрузке файлов: \(r.missing).", " Files missing from the export: \(r.missing).")
+                    }
+                    if r.fixed > 0 {
+                        text += T(" Снимков починено: \(r.fixed).", " Photos repaired: \(r.fixed).")
+                    }
+                    if let odd = DiariumReader.oddNote {
+                        text += T(" Формат вложения не опознан, первые байты: \(odd).",
+                                  " Attachment format not recognised, first bytes: \(odd).")
+                        DiariumReader.oddNote = nil
                     }
                     if r.skipped > 0 {
                         text += T(" Не перенесены, потому что день ещё в iCloud: \(r.skipped) — повторите позже.",

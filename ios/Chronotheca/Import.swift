@@ -25,6 +25,8 @@ enum DayOneImport {
         var skipped = 0
         /// Снимки и файлы, которых не нашлось в выгрузке.
         var missing = 0
+        /// Снимки, что в прошлый раз легли испорченными и теперь починены (P487).
+        var fixed = 0
     }
 
     enum Failure: Error {
@@ -269,16 +271,19 @@ enum DayOneImport {
         return .success(report)
     }
 
+    static func kind(for folder: String) -> Vault.Folder {
+        switch folder {
+        case "photos": return .photos
+        case "videos": return .videos
+        case "audios": return .audio
+        default: return .documents
+        }
+    }
+
     /// Положить файл выгрузки в свою папку архива — с датой дня в имени;
     /// чужое не затирается: занято имя — к нему номер.
     static func copy(_ source: URL, folder: String, date: Date, root: URL, tag: String = "dayone") -> String? {
-        let kind: Vault.Folder
-        switch folder {
-        case "photos": kind = .photos
-        case "videos": kind = .videos
-        case "audios": kind = .audio
-        default: kind = .documents
-        }
+        let kind = Self.kind(for: folder)
         let stamp = Vault.stamp(date)
         let year = String(stamp.prefix(4))
         let home = Vault.folder(kind, in: root)

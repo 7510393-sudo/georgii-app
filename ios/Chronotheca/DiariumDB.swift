@@ -265,6 +265,59 @@ final class DiariumReader {
 
     // MARK: - Вложения
 
+    /// Что нашли странного в вложениях: первые байты файла, который не
+    /// похож ни на снимок, ни на звук, ни на видео (P487). Показывается
+    /// в итоге переноса — по нему можно понять устройство архива.
+    static var oddNote: String?
+
+    private static func known(_ b: [UInt8], at o: Int = 0) -> Bool {
+        guard b.count >= o + 4 else { return false }
+        let h = Array(b[o..<(o + 4)])
+        if h[0] == 0xff, h[1] == 0xd8, h[2] == 0xff { return true }           // JPEG
+        if h == [0x89, 0x50, 0x4e, 0x47] { return true }                        // PNG
+        if h == Array("GIF8".utf8) || h == Array("RIFF".utf8) { return true }  // GIF, WebP, WAV
+        if h == Array("%PDF".utf8) || h == Array("OggS".utf8) || h == Array("fLaC".utf8) { return true }
+        if h == [0x49, 0x49, 0x2a, 0x00] || h == [0x4d, 0x4d, 0x00, 0x2a] { return true } // TIFF
+        if Array(h[0..<3]) == Array("ID3".utf8) { return true }                  // MP3
+        if b.count >= o + 8, Array(b[(o + 4)..<(o + 8)]) == Array("ftyp".utf8) { return true } // HEIC, MP4, MOV, M4A
+        return false
+    }
+
+    /// Привести вложение к настоящему файлу (P487): снять сжатие или
+    /// base64, отрезать лишнее в начале. Не вышло — как есть, с заметкой.
+    static func normalized(_ raw: Data) -> (Data, String?) {
+        let head = Array(raw.prefix(512))
+        if known(head) { return (raw, nil) }
+        // Сжатое: gzip или zlib.
+        func inflate(_ body: Data) -> Data? {
+            guard let out = try? (body as NSData).decompressed(using: .zlib) else { return nil }
+            return out as Data
+        }
+        if head.count > 18, head[0] == 0x1f, head[1] == 0x8b, head[2] == 8, head[3] == 0,
+           let out = inflate(raw.subdata(in: 10..<(raw.count - 8))), known(Array(out.prefix(16))) {
+            return (out, nil)
+        }
+        if head.count > 6, head[0] == 0x78, let out = inflate(raw.subdata(in: 2..<raw.count)),
+           known(Array(out.prefix(16))) {
+            return (out, nil)
+        }
+        // Текст base64.
+        if head.allSatisfy({ ($0 >= 0x2b && $0 <= 0x7a) || $0 == 0x0a || $0 == 0x0d }),
+           let s = String(data: raw, encoding: .ascii),
+           let out = Data(base64Encoded: s, options: .ignoreUnknownCharacters),
+           known(Array(out.prefix(16))) {
+            return (out, nil)
+        }
+        // Лишнее в начале: ищем начало настоящего файла рядом.
+        if head.count > 8 {
+            for o in 1..<min(head.count - 4, 256) where known(head, at: o) {
+                return (raw.subdata(in: o..<raw.count), nil)
+            }
+        }
+        let hex = head.prefix(16).map { String(format: "%02x", $0) }.joined(separator: " ")
+        return (raw, hex)
+    }
+
     /// Байты вложения — файлом во временной папке; `key` — «номер|имя».
     func extract(_ key: String) -> URL? {
         guard let bar = key.firstIndex(of: "|"), let id = Int64(key[..<bar]) else { return nil }
@@ -273,14 +326,22 @@ final class DiariumReader {
         guard let table = DiariumReader.pick(tableNames, ["Media", "Attachments"]) else { return nil }
         let cols = (try? columns(of: table)) ?? []
         guard let dataCol = DiariumReader.pick(cols, ["Data", "Content", "Blob", "Bytes"]) else { return nil }
-        var bytes: Data?
+        var raw: Data?
         try? query("SELECT \(DiariumReader.quoted(dataCol)) FROM \(DiariumReader.quoted(table)) WHERE rowid = ?",
                    bind: id) { st in
-            guard sqlite3_column_type(st, 0) == SQLITE_BLOB else { return }
-            let n = Int(sqlite3_column_bytes(st, 0))
-            if n > 0, let p = sqlite3_column_blob(st, 0) { bytes = Data(bytes: p, count: n) }
+            switch sqlite3_column_type(st, 0) {
+            case SQLITE_BLOB:
+                let n = Int(sqlite3_column_bytes(st, 0))
+                if n > 0, let p = sqlite3_column_blob(st, 0) { raw = Data(bytes: p, count: n) }
+            case SQLITE_TEXT:
+                // Вложение, записанное текстом (base64).
+                if let t = DiariumReader.text(st, 0) { raw = Data(t.utf8) }
+            default: break
+            }
         }
-        guard let bytes else { return nil }
+        guard let raw else { return nil }
+        let (bytes, note) = DiariumReader.normalized(raw)
+        if let note { DiariumReader.oddNote = note }
         let dir = workDir.appendingPathComponent("m\(id)")
         let file = dir.appendingPathComponent((name as NSString).lastPathComponent)
         do {
