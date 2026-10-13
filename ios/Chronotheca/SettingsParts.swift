@@ -72,7 +72,10 @@ struct NoteRow<Trailing: View>: View {
         // не гладкая плашка обычного приложения.
         .background(Look.planBg, in: RoundedRectangle(cornerRadius: 6))
         .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Look.stickerEdge.opacity(0.9), lineWidth: 0.8))
-        .shadow(color: .black.opacity(0.07), radius: 1.5, y: 1)
+        // Тень — резкой подложкой, без размытия (P488): размытая тень у каждой из
+        // десятков строк считалась заново на каждом кадре выезда листка, и
+        // он шёл рывками.
+        .background(RoundedRectangle(cornerRadius: 6).fill(Color.black.opacity(0.08)).offset(y: 1))
         .padding(.horizontal, 10)
         .padding(.vertical, 3)
     }
@@ -209,7 +212,7 @@ struct Tag: ViewModifier {
             .background(main ? Look.accent : Look.chrome, in: RoundedRectangle(cornerRadius: 6))
             .overlay(RoundedRectangle(cornerRadius: 6)
                 .strokeBorder(main ? Look.accent : Look.inkFaint, lineWidth: 1))
-            .shadow(color: .black.opacity(main ? 0.12 : 0.06), radius: 1, y: 1)
+            .background(RoundedRectangle(cornerRadius: 6).fill(Color.black.opacity(main ? 0.12 : 0.07)).offset(y: 1))
             .contentShape(RoundedRectangle(cornerRadius: 6))
     }
 }
