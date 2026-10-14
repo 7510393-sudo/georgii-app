@@ -747,7 +747,7 @@ struct RootView: View {
     private func section(_ icon: String, _ name: String, _ target: Shell.Screen,
                          system: Bool = false) -> some View {
         let on = shell.screen == target
-        return withDayMenu(Button {
+        return Button {
             tapSection(target)
         } label: {
             VStack(spacing: 3) {
@@ -781,35 +781,9 @@ struct RootView: View {
                     .padding(.vertical, -3))
             .frame(maxWidth: .infinity)
             .foregroundStyle(on ? Look.accent : Look.kraftInk)
-        }, target)
-    }
-
-    /// Действия дня — долгим нажатием на «Сегодня» внизу, под большим
-    /// пальцем (P466): три точки в верхнем углу на крупном iPhone одной
-    /// рукой не достать. Меню — только у «Сегодня» (P491): системное меню у
-    /// остальных кнопок задерживало и обычное касание.
-    @ViewBuilder
-    private func withDayMenu<V: View>(_ button: V, _ target: Shell.Screen) -> some View {
-        if target == .today {
-            button.contextMenu {
-                if shell.screen == .today {
-                    Button { shell.showingFile = true } label: {
-                        Label(T("Показать файл этого дня", "Show this day’s file"), systemImage: "doc.text")
-                    }
-                    Button { shell.showingWeek = true } label: {
-                        Label(T("Неделя одним взглядом", "The week at a glance"), systemImage: "calendar")
-                    }
-                    Button { Share.present([store.shareText()]) } label: {
-                        Label(T("Поделиться днём", "Share the day"), systemImage: "square.and.arrow.up")
-                    }
-                    Button(role: .destructive) { shell.trashAsk = true } label: {
-                        Label(T("Убрать день в корзину", "Move the day to the trash"), systemImage: "trash")
-                    }
-                }
-            }
-        } else {
-            button
         }
+        // Долгого нажатия у кнопок нет (P492): действия дня — в меню на трёх
+        // точках; системное меню задерживало и обычное касание.
     }
 
     /// Убрать шторку «Подробности» или ряд снимков галереи, если открыты.
