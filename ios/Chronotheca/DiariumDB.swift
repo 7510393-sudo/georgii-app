@@ -184,9 +184,25 @@ final class DiariumReader {
             if let entryFK = DiariumReader.pick(mCols, [idCol, "DiaryEntryId"]),
                let nameCol = DiariumReader.pick(mCols, ["FileName", "Name", "File"]) {
                 let order = DiariumReader.pick(mCols, ["Index"]).map { " ORDER BY \(DiariumReader.quoted($0))" } ?? ""
-                try? query("SELECT rowid, \(DiariumReader.quoted(entryFK)), \(DiariumReader.quoted(nameCol)) FROM "
+                // Первые байты вложения — чтобы узнать настоящий вид файла, если
+                // в имени нет расширения (P489).
+                let head = DiariumReader.pick(mCols, ["Data", "Content", "Blob", "Bytes"])
+                    .map { ", substr(\(DiariumReader.quoted($0)), 1, 32)" } ?? ""
+                try? query("SELECT rowid, \(DiariumReader.quoted(entryFK)), \(DiariumReader.quoted(nameCol))" + head + " FROM "
                            + "\(DiariumReader.quoted(mediaTable))" + order) { st in
-                    if let e = DiariumReader.text(st, 1), let n = DiariumReader.text(st, 2), !n.isEmpty {
+                    if let e = DiariumReader.text(st, 1), var n = DiariumReader.text(st, 2), !n.isEmpty {
+                        if !DiariumFix.known.contains((n as NSString).pathExtension.lowercased()),
+                           sqlite3_column_count(st) > 3, sqlite3_column_type(st, 3) == SQLITE_BLOB {
+                            let len = Int(sqlite3_column_bytes(st, 3))
+                            if len >= 4, let p = sqlite3_column_blob(st, 3) {
+                                let bytes = Array(UnsafeBufferPointer(start: p.assumingMemoryBound(to: UInt8.self), count: len))
+                                if let ext = DiariumFix.sniff(bytes) {
+                                    while n.hasSuffix(".") { n.removeLast() }
+                                    if !(n as NSString).pathExtension.isEmpty { n = (n as NSString).deletingPathExtension }
+                                    n += "." + ext
+                                }
+                            }
+                        }
                         mediaOf[e, default: []].append((sqlite3_column_int64(st, 0), n))
                     }
                 }

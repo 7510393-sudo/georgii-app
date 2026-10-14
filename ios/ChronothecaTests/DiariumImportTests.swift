@@ -107,4 +107,36 @@ final class DiariumImportTests: XCTestCase {
         let odd = DiariumReader.normalized(Data([UInt8](repeating: 0x7f, count: 40)))
         XCTAssertNotNil(odd.1)
     }
+
+    func testSniffFindsTheRealExtension() {
+        XCTAssertEqual(DiariumFix.sniff([0xff, 0xd8, 0xff, 0xe1, 0, 0]), "jpg")
+        XCTAssertEqual(DiariumFix.sniff([0x89, 0x50, 0x4e, 0x47, 0, 0]), "png")
+        XCTAssertEqual(DiariumFix.sniff(Array("\0\0\0\u{18}ftypheic".utf8)), "heic")
+        XCTAssertEqual(DiariumFix.sniff(Array("\0\0\0\u{18}ftypqt  ".utf8)), "mov")
+        XCTAssertNil(DiariumFix.sniff([1, 2, 3, 4, 5, 6]))
+    }
+
+    /// Снимок, что лёг без расширения в «Документы», получает расширение,
+    /// уходит в «Фотографии», а ссылка в записи меняется (P489).
+    func testFixRenamesFilesAndRewritesLinks() throws {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent("fix-\(UUID().uuidString)")
+        defer { try? fm.removeItem(at: root) }
+        let docs = root.appendingPathComponent("Documents/2024")
+        let diary = root.appendingPathComponent("Diary/2024")
+        try fm.createDirectory(at: docs, withIntermediateDirectories: true)
+        try fm.createDirectory(at: diary, withIntermediateDirectories: true)
+        try Data([0xff, 0xd8, 0xff, 0xe0, 0, 0x10]).write(to: docs.appendingPathComponent("2024-05-17_diarium_IMG_8898."))
+        let day = diary.appendingPathComponent("2024-05-17.md")
+        try "08:12 Утро\n\n[IMG_8898](../../Documents/2024/2024-05-17_diarium_IMG_8898.)\n".write(to: day, atomically: true, encoding: .utf8)
+
+        XCTAssertEqual(DiariumFix.run(root: root), 1)
+        XCTAssertTrue(fm.fileExists(atPath: root.appendingPathComponent("Photos/2024/2024-05-17_diarium_IMG_8898.jpg").path))
+        XCTAssertFalse(fm.fileExists(atPath: docs.appendingPathComponent("2024-05-17_diarium_IMG_8898.").path))
+        let text = try String(contentsOf: day, encoding: .utf8)
+        XCTAssertTrue(text.contains("![](../../Photos/2024/2024-05-17_diarium_IMG_8898.jpg)"))
+        XCTAssertFalse(text.contains("Documents"))
+        // Повторно чинить нечего.
+        XCTAssertEqual(DiariumFix.run(root: root), 0)
+    }
 }

@@ -273,6 +273,8 @@ enum JsonImport {
         guard let root = vault.root else { return .failure(.unreadable("—")) }
         var done = alreadyDone()
         var report = DayOneImport.Report()
+        // Снимки прежнего переноса без расширения — чинятся сами (P489).
+        if app == "Diarium" { report.fixed += DiariumFix.run(root: root) }
         let fresh = list.filter { e in
             if done.contains(e.uuid) {
                 report.again += 1
@@ -398,6 +400,16 @@ struct JsonImportView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(progress != nil)
+                // Снимки, что легли без расширения и не открываются (P489).
+                if app == "Diarium" {
+                    Button {
+                        repairPhotos()
+                    } label: {
+                        Text(T("Починить снимки, перенесённые раньше", "Repair photos imported earlier")).frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(progress != nil)
+                }
                 if let p = progress {
                     ProgressView(value: Double(p.0), total: Double(max(p.1, 1)))
                     Text(T("Дней: \(p.0) из \(p.1)", "Days: \(p.0) of \(p.1)"))
@@ -426,6 +438,24 @@ struct JsonImportView: View {
         .fileImporter(isPresented: $choosing, allowedContentTypes: app == "Diarium" ? [.folder, .json, .data] : [.folder, .json]) { picked in
             guard case .success(let url) = picked else { return }
             start(url)
+        }
+    }
+
+    /// Переименовать снимки без расширения и поправить ссылки (P489).
+    private func repairPhotos() {
+        guard let root = vault.root else { return }
+        problem = nil
+        result = nil
+        store.save()
+        progress = (0, 0)
+        DispatchQueue.global(qos: .userInitiated).async {
+            let n = DiariumFix.run(root: root)
+            DispatchQueue.main.async {
+                progress = nil
+                result = n > 0 ? T("Снимков починено: \(n).", "Photos repaired: \(n).")
+                               : T("Чинить нечего: снимков без расширения не нашлось.", "Nothing to repair: no photos without an extension.")
+                store.load()
+            }
         }
     }
 
