@@ -593,7 +593,10 @@ final class DayStore: ObservableObject {
     /// исчезает, едва человек коснулся другого места на экране.
     func prune() {
         // Дело с одним временем или напоминанием — уже дело (P406).
-        planRows.removeAll(where: PlanRow.blank)
+        // Только если есть что убирать (P491): `removeAll` даже вхолостую
+        // сообщал экрану об изменении — на каждом касании внизу всё
+        // перерисовывалось до смены раздела.
+        if planRows.contains(where: PlanRow.blank) { planRows.removeAll(where: PlanRow.blank) }
     }
 
     // MARK: - Отметка времени в дневнике

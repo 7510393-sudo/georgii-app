@@ -657,7 +657,7 @@ struct RootView: View {
         .padding(.bottom, 2)
         // Над полосой «домой» — её высота у самого окна, она не меняется
         // от клавиатуры (P447), меряется раскладкой (P450).
-        .padding(.bottom, homeBar)
+        .padding(.bottom, homeLift)
         // Крафт-картон с оторванным верхним краем, до самого низа экрана
         // (P297). Край заходит на строку вложений на глубину зубцов.
         .background(alignment: .top) {
@@ -683,6 +683,15 @@ struct RootView: View {
                     .onChange(of: g.frame(in: .global).minY) { _, y in shell.barTop = y }
             }
         }
+    }
+
+    /// Отступ под полосой «домой» и ещё немного вверх (P491): названия под
+    /// значками стояли на самой нижней линии. Берётся и высота полосы у
+    /// окна — мерка раскладкой иногда приходит нулём (P469).
+    private var homeLift: CGFloat {
+        let window = UIApplication.shared.connectedScenes
+            .compactMap { ($0 as? UIWindowScene)?.keyWindow }.first
+        return max(homeBar, window?.safeAreaInsets.bottom ?? 0) + 8
     }
 
     private func scale(_ target: Shell.Screen) -> CGFloat {
@@ -738,7 +747,7 @@ struct RootView: View {
     private func section(_ icon: String, _ name: String, _ target: Shell.Screen,
                          system: Bool = false) -> some View {
         let on = shell.screen == target
-        return Button {
+        return withDayMenu(Button {
             tapSection(target)
         } label: {
             VStack(spacing: 3) {
@@ -772,25 +781,34 @@ struct RootView: View {
                     .padding(.vertical, -3))
             .frame(maxWidth: .infinity)
             .foregroundStyle(on ? Look.accent : Look.kraftInk)
-        }
-        // Действия дня — и долгим нажатием на «Сегодня» внизу, под большим
-        // пальцем (P466): три точки в верхнем углу на крупном iPhone одной
-        // рукой не достать.
-        .contextMenu {
-            if target == .today, shell.screen == .today {
-                Button { shell.showingFile = true } label: {
-                    Label(T("Показать файл этого дня", "Show this day’s file"), systemImage: "doc.text")
-                }
-                Button { shell.showingWeek = true } label: {
-                    Label(T("Неделя одним взглядом", "The week at a glance"), systemImage: "calendar")
-                }
-                Button { Share.present([store.shareText()]) } label: {
-                    Label(T("Поделиться днём", "Share the day"), systemImage: "square.and.arrow.up")
-                }
-                Button(role: .destructive) { shell.trashAsk = true } label: {
-                    Label(T("Убрать день в корзину", "Move the day to the trash"), systemImage: "trash")
+        }, target)
+    }
+
+    /// Действия дня — долгим нажатием на «Сегодня» внизу, под большим
+    /// пальцем (P466): три точки в верхнем углу на крупном iPhone одной
+    /// рукой не достать. Меню — только у «Сегодня» (P491): системное меню у
+    /// остальных кнопок задерживало и обычное касание.
+    @ViewBuilder
+    private func withDayMenu<V: View>(_ button: V, _ target: Shell.Screen) -> some View {
+        if target == .today {
+            button.contextMenu {
+                if shell.screen == .today {
+                    Button { shell.showingFile = true } label: {
+                        Label(T("Показать файл этого дня", "Show this day’s file"), systemImage: "doc.text")
+                    }
+                    Button { shell.showingWeek = true } label: {
+                        Label(T("Неделя одним взглядом", "The week at a glance"), systemImage: "calendar")
+                    }
+                    Button { Share.present([store.shareText()]) } label: {
+                        Label(T("Поделиться днём", "Share the day"), systemImage: "square.and.arrow.up")
+                    }
+                    Button(role: .destructive) { shell.trashAsk = true } label: {
+                        Label(T("Убрать день в корзину", "Move the day to the trash"), systemImage: "trash")
+                    }
                 }
             }
+        } else {
+            button
         }
     }
 
@@ -831,7 +849,7 @@ struct RootView: View {
     /// почти целиком уезжает вверх, и только потом опускается новая.
     /// Разом они шли навстречу, и новая обгоняла уходящую (решение P202).
     private func follow(from old: Shell.Screen, to new: Shell.Screen) {
-        let heavy = Animation.spring(response: 0.80, dampingFraction: 0.90)
+        let heavy = Animation.spring(response: 0.46, dampingFraction: 0.92)
         // Толчок — в начале хода, вместе с нажатием (P268: пробовали в миг
         // удара о строку — вернули на начало).
         Feel.thud()
@@ -839,8 +857,8 @@ struct RootView: View {
             withAnimation(heavy) { shell.lowered = new }
             return
         }
-        withAnimation(.easeIn(duration: 0.34)) { shell.lowered = .today }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.30) { [shell] in
+        withAnimation(.easeIn(duration: 0.20)) { shell.lowered = .today }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.17) { [shell] in
             // Пока уходила плашка, человек мог нажать ещё раз.
             guard shell.screen == new else { return }
             withAnimation(heavy) { shell.lowered = new }
