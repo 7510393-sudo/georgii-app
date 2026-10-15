@@ -689,14 +689,14 @@ struct RootView: View {
         HStack(spacing: 0) {
             // Сегодня, календарь, карта, поиск (P239). Глобус нарисован
             // автором (P248).
-            section("календарь", T("Календарь", "Calendar"), .calendar)
-            section("сегодня", T("Сегодня", "Today"), .today)
-            section("карта", T("Карта", "Map"), .map)
-            section("поиск", T("Поиск", "Search"), .search)
+            section("календарь", T("Календарь", "Calendar"), .calendar, compact: true)
+            section("сегодня", T("Сегодня", "Today"), .today, compact: true)
+            section("карта", T("Карта", "Map"), .map, compact: true)
+            section("поиск", T("Поиск", "Search"), .search, compact: true)
         }
-        // Ещё тоньше (P499): значки 31 вместо 35, отступы меньше.
-        .padding(.top, 4)
-        .padding(.bottom, 2)
+        // Той же высоты и тех же размеров, что верхняя строка (P500).
+        .padding(.vertical, 4)
+        .frame(height: Self.topBarHeight)
         // Над полосой «домой» — её высота у самого окна, она не меняется
         // от клавиатуры (P447), меряется раскладкой (P450).
         .padding(.bottom, homeLift)
@@ -785,10 +785,13 @@ struct RootView: View {
     }
 
     private func section(_ icon: String, _ name: String, _ target: Shell.Screen,
-                         system: Bool = false, small: Bool = false) -> some View {
+                         system: Bool = false, small: Bool = false,
+                         compact: Bool = false) -> some View {
         let on = shell.screen == target
-        // Верхняя копия — на 15% мельче нижней (P496).
-        let k: CGFloat = small ? 0.85 : 1
+        // Верхняя строка и нижняя — одних размеров (P500): значки и названия
+        // на 15% мельче прежней нижней (P496).
+        let slim = small || compact
+        let k: CGFloat = slim ? 0.85 : 1
         return Button {
             if small {
                 // Листок открыт — касание по строке только закрывает его.
@@ -797,7 +800,7 @@ struct RootView: View {
             }
             tapSection(target)
         } label: {
-            VStack(spacing: small ? 3 : 2) {
+            VStack(spacing: 3) {
                 // Значки нарисованы автором от руки и обведены в вектор:
                 // ежедневник, раскрытый в начале, посередине и в конце.
                 Group {
@@ -808,7 +811,7 @@ struct RootView: View {
                     }
                 }
                 // Книжка на 10%, микроскоп на 5% крупнее прочих (P227).
-                .frame(width: (small ? 35 : 31) * k * scale(target), height: (small ? 35 : 31) * k * scale(target))
+                .frame(width: 35 * k * scale(target), height: 35 * k * scale(target))
                 // Того же размера, что в строке разделов над клавиатурой
                 // (P425).
                 Text(name).font(Look.sans(SectionsRow.font * k, weight: on ? .medium : .regular))
