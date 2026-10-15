@@ -705,8 +705,9 @@ struct RootView: View {
         }
         // Значки и названия — как у верхней строки, а сама полоса тоньше на
         // 15% (P506): не высота ряда только, а вся толщина вместе с отступом
-        // над полосой «домой».
-        .padding(.vertical, 4)
+        // над полосой «домой». Поля сверху и снизу по 2 (P510): при 4 надписи
+        // не хватало места.
+        .padding(.vertical, 2)
         .frame(height: 55)
         // Над полосой «домой» — её высота у самого окна, она не меняется
         // от клавиатуры (P447), меряется раскладкой (P450).
@@ -832,6 +833,9 @@ struct RootView: View {
                 Text(name).font(Look.sans(SectionsRow.font * k, weight: on ? .medium : .regular))
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
+                    // Не сжимать по высоте (P510): в тесной нижней полосе
+                    // надпись ужималась на 8%, и выходило мельче, чем вверху.
+                    .fixedSize(horizontal: false, vertical: true)
                     .reportsY { y in if target == .today, !small { KeyboardBar.glide.namesTarget = y } }
             }
             // Открытый раздел — на светлой подушке. Подушка выходит за
