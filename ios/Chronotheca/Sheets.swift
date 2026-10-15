@@ -481,15 +481,16 @@ struct SettingsSticker: View {
             }
         }
         // «Здоровье» в шапке дневника (P378): включили — iPhone спросит.
+        // Не вышло спросить — подсказка прямо под выключателем (P503).
         if HealthDay.available {
             NoteRow(title: T("Здоровье: шаги, сон, тренировки", "Health: steps, sleep, workouts"),
-                    detail: health ? T("Строкой внизу дневника, рядом с погодой.",
-                                       "A line at the foot of the diary, next to the weather.") : nil) {
+                    detail: healthDetail) {
                 Choice(options: onOff, selection: Binding(get: { health }, set: { on in
                     health = on
-                    if on { HealthDay.ask { _ in } } else { HealthDay.changed() }
+                    if on { HealthDay.ask { healthIssue = !$0 } } else { healthIssue = false; HealthDay.changed() }
                 }))
             }
+            .onAppear { if health { HealthDay.ask { healthIssue = !$0 } } }
         }
         // Вечером — «запишите день» (P444): в выбранный час, если день ещё
         // не записан.
@@ -698,6 +699,18 @@ struct SettingsSticker: View {
     @AppStorage(Prefs.noAsk) private var noAsk = false
     @AppStorage(DayEvents.onKey) private var calendarEvents = true
     @AppStorage(HealthDay.key) private var health = false
+    /// iPhone не смог спросить разрешение на «Здоровье» — у сборки нет права
+    /// (P503).
+    @State private var healthIssue = false
+
+    private var healthDetail: String? {
+        guard health else { return nil }
+        return healthIssue
+            ? T("У этой сборки нет права на «Здоровье» — iPhone не может спросить разрешение.",
+                "This build has no Health permission, so iPhone cannot ask for access.")
+            : T("Нет строки? Проверьте: Настройки iPhone → Здоровье → Доступ к данным и устройства → Хронотека.",
+                "No line? Check iPhone Settings → Health → Data Access & Devices → Chronotheca.")
+    }
     @AppStorage(DayEvents.holidaysKey) private var calendarHolidays = false
     @AppStorage(Prefs.calendarTint) private var calendarTint = "distance"
     @AppStorage(Prefs.sundayFirst) private var sundayFirst = false
