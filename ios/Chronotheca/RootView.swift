@@ -701,9 +701,11 @@ struct RootView: View {
             section("карта", T("Карта", "Map"), .map, compact: true)
             section("поиск", T("Поиск", "Search"), .search, compact: true)
         }
-        // Тоньше верхней на 15% (P505): высота 51, значки и названия мельче.
+        // Значки и названия — как у верхней строки, а сама полоса тоньше на
+        // 15% (P506): не высота ряда только, а вся толщина вместе с отступом
+        // над полосой «домой».
         .padding(.vertical, 4)
-        .frame(height: Self.topBarHeight * 0.85)
+        .frame(height: 55)
         // Над полосой «домой» — её высота у самого окна, она не меняется
         // от клавиатуры (P447), меряется раскладкой (P450).
         .padding(.bottom, homeLift)
@@ -738,7 +740,7 @@ struct RootView: View {
     /// значками стояли на самой нижней линии. Берётся и высота полосы у
     /// окна — мерка раскладкой иногда приходит нулём (P469).
     private var homeLift: CGFloat {
-        max(homeBar, windowBottom) + 4
+        max(0, max(homeBar, windowBottom) - 6)
     }
 
     private func scale(_ target: Shell.Screen) -> CGFloat {
@@ -802,7 +804,7 @@ struct RootView: View {
         let on = shell.screen == target
         // Верхняя строка и нижняя — одних размеров (P500): значки и названия
         // на 15% мельче прежней нижней (P496).
-        let k: CGFloat = small ? 0.85 : (compact ? 0.75 : 1)
+        let k: CGFloat = (small || compact) ? 0.85 : 1
         return Button {
             if small {
                 // Листок открыт — касание по строке только закрывает его.
@@ -811,7 +813,7 @@ struct RootView: View {
             }
             tapSection(target)
         } label: {
-            VStack(spacing: compact ? 2 : 3) {
+            VStack(spacing: 3) {
                 // Значки нарисованы автором от руки и обведены в вектор:
                 // ежедневник, раскрытый в начале, посередине и в конце.
                 Group {
