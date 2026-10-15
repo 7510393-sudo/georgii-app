@@ -506,9 +506,19 @@ struct RootView: View {
         .padding(.vertical, 4)
         .frame(maxWidth: .infinity)
         .frame(height: Self.topBarHeight)
-        .background(KraftPaper())
-        .overlay(alignment: .bottom) {
-            Rectangle().fill(Look.kraftEdge.opacity(0.55)).frame(height: 0.8)
+        // Нижний край неровный — как верхний у нижней строки, только
+        // зеркально (P497): зубцы те же.
+        .background(alignment: .bottom) {
+            ZStack(alignment: .bottom) {
+                KraftPaper()
+                    .clipShape(TornEdge().scale(x: 1, y: -1, anchor: .center))
+                TornEdgeLine()
+                    .stroke(Look.kraftEdge.opacity(0.55), lineWidth: 0.8)
+                    .frame(height: TornEdge.depth + 1)
+                    .clipped()
+                    .scaleEffect(x: 1, y: -1)
+            }
+            .padding(.bottom, -TornEdge.depth)
         }
         // Тень — отдельной полосой под строкой, а не от всего её содержимого
         // (P428): так она ложится на страницу и уголки торчат из-под неё.
@@ -516,7 +526,7 @@ struct RootView: View {
             LinearGradient(colors: [.black.opacity(0.22), .black.opacity(0)],
                            startPoint: .top, endPoint: .bottom)
                 .frame(height: 5)
-                .offset(y: 5)
+                .offset(y: 5 + TornEdge.depth)
                 .allowsHitTesting(false)
         }
     }
