@@ -31,10 +31,14 @@ final class Shell: ObservableObject {
     /// дневник (P240).
     private(set) var mapFrom: Screen = .today
 
-    /// Какая плашка сейчас опущена на книгу. Идёт за `screen`, но не сразу:
-    /// при смене календаря на поиск сперва уходит одна плашка, потом
-    /// опускается другая (решение P202).
-    @Published var lowered: Screen = .today
+    /// Плашки, опущенные на книгу, снизу вверх (P501). Нажатие на раздел
+    /// просто опускает его плашку поверх остальных, не поднимая прежнюю;
+    /// второе нажатие на открытый раздел убирает верхнюю плашку, и под ней
+    /// оказывается тот экран, с которого пришли. «Сегодня» — сама книга,
+    /// в списке её нет.
+    @Published var stack: [Screen] = []
+    /// Верхняя опущенная плашка или книга.
+    var lowered: Screen { stack.last ?? .today }
     @Published var tab: Tab = .plan {
         // Запомнить, где был, — для «Открывать на: где был» (P402).
         didSet { UserDefaults.standard.set(tab == .diary ? "diary" : "plan", forKey: Prefs.lastTab) }
@@ -333,7 +337,7 @@ final class Shell: ObservableObject {
         default: break
         }
         // Для снимков плашка стоит на месте сразу, без хода.
-        lowered = screen
+        stack = screen == .today ? [] : [screen]
     }
 
 }

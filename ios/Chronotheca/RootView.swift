@@ -17,6 +17,8 @@ struct RootView: View {
 
     /// Карта ещё на плашке, пока та уезжает (P242).
     @State private var keepMap = false
+    /// Второе нажатие на открытый раздел: плашку убирают, а не опускают (P501).
+    @State private var popping = false
 
     /// Клавиатура: над ней встаёт полоска вложений (P253).
     @StateObject private var keyboard = KeyboardWatch()
@@ -636,7 +638,7 @@ struct RootView: View {
                 // Уходя, она остаётся на плашке, пока та не уедет за край, —
                 // иначе плашка уезжала пустой и карта просто пропадала (P242).
                 panel(.map, from: .top, over: geo.size) {
-                    if shell.screen == .map || keepMap { MapScreen() } else { Color.clear }
+                    if shell.screen == .map || keepMap || shell.stack.contains(.map) { MapScreen() } else { Color.clear }
                 }
                 panel(.search, from: .top, over: geo.size) { SearchView() }
             }
@@ -648,7 +650,8 @@ struct RootView: View {
     private func panel<V: View>(_ which: Shell.Screen, from edge: Edge,
                                 over size: CGSize,
                                 @ViewBuilder content: () -> V) -> some View {
-        let on = shell.lowered == which
+        let down = shell.stack.contains(which)
+        let on = shell.stack.last == which
         // Плашка уезжает ровно на свою высоту — не дальше.
         //
         // Раньше её уводили заведомо далеко, на 1200 точек, и она проходила
@@ -678,8 +681,11 @@ struct RootView: View {
                 BoardEdge(fromTop: edge == .top)
                     .offset(y: edge == .top ? BoardEdge.depth : -BoardEdge.depth)
             }
-            .offset(y: on ? 0 : away)
-            // Уехавшая плашка не ловит касания: под ней живая книга.
+            .offset(y: down ? 0 : away)
+            // Новая плашка ложится поверх прежних (P501).
+            .zIndex(down ? Double((shell.stack.firstIndex(of: which) ?? 0) + 1) : 0)
+            // Ловит касания только верхняя: под ней другая плашка или
+            // живая книга.
             .allowsHitTesting(on)
     }
 
@@ -757,10 +763,13 @@ struct RootView: View {
         // легла бы не в тот день.
         let changesDay = target == .today && !store.isToday
         if changesDay { store.save() }
-        // Второе касание по открытому разделу поднимает его и
-        // возвращает на «Сегодня» — туда, где было (P262).
+        // Второе касание по открытому разделу убирает его плашку — под ней
+        // тот экран, с которого пришли (P262, P501).
         if target != .today, shell.screen == target {
-            open(.today)
+            hideKeyboard()
+            let previous = shell.stack.dropLast().last ?? .today
+            popping = true
+            shell.screen = previous
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { store.save() }
             return
         }
@@ -867,26 +876,40 @@ struct RootView: View {
         shell.screen = target
     }
 
-    /// Опустить или поднять плашку вслед за сменой экрана.
+    /// Опустить или убрать плашку вслед за сменой экрана (P501).
     ///
-    /// С календаря на поиск и обратно — по очереди: сперва уходящая плашка
-    /// почти целиком уезжает вверх, и только потом опускается новая.
-    /// Разом они шли навстречу, и новая обгоняла уходящую (решение P202).
+    /// Нажатие на раздел просто опускает его плашку поверх того, что было, —
+    /// прежнюю никто не поднимает. «Сегодня» убирает все плашки. Второе
+    /// нажатие на открытый раздел (`popping`) убирает верхнюю плашку, и под
+    /// ней оказывается тот экран, с которого пришли.
     private func follow(from old: Shell.Screen, to new: Shell.Screen) {
         let heavy = Animation.spring(response: 0.46, dampingFraction: 0.92)
-        // Толчок — в начале хода, вместе с нажатием (P268: пробовали в миг
-        // удара о строку — вернули на начало).
+        // Толчок — в начале хода, вместе с нажатием (P268).
         Feel.thud()
-        guard old != .today, new != .today, shell.lowered != .today else {
-            withAnimation(heavy) { shell.lowered = new }
+        let lift = Animation.easeIn(duration: 0.26)
+        if popping {
+            popping = false
+            withAnimation(lift) { shell.stack.removeAll { $0 == old } }
             return
         }
-        withAnimation(.easeIn(duration: 0.20)) { shell.lowered = .today }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.17) { [shell] in
-            // Пока уходила плашка, человек мог нажать ещё раз.
-            guard shell.screen == new else { return }
-            withAnimation(heavy) { shell.lowered = new }
+        if new == .today {
+            withAnimation(lift) { shell.stack.removeAll() }
+            return
         }
+        if let i = shell.stack.firstIndex(of: new) {
+            // Эта плашка уже лежит, но под другой: снимаем её без хода (её не
+            // видно) и опускаем заново поверх.
+            if i == shell.stack.count - 1 { return }
+            var still = Transaction()
+            still.disablesAnimations = true
+            withTransaction(still) { shell.stack.remove(at: i) }
+            DispatchQueue.main.async { [shell] in
+                guard shell.screen == new else { return }
+                withAnimation(heavy) { shell.stack.append(new) }
+            }
+            return
+        }
+        withAnimation(heavy) { shell.stack.append(new) }
     }
 
     // MARK: - Сообщение
