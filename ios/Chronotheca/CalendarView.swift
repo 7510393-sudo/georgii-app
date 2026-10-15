@@ -391,11 +391,9 @@ struct CalendarView: View {
         cal.firstWeekday == 1 ? [Ru.weekHeader.last ?? ""] + Array(Ru.weekHeader.dropLast()) : Ru.weekHeader
     }
 
-    /// Цвет клетки дня — как выбрано в настройках (P290): по удалённости от
-    /// сегодня, по дню недели или без цвета.
+    /// Цвет клетки дня — как выбрано в настройках (P290): цветом гаммы или без цвета (P498).
     private func tint(_ date: Date) -> Color {
         switch UserDefaults.standard.string(forKey: Prefs.calendarTint) ?? "distance" {
-        case "weekday": return Ru.dayHue(date).opacity(0.14)
         case "none":    return Look.planBg
         default:        return Ru.tint(date)
         }

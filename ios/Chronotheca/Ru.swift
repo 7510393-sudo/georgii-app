@@ -117,10 +117,6 @@ enum Ru {
 
     private static let weekendColour = Color(light: 0xB0403A, dark: 0xE08B84)
 
-    /// Семь цветов дней — только для календаря, раскрашенного «по дню
-    /// недели» (P290): там их выбрал сам человек.
-    static func dayHue(_ date: Date) -> Color { dayColours[index(date)] }
-
     /// Цвет страницы дня — по тому, прошлое это, сегодня или будущее
     /// (P330; раньше было семь ступеней по удалённости, P245, — решили, что
     /// путают и раздражают, оставили три).
@@ -140,22 +136,49 @@ enum Ru {
     /// Цвет прошедших дней — им же залиты плашки прошлого плана (P421).
     static var pastTint: Color { timeTints[0] }
 
-    private static let timeTints: [Color] = [
-        Color(light: 0xF1F2F5, dark: 0x181B21),   // прошлое, любое
-        // Бледнее на 15% (P330; было 0xF8E2D0/0x30261E, менее насыщенный
-        // цвет прежней шкалы, P321).
-        Color(light: 0xF9E6D7, dark: 0x2F2620),   // сегодня
-    ]
+    private static var timeTints: [Color] { [Scheme.current.past, Scheme.current.today] }
+}
 
-    private static let dayColours: [Color] = [
-        Color(light: 0xC06A22, dark: 0xE0A06A),   // вс
-        Color(light: 0x2F5FA8, dark: 0x7FA6E0),   // пн
-        Color(light: 0x2E7D57, dark: 0x6FBF95),   // вт
-        Color(light: 0x8A6A12, dark: 0xD4AE55),   // ср
-        Color(light: 0x6B4E9E, dark: 0xA88FD6),   // чт
-        Color(light: 0xB0403A, dark: 0xE08B84),   // пт
-        Color(light: 0x2C7E96, dark: 0x6FC0D6),   // сб
-    ]
+/// Цветовая гамма (P498): цвет прошлого и «сегодня», крафт строк разделов.
+/// Три гаммы; «без цвета» касается только календаря и гаммы не меняет.
+struct Scheme {
+    let past: Color
+    let today: Color
+    let kraft: Color
+    let kraftInk: Color
+    let kraftEdge: Color
+
+    static let apricot = Scheme(
+        past: Color(light: 0xF1F2F5, dark: 0x181B21),
+        // Бледнее на 15% (P330).
+        today: Color(light: 0xF9E6D7, dark: 0x2F2620),
+        kraft: Color(light: 0xCBB28C, dark: 0x3A3125),
+        kraftInk: Color(light: 0x3A2818, dark: 0xE6D6BA),
+        kraftEdge: Color(light: 0x96805F, dark: 0x1E1912))
+    static let sage = Scheme(
+        past: Color(light: 0xF1F3F2, dark: 0x171B1A),
+        today: Color(light: 0xE3EEDC, dark: 0x1F2B21),
+        kraft: Color(light: 0xB7C4A2, dark: 0x2D3829),
+        kraftInk: Color(light: 0x22301A, dark: 0xDCE8D0),
+        kraftEdge: Color(light: 0x7F8C6A, dark: 0x172016))
+    static let lavender = Scheme(
+        past: Color(light: 0xF3F2F6, dark: 0x1A1B22),
+        today: Color(light: 0xEAE3F5, dark: 0x28232F),
+        kraft: Color(light: 0xC3B8D8, dark: 0x332E40),
+        kraftInk: Color(light: 0x2D2340, dark: 0xE4DCF2),
+        kraftEdge: Color(light: 0x8A7FA3, dark: 0x1B1824))
+
+    /// Выбранная в настройках; «distance» — прежний ключ абрикосовой, «weekday»
+    /// (цвет по дням недели) убран, он читается как абрикосовая.
+    static var current: Scheme { named(UserDefaults.standard.string(forKey: Prefs.calendarTint)) }
+
+    static func named(_ key: String?) -> Scheme {
+        switch key {
+        case "sage": return sage
+        case "lavender": return lavender
+        default: return apricot
+        }
+    }
 }
 
 extension Color {
@@ -227,9 +250,10 @@ enum Look {
 
     /// Крафт-картон нижней строки разделов (P297): обложка блокнота, одна
     /// во все дни. Значки на нём — тёмно-коричневыми чернилами.
-    static let kraft     = Color(light: 0xCBB28C, dark: 0x3A3125)
-    static let kraftInk  = Color(light: 0x3A2818, dark: 0xE6D6BA)
-    static let kraftEdge = Color(light: 0x96805F, dark: 0x1E1912)
+    /// Цвет — по выбранной гамме (P498).
+    static var kraft: Color     { Scheme.current.kraft }
+    static var kraftInk: Color  { Scheme.current.kraftInk }
+    static var kraftEdge: Color { Scheme.current.kraftEdge }
     /// Чернила строки вложений: тёплые тёмные, а не серые (P297).
     static let stripInk  = Color(light: 0x3A3530, dark: 0xD9D2C6)
     /// Бумага облачка «…а помнишь?» — белая (P298).

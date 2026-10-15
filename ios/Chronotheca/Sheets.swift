@@ -569,10 +569,10 @@ struct SettingsSticker: View {
         NoteRow(title: T("Шрифт записи", "Entry font")) {
             Choice(options: Prefs.fonts.map { ($0.key, $0.name) }, selection: $fontKey)
         }
-        NoteRow(title: T("Цвет дней в календаре", "Day colours in the calendar")) {
-            Choice(options: [("distance", T("по удалённости", "by distance")),
-                             ("weekday", T("по дням недели", "by weekday")),
-                             ("none", T("без цвета", "none"))], selection: $calendarTint)
+        // Три гаммы с образцами цветов и «без цвета» (P498). Гамма красит
+        // страницы, календарь и строки разделов; «без цвета» — только календарь.
+        NoteRow(title: T("Цветовая гамма", "Colour scheme")) {
+            SchemeChoice(selection: $calendarTint)
         }
         NoteRow(title: T("Шелест страниц", "Page rustle")) {
             Choice(options: onOff, selection: Binding(get: { !quiet }, set: { quiet = !$0 }))
@@ -599,7 +599,7 @@ struct SettingsSticker: View {
 
     @ViewBuilder private var mapPart: some View {
         NoteSection(title: T("Карта", "Map"))
-        NoteRow(title: T("«В навигатор»", "“Directions”")) {
+        NoteRow(title: T("Кнопка «в навигатор» открывает:", "Directions button opens:")) {
             Choice(options: [("apple", T("Карты Apple", "Apple Maps")), ("google", "Google")],
                    selection: $navigator)
         }

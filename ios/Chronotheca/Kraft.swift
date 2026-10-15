@@ -7,6 +7,9 @@ import UIKit
 /// картона и неровным, будто оторванным верхним краем. Рисованные значки
 /// на ней — как штампы тёмно-коричневыми чернилами.
 struct KraftPaper: View {
+    /// Гамма меняется — картон перекрашивается (P498).
+    @AppStorage(Prefs.calendarTint) private var scheme = "distance"
+
     var body: some View {
         ZStack {
             Look.kraft

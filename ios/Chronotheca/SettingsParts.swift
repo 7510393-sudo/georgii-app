@@ -127,6 +127,50 @@ struct Choice<Value: Hashable>: View {
     }
 }
 
+/// Выбор цветовой гаммы: у каждой — образцы цветов (P498).
+struct SchemeChoice: View {
+    @Binding var selection: String
+
+    private var options: [(String, String, Scheme?)] {
+        [("distance", T("Абрикос", "Apricot"), Scheme.apricot),
+         ("sage", T("Шалфей", "Sage"), Scheme.sage),
+         ("lavender", T("Лаванда", "Lavender"), Scheme.lavender),
+         ("none", T("без цвета", "none"), nil)]
+    }
+
+    var body: some View {
+        Flow(spacing: 4) {
+            ForEach(options, id: \.0) { key, name, scheme in
+                // Прежний «weekday» читается как первая гамма.
+                let on = key == selection || (key == "distance" && selection == "weekday")
+                Button {
+                    guard !on else { return }
+                    Feel.tick()
+                    selection = key
+                } label: {
+                    HStack(spacing: 6) {
+                        if let scheme {
+                            HStack(spacing: -4) {
+                                ForEach(Array([scheme.past, scheme.today, scheme.kraft, scheme.kraftInk].enumerated()), id: \.offset) { _, c in
+                                    Circle().fill(c).frame(width: 14, height: 14)
+                                        .overlay(Circle().strokeBorder(Look.inkSoft.opacity(0.45), lineWidth: 0.8))
+                                }
+                            }
+                        }
+                        Text(name)
+                            .font(Look.sans(13.5, weight: on ? .semibold : .regular))
+                            .lineLimit(1)
+                    }
+                    .fixedSize()
+                    .modifier(Tag(main: on))
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(on ? .isSelected : [])
+            }
+        }
+    }
+}
+
 /// «Открыть ›» и главная кнопка.
 struct NoteButton: View {
     let title: String
