@@ -474,8 +474,10 @@ enum GlyphArt {
         shape.withTintColor(Glyph.color(mark), renderingMode: .alwaysOriginal).draw(in: at)
         if invisible {
             let strike = UIBezierPath()
-            strike.move(to: CGPoint(x: circle.minX + 5, y: circle.maxY - 5))
-            strike.addLine(to: CGPoint(x: circle.maxX - 5, y: circle.minY + 5))
+            // Черта идёт из угла в угол квадрата, в который вписан кружок, —
+            // выходит за его края, а не кончается внутри (P508).
+            strike.move(to: CGPoint(x: circle.minX + 1.8, y: circle.maxY - 1.8))
+            strike.addLine(to: CGPoint(x: circle.maxX - 1.8, y: circle.minY + 1.8))
             strike.lineCapStyle = .round
             UIColor.white.withAlphaComponent(0.9).setStroke()
             strike.lineWidth = 3.6
