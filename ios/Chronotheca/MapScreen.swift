@@ -26,6 +26,9 @@ struct MapScreen: View {
     @State private var selected: Place?
     /// Что открыто сверху: панель названия или облачко места.
     @State private var panel: Panel?
+    /// Плашка названия только что открылась, клавиатура ещё не поднялась:
+    /// кнопки внизу ждут, а потом мягко становятся живыми (P509).
+    @State private var settling = false
     @State private var focus: MapFocus?
     @State private var locating = false
     @State private var asking = false
@@ -290,10 +293,18 @@ struct MapScreen: View {
                          : 6)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         }
+        .onChange(of: panel) { _, now in
+            guard now == .naming else { settling = false; return }
+            settling = true
+            // Клавиатуры может и не быть (внешняя): через миг ждать перестаём.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { settling = false }
+        }
+        .onChange(of: keyboard) { _, now in if now > 0 { settling = false } }
+        .animation(.easeOut(duration: 0.3), value: settling)
     }
 
     private var barRow: some View {
-        let point = selected != nil
+        let point = selected != nil && !settling
         return HStack(spacing: 0) {
             Button {
                 guard point else { return hint() }

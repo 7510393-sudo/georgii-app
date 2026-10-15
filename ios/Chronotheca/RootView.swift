@@ -19,6 +19,8 @@ struct RootView: View {
     @State private var keepMap = false
     /// Второе нажатие на открытый раздел: плашку убирают, а не опускают (P501).
     @State private var popping = false
+    /// Плашка, что сейчас уезжает вверх: пока едет, она остаётся поверх (P509).
+    @State private var lifting: Shell.Screen?
 
     /// Клавиатура: над ней встаёт полоска вложений (P253).
     @StateObject private var keyboard = KeyboardWatch()
@@ -684,7 +686,7 @@ struct RootView: View {
             }
             .offset(y: down ? 0 : away)
             // Новая плашка ложится поверх прежних (P501).
-            .zIndex(down ? Double((shell.stack.firstIndex(of: which) ?? 0) + 1) : 0)
+            .zIndex(which == lifting ? 100 : (down ? Double((shell.stack.firstIndex(of: which) ?? 0) + 1) : 0))
             // Ловит касания только верхняя: под ней другая плашка или
             // живая книга.
             .allowsHitTesting(on)
@@ -893,7 +895,13 @@ struct RootView: View {
         let lift = Animation.easeIn(duration: 0.26)
         if popping {
             popping = false
+            // Уходящая плашка идёт вверх поверх той, что под ней, — иначе она
+            // сразу проваливалась под неё и просто пропадала (P509).
+            lifting = old
             withAnimation(lift) { shell.stack.removeAll { $0 == old } }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [old] in
+                if lifting == old { lifting = nil }
+            }
             return
         }
         if let i = shell.stack.firstIndex(of: new) {
