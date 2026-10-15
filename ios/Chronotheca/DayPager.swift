@@ -70,9 +70,6 @@ struct DayPage: View {
 
     /// Дни, чьи облачка уже прочитаны (решение P136).
     @AppStorage(Remembered.key) private var read = ""
-    /// Полоска вложений сейчас внутри страницы — под концом записи, над
-    /// клавиатурой (P496).
-    @State private var stripInside = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -97,17 +94,6 @@ struct DayPage: View {
                 .overlay { galleryCatcher }
                 // Черты между шапкой и страницей больше нет (P434, прежде
                 // P250): шапка — продолжение листа.
-                // Строка вложений лежит поверх низа страницы, полупрозрачная,
-                // со скруглёнными боками (P424): страница уходит под неё.
-                .overlay(alignment: .bottom) {
-                    // Пока клавиатура открыта, полоска — конец самой страницы
-                    // (P496): эта, у низа окна, под клавиатурой всё равно
-                    // не видна и уступает место.
-                    AttachBar(live: live, date: date)
-                        .opacity(stripInside ? 0 : 1)
-                        .allowsHitTesting(!stripInside)
-                        .animation(nil, value: stripInside)
-                }
         }
         .background(background)
         // Фактура страницы и вкладок отсчитывается от одной точки — клетка
@@ -369,9 +355,7 @@ struct DayPage: View {
                      land: shell.landing, landDiary: shell.landOnDiary,
                      onDiary: { [shell] in shell.lookingAtDiary = $0 },
                      diaryMark: AnyView(cloud),
-                     strip: AnyView(KeyboardBarView().attachments
-                         .frame(height: KeyboardBar.attachHeight)),
-                     onStripInside: { stripInside = $0 }) {
+                     strip: AnyView(AttachBar(live: live, date: date))) {
                 PlanView()
             } diary: {
                 DiaryView()
@@ -935,7 +919,9 @@ struct SideDay: View {
         // открытой: на дневнике, если смотрели в дневник (P424, P114).
         DaySheet(date: date, diaryOpen: date <= DayStore.today(),
                  landDiary: shell.lookingAtDiary,
-                 diaryMark: AnyView(DayCloud(date: date, live: false))) {
+                 diaryMark: AnyView(DayCloud(date: date, live: false)),
+                 // Полоска вложений — конец страницы и у соседней (P502, P114).
+                 strip: AnyView(AttachBar(live: false, date: date))) {
             plan
         } diary: {
             diary
