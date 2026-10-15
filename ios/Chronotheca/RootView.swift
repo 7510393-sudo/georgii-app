@@ -37,7 +37,7 @@ struct RootView: View {
     @AppStorage(Prefs.textSize) private var textSize = 0
     @AppStorage(Prefs.font) private var fontKey = "newyork"
     /// Цветовая гамма (P498): меняется — страницы и строки собираются заново.
-    @AppStorage(Prefs.calendarTint) private var scheme = "distance"
+    @AppStorage(Prefs.calendarTint) private var palette = "distance"
     @State private var locked = UserDefaults.standard.bool(forKey: Prefs.lock)
     /// Приложение открыли на дневнике, пока стоял замок: поле возьмёт ввод,
     /// когда замок откроют, — не поверх него (P403).
@@ -303,7 +303,7 @@ struct RootView: View {
                 canvas
                     // Сменили размер или шрифт записи — страницы собираются
                     // заново: поля UIKit помнят свой шрифт (P274).
-                    .id("\(textSize)|\(fontKey)|\(systemText)|\(scheme)")
+                    .id("\(textSize)|\(fontKey)|\(systemText)|\(palette)")
                 tabbar
             }
             // Нижний отступ (полоса «домой») — свой, постоянный, а не
