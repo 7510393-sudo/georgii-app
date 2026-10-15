@@ -58,7 +58,7 @@ struct Sticker<Content: View>: View {
             let cornerW = Corner.size * 0.86
             let cornerH = Corner.size * 0.80
             let x = side == .leading ? cornerW - geo.size.width : geo.size.width - cornerW
-            let y = cornerH - geo.size.height
+            let y = cornerH - Corner.lift - geo.size.height
             return content.offset(x: x * amount, y: y * amount)
         }
         .padding(side == .trailing ? .leading : .trailing, 24)

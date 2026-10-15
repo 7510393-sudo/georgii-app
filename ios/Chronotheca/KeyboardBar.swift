@@ -291,8 +291,17 @@ struct KeyboardBarView: View {
             key("photo", T("фото", "photo")) { KeyboardBar.ask(.photo) }
             key("mic", T("аудио", "audio")) { KeyboardBar.ask(.audio) }
             key("doc", T("файлы", "files")) { KeyboardBar.ask(.files) }
-            // «Места» нет (P425): карта — в строке разделов под этой.
-            // Кнопки «убрать клавиатуру» нет (P424): её смахивают вниз.
+            // «Место» — крайней справа, рядом с файлами (P496): касание —
+            // где вы сейчас, долгое нажатие — карта.
+            BarFace(icon: "mappin.and.ellipse", name: T("место", "place"), tint: Look.stripInk,
+                    compact: true, spot: Ru.tint(day.date))
+                .onTapGesture { KeyboardBar.ask(.place) }
+                .onLongPressGesture(minimumDuration: 0.5) {
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    KeyboardBar.ask(.map)
+                }
+                .accessibilityAddTraits(.isButton)
+                .accessibilityHint(T("Долгое нажатие — вписать, где вы", "Long press to note where you are"))
         }
         .padding(.top, 4)
         .padding(.bottom, 3)
@@ -345,7 +354,6 @@ struct TitleLine: UIViewRepresentable {
 
     func makeUIView(context: Context) -> UITextField {
         let field = UITextField()
-        field.inputAccessoryView = KeyboardBar.view
         field.delegate = context.coordinator
         field.addTarget(context.coordinator, action: #selector(Coordinator.changed(_:)),
                         for: .editingChanged)
@@ -414,8 +422,9 @@ struct SectionsRow: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            name(T("Сегодня", "Today"), .today)
+            // Календарь первым, «Сегодня» вторым (P496).
             name(T("Календарь", "Calendar"), .calendar)
+            name(T("Сегодня", "Today"), .today)
             name(T("Карта", "Map"), .map)
             name(T("Поиск", "Search"), .search)
         }

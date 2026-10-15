@@ -66,7 +66,6 @@ struct PlanTitle: UIViewRepresentable {
         // Старая раскладка текста, а не новая: только в ней можно дать
         // отдельный зазор после первой строки (P186).
         let view = TitleView(usingTextLayoutManager: false)
-        view.inputAccessoryView = KeyboardBar.view
         view.delegate = context.coordinator
         view.layoutManager.delegate = context.coordinator
         view.backgroundColor = .clear

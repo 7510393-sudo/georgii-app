@@ -104,9 +104,8 @@ struct DiaryEditor: UIViewRepresentable {
     func makeUIView(context: Context) -> UITextView {
         let view = UITextView()
         view.delegate = context.coordinator
-        // Полоска вложений — приставкой к клавиатуре, только у записи
-        // дня (P279). Подробности дела живут в своём окне.
-        if grows { view.inputAccessoryView = KeyboardBar.view }
+        // Строк над клавиатурой нет (P496): полоска вложений — конец самой
+        // страницы, клавиатура её закрывает, пока страницу не подняли.
         // Превью из полоски бросают прямо в текст (решение P204).
         view.textDropDelegate = context.coordinator
         // Своё перетаскивание поля выключено (P374): оно перехватывало

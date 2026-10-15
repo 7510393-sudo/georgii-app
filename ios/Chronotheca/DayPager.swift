@@ -70,6 +70,9 @@ struct DayPage: View {
 
     /// Дни, чьи облачка уже прочитаны (решение P136).
     @AppStorage(Remembered.key) private var read = ""
+    /// Полоска вложений сейчас внутри страницы — под концом записи, над
+    /// клавиатурой (P496).
+    @State private var stripInside = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -96,7 +99,15 @@ struct DayPage: View {
                 // P250): шапка — продолжение листа.
                 // Строка вложений лежит поверх низа страницы, полупрозрачная,
                 // со скруглёнными боками (P424): страница уходит под неё.
-                .overlay(alignment: .bottom) { AttachBar(live: live, date: date) }
+                .overlay(alignment: .bottom) {
+                    // Пока клавиатура открыта, полоска — конец самой страницы
+                    // (P496): эта, у низа окна, под клавиатурой всё равно
+                    // не видна и уступает место.
+                    AttachBar(live: live, date: date)
+                        .opacity(stripInside ? 0 : 1)
+                        .allowsHitTesting(!stripInside)
+                        .animation(nil, value: stripInside)
+                }
         }
         .background(background)
         // Фактура страницы и вкладок отсчитывается от одной точки — клетка
@@ -357,7 +368,10 @@ struct DayPage: View {
                      diaryOpen: !store.isFuture,
                      land: shell.landing, landDiary: shell.landOnDiary,
                      onDiary: { [shell] in shell.lookingAtDiary = $0 },
-                     diaryMark: AnyView(cloud)) {
+                     diaryMark: AnyView(cloud),
+                     strip: AnyView(KeyboardBarView().attachments
+                         .frame(height: KeyboardBar.attachHeight)),
+                     onStripInside: { stripInside = $0 }) {
                 PlanView()
             } diary: {
                 DiaryView()
@@ -586,8 +600,10 @@ struct AttachBar: View {
                 open { recording = true }
             }
             item("doc", T("файлы", "files"), ready: true) { open { browsing = true } }
-            // «Места» больше нет (P425): карта — в строке разделов.
-            // Кнопки «убрать клавиатуру» нет (P424): её смахивают вниз.
+            // «Место» — крайней справа (P496): касание — где вы сейчас,
+            // долгое нажатие — карта.
+            item("mappin.and.ellipse", T("место", "place"), ready: true,
+                 hold: { openMap() }) { notePlaceHere() }
         }
         // Полоска как можно тоньше: одни значки, без подписей (P289).
         .padding(.top, 5)

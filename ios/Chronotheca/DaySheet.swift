@@ -32,6 +32,11 @@ struct DaySheet<Plan: View, Diary: View>: View {
     /// Что сидит над заголовком «Дневник» — облачко «…помнишь?» открытого
     /// дня (P436). У соседних страниц нет.
     var diaryMark: AnyView? = nil
+    /// Полоска вложений: пока клавиатура открыта, она — конец страницы, под
+    /// погодой (P496); страницу поднимают — полоска выходит над клавиатурой.
+    var strip: AnyView? = nil
+    /// Сообщает, что полоска сейчас внутри страницы.
+    var onStripInside: ((Bool) -> Void)? = nil
 
     @ViewBuilder let plan: () -> Plan
     @ViewBuilder let diary: () -> Diary
@@ -106,6 +111,13 @@ struct DaySheet<Plan: View, Diary: View>: View {
                     // страницы прыгал на эти 36 точек (около 6 мм) вниз и
                     // обратно (видео автора).
                     .padding(.bottom, Self.stripRoom)
+                    .overlay(alignment: .bottom) {
+                        if strip != nil, keyboard > 0 || hold > 0 {
+                            strip
+                                .frame(height: Self.stripRoom)
+                                .transition(.identity)
+                        }
+                    }
                     .frame(minHeight: outer.size.height, alignment: .top)
                     .background(Ru.tint(date).overlay(PageTexture(tab: .diary, space: Self.space)))
                     // Клетка и волокно отсчитываются от самого листа, а не
@@ -160,6 +172,7 @@ struct DaySheet<Plan: View, Diary: View>: View {
                 if needed < hold { hold = needed }
             }
             .onChange(of: date) { _, _ in hold = 0 }
+            .onChange(of: keyboard > 0 || hold > 0) { _, now in onStripInside?(now) }
             .onPreferenceChange(DiaryShare.self) { top in
                 onDiary?(top < (outer.size.height - Self.stripRoom) / 2)
             }

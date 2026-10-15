@@ -297,7 +297,7 @@ struct RootView: View {
                 // Верхняя строка-ориентир (P494): те же четыре раздела, всегда
                 // на месте, клавиатура её не трогает. Всё остальное — уголки,
                 // имя дня — стоит ниже неё.
-                topBar
+                Color.clear.frame(height: Self.topBarHeight)
                 canvas
                     // Сменили размер или шрифт записи — страницы собираются
                     // заново: поля UIKit помнят свой шрифт (P274).
@@ -321,18 +321,30 @@ struct RootView: View {
             // Верхней строки больше нет: шестерёнка и три точки нарисованы
             // на уголках бумаги, торчащих сверху слева и справа, а имя дня
             // поднялось между ними (P229).
-            corners.padding(.top, Self.topBarHeight)
+            // Уголки торчат из-под верхней строки (P496): их верх спрятан
+            // под ней на `Corner.lift`.
+            corners.padding(.top, Self.topBarHeight - Corner.lift)
 
-            if shell.showingMenu { MenuSticker().padding(.top, Self.topBarHeight) }
-            if let m = shell.movingTask {
-                MoveDaySticker(task: m)
-                    .padding(.top, Self.topBarHeight)
-                    .transition(.move(edge: .top).combined(with: .opacity))
+            // Верхняя строка лежит поверх уголков, но под листками: листок
+            // открыт — касание по ней его закрывает, как и по нижней.
+            topBar
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+
+            // Листки висят от нижнего края верхней строки; выезжают они из-под
+            // неё, поэтому всё, что выше, обрезано.
+            ZStack(alignment: .topTrailing) {
+                if shell.showingMenu { MenuSticker() }
+                if let m = shell.movingTask {
+                    MoveDaySticker(task: m)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                }
+                if shell.showingSettings {
+                    SettingsSticker().frame(maxWidth: .infinity, alignment: .topLeading)
+                }
             }
-            if shell.showingSettings {
-                SettingsSticker().frame(maxWidth: .infinity, alignment: .topLeading)
-                    .padding(.top, Self.topBarHeight)
-            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .clipped()
+            .padding(.top, Self.topBarHeight)
             // Клавиатура закрыла нижнюю строку на карте или в поиске — над
             // ней та же строка разделов, что на странице дня (P425).
             if keyboard.height > 0, shell.screen == .map || shell.screen == .search {
@@ -480,16 +492,36 @@ struct RootView: View {
         }
     }
 
-    /// Область содержимого: шторка «Подробности» живёт только внутри неё.
-    /// Высота верхней строки-ориентира с отступами (P494).
-    static let topBarHeight: CGFloat = 40
+    /// Высота верхней строки-ориентира (P494, P496): значки и названия,
+    /// на 15% мельче нижних.
+    static let topBarHeight: CGFloat = 60
 
     private var topBar: some View {
-        SectionsRow(current: shell.screen, compact: true) { tapSection($0) }
-            .frame(maxWidth: .infinity)
-            .frame(height: Self.topBarHeight)
+        HStack(spacing: 0) {
+            section("календарь", T("Календарь", "Calendar"), .calendar, small: true)
+            section("сегодня", T("Сегодня", "Today"), .today, small: true)
+            section("карта", T("Карта", "Map"), .map, small: true)
+            section("поиск", T("Поиск", "Search"), .search, small: true)
+        }
+        .padding(.vertical, 4)
+        .frame(maxWidth: .infinity)
+        .frame(height: Self.topBarHeight)
+        .background(KraftPaper())
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(Look.kraftEdge.opacity(0.55)).frame(height: 0.8)
+        }
+        // Тень — отдельной полосой под строкой, а не от всего её содержимого
+        // (P428): так она ложится на страницу и уголки торчат из-под неё.
+        .overlay(alignment: .bottom) {
+            LinearGradient(colors: [.black.opacity(0.22), .black.opacity(0)],
+                           startPoint: .top, endPoint: .bottom)
+                .frame(height: 5)
+                .offset(y: 5)
+                .allowsHitTesting(false)
+        }
     }
 
+    /// Область содержимого: шторка «Подробности» живёт только внутри неё.
     private var canvas: some View {
         ZStack(alignment: .trailing) {
             screen
@@ -668,8 +700,8 @@ struct RootView: View {
         HStack(spacing: 0) {
             // Сегодня, календарь, карта, поиск (P239). Глобус нарисован
             // автором (P248).
-            section("сегодня", T("Сегодня", "Today"), .today)
             section("календарь", T("Календарь", "Calendar"), .calendar)
+            section("сегодня", T("Сегодня", "Today"), .today)
             section("карта", T("Карта", "Map"), .map)
             section("поиск", T("Поиск", "Search"), .search)
         }
@@ -764,9 +796,16 @@ struct RootView: View {
     }
 
     private func section(_ icon: String, _ name: String, _ target: Shell.Screen,
-                         system: Bool = false) -> some View {
+                         system: Bool = false, small: Bool = false) -> some View {
         let on = shell.screen == target
+        // Верхняя копия — на 15% мельче нижней (P496).
+        let k: CGFloat = small ? 0.85 : 1
         return Button {
+            if small {
+                // Листок открыт — касание по строке только закрывает его.
+                if shell.showingSettings { shell.tuckIn(settings: true); return }
+                if shell.showingMenu { shell.tuckIn(settings: false); return }
+            }
             tapSection(target)
         } label: {
             VStack(spacing: 3) {
@@ -780,13 +819,13 @@ struct RootView: View {
                     }
                 }
                 // Книжка на 10%, микроскоп на 5% крупнее прочих (P227).
-                .frame(width: 35 * scale(target), height: 35 * scale(target))
+                .frame(width: 35 * k * scale(target), height: 35 * k * scale(target))
                 // Того же размера, что в строке разделов над клавиатурой
                 // (P425).
-                Text(name).font(Look.sans(SectionsRow.font, weight: on ? .medium : .regular))
+                Text(name).font(Look.sans(SectionsRow.font * k, weight: on ? .medium : .regular))
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
-                    .reportsY { y in if target == .today { KeyboardBar.glide.namesTarget = y } }
+                    .reportsY { y in if target == .today, !small { KeyboardBar.glide.namesTarget = y } }
             }
             // Открытый раздел — на светлой подушке. Подушка выходит за
             // значок наружу и не меняет высоты полосы (P218).
@@ -919,6 +958,8 @@ struct TabBorder: Shape {
 /// (P229, P231, P236).
 struct Corner: View {
     static let size: CGFloat = 58
+    /// Насколько верх уголка спрятан под верхней строкой (P496).
+    static let lift: CGFloat = 10
 
     let leading: Bool
     let paper: Color
