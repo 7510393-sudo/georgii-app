@@ -53,7 +53,7 @@ struct DaySheet<Plan: View, Diary: View>: View {
     /// Строка вложений лежит поверх низа страницы, полупрозрачная (P424):
     /// столько места под концом записи, чтобы её можно было поднять из-под
     /// строки.
-    static var stripRoom: CGFloat { 36 }
+    static var stripRoom: CGFloat { 42 }
 
     var body: some View {
         GeometryReader { outer in
@@ -114,8 +114,12 @@ struct DaySheet<Plan: View, Diary: View>: View {
                     // нижнего края окна, на длинной — под концом записи.
                     .overlay(alignment: .bottom) {
                         if let strip {
+                            // Полоска стоит на 6 точек выше края страницы (P511):
+                            // на пустой странице она целиком над нижней
+                            // строкой, рваный край которой иначе её закрывает.
                             strip
-                                .frame(height: Self.stripRoom)
+                                .frame(height: KeyboardBar.attachHeight)
+                                .padding(.bottom, Self.stripRoom - KeyboardBar.attachHeight)
                         }
                     }
                     .background(Ru.tint(date).overlay(PageTexture(tab: .diary, space: Self.space)))
