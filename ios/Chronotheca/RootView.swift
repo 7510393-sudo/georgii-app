@@ -292,6 +292,10 @@ struct RootView: View {
     private var app: some View {
         ZStack(alignment: .topTrailing) {
             VStack(spacing: 0) {
+                // Верхняя строка-ориентир (P494): те же четыре раздела, всегда
+                // на месте, клавиатура её не трогает. Всё остальное — уголки,
+                // имя дня — стоит ниже неё.
+                topBar
                 canvas
                     // Сменили размер или шрифт записи — страницы собираются
                     // заново: поля UIKit помнят свой шрифт (P274).
@@ -315,15 +319,17 @@ struct RootView: View {
             // Верхней строки больше нет: шестерёнка и три точки нарисованы
             // на уголках бумаги, торчащих сверху слева и справа, а имя дня
             // поднялось между ними (P229).
-            corners
+            corners.padding(.top, Self.topBarHeight)
 
-            if shell.showingMenu { MenuSticker() }
+            if shell.showingMenu { MenuSticker().padding(.top, Self.topBarHeight) }
             if let m = shell.movingTask {
                 MoveDaySticker(task: m)
+                    .padding(.top, Self.topBarHeight)
                     .transition(.move(edge: .top).combined(with: .opacity))
             }
             if shell.showingSettings {
                 SettingsSticker().frame(maxWidth: .infinity, alignment: .topLeading)
+                    .padding(.top, Self.topBarHeight)
             }
             // Клавиатура закрыла нижнюю строку на карте или в поиске — над
             // ней та же строка разделов, что на странице дня (P425).
@@ -469,6 +475,16 @@ struct RootView: View {
     }
 
     /// Область содержимого: шторка «Подробности» живёт только внутри неё.
+    /// Высота верхней строки-ориентира с отступами (P494).
+    static let topBarHeight: CGFloat = 36
+
+    private var topBar: some View {
+        SectionsRow(current: shell.screen, compact: true) { tapSection($0) }
+            .padding(.horizontal, KeyboardBar.inset + 6)
+            .padding(.vertical, 4)
+            .frame(height: Self.topBarHeight)
+    }
+
     private var canvas: some View {
         ZStack(alignment: .trailing) {
             screen

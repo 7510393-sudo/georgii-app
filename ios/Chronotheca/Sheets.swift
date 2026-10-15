@@ -186,7 +186,7 @@ struct SettingsSticker: View {
         let window = UIApplication.shared.connectedScenes
             .compactMap { ($0 as? UIWindowScene)?.keyWindow }.first
         let insets = window?.safeAreaInsets ?? .zero
-        return max(300, UIScreen.main.bounds.height - insets.top - insets.bottom - 66 - 52)
+        return max(300, UIScreen.main.bounds.height - insets.top - insets.bottom - 66 - 52 - RootView.topBarHeight)
     }
 
     @EnvironmentObject private var vault: Vault

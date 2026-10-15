@@ -405,6 +405,8 @@ struct TitleLine: UIViewRepresentable {
 /// клавиатурой на странице дня, на карте и в поиске.
 struct SectionsRow: View {
     let current: Shell.Screen
+    /// Верхняя строка-ориентир мельче нижней (P494).
+    var compact = false
     let go: (Shell.Screen) -> Void
 
     /// Размер названий — тот же, что под значками внизу (P425).
@@ -418,7 +420,7 @@ struct SectionsRow: View {
             name(T("Поиск", "Search"), .search)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: KeyboardBar.sectionsHeight)
+        .frame(height: compact ? 28 : KeyboardBar.sectionsHeight)
         .background(KraftPaper())
         .clipShape(Capsule(style: .continuous))
     }
@@ -427,12 +429,12 @@ struct SectionsRow: View {
         let on = target == current
         return Button { go(target) } label: {
             Text(title)
-                .font(Look.sans(Self.font, weight: on ? .medium : .regular))
+                .font(Look.sans(compact ? 13 : Self.font, weight: on ? .medium : .regular))
                 .foregroundStyle(on ? Look.accent : Look.kraftInk)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
                 .padding(.horizontal, 8)
-                .padding(.vertical, 3)
+                .padding(.vertical, compact ? 2 : 3)
                 .background(
                     RoundedRectangle(cornerRadius: 10)
                         .fill(on ? Color.black.opacity(0.08) : .clear)
