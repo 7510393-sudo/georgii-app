@@ -25,6 +25,8 @@ struct RootView: View {
     /// рисования экрана: с 103-й весь верхний слой — настройки, меню,
     /// разделы — переставал обновляться.
     @State private var homeBar: CGFloat = 0
+    /// Полоса «домой» по окну: читается один раз, не в теле вида (P495).
+    @State private var windowBottom: CGFloat = 0
 
     // Настройки (P249): замок, скрытие страницы, тема.
     @Environment(\.scenePhase) private var phase
@@ -391,6 +393,10 @@ struct RootView: View {
             .ignoresSafeArea()
         }
         .tint(Look.accent)
+        .onAppear {
+            windowBottom = UIApplication.shared.connectedScenes
+                .compactMap { ($0 as? UIWindowScene)?.keyWindow }.first?.safeAreaInsets.bottom ?? 0
+        }
         .onChange(of: shell.screen) { old, new in
             follow(from: old, to: new)
             if new == .map {
@@ -476,12 +482,11 @@ struct RootView: View {
 
     /// Область содержимого: шторка «Подробности» живёт только внутри неё.
     /// Высота верхней строки-ориентира с отступами (P494).
-    static let topBarHeight: CGFloat = 36
+    static let topBarHeight: CGFloat = 40
 
     private var topBar: some View {
         SectionsRow(current: shell.screen, compact: true) { tapSection($0) }
-            .padding(.horizontal, KeyboardBar.inset + 6)
-            .padding(.vertical, 4)
+            .frame(maxWidth: .infinity)
             .frame(height: Self.topBarHeight)
     }
 
@@ -705,9 +710,7 @@ struct RootView: View {
     /// значками стояли на самой нижней линии. Берётся и высота полосы у
     /// окна — мерка раскладкой иногда приходит нулём (P469).
     private var homeLift: CGFloat {
-        let window = UIApplication.shared.connectedScenes
-            .compactMap { ($0 as? UIWindowScene)?.keyWindow }.first
-        return max(homeBar, window?.safeAreaInsets.bottom ?? 0) + 8
+        max(homeBar, windowBottom) + 8
     }
 
     private func scale(_ target: Shell.Screen) -> CGFloat {

@@ -420,16 +420,18 @@ struct SectionsRow: View {
             name(T("Поиск", "Search"), .search)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: compact ? 28 : KeyboardBar.sectionsHeight)
+        .frame(height: compact ? 40 : KeyboardBar.sectionsHeight)
         .background(KraftPaper())
-        .clipShape(Capsule(style: .continuous))
+        // Верхняя строка — полоса от края до края (P495), нижняя над
+        // клавиатурой — капсула.
+        .clipShape(RoundedRectangle(cornerRadius: compact ? 0 : 18, style: .continuous))
     }
 
     private func name(_ title: String, _ target: Shell.Screen) -> some View {
         let on = target == current
         return Button { go(target) } label: {
             Text(title)
-                .font(Look.sans(compact ? 13 : Self.font, weight: on ? .medium : .regular))
+                .font(Look.sans(compact ? 14 : Self.font, weight: on ? .medium : .regular))
                 .foregroundStyle(on ? Look.accent : Look.kraftInk)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
