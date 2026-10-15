@@ -318,9 +318,8 @@ struct MapScreen: View {
         .padding(.horizontal, 4)
         // Клавиатура сама не поднимает низ приложения (P113) — над ней
         // кнопки поднимает этот отступ, вплотную к её верху (P306, P340).
-        // Над клавиатурой ещё и строка разделов (P425).
-        .padding(.bottom, keyboard > 0
-                 ? max(6, keyboard - belowMap + 2 + KeyboardBar.sectionsHeight + 8) : 6)
+        // Строки разделов над клавиатурой больше нет (P505): кнопки — вплотную.
+        .padding(.bottom, keyboard > 0 ? max(6, keyboard - belowMap + 2) : 6)
     }
 
     /// Точка не выбрана — кнопка не пропадает, а бледнеет и объясняет, чего

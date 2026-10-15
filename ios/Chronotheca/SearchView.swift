@@ -137,8 +137,8 @@ struct SearchView: View {
             // Место под клавиатуру. Без него последние находки лежат под
             // ней и не достаются прокруткой: список кончается там, где
             // начинается клавиатура (решение P174).
-            // Над клавиатурой — строка разделов (P425).
-            .padding(.bottom, keyboard > 0 ? keyboard + KeyboardBar.sectionsHeight + 4 : 0)
+            // Строки разделов над клавиатурой больше нет (P505).
+            .padding(.bottom, keyboard > 0 ? keyboard + 4 : 0)
         }
         .scrollDismissesKeyboard(.interactively)
         .animation(.easeOut(duration: 0.25), value: keyboard)

@@ -630,8 +630,9 @@ struct RootView: View {
                 // Под плашкой книга не отзывается. Иначе движение вбок по
                 // поиску доставалось перелистыванию дней, и человека
                 // выбрасывало на «Сегодня» (решение P160).
-                DayPages()
-                    .allowsHitTesting(shell.screen == .today)
+                panel(.today, from: .top, over: geo.size) {
+                    DayPages().allowsHitTesting(shell.screen == .today)
+                }
                 panel(.calendar, from: .top, over: geo.size) { CalendarView() }
                 // Карта — такая же плашка. Рисуется, только пока нужна:
                 // иначе приложение спрашивало бы место при самом запуске.
@@ -700,9 +701,9 @@ struct RootView: View {
             section("карта", T("Карта", "Map"), .map, compact: true)
             section("поиск", T("Поиск", "Search"), .search, compact: true)
         }
-        // Той же высоты и тех же размеров, что верхняя строка (P500).
+        // Тоньше верхней на 15% (P505): высота 51, значки и названия мельче.
         .padding(.vertical, 4)
-        .frame(height: Self.topBarHeight)
+        .frame(height: Self.topBarHeight * 0.85)
         // Над полосой «домой» — её высота у самого окна, она не меняется
         // от клавиатуры (P447), меряется раскладкой (P450).
         .padding(.bottom, homeLift)
@@ -765,7 +766,9 @@ struct RootView: View {
         if changesDay { store.save() }
         // Второе касание по открытому разделу убирает его плашку — под ней
         // тот экран, с которого пришли (P262, P501).
-        if target != .today, shell.screen == target {
+        // «Сегодня» — такая же плашка (P505); если открыт не нынешний день,
+        // второе касание возвращает на сегодня, а не убирает плашку.
+        if shell.screen == target, shell.stack.count > 1, !(target == .today && !store.isToday) {
             hideKeyboard()
             let previous = shell.stack.dropLast().last ?? .today
             popping = true
@@ -799,8 +802,7 @@ struct RootView: View {
         let on = shell.screen == target
         // Верхняя строка и нижняя — одних размеров (P500): значки и названия
         // на 15% мельче прежней нижней (P496).
-        let slim = small || compact
-        let k: CGFloat = slim ? 0.85 : 1
+        let k: CGFloat = small ? 0.85 : (compact ? 0.75 : 1)
         return Button {
             if small {
                 // Листок открыт — касание по строке только закрывает его.
@@ -809,7 +811,7 @@ struct RootView: View {
             }
             tapSection(target)
         } label: {
-            VStack(spacing: 3) {
+            VStack(spacing: compact ? 2 : 3) {
                 // Значки нарисованы автором от руки и обведены в вектор:
                 // ежедневник, раскрытый в начале, посередине и в конце.
                 Group {
@@ -890,10 +892,6 @@ struct RootView: View {
         if popping {
             popping = false
             withAnimation(lift) { shell.stack.removeAll { $0 == old } }
-            return
-        }
-        if new == .today {
-            withAnimation(lift) { shell.stack.removeAll() }
             return
         }
         if let i = shell.stack.firstIndex(of: new) {
