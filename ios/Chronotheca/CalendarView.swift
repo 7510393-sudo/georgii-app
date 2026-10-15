@@ -262,14 +262,21 @@ struct CalendarView: View {
             ForEach(Array(cells.enumerated()), id: \.offset) { _, day in
                 if let day {
                     let stamp = Vault.stamp(day)
+                    let filled = archive.day(stamp)?.hasSomething == true
+                    // День с записью — чёткий кружок с тонкой рамкой и плотной
+                    // цифрой, а не бледное серое пятно (P499): издали год
+                    // читается ровно.
                     Text("\(cal.component(.day, from: day))")
-                        .font(.system(size: 9))
+                        .font(.system(size: 9, weight: filled ? .semibold : .regular))
                         .frame(width: 14, height: 14)
-                        .foregroundStyle(stamp == today ? Color.white : Look.inkFaint)
+                        .foregroundStyle(stamp == today ? Color.white
+                                         : (filled ? Look.accent : Look.inkFaint))
                         .background(stamp == today ? Look.accent
-                                    : (archive.day(stamp)?.hasSomething == true
-                                       ? Look.accent.opacity(0.18) : .clear),
+                                    : (filled ? Look.accent.opacity(0.12) : .clear),
                                     in: Circle())
+                        .overlay(Circle().strokeBorder(
+                            stamp != today && filled ? Look.accent.opacity(0.8) : .clear,
+                            lineWidth: 1))
                 } else {
                     Color.clear.frame(height: 14)
                 }

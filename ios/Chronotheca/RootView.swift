@@ -347,22 +347,8 @@ struct RootView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .clipped()
             .padding(.top, Self.topBarHeight)
-            // Клавиатура закрыла нижнюю строку на карте или в поиске — над
-            // ней та же строка разделов, что на странице дня (P425).
-            if keyboard.height > 0, shell.screen == .map || shell.screen == .search {
-                // Где низ этого слоя на экране — меряется, а не угадывается
-                // (P469): ни мерка полосы «домой», ни «до края экрана» не
-                // попадали — в 106-й и 108-й строка висела над клавиатурой
-                // на ширину этой полосы. Теперь отступ = высота клавиатуры
-                // минус то, что ниже слоя на самом деле.
-                GeometryReader { g in
-                    let below = max(0, UIScreen.main.bounds.height - g.frame(in: .global).maxY)
-                    SectionsRow(current: shell.screen) { tapSection($0) }
-                        .padding(.horizontal, KeyboardBar.inset)
-                        .padding(.bottom, max(0, keyboard.height - below) + 2)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                }
-            }
+            // Строки разделов над клавиатурой на карте и в поиске больше нет
+            // (P499): верхняя строка всегда на месте.
             // Подсказки для первого знакомства (P427) — поверх всего, когда
             // экран спокоен.
             GlideView()
@@ -521,15 +507,6 @@ struct RootView: View {
                     .scaleEffect(x: 1, y: -1)
             }
             .padding(.bottom, -TornEdge.depth)
-        }
-        // Тень — отдельной полосой под строкой, а не от всего её содержимого
-        // (P428): так она ложится на страницу и уголки торчат из-под неё.
-        .overlay(alignment: .bottom) {
-            LinearGradient(colors: [.black.opacity(0.22), .black.opacity(0)],
-                           startPoint: .top, endPoint: .bottom)
-                .frame(height: 5)
-                .offset(y: 5 + TornEdge.depth)
-                .allowsHitTesting(false)
         }
     }
 
@@ -717,8 +694,8 @@ struct RootView: View {
             section("карта", T("Карта", "Map"), .map)
             section("поиск", T("Поиск", "Search"), .search)
         }
-        // На 5% тоньше, чем было, при книжке на 10% крупнее (P212).
-        .padding(.top, 7)
+        // Ещё тоньше (P499): значки 31 вместо 35, отступы меньше.
+        .padding(.top, 4)
         .padding(.bottom, 2)
         // Над полосой «домой» — её высота у самого окна, она не меняется
         // от клавиатуры (P447), меряется раскладкой (P450).
@@ -754,7 +731,7 @@ struct RootView: View {
     /// значками стояли на самой нижней линии. Берётся и высота полосы у
     /// окна — мерка раскладкой иногда приходит нулём (P469).
     private var homeLift: CGFloat {
-        max(homeBar, windowBottom) + 8
+        max(homeBar, windowBottom) + 4
     }
 
     private func scale(_ target: Shell.Screen) -> CGFloat {
@@ -820,7 +797,7 @@ struct RootView: View {
             }
             tapSection(target)
         } label: {
-            VStack(spacing: 3) {
+            VStack(spacing: small ? 3 : 2) {
                 // Значки нарисованы автором от руки и обведены в вектор:
                 // ежедневник, раскрытый в начале, посередине и в конце.
                 Group {
@@ -831,7 +808,7 @@ struct RootView: View {
                     }
                 }
                 // Книжка на 10%, микроскоп на 5% крупнее прочих (P227).
-                .frame(width: 35 * k * scale(target), height: 35 * k * scale(target))
+                .frame(width: (small ? 35 : 31) * k * scale(target), height: (small ? 35 : 31) * k * scale(target))
                 // Того же размера, что в строке разделов над клавиатурой
                 // (P425).
                 Text(name).font(Look.sans(SectionsRow.font * k, weight: on ? .medium : .regular))
@@ -971,7 +948,7 @@ struct TabBorder: Shape {
 struct Corner: View {
     static let size: CGFloat = 58
     /// Насколько верх уголка спрятан под верхней строкой (P496).
-    static let lift: CGFloat = 10
+    static let lift: CGFloat = 2
 
     let leading: Bool
     let paper: Color

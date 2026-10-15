@@ -140,9 +140,12 @@ struct DaySheet<Plan: View, Diary: View>: View {
                     // вся её высота, хотя низ экрана и так занят разделами, —
                     // и страница, поднятая до конца, висела над клавиатурой
                     // с зазором в несколько строк (P413).
-                    // Строка вложений уже дала своё место — его не считаем
-                    // дважды: над клавиатурой без зазора, как прежде (P413).
-                    .padding(.bottom, max(max(0, covered(outer, keyboard) - Self.stripRoom), hold))
+                    // Строка вложений — конец самой страницы (P496) и своё
+                    // место уже имеет, но клавиатура её больше не несёт на
+                    // себе: место под клавиатуру — полностью, иначе страница
+                    // кончается погодой, а полоска остаётся под клавиатурой
+                    // (замечание автора к 121).
+                    .padding(.bottom, max(covered(outer, keyboard), hold))
                     .onAppear {
                         goHome(proxy)
                         settle(proxy, fresh: true)
@@ -159,7 +162,7 @@ struct DaySheet<Plan: View, Diary: View>: View {
             // место уже на месте, и лист не становится короче ни на кадр.
             .onChange(of: keyboard) { _, now in
                 if now > 0 {
-                    hold = max(0, covered(outer, now) - Self.stripRoom)
+                    hold = max(0, covered(outer, now))
                 } else if hold > 0 {
                     release()
                 }
