@@ -280,7 +280,19 @@ struct MapScreen: View {
     /// вложений: «Запомнить точку» — ровно там, где «геоточка» (P213).
     /// Корзина, «скопировать» и «в навигатор» бледнеют, пока точка не
     /// выбрана (P219).
+    /// Кнопки внизу: отступ от клавиатуры считается по тому, где низ карты на
+    /// экране сейчас, а не по замеру, снятому раньше (P506).
     private var bar: some View {
+        GeometryReader { g in
+            barRow
+                .padding(.bottom, keyboard > 0
+                         ? max(6, g.frame(in: .global).maxY - (UIScreen.main.bounds.height - keyboard))
+                         : 6)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        }
+    }
+
+    private var barRow: some View {
         let point = selected != nil
         return HStack(spacing: 0) {
             Button {
@@ -318,8 +330,7 @@ struct MapScreen: View {
         .padding(.horizontal, 4)
         // Клавиатура сама не поднимает низ приложения (P113) — над ней
         // кнопки поднимает этот отступ, вплотную к её верху (P306, P340).
-        // Строки разделов над клавиатурой больше нет (P505): кнопки — вплотную.
-        .padding(.bottom, keyboard > 0 ? max(6, keyboard - belowMap + 2) : 6)
+        // Отступ от клавиатуры — в `bar` (P506).
     }
 
     /// Точка не выбрана — кнопка не пропадает, а бледнеет и объясняет, чего
