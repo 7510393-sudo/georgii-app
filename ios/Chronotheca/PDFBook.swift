@@ -60,7 +60,7 @@ enum PDFBook {
 
         let format = UIGraphicsPDFRendererFormat()
         format.documentInfo = [kCGPDFContextTitle as String: title(o),
-                               kCGPDFContextCreator as String: T("Хронотека", "Chronotheca")]
+                               kCGPDFContextCreator as String: T("Graphomanus", "Graphomanus")]
         let data = UIGraphicsPDFRenderer(bounds: page, format: format).pdfData { ctx in
             cover(o, days: days, ctx: ctx)
             for day in days {
@@ -70,7 +70,7 @@ enum PDFBook {
 
         let dir = root.appendingPathComponent("PDF")
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        let name = T("Хронотека ", "Chronotheca ") + Vault.stamp(min(o.from, o.to)) + " — " + Vault.stamp(max(o.from, o.to))
+        let name = T("Graphomanus ", "Graphomanus ") + Vault.stamp(min(o.from, o.to)) + " — " + Vault.stamp(max(o.from, o.to))
         var url = dir.appendingPathComponent(name + ".pdf")
         var n = 2
         while FileManager.default.fileExists(atPath: url.path) {
@@ -82,7 +82,7 @@ enum PDFBook {
     }
 
     private static func title(_ o: Options) -> String {
-        T("Хронотека: ", "Chronotheca: ") + Ru.longDate(min(o.from, o.to)) + " — " + Ru.longDate(max(o.from, o.to))
+        T("Graphomanus: ", "Graphomanus: ") + Ru.longDate(min(o.from, o.to)) + " — " + Ru.longDate(max(o.from, o.to))
     }
 
     private static func read(_ date: Date, vault: Vault) -> Day {
@@ -118,7 +118,7 @@ enum PDFBook {
         }
         let serif = { (size: CGFloat) in UIFont(name: "Georgia", size: size) ?? .systemFont(ofSize: size) }
         var y: CGFloat = 250
-        y = centered(T("Хронотека", "Chronotheca"), serif(40), ink, y: y) + 14
+        y = centered(T("Graphomanus", "Graphomanus"), serif(40), ink, y: y) + 14
         y = centered(o.plan ? T("Дневник и план", "Diary and plan") : T("Дневник", "Diary"), serif(20), soft, y: y) + 46
         y = centered(T("с ", "from ") + Ru.longDate(min(o.from, o.to)), serif(22), ink, y: y) + 6
         y = centered(T("по ", "to ") + Ru.longDate(max(o.from, o.to)), serif(22), ink, y: y) + 40

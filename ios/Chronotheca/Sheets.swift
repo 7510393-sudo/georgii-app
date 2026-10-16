@@ -624,7 +624,7 @@ struct SettingsSticker: View {
     @ViewBuilder private var aboutPart: some View {
         NoteSection(title: T("О приложении", "About"))
         // Покупка: месяц пробы, потом разовая (M14, P432).
-        NoteRow(title: T("Хронотека навсегда", "Chronotheca for good"), detail: Purchase.shared.summary) {
+        NoteRow(title: T("Graphomanus навсегда", "Graphomanus for good"), detail: Purchase.shared.summary) {
             // Листок покупки — поверх настроек; закрыли — снова настройки
             // (P458): прежде настройки закрывались, и человек терялся.
             NoteButton(title: T("Открыть ›", "Open ›")) {
@@ -723,8 +723,8 @@ struct SettingsSticker: View {
         return healthIssue
             ? T("У этой сборки нет права на «Здоровье» — iPhone не может спросить разрешение.",
                 "This build has no Health permission, so iPhone cannot ask for access.")
-            : T("Нет строки? Проверьте: Настройки iPhone → Здоровье → Доступ к данным и устройства → Хронотека.",
-                "No line? Check iPhone Settings → Health → Data Access & Devices → Chronotheca.")
+            : T("Нет строки? Проверьте: Настройки iPhone → Здоровье → Доступ к данным и устройства → Graphomanus.",
+                "No line? Check iPhone Settings → Health → Data Access & Devices → Graphomanus.")
     }
     @AppStorage(DayEvents.holidaysKey) private var calendarHolidays = false
     @AppStorage(Prefs.calendarTint) private var calendarTint = "distance"
@@ -813,7 +813,7 @@ struct SettingsSticker: View {
 
     /// «Данные в сохранности?» — сразу под строкой хранилища: да, если папка
     /// не в самом приложении, и заметное «нет», если записи живут только
-    /// внутри «Хронотеки» и пропадут вместе с ней (P326).
+    /// внутри «Graphomanus» и пропадут вместе с ней (P326).
     private var safety: some View {
         NoteRow(title: T("Данные в сохранности?", "Is my data safe?")) {
             Button {
@@ -906,9 +906,9 @@ struct SafetySheet: View {
                     .font(.title2)
 
                 Text(onPhone
-                     ? T("Записи лежат внутри самой «Хронотеки», на этом iPhone. ", "Your entries are inside Chronotheca itself, on this iPhone. ")
+                     ? T("Записи лежат внутри самой «Graphomanus», на этом iPhone. ", "Your entries are inside Graphomanus itself, on this iPhone. ")
                        + T("Удалите приложение — iPhone сотрёт их вместе с ним, без возврата.", "Delete the app, and the iPhone erases them with it, for good.")
-                     : T("Записи лежат вне приложения, в вашей папке. Удалите «Хронотеку» — ", "Your entries are outside the app, in your own folder. Delete Chronotheca, and ")
+                     : T("Записи лежат вне приложения, в вашей папке. Удалите «Graphomanus» — ", "Your entries are outside the app, in your own folder. Delete Graphomanus, and ")
                        + T("они останутся на месте: в «Файлах», в облаке, на других устройствах.", "they stay where they are: in Files, in the cloud, on other devices."))
                     .font(.callout)
                     .foregroundStyle(.secondary)
@@ -1171,7 +1171,7 @@ struct RollerSheet: View {
             let shell = shell
             Reminders.ask { ok in
                 if !ok {
-                    shell.say(T("Напоминания выключены: Настройки iPhone → Хронотека → Уведомления", "Reminders are off: iPhone Settings → Chronotheca → Notifications"))
+                    shell.say(T("Напоминания выключены: Настройки iPhone → Graphomanus → Уведомления", "Reminders are off: iPhone Settings → Graphomanus → Notifications"))
                 }
             }
         }
@@ -1488,7 +1488,7 @@ struct WelcomeView: View {
                 .foregroundStyle(.secondary)
                 .padding(.top, 24)
 
-            Text(T("Хронотека", "Chronotheca")).font(.largeTitle.weight(.semibold))
+            Text(T("Graphomanus", "Graphomanus")).font(.largeTitle.weight(.semibold))
 
             Text(T("Тетрадь дня: утром — план, вечером — итоги. Записи — ваши файлы.",
                    "A notebook for your day: a plan in the morning, the outcome in the evening. Your entries are your files."))

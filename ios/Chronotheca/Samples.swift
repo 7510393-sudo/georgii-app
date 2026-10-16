@@ -4,7 +4,7 @@ import Foundation
 ///
 /// Новый архив не пуст: вчера, сегодня и завтра уже заполнены. В делах
 /// плана — как с ним обращаться, в дневнике сегодняшнего дня — запись
-/// «Начинаю свою Хронотеку!» про карту, вложения и хранение. Вчерашний день
+/// «Начинаю Graphomanus!» про карту, вложения и хранение. Вчерашний день
 /// показывает, как выглядит прожитая страница: отметки, итоги дня, снимок,
 /// место.
 ///
@@ -88,7 +88,7 @@ enum Samples {
         """))
 
         put(vault, .diary, today, body: SamplesText.text(.todayDiary) ?? T("""
-        Сегодня начинается моя Хронотека. Утром — план, вечером — итоги дня: под каждым делом строка о том, что вышло.
+        Сегодня начинается Graphomanus. Утром — план, вечером — итоги дня: под каждым делом строка о том, что вышло.
 
         Места. Внизу — «Карта». Подержите палец на карте — встанет точка: назовите её, выберите значок и запишите в день. Справа сверху переключатель: «Мои места» — все ваши точки, «Записи» — дни на карте с превью снимков. В записи точка ставится кнопкой «Место» в строке вложений — вот так:
 
@@ -100,7 +100,7 @@ enum Samples {
 
         Образцы — вчера, сегодня и завтра. Сотрите их, как обычный текст, или уберите день целиком: три точки справа сверху → «Убрать день в корзину».
         """, """
-        Today my Chronotheca begins. In the morning, a plan; in the evening, the day's outcome: a line under each task about how it went.
+        Today my Graphomanus begins. In the morning, a plan; in the evening, the day's outcome: a line under each task about how it went.
 
         Places. At the bottom — “Map”. Hold your finger on the map and a pin appears: name it, pick an icon and add it to the day. The switch at the top right: “My places” shows all your pins, “Entries” shows days on the map with photo previews. In an entry, add a place with the “Place” button in the attachments strip — like this:
 
@@ -111,7 +111,7 @@ enum Samples {
         Where your entries live. Everything is plain files in your folder: you can see them in Files, open them in any editor, and they stay even if you delete the app. Backup is in the settings, one button.
 
         The samples are yesterday, today and tomorrow. Erase them like any text, or move the whole day to the trash: the three dots at top right → “Move the day to the trash”.
-        """), title: SamplesText.text(.todayTitle) ?? T("Начинаю свою Хронотеку!", "Starting my Chronotheca!"))
+        """), title: SamplesText.text(.todayTitle) ?? T("Начинаю Graphomanus!", "Starting my Graphomanus!"))
 
         put(vault, .planner, tomorrow, body: SamplesText.text(.tomorrowPlan) ?? T("""
         - [ ] Вечером записать итоги дня

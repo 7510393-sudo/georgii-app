@@ -1129,9 +1129,9 @@ final class DayStore: ObservableObject {
         let status = CLLocationManager().authorizationStatus
         guard status != .denied, status != .restricted else {
             weatherTrouble = T("Приложению не разрешено знать, где вы, — а погода нужна для "
-                + "места. Настройки iPhone → Хронотека → Геопозиция → «При использовании».",
+                + "места. Настройки iPhone → Graphomanus → Геопозиция → «При использовании».",
                 "The app may not know where you are, and weather needs a place. "
-                + "iPhone Settings → Chronotheca → Location → “While Using the App”.")
+                + "iPhone Settings → Graphomanus → Location → “While Using the App”.")
             return
         }
         weatherAsked = true

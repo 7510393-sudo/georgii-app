@@ -201,7 +201,7 @@ struct PurchaseSheet: View {
                 .font(Look.sans(15))
                 .padding(20)
             }
-            .navigationTitle(T("Хронотека", "Chronotheca"))
+            .navigationTitle(T("Graphomanus", "Graphomanus"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {

@@ -330,7 +330,7 @@ enum Backup {
         let bytes = ByteCountFormatter.string(fromByteCount: inv.bytes, countStyle: .file)
         let complete = missing.isEmpty && away.isEmpty
         var lines = [
-            T("Резервная копия «Хронотеки»", "Chronotheca backup"),
+            T("Резервная копия «Graphomanus»", "Graphomanus backup"),
             "",
             T("Когда: ", "When: ") + when,
             T("С какого устройства: ", "From: ") + device,
@@ -345,10 +345,10 @@ enum Backup {
               + "Их можно открыть любым приложением.",
               "Entries are ordinary files: diary and plan are text (.md); photos, voice and video are as they were. "
               + "Any app can open them."),
-            T("Как вернуть: скопируйте эту папку на iPhone (в «Файлы») и в «Хронотеке» выберите её папкой "
+            T("Как вернуть: скопируйте эту папку на iPhone (в «Файлы») и в «Graphomanus» выберите её папкой "
               + "записей. В копии ничего не стирается: старые файлы остаются и после того, "
               + "как их удалили в приложении.",
-              "To restore: copy this folder to your iPhone (in Files) and choose it in Chronotheca as the "
+              "To restore: copy this folder to your iPhone (in Files) and choose it in Graphomanus as the "
               + "folder for entries. Nothing is ever deleted from a backup: old files stay even after you "
               + "delete them in the app."),
         ]

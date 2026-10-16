@@ -56,8 +56,8 @@ struct GalleryRow: View {
                 }
                 .buttonStyle(.plain)
                 if status == .denied || status == .restricted {
-                    Text(T("Галерея закрыта для приложения: Настройки iPhone → Хронотека → Фото",
-                           "The app has no access to Photos: iPhone Settings → Chronotheca → Photos"))
+                    Text(T("Галерея закрыта для приложения: Настройки iPhone → Graphomanus → Фото",
+                           "The app has no access to Photos: iPhone Settings → Graphomanus → Photos"))
                         .font(Look.sans(12))
                         .foregroundStyle(Look.inkSoft)
                         .frame(width: 230, alignment: .leading)

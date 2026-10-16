@@ -62,8 +62,8 @@ struct Recorder: View {
             .frame(height: 96)
 
             if denied {
-                Text(T("Приложению не разрешён микрофон. Разрешить можно в Настройках iPhone → Chronotheca.",
-                       "The app has no access to the microphone. Allow it in iPhone Settings → Chronotheca."))
+                Text(T("Приложению не разрешён микрофон. Разрешить можно в Настройках iPhone → Graphomanus.",
+                       "The app has no access to the microphone. Allow it in iPhone Settings → Graphomanus."))
                     .font(Look.sans(13))
                     .foregroundStyle(Look.inkSoft)
                     .multilineTextAlignment(.center)
@@ -242,7 +242,7 @@ struct AudioPlayerView: View {
 ///
 /// Само окно помнит, где его закрыли в прошлый раз. Открыть сразу «Обзор»
 /// iOS приложению не даёт; папку ему больше не подсказываем (P384, прежде
-/// — папка над «Хронотекой», P351): тогда окно, закрытое на «Обзоре»,
+/// — папка над «Graphomanus», P351): тогда окно, закрытое на «Обзоре»,
 /// там и открывается.
 struct DocumentPicker: UIViewControllerRepresentable {
 

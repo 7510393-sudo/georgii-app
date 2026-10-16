@@ -55,7 +55,7 @@ enum SamplesText {
               Punkte unter einem Datum bedeuten Einträge an diesem Tag. „Suche“ durchsucht Wörter, Fotos und Orte.
         """,
         .todayDiary: """
-        Heute beginnt meine Chronotheca. Morgens ein Plan, abends der Rückblick auf den Tag: unter jeder Aufgabe eine Zeile, wie es gelaufen ist.
+        Heute beginnt meine Graphomanus. Morgens ein Plan, abends der Rückblick auf den Tag: unter jeder Aufgabe eine Zeile, wie es gelaufen ist.
 
         Orte. Unten — „Karte“. Halten Sie den Finger auf die Karte, und eine Nadel erscheint: benennen Sie sie, wählen Sie ein Symbol und fügen Sie sie dem Tag hinzu. Der Schalter oben rechts: „Meine Orte“ zeigt alle Ihre Nadeln, „Einträge“ die Tage auf der Karte mit Fotovorschau. In einem Eintrag fügen Sie einen Ort mit der Taste „Ort“ in der Anhangsleiste hinzu — so:
 
@@ -67,7 +67,7 @@ enum SamplesText {
 
         Die Beispiele sind gestern, heute und morgen. Löschen Sie sie wie jeden Text oder legen Sie den ganzen Tag in den Papierkorb: die drei Punkte oben rechts → „Tag in den Papierkorb“.
         """,
-        .todayTitle: "Meine Chronotheca beginnt!",
+        .todayTitle: "Meine Graphomanus beginnt!",
         .tomorrowPlan: """
         - [ ] Abends den Rückblick auf den Tag schreiben
               Er steht im Tagebuch unter jeder Aufgabe — je eine Zeile.
@@ -110,7 +110,7 @@ enum SamplesText {
               Los puntos bajo una fecha indican entradas ese día. «Buscar» busca en palabras, fotos y lugares.
         """,
         .todayDiary: """
-        Hoy empieza mi Chronotheca. Por la mañana, un plan; por la noche, el resumen del día: bajo cada tarea, una línea sobre cómo fue.
+        Hoy empieza mi Graphomanus. Por la mañana, un plan; por la noche, el resumen del día: bajo cada tarea, una línea sobre cómo fue.
 
         Lugares. Abajo — «Mapa». Mantenga el dedo sobre el mapa y aparece una chincheta: póngale nombre, elija un icono y añádala al día. El selector arriba a la derecha: «Mis lugares» muestra todas sus chinchetas, «Entradas» muestra los días en el mapa con miniaturas de fotos. En una entrada, añada un lugar con el botón «Lugar» de la barra de adjuntos — así:
 
@@ -122,7 +122,7 @@ enum SamplesText {
 
         Los ejemplos son ayer, hoy y mañana. Bórrelos como cualquier texto o mande el día entero a la papelera: los tres puntos arriba a la derecha → «Mover el día a la papelera».
         """,
-        .todayTitle: "¡Empiezo mi Chronotheca!",
+        .todayTitle: "¡Empiezo mi Graphomanus!",
         .tomorrowPlan: """
         - [ ] Por la noche, escribir el resumen del día
               Va al diario bajo cada tarea, una línea por tarea.
@@ -165,7 +165,7 @@ enum SamplesText {
               Les points sous une date signalent des notes ce jour-là. « Recherche » parcourt les mots, les photos et les lieux.
         """,
         .todayDiary: """
-        Aujourd’hui commence ma Chronotheca. Le matin, un plan ; le soir, le bilan du jour : sous chaque tâche, une ligne sur la façon dont elle s’est passée.
+        Aujourd’hui commence ma Graphomanus. Le matin, un plan ; le soir, le bilan du jour : sous chaque tâche, une ligne sur la façon dont elle s’est passée.
 
         Lieux. En bas — « Carte ». Gardez le doigt sur la carte et une épingle apparaît : nommez-la, choisissez une icône et ajoutez-la au jour. Le sélecteur en haut à droite : « Mes lieux » montre toutes vos épingles, « Notes » montre les jours sur la carte avec des aperçus de photos. Dans une note, ajoutez un lieu avec le bouton « Lieu » de la barre des pièces jointes — comme ceci :
 
@@ -177,7 +177,7 @@ enum SamplesText {
 
         Les exemples sont hier, aujourd’hui et demain. Effacez-les comme n’importe quel texte, ou mettez le jour entier à la corbeille : les trois points en haut à droite → « Mettre le jour à la corbeille ».
         """,
-        .todayTitle: "Je commence ma Chronotheca !",
+        .todayTitle: "Je commence ma Graphomanus !",
         .tomorrowPlan: """
         - [ ] Le soir, écrire le bilan du jour
               Il va dans le journal sous chaque tâche, une ligne chacune.
@@ -220,7 +220,7 @@ enum SamplesText {
               I puntini sotto una data indicano note quel giorno. «Cerca» cerca tra parole, foto e luoghi.
         """,
         .todayDiary: """
-        Oggi comincia la mia Chronotheca. Al mattino un piano, la sera il bilancio del giorno: sotto ogni attività, una riga su com’è andata.
+        Oggi comincia la mia Graphomanus. Al mattino un piano, la sera il bilancio del giorno: sotto ogni attività, una riga su com’è andata.
 
         Luoghi. In basso — «Mappa». Tieni il dito sulla mappa e compare una puntina: dalle un nome, scegli un’icona e aggiungila al giorno. Il selettore in alto a destra: «I miei luoghi» mostra tutte le tue puntine, «Note» mostra i giorni sulla mappa con le anteprime delle foto. In una nota, aggiungi un luogo con il pulsante «Luogo» nella barra degli allegati — così:
 
@@ -232,7 +232,7 @@ enum SamplesText {
 
         Gli esempi sono ieri, oggi e domani. Cancellali come qualsiasi testo, o sposta l’intero giorno nel cestino: i tre puntini in alto a destra → «Sposta il giorno nel cestino».
         """,
-        .todayTitle: "Comincio la mia Chronotheca!",
+        .todayTitle: "Comincio la mia Graphomanus!",
         .tomorrowPlan: """
         - [ ] La sera, scrivere il bilancio del giorno
               Va nel diario sotto ogni attività, una riga ciascuna.
@@ -275,7 +275,7 @@ enum SamplesText {
               Stippen onder een datum betekenen aantekeningen op die dag. „Zoek” zoekt in woorden, foto’s en plekken.
         """,
         .todayDiary: """
-        Vandaag begint mijn Chronotheca. ’s Ochtends een plan, ’s avonds de terugblik op de dag: onder elke taak een regel over hoe het ging.
+        Vandaag begint mijn Graphomanus. ’s Ochtends een plan, ’s avonds de terugblik op de dag: onder elke taak een regel over hoe het ging.
 
         Plekken. Onderaan — „Kaart”. Houd je vinger op de kaart en er verschijnt een speld: geef hem een naam, kies een pictogram en voeg hem toe aan de dag. De schakelaar rechtsboven: „Mijn plekken” toont al je spelden, „Aantekeningen” toont de dagen op de kaart met fotovoorbeelden. In een aantekening voeg je een plek toe met de knop „Plek” in de bijlagenbalk — zo:
 
@@ -287,7 +287,7 @@ enum SamplesText {
 
         De voorbeelden zijn gisteren, vandaag en morgen. Wis ze als gewone tekst of zet de hele dag in de prullenmand: de drie puntjes rechtsboven → „Dag naar de prullenmand”.
         """,
-        .todayTitle: "Mijn Chronotheca begint!",
+        .todayTitle: "Mijn Graphomanus begint!",
         .tomorrowPlan: """
         - [ ] ’s Avonds de terugblik op de dag schrijven
               Die komt in het dagboek onder elke taak, één regel per taak.
@@ -330,7 +330,7 @@ enum SamplesText {
               Pontos sob uma data indicam anotações nesse dia. «Busca» procura em palavras, fotos e lugares.
         """,
         .todayDiary: """
-        Hoje começa a minha Chronotheca. De manhã, um plano; à noite, o balanço do dia: sob cada tarefa, uma linha sobre como foi.
+        Hoje começa a minha Graphomanus. De manhã, um plano; à noite, o balanço do dia: sob cada tarefa, uma linha sobre como foi.
 
         Lugares. Embaixo — «Mapa». Mantenha o dedo no mapa e aparece um alfinete: dê-lhe um nome, escolha um ícone e adicione-o ao dia. O seletor no canto superior direito: «Meus lugares» mostra todos os seus alfinetes, «Anotações» mostra os dias no mapa com miniaturas de fotos. Numa anotação, adicione um lugar com o botão «Lugar» na barra de anexos — assim:
 
@@ -342,7 +342,7 @@ enum SamplesText {
 
         Os exemplos são ontem, hoje e amanhã. Apague-os como qualquer texto ou mande o dia inteiro para o lixo: os três pontos no canto superior direito → «Mover o dia para o lixo».
         """,
-        .todayTitle: "Começo a minha Chronotheca!",
+        .todayTitle: "Começo a minha Graphomanus!",
         .tomorrowPlan: """
         - [ ] À noite, escrever o balanço do dia
               Vai para o diário sob cada tarefa, uma linha cada.
@@ -385,7 +385,7 @@ enum SamplesText {
               Крапки під числом — у цей день є записи. «Пошук» шукає за словами, знімками і місцями.
         """,
         .todayDiary: """
-        Сьогодні починається моя Хронотека. Уранці — план, увечері — підсумки дня: під кожною справою рядок про те, що вийшло.
+        Сьогодні починається Graphomanus. Уранці — план, увечері — підсумки дня: під кожною справою рядок про те, що вийшло.
 
         Місця. Унизу — «Мапа». Притримайте палець на мапі — з’явиться точка: назвіть її, виберіть значок і запишіть у день. Праворуч угорі перемикач: «Мої місця» — усі ваші точки, «Записи» — дні на мапі з прев’ю знімків. У записі точка ставиться кнопкою «Точка» в рядку вкладень — ось так:
 
@@ -397,7 +397,7 @@ enum SamplesText {
 
         Зразки — вчора, сьогодні й завтра. Зітріть їх, як звичайний текст, або приберіть день цілком: три крапки праворуч угорі → «Прибрати день у кошик».
         """,
-        .todayTitle: "Починаю свою Хронотеку!",
+        .todayTitle: "Починаю Graphomanus!",
         .tomorrowPlan: """
         - [ ] Увечері записати підсумки дня
               Вони стануть у щоденник під кожною справою — одним рядком.
