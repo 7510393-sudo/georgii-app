@@ -351,6 +351,14 @@ struct RootView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .clipped()
             .padding(.top, Self.topBarHeight)
+            // Нижняя строка — самый верхний слой, как и верхняя (P515): листок
+            // заходит под неё. Пока листок открыт, поверх него лежит точная
+            // копия строки на том же месте; закрыт — копии нет.
+            if shell.showingSettings || shell.showingMenu || shell.movingTask != nil {
+                tabbar
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                    .ignoresSafeArea(.all, edges: .bottom)
+            }
             // Строки разделов над клавиатурой на карте и в поиске больше нет
             // (P499): верхняя строка всегда на месте.
             // Подсказки для первого знакомства (P427) — поверх всего, когда

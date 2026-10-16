@@ -186,7 +186,7 @@ struct SettingsSticker: View {
         let window = UIApplication.shared.connectedScenes
             .compactMap { ($0 as? UIWindowScene)?.keyWindow }.first
         let insets = window?.safeAreaInsets ?? .zero
-        return max(300, UIScreen.main.bounds.height - insets.top - insets.bottom - 66 - 52 - RootView.topBarHeight)
+        return max(300, UIScreen.main.bounds.height - insets.top - insets.bottom - 66 + 8 - RootView.topBarHeight)
     }
 
     @EnvironmentObject private var vault: Vault
@@ -200,11 +200,11 @@ struct SettingsSticker: View {
     /// Листок встал на место: можно мерить (P513).
     @State private var settled = false
 
-    /// Высота прокрутки: до верха нижней строки и на полторы точки ниже —
-    /// рваный край строки закрыт, рамка открытого раздела видна (P424).
+    /// Высота прокрутки: листок кончается под нижней строкой, на 16 точек ниже её
+    /// верха (P515): строка лежит поверх, рваный край виден на листке.
     private var height: CGFloat {
         guard top > 0, shell.barTop > top else { return Self.fullHeight }
-        return max(300, shell.barTop + 1.5 - top)
+        return max(300, shell.barTop + 16 - top)
     }
 
     /// Объём папки, посчитанный заранее (P486): пока листок открывался, объём

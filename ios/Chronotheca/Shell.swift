@@ -142,11 +142,13 @@ final class Shell: ObservableObject {
     /// Задвинуть листок обратно: он уезжает вверх, пока снова не останется
     /// один уголок.
     func tuckIn(settings: Bool) {
+        // Толчок — в момент нажатия, как при выезде, а не когда листок уже
+        // ушёл (P515).
+        Feel.paper()
         withAnimation(.tuck) {
             if settings { settingsPull = 1 } else { menuPull = 1 }
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            Feel.paper()
             var still = Transaction()
             still.disablesAnimations = true
             withTransaction(still) {
