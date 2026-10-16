@@ -197,6 +197,8 @@ struct SettingsSticker: View {
     /// Где начинается прокрутка листка на экране (P424). Листок выезжает
     /// сдвигом картинки, а не места, — эта точка стоит, пока он едет.
     @State private var top: CGFloat = 0
+    /// Листок встал на место: можно мерить (P513).
+    @State private var settled = false
 
     /// Высота прокрутки: до верха нижней строки и на полторы точки ниже —
     /// рваный край строки закрыт, рамка открытого раздела видна (P424).
@@ -271,15 +273,21 @@ struct SettingsSticker: View {
           // менялась пружиной, и вместе с ней дрожал и сам листок.
           .animation(nil, value: height)
           .background {
+              // Верх прокрутки меряется, когда листок уже встал (P513): раньше
+              // он читался на каждом кадре выезда, и высота прокрутки
+              // менялась вместе с ним — отсюда рывок в середине движения.
               GeometryReader { g in
                   Color.clear
-                      .onAppear {
+                      .onChange(of: settled) { _, now in
+                          guard now else { return }
                           var still = Transaction()
                           still.disablesAnimations = true
                           withTransaction(still) { top = g.frame(in: .global).minY }
                       }
-                      .onChange(of: g.frame(in: .global).minY) { _, y in top = y }
               }
+          }
+          .onAppear {
+              DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) { settled = true }
           }
         }
         .sheet(isPresented: $showingPDF) {
