@@ -291,6 +291,9 @@ struct SettingsSticker: View {
         .sheet(isPresented: $showingImport, onDismiss: { archive.reload() }) {
             ImportSheet().environmentObject(vault).environmentObject(store)
         }
+        .sheet(isPresented: $showingGoogleMaps) {
+            GoogleMapsImportSheet().environmentObject(vault)
+        }
         .sheet(isPresented: $showingTrash) {
             TrashSheet(vault: vault, save: { store.save() }) {
                 store.load()
@@ -604,6 +607,10 @@ struct SettingsSticker: View {
             Choice(options: [("apple", T("Карты Apple", "Apple Maps")), ("google", "Google")],
                    selection: $navigator)
         }
+        // Разовый перенос меток из файлов Google (P512).
+        NoteRow(title: T("Перенести метки из Google Карт", "Move places from Google Maps")) {
+            NoteButton(title: T("Открыть ›", "Open ›")) { showingGoogleMaps = true }
+        }
     }
 
     @ViewBuilder private var aboutPart: some View {
@@ -720,6 +727,7 @@ struct SettingsSticker: View {
     @State private var showingPDF = false
     @State private var showingBackup = false
     @State private var showingImport = false
+    @State private var showingGoogleMaps = false
     @AppStorage(Lang.key) private var language = "en"
 
     private var onOff: [(Bool, String)] { [(true, T("вкл", "on")), (false, T("выкл", "off"))] }
