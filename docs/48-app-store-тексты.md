@@ -58,7 +58,7 @@ WHAT GOES INTO A DAY
 FIND AND REMEMBER
 • Search across everything — only plans, only diary, only photos, only places.
 • Calendar by year, month and list.
-• “Do you remember?” — what happened on this day before.
+• “Back then…” — what happened on this day in earlier years.
 • A PDF book of any period.
 
 SAFE BY DESIGN
@@ -108,7 +108,7 @@ Graphomanus — дневник и планировщик дня на одной 
 НАЙТИ И ВСПОМНИТЬ
 • Поиск по всему — только по плану, только по дневнику, только снимки, места.
 • Календарь: год, месяц, список.
-• «А помнишь?» — что было в этот день раньше.
+• «А вот когда-то…» — запись этого же числа в прошлые годы.
 • PDF-книга за любой срок.
 
 СОХРАННОСТЬ
@@ -197,7 +197,7 @@ Contact: support@graphomanus.com
 1. Утро — план с делами и событиями Календаря.
 2. День — снимок под делом, точка на карте.
 3. Вечер — «Как прошло?» и запись.
-4. Через год — «А помнишь?».
+4. Через год — «А вот когда-то…».
 5. Календарь / поиск.
 6. Папка в «Файлах» — «это всё ваше».
 

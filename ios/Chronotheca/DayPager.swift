@@ -1109,8 +1109,33 @@ struct DayCloud: View {
     /// Дни, чьи облачка уже прочитаны (решение P136).
     @AppStorage(Remembered.key) private var read = ""
 
+    /// Сегодняшний день, каким его видит облачко (P518): облачко бывает только
+    /// на сегодняшнем и будущих днях; когда день проходит, оно тает само.
+    @State private var today = DayStore.today()
+
     var body: some View {
-        if !shell.hideCloud, archive.remembered(for: date) != nil,
+        ZStack {
+            // Следит за сменой суток: без этого страница, открытая в полночь,
+            // продолжала бы показывать облачко уже прошедшего дня.
+            Color.clear.frame(width: 0, height: 0)
+                .onReceive(NotificationCenter.default.publisher(
+                    for: UIApplication.significantTimeChangeNotification)) { _ in refreshToday() }
+                .onReceive(Timer.publish(every: 60, on: .main, in: .common).autoconnect()) { _ in
+                    refreshToday()
+                }
+            cloud
+        }
+    }
+
+    private func refreshToday() {
+        let now = DayStore.today()
+        guard now != today else { return }
+        // Тает так же мягко, как после прочтения (P334).
+        withAnimation(.easeOut(duration: 1.5)) { today = now }
+    }
+
+    @ViewBuilder private var cloud: some View {
+        if date >= today, !shell.hideCloud, archive.remembered(for: date) != nil,
            !Remembered.has(Vault.stamp(date), in: read) {
             // Те же размеры, что на прежнем корешке: половина его ширины,
             // а корешок был в половину страницы.
