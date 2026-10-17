@@ -84,6 +84,9 @@ struct DiaryEditor: UIViewRepresentable {
     /// Отметка времени, ждущая первой буквы новой строки (P403): `nil` —
     /// не ждёт.
     var takeStamp: (() -> String?)? = nil
+    /// Набрали текст в самом конце записи (P519): от этого отсчитывается час до
+    /// новой отметки времени. Правка раньше по тексту — не в счёт.
+    var onWrite: (() -> Void)? = nil
     /// Дело плана под пальцем (P409): снимок или точку из записи несут в
     /// план. `nil` — палец не над планом.
     var planTarget: ((CGPoint) -> UUID?)? = nil
@@ -1781,6 +1784,9 @@ struct DiaryEditor: UIViewRepresentable {
                 }
             }
             parent.text = now
+            if view.isFirstResponder, view.selectedRange.location >= view.textStorage.length {
+                parent.onWrite?()
+            }
             if resolve != nil, merged || DiaryEditor.hasLoosePicture(view.text) {
                 // Строку-ссылку только что бросили или вписали — рисуем её
                 // картинкой. Курсор остаётся примерно там, где был.

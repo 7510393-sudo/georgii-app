@@ -69,6 +69,7 @@ struct DiaryView: View {
             // знает само поле записи (P362).
             onFocusText: { store.openNewLine(always: $0) },
             takeStamp: { store.takeStamp() },
+            onWrite: { store.noteWriting() },
             onOpenInline: { link in
                 shell.openedPhoto = .init(tab: .diary, index: -1,
                                           url: store.photoURL(link), link: link)
@@ -147,7 +148,6 @@ struct DiaryView: View {
             store.scheduleSave()
         }
         .onChange(of: store.diaryText) { _, _ in
-            store.touchDiary()
             store.settlePhotos()
             store.scheduleSave()
         }
@@ -306,6 +306,7 @@ struct DiaryPage: View {
     /// открыто ли поле само при открытии приложения (P403).
     var onFocusText: (Bool) -> Bool = { _ in false }
     var takeStamp: (() -> String?)? = nil
+    var onWrite: (() -> Void)? = nil
     /// Касание по снимку посреди текста (P216) и по точке (P213).
     var onOpenInline: ((String) -> Void)?
     var onOpenPoint: ((GeoPoint) -> Void)?
@@ -663,7 +664,7 @@ struct DiaryPage: View {
                     onOpenPhoto: onOpenInline, onReturnPhoto: onReturnPhoto,
                     onOpenPoint: onOpenPoint, onPointToTitle: onPointToTitle, onCaret: onCaret,
                     moving: editable, onEditing: onEditing,
-                    placeCaret: placeCaret, takeStamp: takeStamp,
+                    placeCaret: placeCaret, takeStamp: takeStamp, onWrite: onWrite,
                     planTarget: planTarget, onPlanHover: onPlanHover, onToPlan: onToPlan,
                     onDeleteAttachment: onDeleteAttachment)
             // Вдвое меньше, чем было: пробел между заголовком и записью не
