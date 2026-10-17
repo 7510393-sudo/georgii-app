@@ -1,0 +1,272 @@
+# Доставка на телефон через TestFlight.
+#
+# Запускается изменением файла `.github/release-trigger` — в него пишется номер
+# очередной отправки. Так сборка выпуска не срабатывает на каждую правку кода,
+# а её запуск остаётся в истории репозитория отдельной записью.
+#
+# Работает только после того, как оформлен аккаунт Apple Developer, создана
+# запись приложения в App Store Connect и заведены четыре секрета:
+#
+#   APPSTORE_ISSUER_ID   — идентификатор издателя ключа App Store Connect
+#   APPSTORE_KEY_ID      — идентификатор ключа
+#   APPSTORE_PRIVATE_KEY — содержимое файла AuthKey_XXXX.p8 целиком
+#   APPLE_TEAM_ID        — идентификатор команды (10 знаков)
+name: Доставка в TestFlight
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/release-trigger'
+
+jobs:
+  deliver:
+    runs-on: macos-26
+    env:
+      ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+      KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+      TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Проверить, что все четыре секрета на месте
+        env:
+          KEY: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+        run: |
+          missing=""
+          [ -n "$ISSUER_ID" ] || missing="$missing APPSTORE_ISSUER_ID"
+          [ -n "$KEY_ID" ]    || missing="$missing APPSTORE_KEY_ID"
+          [ -n "$TEAM_ID" ]   || missing="$missing APPLE_TEAM_ID"
+          [ -n "$KEY" ]       || missing="$missing APPSTORE_PRIVATE_KEY"
+          if [ -n "$missing" ]; then
+            echo "::error::Не заведены секреты:$missing. Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          case "$KEY" in
+            *"BEGIN PRIVATE KEY"*) ;;
+            *) echo "::error::APPSTORE_PRIVATE_KEY не похож на ключ: нет строки BEGIN PRIVATE KEY. Скопирован не весь файл .p8?"; exit 1 ;;
+          esac
+          case "$KEY" in
+            *"END PRIVATE KEY"*) ;;
+            *) echo "::error::В APPSTORE_PRIVATE_KEY нет строки END PRIVATE KEY — потеряна последняя строка файла."; exit 1 ;;
+          esac
+          # Team ID — ровно десять знаков, заглавные латинские буквы и цифры.
+          if ! printf '%s' "$TEAM_ID" | grep -Eq '^[A-Z0-9]{10}$'; then
+            echo "::error::APPLE_TEAM_ID не похож на настоящий: должно быть ровно 10 знаков, заглавные латинские буквы и цифры. Возьмите его на developer.apple.com/account, карточка Membership details."
+            exit 1
+          fi
+          # Защита от самой обидной ошибки: скопирован пример из переписки, а не своё значение.
+          for sample in A1B2C3D4E5 ABCDE12345 1234567890; do
+            if [ "$TEAM_ID" = "$sample" ]; then
+              echo "::error::В APPLE_TEAM_ID попал образец из переписки ($sample), а не ваш настоящий Team ID."
+              exit 1
+            fi
+          done
+
+          echo "Все четыре на месте."
+
+      - name: Взять самый новый Xcode и проверить, что он годится для App Store
+        run: |
+          latest=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
+          sudo xcode-select -s "$latest/Contents/Developer"
+          xcodebuild -version
+          sdk=$(xcodebuild -showsdks | sed -n 's/.*-sdk iphoneos\([0-9][0-9]*\).*/\1/p' | sort -n | tail -1)
+          echo "Самый новый iOS SDK на машине: $sdk"
+          if [ -z "$sdk" ] || [ "$sdk" -lt 26 ]; then
+            echo "::error::App Store принимает сборки только с iOS SDK 26 и новее (правило Apple с 28 апреля 2026). На этой машине максимум $sdk."
+            exit 1
+          fi
+
+      - name: Поставить XcodeGen
+        run: brew install xcodegen
+
+      - name: Номер сборки и проект Xcode
+        working-directory: ios
+        run: |
+          # Номер сборки должен расти с каждой отправкой — берём номер запуска.
+          sed -i '' "s/CURRENT_PROJECT_VERSION: \".*\"/CURRENT_PROJECT_VERSION: \"${GITHUB_RUN_NUMBER}\"/" project.yml
+          grep CURRENT_PROJECT_VERSION project.yml
+          xcodegen generate
+
+      - name: Положить ключ App Store Connect и убедиться, что он настоящий
+        env:
+          KEY: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+        run: |
+          mkdir -p "$HOME/private_keys"
+          printf '%s\n' "$KEY" > "$HOME/private_keys/AuthKey_${KEY_ID}.p8"
+          chmod 600 "$HOME/private_keys/AuthKey_${KEY_ID}.p8"
+          echo "KEY_PATH=$HOME/private_keys/AuthKey_${KEY_ID}.p8" >> "$GITHUB_ENV"
+
+          # Не печатаем содержимое — только размеры и итог разбора.
+          wc -l < "$HOME/private_keys/AuthKey_${KEY_ID}.p8" | sed 's/^/строк в ключе: /'
+          if openssl pkey -in "$HOME/private_keys/AuthKey_${KEY_ID}.p8" -noout 2>/dev/null; then
+            echo "Ключ разбирается как закрытый ключ — годен."
+          else
+            echo "::error::Файл ключа не разбирается. Скорее всего в секрет APPSTORE_PRIVATE_KEY попало не всё содержимое .p8 или добавились лишние символы."
+            exit 1
+          fi
+
+      - name: Спросить у Apple, что она про нас знает
+        run: |
+          # Системный Python на образе защищён от установки пакетов (PEP 668),
+          # поэтому ставим их в отдельное окружение.
+          python3 -m venv /tmp/asc
+          /tmp/asc/bin/pip install --quiet --disable-pip-version-check pyjwt cryptography
+          /tmp/asc/bin/python - <<'PY'
+          import json, os, time, urllib.request, urllib.error
+          import jwt
+
+          key = open(os.environ["KEY_PATH"]).read()
+          now = int(time.time())
+          token = jwt.encode(
+              {"iss": os.environ["ISSUER_ID"], "iat": now, "exp": now + 900,
+               "aud": "appstoreconnect-v1"},
+              key, algorithm="ES256",
+              headers={"kid": os.environ["KEY_ID"], "typ": "JWT"})
+
+          def ask(path):
+              req = urllib.request.Request(
+                  "https://api.appstoreconnect.apple.com" + path,
+                  headers={"Authorization": "Bearer " + token})
+              try:
+                  with urllib.request.urlopen(req, timeout=30) as r:
+                      return json.load(r)
+              except urllib.error.HTTPError as e:
+                  print("  ответ", e.code, e.read()[:400].decode("utf-8", "replace"))
+                  return None
+
+          print("Опознавательные знаки, заведённые в аккаунте:")
+          data = ask("/v1/bundleIds?limit=200")
+          if data is None:
+              raise SystemExit("::error::Ключ не принят Apple. Проверьте Issuer ID и Key ID.")
+          ids = [b["attributes"]["identifier"] for b in data.get("data", [])]
+          for i in sorted(ids):
+              print("   ", i)
+          if not ids:
+              print("    (ни одного)")
+
+          print("Записи приложений в App Store Connect:")
+          data = ask("/v1/apps?limit=200")
+          apps = [(a["attributes"]["bundleId"], a["attributes"]["name"])
+                  for a in (data or {}).get("data", [])]
+          for b, n in sorted(apps):
+              print("   ", b, "—", n)
+          if not apps:
+              print("    (ни одной)")
+
+          want = "com.kobiashvili.diary"
+          problems = []
+          if want not in ids:
+              problems.append("не заведён опознавательный знак " + want +
+                              " (developer.apple.com → Identifiers → App IDs)")
+          if want not in [b for b, _ in apps]:
+              problems.append("не создана запись приложения с " + want +
+                              " (App Store Connect → Apps → New App)")
+          if problems:
+              print("::error::" + "; ".join(problems))
+              raise SystemExit(1)
+          print("Знак заведён и запись приложения есть — обе стороны на месте.")
+
+
+      - name: Завести сертификат и профиль
+        run: |
+          /tmp/asc/bin/python ci/provision.py
+
+      - name: Архив
+        working-directory: ios
+        run: |
+          set -o pipefail
+          set -x   # показать команду целиком: не потерялись ли флаги на переносах
+          # Архив собираем без подписи. Подписывает этап выпуска, и это
+          # принципиально: при архивации Xcode просит профиль РАЗРАБОТКИ, который
+          # для нового аккаунта создать нельзя — в нём нет зарегистрированных
+          # устройств. Профиль распространения устройств не требует.
+          xcodebuild archive \
+            -project Chronotheca.xcodeproj \
+            -scheme Chronotheca \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/Chronotheca.xcarchive \
+            -configuration Release \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS=""
+
+      - name: Подписать и упаковать ipa
+        working-directory: ios
+        run: |
+          set -e
+          security unlock-keychain -p chronotheca-ci "$SIGNING_KEYCHAIN"
+
+          APP="build/Chronotheca.xcarchive/Products/Applications/Chronotheca.app"
+          [ -d "$APP" ] || { echo "::error::В архиве нет приложения по пути $APP"; exit 1; }
+
+          # Профиль кладётся внутрь приложения — именно оттуда его читает iPhone.
+          cp "$PROFILE_PATH" "$APP/embedded.mobileprovision"
+
+          # Виджет (P382) — своим профилем и своими правами, до приложения.
+          # Профиля нет — виджет вынимается: приложение уходит без него.
+          WIDGET_APPEX="$APP/PlugIns/ChronothecaWidget.appex"
+          if [ -d "$WIDGET_APPEX" ]; then
+            if [ -n "${WIDGET_PROFILE_PATH:-}" ] && [ -f "$WIDGET_PROFILE_PATH" ]; then
+              cp "$WIDGET_PROFILE_PATH" "$WIDGET_APPEX/embedded.mobileprovision"
+              /usr/bin/codesign --force --sign "$SIGNING_IDENTITY" \
+                --keychain "$SIGNING_KEYCHAIN" --timestamp=none \
+                --entitlements "$WIDGET_ENTITLEMENTS_PATH" "$WIDGET_APPEX"
+              echo "виджет подписан"
+            else
+              echo "::warning::Профиля виджета нет — приложение уходит без виджета."
+              rm -rf "$WIDGET_APPEX"
+            fi
+          fi
+
+          # Сначала вложенное (библиотеки Swift), потом само приложение:
+          # подпись внешнего рушится, если внутреннее переподписать после.
+          if [ -d "$APP/Frameworks" ]; then
+            find "$APP/Frameworks" -maxdepth 1 \( -name '*.framework' -o -name '*.dylib' \) -print0 |
+              while IFS= read -r -d '' item; do
+                echo "подписываю вложенное: $(basename "$item")"
+                /usr/bin/codesign --force --sign "$SIGNING_IDENTITY" \
+                  --keychain "$SIGNING_KEYCHAIN" --timestamp=none "$item"
+              done
+          fi
+
+          /usr/bin/codesign --force --sign "$SIGNING_IDENTITY" \
+            --keychain "$SIGNING_KEYCHAIN" --timestamp=none \
+            --entitlements "$ENTITLEMENTS_PATH" "$APP"
+
+          /usr/bin/codesign --verify --deep --strict --verbose=2 "$APP"
+
+          rm -rf build/export && mkdir -p build/export/Payload
+          cp -R "$APP" build/export/Payload/
+          (cd build/export && zip -qry Chronotheca.ipa Payload && rm -rf Payload)
+          ls -la build/export
+
+      - name: Отправить в TestFlight
+        working-directory: ios
+        run: |
+          ipa=$(ls build/export/*.ipa | head -1)
+          echo "Отправляю $ipa"
+
+          # Ответ Apple разбираем сами: у неё есть суточный предел на число
+          # сборок одного приложения, и упёршись в него, она отвечает кодом
+          # 90382. Без разбора это выглядит как поломка сборки, хотя код
+          # цел и дело только в счётчике.
+          set +e
+          xcrun altool --upload-app -f "$ipa" -t ios \
+            --apiKey "$KEY_ID" \
+            --apiIssuer "$ISSUER_ID" 2>&1 | tee /tmp/altool.log
+          CODE=${PIPESTATUS[0]}   # имя латиницей: кириллицу bash в именах не принимает
+          set -e
+
+          if [ "$CODE" = "0" ]; then
+            echo "### Сборка ${GITHUB_RUN_NUMBER} отправлена в TestFlight" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          if grep -q "90382" /tmp/altool.log; then
+            echo "::error::Apple не приняла сборку: на сегодня исчерпан суточный предел выгрузок для этого приложения (код 90382). Код цел и проверки пройдены — предел снимется через сутки. Отправлять каждую правку отдельной сборкой не нужно: номер сборки стоит поднимать тогда, когда сборку действительно пойдут смотреть."
+            echo "### Сборка ${GITHUB_RUN_NUMBER} не отправлена: суточный предел Apple" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit "$CODE"

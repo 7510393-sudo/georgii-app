@@ -1,0 +1,237 @@
+# Снимки экрана из настоящего симулятора.
+#
+# Собирает приложение, запускает его на симуляторе iPhone, снимает экраны и
+# кладёт картинки в docs/screens/. Запускается вручную.
+name: Снимки экрана
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'ios/**'
+      - '.github/workflows/screenshots.yml'
+
+permissions:
+  contents: write
+
+# Две съёмки одной ветки сразу не нужны: снимки нужны свежие, а прогон,
+# начатый до последней правки, показывает вчерашнее приложение. Старый
+# прогон отменяется — заодно исчезает и столкновение за одни и те же файлы.
+concurrency:
+  group: снимки-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  shots:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Взять самый новый Xcode
+        run: |
+          latest=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
+          sudo xcode-select -s "$latest/Contents/Developer"
+          xcodebuild -version
+
+      - name: Поставить XcodeGen
+        run: brew install xcodegen
+
+      - name: Собрать проект Xcode из project.yml
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Выбрать симулятор
+        id: sim
+        run: |
+          udid=$(xcrun simctl list devices available -j | python3 -c "
+          import json, sys
+          runtimes = json.load(sys.stdin)['devices']
+          best = None
+          for runtime in sorted(runtimes, reverse=True):
+              for device in runtimes[runtime]:
+                  if device.get('isAvailable') and device['name'].startswith('iPhone'):
+                      best = (device['udid'], device['name'], runtime)
+                      break
+              if best:
+                  break
+          if not best:
+              sys.exit('нет доступного симулятора iPhone')
+          print(best[0])
+          print(best[1], best[2], file=sys.stderr)
+          ")
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+          echo "Симулятор: $udid"
+
+      - name: Собрать приложение
+        working-directory: ios
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project Chronotheca.xcodeproj \
+            -scheme Chronotheca \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Снять экраны
+        working-directory: ios
+        env:
+          UDID: ${{ steps.sim.outputs.udid }}
+          APP_ID: com.kobiashvili.diary
+        run: |
+          set -e
+          mkdir -p ../docs/screens
+
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+
+          # Чистая строка состояния, как на снимках Apple
+          xcrun simctl status_bar "$UDID" override \
+            --time "9:41" --batteryState charged --batteryLevel 100 \
+            --cellularBars 4 --wifiBars 3 || true
+
+          # Симулятор после запуска показывает своё системное уведомление
+          # («Ready for Apple Intelligence») — оно закрывает шапку на первых
+          # снимках. Даём ему показаться и уйти.
+          sleep 20
+
+          xcrun simctl install "$UDID" \
+            build/Build/Products/Debug-iphonesimulator/Chronotheca.app
+          # Погода просит место (P280): на снимках окна-вопроса быть не
+          # должно — место заранее запрещено, погода просто не берётся.
+          xcrun simctl privacy "$UDID" revoke location "$APP_ID" || true
+
+          # 1. Первый запуск: приложение просит выбрать папку
+          xcrun simctl launch "$UDID" "$APP_ID"
+          sleep 6
+          xcrun simctl io "$UDID" screenshot ../docs/screens/01-выбор-папки.png
+          xcrun simctl terminate "$UDID" "$APP_ID" || true
+
+          # 2…N. По снимку на каждый основной экран.
+          #
+          # Один снимок на сборку — это разговор об интерфейсе по памяти,
+          # а память врёт. Поэтому каждый экран открывается переменной
+          # окружения и снимается отдельно.
+          # Пустой снимок — это либо упавшее приложение, либо недоснятый кадр.
+          # Различать их на глаз нельзя, поэтому: снимаем, и если кадр вышел
+          # подозрительно лёгким (то есть почти одноцветным), пробуем ещё раз
+          # с большей выдержкой. Если и тогда пусто — отчёт о падении покажет
+          # причину, а сборка пометится предупреждением.
+          snap () {
+            local file="$1" screen="$2" try size
+            for try in 1 2; do
+              xcrun simctl terminate "$UDID" "$APP_ID" >/dev/null 2>&1 || true
+              sleep 1
+              SIMCTL_CHILD_CHRONOTHECA_PREVIEW=1 \
+              SIMCTL_CHILD_CHRONOTHECA_SCREEN="$screen" \
+                xcrun simctl launch "$UDID" "$APP_ID" || true
+              sleep $((6 + try * 3))
+              xcrun simctl io "$UDID" screenshot "../docs/screens/$file"
+              size=$(stat -f%z "../docs/screens/$file")
+              if [ "$size" -gt 100000 ]; then return 0; fi
+              echo "::warning::экран «$screen»: кадр $size байт — похоже на пустой, попытка $try"
+            done
+            echo "::error::экран «$screen» не нарисовался"
+            BLANK="$BLANK $screen"
+          }
+          BLANK=""
+
+          snap 02-план.png            ""
+          snap 03-дневник.png         diary
+          snap 04-календарь.png       calendar
+          snap 05-поиск.png           search
+          snap 06-меню-страницы.png   menu
+          snap 11-настройки.png       settings
+          snap 12-помнишь.png         remember
+          snap 08-прошедший-день.png  past
+          snap 09-режим-изменений.png editing
+          snap 10-будущий-дневник.png future
+          # Тот же день, нарисованный соседским способом. Нужен, чтобы
+          # сличить две росписи пиксель в пиксель: если они совпадают,
+          # причина мерцания при повороте — не в них.
+          snap 13-соседская-роспись.png side
+          snap 15-календарь-список.png  list
+          snap 16-меню-календаря.png    calendar-menu
+          snap 17-меню-поиска.png       search-menu
+          snap 18-подсказка.png         hint
+
+          # Тёмная тема (P466): цвета для неё заданы, но глазами их никто
+          # не видел. Три главных экрана — в тёмном виде телефона.
+          xcrun simctl ui "$UDID" appearance dark || true
+          snap 20-тёмная-план.png       ""
+          snap 21-тёмная-дневник.png    diary
+          snap 22-тёмная-настройки.png  settings
+          xcrun simctl ui "$UDID" appearance light || true
+
+          xcrun simctl terminate "$UDID" "$APP_ID" || true
+
+          # Отчёты о падении — единственный способ узнать причину пустого кадра.
+          crashes=~/Library/Logs/DiagnosticReports
+          found=$(ls -t "$crashes"/Chronotheca*.ips 2>/dev/null | head -3 || true)
+          if [ -n "$found" ]; then
+            echo "::group::Отчёты о падении"
+            for f in $found; do
+              echo "--- $f"
+              head -c 4000 "$f"
+              echo
+            done
+            echo "::endgroup::"
+          else
+            echo "Отчётов о падении нет."
+          fi
+
+          xcrun simctl shutdown "$UDID" || true
+
+          ls -la ../docs/screens
+          if [ -n "$BLANK" ]; then
+            echo "::error::пустые экраны:$BLANK"
+            exit 1
+          fi
+
+          # Открытая страница и соседняя обязаны выглядеть одинаково: при
+          # повороте они сменяют друг друга, и всякое расхождение человек
+          # видит как мерцание (P114, P130). Сличаем снимки сами: на глаз
+          # такое ловится через раз, а тремя сборками позже.
+          #
+          # Последним делом, чтобы снимки успели лечь в репозиторий даже
+          # тогда, когда страницы разошлись, — по ним и разбираться.
+          python3 -m pip install --quiet --disable-pip-version-check pillow || true
+          python3 ../.github/сличить-страницы.py
+
+      - name: Положить снимки в репозиторий
+        # И тогда, когда съёмка нашла пустой экран или расхождение: по
+        # самим снимкам и разбираться (P408).
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Пока шла съёмка, в ветку могли записать что-то ещё — например,
+          # отправку сборки. Тогда встаём поверх нового конца ветки и кладём
+          # свои снимки заново.
+          #
+          # Не перебазированием: картинки — двоичные файлы, и слить две
+          # версии одного снимка нельзя в принципе, rebase на них встаёт
+          # намертво. Правило простое и верное: последняя съёмка побеждает,
+          # она и есть самая свежая.
+          # Снимки откладываем в сторону: на них мы будем ставить заново.
+          FRESH=$(mktemp -d)   # имя латиницей: кириллицу bash в именах не принимает
+          cp docs/screens/* "$FRESH"/
+
+          for try in 1 2 3 4; do
+            git add docs/screens
+            if git diff --cached --quiet; then
+              echo "снимки не изменились"
+              exit 0
+            fi
+            git commit -m "docs: снимки экрана из симулятора"
+            if git push; then exit 0; fi
+
+            echo "отправка не прошла, попытка $try"
+            sleep $((try * 3))
+            git fetch origin "$GITHUB_REF_NAME" || exit 1
+            # Встаём ровно на чужой конец ветки — со всем, что там появилось,
+            # — и кладём свои снимки поверх. Ничего чужого не теряется.
+            git reset --hard "origin/$GITHUB_REF_NAME" || exit 1
+            cp "$FRESH"/* docs/screens/
+          done
+          echo "::warning::снимки не удалось отправить в репозиторий"

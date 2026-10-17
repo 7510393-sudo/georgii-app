@@ -1,0 +1,109 @@
+name: Chronotheca
+options:
+  bundleIdPrefix: com.kobiashvili
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MARKETING_VERSION: "0.1"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  Chronotheca:
+    type: application
+    platform: iOS
+    sources:
+      - path: Chronotheca
+    # Виджет вкладывается в приложение (P382).
+    dependencies:
+      - target: ChronothecaWidget
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.kobiashvili.diary
+        GENERATE_INFOPLIST_FILE: YES
+        # Ключи, которых нет среди INFOPLIST_KEY_*: Xcode сливает этот файл
+        # с тем, что строит сам. Здесь — запись голоса не обрывается, когда
+        # гаснет экран (P343).
+        INFOPLIST_FILE: Support/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        # Приложение не шифрует ничего. Без этой строки App Store Connect
+        # спрашивает про шифрование у каждой сборки и держит её до ответа.
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
+        INFOPLIST_KEY_CFBundleDisplayName: Graphomanus
+        # Вопросы о разрешениях задаёт сама iOS — на языке телефона, а не
+        # приложения. Здесь английские; русские — в ru.lproj/InfoPlist.strings (P355).
+        # Микрофон — только когда человек нажал «аудио» (P209).
+        INFOPLIST_KEY_NSMicrophoneUsageDescription: "To record a voice note for your diary. The recording is saved as a file in your Audio folder."
+        # Место спрашивается только по нажатию на геоточку (P207).
+        INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "To note the day’s weather and mark where you are on your map. The place is written only to your files; for the weather it is sent to Apple Weather."
+        # Своя папка приложения видна в «Файлах»: «На iPhone › Chronotheca» (P223).
+        INFOPLIST_KEY_UIFileSharingEnabled: YES
+        INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace: YES
+        # Замок записей (P249).
+        INFOPLIST_KEY_NSCameraUsageDescription: "To take a photo straight into the day’s entry. The photo is saved in your Photos folder."
+        INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription: "To save a photo you took in the app to Photos, when you ask."
+        INFOPLIST_KEY_NSPhotoLibraryUsageDescription: "To show the day’s photos right on the page. The photo you choose is copied to your Photos folder; the rest go nowhere."
+        # События Календаря в плане дня (P376): только читать и, по просьбе
+        # человека, удалить событие.
+        INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription: "To show your iPhone Calendar events in the day’s plan, by time, with their reminders. Nothing is copied out of Calendar unless you ask."
+        # Голос в текст (P378): распознаёт сам iPhone.
+        INFOPLIST_KEY_NSSpeechRecognitionUsageDescription: "To turn your voice notes into text in the diary. The recording stays as it is; where your language allows, recognition happens on the iPhone itself."
+        # «Здоровье» (P378): только читать шаги, сон и тренировки.
+        INFOPLIST_KEY_NSHealthShareUsageDescription: "To show the day’s steps, sleep and workouts above your diary. The data stays in Health; it goes into your entry only when you tap it."
+        # Apple требует и строку о записи в «Здоровье», раз есть право на
+        # него, хотя приложение туда не пишет (ошибка 90683 при выгрузке 79-й).
+        INFOPLIST_KEY_NSHealthUpdateUsageDescription: "Graphomanus does not write anything to Health. It only reads the day’s steps, sleep and workouts to show them above your diary."
+        # Прежняя строка Календаря — для систем, которые спрашивают по-старому.
+        INFOPLIST_KEY_NSCalendarsWriteOnlyAccessUsageDescription: "Only when you edit or delete a Calendar event yourself from the day’s plan."
+        INFOPLIST_KEY_NSCalendarsUsageDescription: "To show your iPhone Calendar events in the day’s plan, by time, with their reminders. Nothing is copied out of Calendar unless you ask."
+        INFOPLIST_KEY_NSFaceIDUsageDescription: "To lock your entries: without your face or passcode no one can open them."
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
+        SWIFT_EMIT_LOC_STRINGS: YES
+
+  # Виджет «Сегодня» (P382): дата, вход в план и дневник, дела дня, если
+  # есть общая папка группы приложений.
+  ChronothecaWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Widget
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.kobiashvili.diary.widget
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_FILE: Widget/Info.plist
+        INFOPLIST_KEY_CFBundleDisplayName: Graphomanus
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
+        SKIP_INSTALL: YES
+
+  ChronothecaTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: ChronothecaTests
+    dependencies:
+      - target: Chronotheca
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.kobiashvili.diary.tests
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  Chronotheca:
+    build:
+      targets:
+        Chronotheca: all
+        ChronothecaTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - ChronothecaTests
+    archive:
+      config: Release

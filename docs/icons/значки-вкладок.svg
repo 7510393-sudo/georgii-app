@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="300" viewBox="0 0 780 300">
+  <style>
+    .p { fill: none; stroke: #2F4A6B; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+    .t { fill: none; stroke: #2F4A6B; stroke-width: 4.5; stroke-linecap: round; }
+    .f { fill: #2F4A6B; }
+    .c { fill: #A2AAB4; font: 17px -apple-system, system-ui, sans-serif; text-anchor: middle; }
+    .n { fill: #1C2128; font: 600 20px -apple-system, system-ui, sans-serif; text-anchor: middle; }
+  </style>
+
+  <!-- ═══ КАЛЕНДАРЬ: раскрыт в начале — толща справа ═══ -->
+  <g transform="translate(40,40)">
+    <!-- корешок -->
+    <path class="p" d="M100 28 L100 150"/>
+    <!-- левая сторона: обложка и одна страница -->
+    <path class="p" d="M100 28 C 80 20, 58 20, 40 28 L40 150 C 58 142, 80 142, 100 150"/>
+    <!-- правая сторона: толща страниц -->
+    <path class="p" d="M100 28 C 128 16, 168 16, 196 28 L196 150 C 168 138, 128 138, 100 150"/>
+    <!-- срез страниц справа: показывает толщину -->
+    <path class="t" d="M196 36 C 200 40, 200 138, 196 142" opacity=".55"/>
+    <path class="t" d="M203 44 C 207 48, 207 130, 203 134" opacity=".33"/>
+    <!-- сетка календаря на открытой левой странице -->
+    <g class="f">
+      <rect x="52" y="52" width="9" height="9" rx="2"/>
+      <rect x="68" y="52" width="9" height="9" rx="2"/>
+      <rect x="84" y="52" width="9" height="9" rx="2"/>
+      <rect x="52" y="68" width="9" height="9" rx="2"/>
+      <rect x="68" y="68" width="9" height="9" rx="2" opacity=".45"/>
+      <rect x="84" y="68" width="9" height="9" rx="2"/>
+      <rect x="52" y="84" width="9" height="9" rx="2" opacity=".45"/>
+      <rect x="68" y="84" width="9" height="9" rx="2"/>
+      <rect x="84" y="84" width="9" height="9" rx="2" opacity=".45"/>
+    </g>
+    <text class="n" x="118" y="196">Календарь</text>
+    <text class="c" x="118" y="220">раскрыт в начале</text>
+  </g>
+
+  <!-- ═══ СЕГОДНЯ: раскрыт ровно посередине ═══ -->
+  <g transform="translate(300,40)">
+    <path class="p" d="M118 28 L118 150"/>
+    <path class="p" d="M118 28 C 96 16, 62 16, 40 28 L40 150 C 62 138, 96 138, 118 150"/>
+    <path class="p" d="M118 28 C 140 16, 174 16, 196 28 L196 150 C 174 138, 140 138, 118 150"/>
+    <!-- одинаковая толща с обеих сторон -->
+    <path class="t" d="M40 36 C 36 40, 36 138, 40 142" opacity=".45"/>
+    <path class="t" d="M196 36 C 200 40, 200 138, 196 142" opacity=".45"/>
+    <!-- солнце: сегодняшний день -->
+    <circle class="p" cx="118" cy="82" r="14" stroke-width="5"/>
+    <g class="t" opacity=".8">
+      <path d="M118 56 L118 62"/><path d="M118 102 L118 108"/>
+      <path d="M92 82 L98 82"/><path d="M138 82 L144 82"/>
+      <path d="M100 64 L104 68"/><path d="M132 96 L136 100"/>
+      <path d="M136 64 L132 68"/><path d="M104 96 L100 100"/>
+    </g>
+    <text class="n" x="118" y="196">Сегодня</text>
+    <text class="c" x="118" y="220">раскрыт посередине</text>
+  </g>
+
+  <!-- ═══ ПОИСК: раскрыт в конце — толща слева ═══ -->
+  <g transform="translate(560,40)">
+    <path class="p" d="M136 28 L136 150"/>
+    <!-- левая сторона: толща страниц -->
+    <path class="p" d="M136 28 C 108 16, 68 16, 40 28 L40 150 C 68 138, 108 138, 136 150"/>
+    <!-- правая сторона: обложка и последняя страница -->
+    <path class="p" d="M136 28 C 156 20, 178 20, 196 28 L196 150 C 178 142, 156 142, 136 150"/>
+    <path class="t" d="M40 36 C 36 40, 36 138, 40 142" opacity=".55"/>
+    <path class="t" d="M33 44 C 29 48, 29 130, 33 134" opacity=".33"/>
+    <!-- оглавление на открытой правой странице -->
+    <g class="t" opacity=".5">
+      <path d="M150 56 L182 56"/>
+      <path d="M150 68 L182 68"/>
+      <path d="M150 80 L172 80"/>
+    </g>
+    <!-- увеличительное стекло, лежащее на странице -->
+    <circle class="p" cx="164" cy="98" r="19" stroke-width="5.5"/>
+    <path class="p" d="M178 112 L192 126" stroke-width="6"/>
+    <text class="n" x="118" y="196">Поиск</text>
+    <text class="c" x="118" y="220">раскрыт в конце</text>
+  </g>
+</svg>

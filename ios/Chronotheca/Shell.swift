@@ -1,0 +1,345 @@
+import SwiftUI
+
+/// Что сейчас на экране и что поверх него.
+///
+/// Отдельно от данных: здесь нет ничего, что стоило бы записать в файл.
+/// Закроется приложение — потеряется только то, на какой вкладке человек был,
+/// и это не потеря.
+final class Shell: ObservableObject {
+
+    /// Разделы внизу: сегодня, календарь, карта, поиск (P239).
+    enum Screen { case today, calendar, map, search }
+
+    enum Tab: String, CaseIterable, Identifiable {
+        case plan = "План"
+        case diary = "Дневник"
+        var id: String { rawValue }
+
+        /// Название на языке приложения (P355). `rawValue` — прежнее
+        /// русское, его не показываем.
+        var title: String { self == .plan ? T("План", "Plan") : T("Дневник", "Diary") }
+
+        /// Чей это файл в папке записей — для корзины (P300).
+        var vaultFolder: Vault.Folder { self == .diary ? .diary : .planner }
+    }
+
+    @Published var screen: Screen = .today {
+        didSet { if screen == .map && oldValue != .map { mapFrom = oldValue } }
+    }
+    /// С какого экрана пришли на карту: с «Сегодня» точка ложится туда, где
+    /// был курсор; из календаря и поиска — спрашивается, в план или в
+    /// дневник (P240).
+    private(set) var mapFrom: Screen = .today
+
+    /// Плашки экранов, опущенные друг на друга, снизу вверх (P501, P505).
+    /// Нажатие на раздел просто опускает его плашку сверху поверх остальных,
+    /// не поднимая прежнюю; второе нажатие на открытый раздел убирает верхнюю
+    /// плашку, и под ней оказывается тот экран, с которого пришли. «Сегодня»
+    /// — такая же плашка, как остальные; при запуске лежит одна она.
+    @Published var stack: [Screen] = [.today]
+    /// Верхняя опущенная плашка или книга.
+    var lowered: Screen { stack.last ?? .today }
+    @Published var tab: Tab = .plan {
+        // Запомнить, где был, — для «Открывать на: где был» (P402).
+        didSet { UserDefaults.standard.set(tab == .diary ? "diary" : "plan", forKey: Prefs.lastTab) }
+    }
+
+    /// Дело, чья шторка «Подробности» открыта.
+    @Published var drawer: UUID?
+    /// Над каким делом плана несут снимок или точку из дневника или из
+    /// полоски (P409): дело обведено синим, под ним расступается место.
+    struct PlanHover: Equatable {
+        let id: UUID
+        let photo: Bool
+    }
+    @Published var planHover: PlanHover?
+
+    /// Снимки для сборки: облачко «…помнишь?» не показывается (P408).
+    @Published var hideCloud = false
+
+    /// Дело, которому крутят время, и что именно крутят.
+    @Published var roller: Roller?
+
+    struct Roller: Identifiable {
+        enum Kind { case time, bell }
+        let id: UUID
+        let kind: Kind
+    }
+
+    /// Снимок, открытый во весь экран: с какой вкладки и который по счёту.
+    struct OpenedPhoto: Identifiable {
+        let tab: Tab
+        let index: Int
+        /// Снимок, стоящий посреди страницы, а не в полоске: открывается
+        /// прямо по месту, без «убрать» (P205).
+        var url: URL? = nil
+        /// Строка-ссылка снимка из текста: по ней он возвращается в
+        /// полоску (P216).
+        var link: String? = nil
+        var id: String { tab.rawValue + String(index) + (url?.path ?? "") }
+    }
+    @Published var openedPhoto: OpenedPhoto?
+
+    @Published var showingMenu = false
+    /// Своя карта мест — теперь раздел внизу, плашка сверху, как календарь
+    /// и поиск (P239).
+    var showingMap: Bool {
+        get { screen == .map }
+        set { screen = newValue ? .map : (screen == .map ? .today : screen) }
+    }
+    /// Точка, на которой открыть карту: её нажали в тексте дня (P213).
+    @Published var mapFocus: GeoPoint?
+    /// Точка, выбранная сейчас на карте. По ней работают «в навигатор» и
+    /// «скопировать» — и в полоске карты, и в её меню (P219).
+    @Published var mapPoint: GeoPoint?
+    /// Карта снимком со спутника, а не схемой (P222). Выбор запоминается
+    /// (P419): открыли карту снова — она такая, какой её оставили.
+    @Published var mapSatellite = UserDefaults.standard.bool(forKey: "map.satellite") {
+        didSet { UserDefaults.standard.set(mapSatellite, forKey: "map.satellite") }
+    }
+    /// Показать приветствие первого запуска для пробы (P452).
+    @Published var trialWelcome = false
+    /// Карта показывает записи — дни с точками, превью и числом, — а не
+    /// свои места (P451). Выбор запоминается, как спутник.
+    @Published var mapEntries = UserDefaults.standard.bool(forKey: "map.entries") {
+        didSet { UserDefaults.standard.set(mapEntries, forKey: "map.entries") }
+    }
+
+    /// Открыть карту на точке из текста.
+    func showPoint(_ point: GeoPoint) {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder),
+                                        to: nil, from: nil, for: nil)
+        mapFocus = point
+        screen = .map
+    }
+    @Published var showingSettings = false
+    /// Дело отвели вправо — листок «На другой день» (P383, P387).
+    @Published var movingTask: MovingTask?
+    /// Бумажку тянут за уголок: сколько её ещё за краем, 1 — вся, 0 — на
+    /// месте. Пусто — никто не тянет (P233).
+    @Published var settingsPull: CGFloat?
+    @Published var menuPull: CGFloat?
+
+    /// Вытянуть листок за уголок до конца: он стоит за краем экрана так,
+    /// что наружу торчит только его угол, и съезжает вниз целиком (P237).
+    func pullOut(settings: Bool) {
+        // Толчок — сразу по нажатию, не когда бумажка уже легла на место:
+        // рука должна почувствовать отклик в момент касания (P320).
+        Feel.paper()
+        var still = Transaction()
+        still.disablesAnimations = true
+        withTransaction(still) {
+            if settings { showingSettings = true; settingsPull = settingsPull ?? 1 }
+            else { showingMenu = true; menuPull = menuPull ?? 1 }
+        }
+        DispatchQueue.main.async {
+            withAnimation(.pull) {
+                if settings { self.settingsPull = nil } else { self.menuPull = nil }
+            }
+        }
+    }
+
+    /// Задвинуть листок обратно: он уезжает вверх, пока снова не останется
+    /// один уголок.
+    func tuckIn(settings: Bool) {
+        // Толчок — в момент нажатия, как при выезде, а не когда листок уже
+        // ушёл (P515).
+        Feel.paper()
+        withAnimation(.tuck) {
+            if settings { settingsPull = 1 } else { menuPull = 1 }
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            var still = Transaction()
+            still.disablesAnimations = true
+            withTransaction(still) {
+                if settings { self.showingSettings = false; self.settingsPull = nil }
+                else { self.showingMenu = false; self.menuPull = nil }
+            }
+        }
+    }
+    @Published var showingFile = false
+    /// Неделя одним взглядом (P466).
+    @Published var showingWeek = false
+    @Published var picking = false
+
+    /// Только для снимков: показать вместо открытой страницы ту же страницу,
+    /// нарисованную соседским способом. Так две росписи можно сличить
+    /// пиксель в пиксель, а не рассуждать о них по памяти.
+    @Published var probingSide = false
+
+    /// Просьба вернуться на сегодняшний день, перелистнув страницы.
+    /// Поднимается кнопкой «Сегодня» внизу; выполняет её сама книга.
+    @Published var goHome = false
+
+    /// Просьба убрать открытый день в корзину — спрашивает оболочка (P295).
+    @Published var trashAsk = false
+
+    /// Кнопка над клавиатурой попросила открыть фото, голос или файлы —
+    /// исполняет полоска открытой страницы (P279).
+    @Published var keyboardAsk: KeyboardBar.Ask?
+    /// Раздел, выбранный в строке над клавиатурой (P423).
+    @Published var keyboardGo: Screen?
+    /// Просьба странице встать на план или на дневник (P424): после
+    /// перелистывания и из календаря.
+    @Published var landing = 0
+    var landOnDiary = false
+
+    /// Перелистнуть день — пальцем или стрелкой шапки (P424, P441, P443).
+    /// Больше половины окна занимает дневник — новая страница на заголовке
+    /// «Дневник», и назад, и вперёд; иначе — на плане. У будущего дня
+    /// дневника нет — он на плане сам (`diaryOpen`).
+    func turn(_ step: Int, _ store: DayStore) {
+        landOnDiary = lookingAtDiary
+        landing += 1
+        store.move(by: step)
+    }
+    /// Открытая страница сейчас больше дневник, чем план (P424).
+    var lookingAtDiary = false
+    /// Где верх нижней строки разделов на экране — по нему листок настроек
+    /// кончается над ней (P424).
+    @Published var barTop: CGFloat = 0
+
+    /// Открыт ли ряд снимков галереи над полоской вложений. Лежит здесь, а
+    /// не в самой полоске: касание в любом другом месте — по странице, по
+    /// разделам внизу, по уголкам — сперва закрывает ряд и больше ничего
+    /// не делает (P344).
+    @Published var gallery = false
+
+    /// Сколько раз приложение открывали заново — при запуске и после долгой
+    /// паузы. Меняется — план встаёт на самый верх, дневник прокручивается
+    /// к концу записи с пустыми строками под ней (P346).
+    @Published var freshStart = 0
+    /// Приложение открыли на дневнике — поле записи само берёт ввод (P403).
+    @Published var writeNow = 0
+
+    /// Вернулись после долгой паузы: всё открытое поверх убирается, на
+    /// экране «Сегодня», вкладка — та, что выбрана в настройках (P346).
+    func startOver(_ store: DayStore) {
+        drawer = nil
+        gallery = false
+        roller = nil
+        openedPhoto = nil
+        var still = Transaction()
+        still.disablesAnimations = true
+        withTransaction(still) {
+            showingMenu = false
+            menuPull = nil
+            showingSettings = false
+            settingsPull = nil
+            screen = .today
+        }
+        tab = Prefs.openingTab
+        if !store.isToday { store.go(to: DayStore.today()) }
+        freshStart += 1
+    }
+
+    /// Просьба календарю вернуться к нынешнему месяцу или году, перелистнув
+    /// страницы. Поднимается из меню календаря; выполняет сам календарь.
+    @Published var calendarHome = false
+
+    /// Где искать: везде, только в дневнике или только в плане.
+    enum Scope { case all, diary, plan }
+
+    /// Строка поиска и где искать живут здесь, а не в самом поиске: их
+    /// меняет и меню поиска, а оно лежит поверх всего приложения.
+    @Published var query = ""
+    @Published var scope: Scope = .all
+
+    /// Что искать: всё или только дни со снимками, видео, голосом,
+    /// файлами, местами (P249).
+    enum Find: String, CaseIterable { case all = "Всё", photo = "Снимки", video = "Видео",
+                                          audio = "Голос", file = "Файлы", place = "Места"
+        var title: String {
+            switch self {
+            case .all: return T("Всё", "Everything")
+            case .photo: return T("Снимки", "Photos")
+            case .video: return T("Видео", "Videos")
+            case .audio: return T("Голос", "Voice")
+            case .file: return T("Файлы", "Files")
+            case .place: return T("Места", "Places")
+            }
+        }
+    }
+    @Published var find: Find = .all
+
+    /// Просьбы к карте из её меню: показать все места, открыть список мест.
+    @Published var mapShowAll = 0
+    @Published var mapList = false
+
+    @Published var notice: String?
+    private var hiding: DispatchWorkItem?
+
+    /// Сказать человеку, почему ничего не произошло.
+    ///
+    /// Молчаливый отказ — худшее, что может сделать приложение: человек решает,
+    /// что сломалось оно, хотя оно просто не даёт нарушить правило.
+    func say(_ text: String) {
+        hiding?.cancel()
+        withAnimation { notice = text }
+        let item = DispatchWorkItem { [weak self] in
+            withAnimation { self?.notice = nil }
+        }
+        hiding = item
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.3, execute: item)
+    }
+
+    /// Открыть экран, названный в переменной окружения, — для снимков.
+    ///
+    /// Нужно, чтобы у каждой сборки был снимок каждого экрана, а не одного.
+    /// Иначе про интерфейс приходится рассуждать по памяти, а память врёт.
+    ///
+    /// Ставится ещё дважды, через полторы и через четыре секунды: с 101-й
+    /// снимки календаря, поиска, меню, настроек и соседних дней выходили
+    /// страницей «Сегодня» — что-то при запуске возвращало приложение на
+    /// неё раньше, чем снималось (P448). Повтор делает снимки надёжными;
+    /// всё, что он ставит, — те же значения, второй раз ничего не сдвигает.
+    func openRequestedScreen(_ store: DayStore) {
+        guard Vault.isPreview,
+              let name = ProcessInfo.processInfo.environment["CHRONOTHECA_SCREEN"]
+        else { return }
+        applyScreen(name, store)
+        for delay in [1.5, 4.0] {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                self?.applyScreen(name, store)
+            }
+        }
+    }
+
+    private func applyScreen(_ name: String, _ store: DayStore) {
+        let cal = Calendar.current
+        let today = DayStore.today()
+        func day(_ k: Int) -> Date { cal.date(byAdding: .day, value: k, to: today) ?? today }
+        // Облачко «…помнишь?» — только на своих снимках: на снимке плана
+        // его нет, иначе открытая страница не сойдётся с соседской
+        // (P114, P408).
+        hideCloud = !["remember", "diary"].contains(name)
+        switch name {
+        case "diary":     tab = .diary
+        case "calendar":  screen = .calendar
+        case "search":    screen = .search
+        case "menu":      showingMenu = true
+        case "calendar-menu": screen = .calendar; showingMenu = true
+        case "search-menu":   screen = .search; showingMenu = true
+        case "settings":  showingSettings = true
+        case "remember":  tab = .diary
+        // Дни — от сегодняшнего, а не шагом: повтор не уводит дальше.
+        case "past":      if store.date != day(-1) { store.go(to: day(-1)) }
+        case "editing":
+            if store.date != day(-1) { store.go(to: day(-1)) }
+            store.setEditing(.plan, true)
+        case "future":
+            if store.date != day(1) { store.go(to: day(1)) }
+            tab = .diary
+        case "side":      probingSide = true
+        case "hint":      Hints.shared.showFirstForPreview()
+        case "list":
+            // Вид календаря запоминается в настройках — оттуда его и берём.
+            UserDefaults.standard.set(CalendarView.Kind.list.rawValue, forKey: "calendar.kind")
+            screen = .calendar
+        default: break
+        }
+        // Для снимков плашка стоит на месте сразу, без хода.
+        stack = screen == .today ? [.today] : [.today, screen]
+    }
+
+}
