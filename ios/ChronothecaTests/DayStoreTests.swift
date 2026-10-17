@@ -313,8 +313,8 @@ extension DayStoreTests {
     func testОткрылИПишешь() {
         let день = store(0)
         день.diaryText = "Утро."
-        день.touchDiary()
-        // Правили только что — новая строка без отметки.
+        день.noteWriting()
+        // Писали только что — новая строка без отметки.
         XCTAssertTrue(день.openNewLine(always: true))
         XCTAssertEqual(день.diaryText, "Утро.\n")
         XCTAssertNil(день.takeStamp())
