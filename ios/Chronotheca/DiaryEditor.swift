@@ -1673,6 +1673,16 @@ struct DiaryEditor: UIViewRepresentable {
             // уже её верх.
             keyboardTop = window.convert(frame, from: nil).minY
             makeRoom(scroll: true)
+            // Страница получает место под клавиатуру чуть позже самой
+            // клавиатуры (P516): первая прокрутка к курсору видела ещё
+            // короткую страницу и ничего не делала — строку, в которой
+            // пишут, закрывало клавиатурой, пока не набирали букву.
+            // Поэтому курсор доводится до глаз ещё раз, когда место уже есть.
+            for delay in [0.3, 0.65] {
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                    self?.showCaret(animated: true)
+                }
+            }
         }
 
         @objc private func keyboardGone(_ note: Notification) {
