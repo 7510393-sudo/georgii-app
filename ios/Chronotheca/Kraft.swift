@@ -62,8 +62,8 @@ struct KraftPaper: View {
 /// Зубцы мелкие и неправильные, но всегда одни и те же: край не должен
 /// меняться от поворота или перерисовки (P113).
 struct TornEdge: Shape {
-    /// Глубина зубцов.
-    static let depth: CGFloat = 3.5
+    /// Глубина зубцов (P517: вдвое больше прежних 3,5 — края стали заметнее).
+    static let depth: CGFloat = 7
 
     /// Сами зубцы — общие для заливки и обводки, чтобы обе совпадали
     /// точь-в-точь (P324).
@@ -76,7 +76,7 @@ struct TornEdge: Shape {
         var points: [CGPoint] = [CGPoint(x: rect.minX, y: rect.minY + next() * depth)]
         var x = rect.minX
         while x < rect.maxX {
-            x += 2 + next() * 5
+            x += 3.5 + next() * 8
             points.append(CGPoint(x: min(x, rect.maxX), y: rect.minY + next() * depth))
         }
         return points
@@ -106,6 +106,38 @@ struct TornEdgeLine: Shape {
         if let first = teeth.first {
             p.move(to: first)
             for point in teeth.dropFirst() { p.addLine(to: point) }
+        }
+        return p
+    }
+}
+
+/// Нижний край верхней строки — вторая половина той же рваной бумаги
+/// (P517). Зубцы те же, что у верхнего края нижней строки, и в том же
+/// направлении: где у верхней половины выступ вниз, у нижней — выемка, и
+/// два куска сложились бы по линии разрыва.
+struct TornEdgeBottom: Shape {
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        p.move(to: CGPoint(x: rect.minX, y: rect.minY))
+        let drop = rect.height - TornEdge.depth
+        for point in TornEdge.teeth(in: rect) {
+            p.addLine(to: CGPoint(x: point.x, y: point.y + drop))
+        }
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        p.closeSubpath()
+        return p
+    }
+}
+
+/// Только рваная черта нижнего края верхней строки.
+struct TornEdgeBottomLine: Shape {
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        let drop = rect.height - TornEdge.depth
+        let teeth = TornEdge.teeth(in: rect)
+        if let first = teeth.first {
+            p.move(to: CGPoint(x: first.x, y: first.y + drop))
+            for point in teeth.dropFirst() { p.addLine(to: CGPoint(x: point.x, y: point.y + drop)) }
         }
         return p
     }

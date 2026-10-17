@@ -53,7 +53,7 @@ struct DaySheet<Plan: View, Diary: View>: View {
     /// Строка вложений лежит поверх низа страницы, полупрозрачная (P424):
     /// столько места под концом записи, чтобы её можно было поднять из-под
     /// строки.
-    static var stripRoom: CGFloat { 42 }
+    static var stripRoom: CGFloat { 46 }
 
     var body: some View {
         GeometryReader { outer in

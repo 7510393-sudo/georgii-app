@@ -506,17 +506,17 @@ struct RootView: View {
         .padding(.vertical, 4)
         .frame(maxWidth: .infinity)
         .frame(height: Self.topBarHeight)
-        // Нижний край неровный — как верхний у нижней строки, только
-        // зеркально (P497): зубцы те же.
+        // Нижний край неровный — вторая половина той же рваной бумаги, что
+        // и верх нижней строки (P517): зубцы те же, выступ у одной —
+        // выемка у другой.
         .background(alignment: .bottom) {
             ZStack(alignment: .bottom) {
                 KraftPaper()
-                    .clipShape(TornEdge().scale(x: 1, y: -1, anchor: .center))
-                TornEdgeLine()
+                    .clipShape(TornEdgeBottom())
+                TornEdgeBottomLine()
                     .stroke(Look.kraftEdge.opacity(0.55), lineWidth: 0.8)
                     .frame(height: TornEdge.depth + 1)
                     .clipped()
-                    .scaleEffect(x: 1, y: -1)
             }
             .padding(.bottom, -TornEdge.depth)
         }
