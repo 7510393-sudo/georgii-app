@@ -851,7 +851,7 @@ struct RootView: View {
             // Окантовка открытого раздела (P414) — тонкая рамка его цвета.
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(on ? Color.black.opacity(0.08) : .clear)
+                    .fill(on ? Look.tabLit : .clear)
                     .overlay(RoundedRectangle(cornerRadius: 12)
                         .strokeBorder(on ? Look.accent.opacity(0.75) : .clear, lineWidth: 1.3))
                     .padding(.horizontal, -16)

@@ -257,6 +257,11 @@ enum Look {
     /// Чернила строки вложений: тёплые тёмные, а не серые (P297).
     static let stripInk  = Color(light: 0x3A3530, dark: 0xD9D2C6)
     /// Бумага облачка «…а помнишь?» — белая (P298).
+    /// Светлая подушка под открытым разделом в строках разделов: раздел
+    /// не затеняется, а светлеет — сразу видно, где мы (P526).
+    static let tabLit = Color(uiColor: UIColor { trait in
+        UIColor.white.withAlphaComponent(trait.userInterfaceStyle == .dark ? 0.16 : 0.45)
+    })
     static let cloudPaper = Color(light: 0xFFFFFF, dark: 0x2A2517)
 
     /// Засечный шрифт дневника. Literata в iOS нет, Georgia есть везде.

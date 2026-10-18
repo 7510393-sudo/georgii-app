@@ -448,7 +448,7 @@ struct SectionsRow: View {
                 .padding(.vertical, compact ? 2 : 3)
                 .background(
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(on ? Color.black.opacity(0.08) : .clear)
+                        .fill(on ? Look.tabLit : .clear)
                         .overlay(RoundedRectangle(cornerRadius: 10)
                             .strokeBorder(on ? Look.accent.opacity(0.75) : .clear, lineWidth: 1.3)))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
