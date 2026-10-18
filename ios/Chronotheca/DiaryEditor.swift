@@ -1817,7 +1817,10 @@ struct DiaryEditor: UIViewRepresentable {
             if range.length == 0, range.location == view.textStorage.length,
                let first = text.first, !first.isNewline, !text.contains("\u{FFFC}"),
                let stamp = parent.takeStamp?() {
-                let piece = stamp + String(first).uppercased() + String(text.dropFirst())
+                // Не с чистой строки — отметка встаёт абзацем ниже (P520).
+                let before = view.textStorage.string
+                let fresh = before.isEmpty || before.hasSuffix("\n")
+                let piece = (fresh ? "" : "\n\n") + stamp + String(first).uppercased() + String(text.dropFirst())
                 view.textStorage.replaceCharacters(
                     in: range,
                     with: NSAttributedString(string: piece,

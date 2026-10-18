@@ -329,4 +329,15 @@ extension DayStoreTests {
                                        options: .regularExpression))
         XCTAssertNil(вчера.takeStamp(), "отметка — один раз")
     }
+
+    // P520: клавиатура уже была поднята — страница сменилась без «открытия»;
+    // отметку всё равно решает час с последнего набора.
+    func testОтметкаБезОткрытияПоЧасу() {
+        let вчера = store(-1)
+        вчера.diaryText = "Вечер."
+        XCTAssertNotNil(вчера.takeStamp(), "давно не писали — отметка нужна")
+        XCTAssertNil(вчера.takeStamp(), "только что — отметки нет")
+        вчера.noteWriting()
+        XCTAssertNil(вчера.takeStamp())
+    }
 }

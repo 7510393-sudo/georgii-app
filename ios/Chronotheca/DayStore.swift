@@ -678,7 +678,12 @@ final class DayStore: ObservableObject {
 
     /// Отметка времени для первой буквы новой строки — один раз (P403).
     func takeStamp() -> String? {
-        guard stampPending, canEditDiary else { return nil }
+        guard canEditDiary else { return nil }
+        // Курсор мог встать в конец записи без «открытия» (клавиатура уже
+        // была поднята, когда перешли на другой день) — тогда `stampPending`
+        // не взведён; отметку решает и сам час с последнего набора (P520).
+        let stale = lastEdit.map { Date().timeIntervalSince($0) > DayStore.stampGap } ?? true
+        guard stampPending || stale else { return nil }
         stampPending = false
         lastEdit = Date()
         let f = DateFormatter()
