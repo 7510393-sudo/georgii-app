@@ -3,6 +3,7 @@ import UIKit
 import AVFoundation
 import AVKit
 import QuickLook
+import PhotosUI
 import UniformTypeIdentifiers
 
 // MARK: - Голос
@@ -439,6 +440,41 @@ struct AttachmentViewer: View {
                     }
                 }
                 .modifier(RemoveQuestion(asking: $asking, act: onRemove))
+        }
+    }
+}
+
+
+// MARK: - Окно галереи
+
+/// Системное окно выбора снимков и видео — тем же способом, что камера и
+/// «Добавить файл»: листом поверх экрана, который у нас показывается
+/// всегда. Прежний `.photosPicker` молча не открывался, когда его просили
+/// следом за уходящим рядом галереи (P525).
+struct LibraryPicker: UIViewControllerRepresentable {
+
+    let done: ([PHPickerResult]) -> Void
+
+    func makeUIViewController(context: Context) -> PHPickerViewController {
+        var config = PHPickerConfiguration()
+        config.selectionLimit = 0
+        config.filter = .any(of: [.images, .videos])
+        config.preferredAssetRepresentationMode = .current
+        let picker = PHPickerViewController(configuration: config)
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    func updateUIViewController(_ picker: PHPickerViewController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator { Coordinator(done: done) }
+
+    final class Coordinator: NSObject, PHPickerViewControllerDelegate {
+        let done: ([PHPickerResult]) -> Void
+        init(done: @escaping ([PHPickerResult]) -> Void) { self.done = done }
+
+        func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+            done(results)
         }
     }
 }

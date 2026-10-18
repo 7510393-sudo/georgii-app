@@ -241,7 +241,10 @@ struct CalendarView: View {
                         Text(Ru.monthNames[m - 1].capitalized)
                             .font(Look.sans(11, weight: .medium))
                             .foregroundStyle(Look.ink)
+                        // Всегда шесть недель по высоте: панельки одинаковые,
+                        // а не короче у месяцев в четыре-пять недель (P525).
                         miniMonth(year: year, month: m)
+                            .frame(height: 6 * 14 + 5 * 2, alignment: .top)
                     }
                     .padding(6)
                     .frame(maxWidth: .infinity, alignment: .leading)

@@ -560,7 +560,6 @@ struct AttachBar: View {
     private var into: Shell.Tab { store.canEditDiary ? .diary : .plan }
 
     @State private var choosing = false
-    @State private var picked: [PhotosPickerItem] = []
     @State private var recording = false
     @State private var browsing = false
     @State private var shooting = false
@@ -640,13 +639,12 @@ struct AttachBar: View {
         // Системное окно галереи: приложению не нужно разрешение на всю
         // галерею — оно получает только те снимки, которые выбрал человек.
         // Снимки и видео вместе, без предела на число (P214).
-        .photosPicker(isPresented: $choosing, selection: $picked,
-                      matching: .any(of: [.images, .videos]),
-                      preferredItemEncoding: .current)
-        .onChange(of: picked) { _, items in
-            guard !items.isEmpty else { return }
-            picked = []
-            take(items)
+        .sheet(isPresented: $choosing) {
+            LibraryPicker { results in
+                choosing = false
+                if !results.isEmpty { take(results) }
+            }
+            .ignoresSafeArea()
         }
         .sheet(isPresented: $recording) {
             Recorder(done: keepVoice, cancel: { recording = false }, align: recordAlign)
@@ -823,24 +821,52 @@ struct AttachBar: View {
         choosing = true
     }
 
+    /// Видео из окна галереи — копией во временный файл: система уберёт
+    /// своё, как только окно закроется (P525).
+    private static func copiedMovie(_ provider: NSItemProvider) async -> URL? {
+        await withCheckedContinuation { (cont: CheckedContinuation<URL?, Never>) in
+            provider.loadFileRepresentation(forTypeIdentifier: UTType.movie.identifier) { url, _ in
+                guard let url else { return cont.resume(returning: nil) }
+                let ext = url.pathExtension.isEmpty ? "mov" : url.pathExtension
+                let copy = FileManager.default.temporaryDirectory
+                    .appendingPathComponent(UUID().uuidString + "." + ext)
+                do {
+                    try FileManager.default.copyItem(at: url, to: copy)
+                    cont.resume(returning: copy)
+                } catch {
+                    cont.resume(returning: nil)
+                }
+            }
+        }
+    }
+
+    /// Снимок из окна галереи — данными, как они лежат в галерее.
+    private static func loadedImage(_ provider: NSItemProvider) async -> Data? {
+        await withCheckedContinuation { (cont: CheckedContinuation<Data?, Never>) in
+            provider.loadDataRepresentation(forTypeIdentifier: UTType.image.identifier) { data, _ in
+                cont.resume(returning: data)
+            }
+        }
+    }
+
     /// Положить выбранные снимки в папку и показать их в дневнике дня.
     @MainActor
-    private func take(_ items: [PhotosPickerItem]) {
+    private func take(_ items: [PHPickerResult]) {
         Task {
             let tab = into
             var added = 0
             var videos = 0
             if items.count > 3 { shell.say(T("Кладу в папку: \(items.count)…", "Saving to the folder: \(items.count)…")) }
             for item in items {
-                if item.supportedContentTypes.contains(where: { $0.conforms(to: .movie) }) {
+                if item.itemProvider.hasItemConformingToTypeIdentifier(UTType.movie.identifier) {
                     // Видео — в «Видео»; крупное — до 1080p, если так в
                     // настройках (P214, P365).
-                    guard let movie = try? await item.loadTransferable(type: PickedMovie.self)
+                    guard let source = await Self.copiedMovie(item.itemProvider)
                     else { continue }
-                    let file = await Movie.shrunk(movie.url)
+                    let file = await Movie.shrunk(source)
                     defer {
-                        try? FileManager.default.removeItem(at: movie.url)
-                        if file != movie.url { try? FileManager.default.removeItem(at: file) }
+                        try? FileManager.default.removeItem(at: source)
+                        if file != source { try? FileManager.default.removeItem(at: file) }
                     }
                     let ext = file.pathExtension.isEmpty ? "mov" : file.pathExtension
                     guard let data = try? Data(contentsOf: file, options: .mappedIfSafe)
@@ -853,7 +879,7 @@ struct AttachBar: View {
                     }
                     continue
                 }
-                guard let data = try? await item.loadTransferable(type: Data.self) else { continue }
+                guard let data = await Self.loadedImage(item.itemProvider) else { continue }
                 if store.addPhoto(data, to: tab) { added += 1 }
             }
             if added == items.count {
