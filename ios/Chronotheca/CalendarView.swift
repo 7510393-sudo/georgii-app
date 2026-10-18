@@ -243,12 +243,34 @@ struct CalendarView: View {
                             .foregroundStyle(Look.ink)
                         miniMonth(year: year, month: m)
                     }
+                    .padding(6)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(MonthPanelStyle())
             }
         }
         .padding(.horizontal, 14)
         .padding(.bottom, 20)
+    }
+
+    /// Месяц в годе — панелька: при касании чуть проседает и светлеет тень (P521).
+    private struct MonthPanelStyle: ButtonStyle {
+        func makeBody(configuration: Configuration) -> some View {
+            let down = configuration.isPressed
+            return configuration.label
+                .background(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(LinearGradient(colors: [Look.plateLight, Look.plateDark],
+                                             startPoint: .top, endPoint: .bottom))
+                        .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .strokeBorder(Look.stickerEdge, lineWidth: 1))
+                        .shadow(color: .black.opacity(down ? 0.06 : 0.16),
+                                radius: down ? 1 : 3, y: down ? 0.5 : 2)
+                )
+                .scaleEffect(down ? 0.96 : 1)
+                .brightness(down ? -0.03 : 0)
+                .animation(.easeOut(duration: 0.12), value: down)
+        }
     }
 
     private func miniMonth(year: Int, month: Int) -> some View {
