@@ -118,14 +118,14 @@ jobs:
           # с большей выдержкой. Если и тогда пусто — отчёт о падении покажет
           # причину, а сборка пометится предупреждением.
           snap () {
-            local file="$1" screen="$2" try size
+            local file="$1" screen="$2" extra="${3:-0}" try size
             for try in 1 2; do
               xcrun simctl terminate "$UDID" "$APP_ID" >/dev/null 2>&1 || true
               sleep 1
               SIMCTL_CHILD_CHRONOTHECA_PREVIEW=1 \
               SIMCTL_CHILD_CHRONOTHECA_SCREEN="$screen" \
                 xcrun simctl launch "$UDID" "$APP_ID" || true
-              sleep $((6 + try * 3))
+              sleep $((6 + try * 3 + extra))
               xcrun simctl io "$UDID" screenshot "../docs/appstore/$file"
               size=$(stat -f%z "../docs/appstore/$file")
               if [ "$size" -gt 100000 ]; then return 0; fi
@@ -142,7 +142,7 @@ jobs:
           snap 04-календарь-список.png list
           snap 05-поиск.png         search
           snap 06-помнишь.png       remember
-          snap 07-настройки.png     settings
+          snap 07-настройки.png     settings 14
           xcrun simctl ui "$UDID" appearance dark || true
           snap 08-тёмная-план.png   ""
           xcrun simctl ui "$UDID" appearance light || true
