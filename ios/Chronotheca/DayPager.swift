@@ -606,8 +606,10 @@ struct AttachBar: View {
         .overlay(alignment: .top) {
             if live && shell.gallery {
                 GalleryRow(day: date, add: { addFromGallery($0, day: date) }, more: {
-                    shell.gallery = false
-                    choosePhotos()
+                    withAnimation(.easeOut(duration: 0.2)) { shell.gallery = false }
+                    // Окно галереи — следом, когда ряд уже убран: в одном
+                    // такте с его уходом окно не открывалось (P522).
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { choosePhotos() }
                 })
                 .offset(y: -GalleryRow.height)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
