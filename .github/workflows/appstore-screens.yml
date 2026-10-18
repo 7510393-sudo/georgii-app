@@ -127,6 +127,15 @@ jobs:
                 xcrun simctl launch "$UDID" "$APP_ID" || true
               sleep $((6 + try * 3 + extra))
               xcrun simctl io "$UDID" screenshot "../docs/appstore/$file"
+              # Системное уведомление симулятора («Ready for Apple
+              # Intelligence») всплывает в случайный миг и ложится на шапку:
+              # снимаем второй раз и, если кадры разошлись, — третий.
+              sleep 5
+              xcrun simctl io "$UDID" screenshot /tmp/second.png
+              if ! cmp -s /tmp/second.png "../docs/appstore/$file"; then
+                sleep 8
+                xcrun simctl io "$UDID" screenshot "../docs/appstore/$file"
+              fi
               size=$(stat -f%z "../docs/appstore/$file")
               if [ "$size" -gt 100000 ]; then return 0; fi
               echo "::warning::экран «$screen»: кадр $size байт — похоже на пустой, попытка $try"
