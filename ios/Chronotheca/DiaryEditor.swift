@@ -1814,13 +1814,14 @@ struct DiaryEditor: UIViewRepresentable {
             if let decided = keepObjectsApart(view, range, text) { return decided }
             // Первая буква в новой строке под записью — и только тогда
             // перед ней встаёт время (P403). Буква — заглавная.
+            // Только с чистой строки и только буквой: пробел и продолжение
+            // начатой строки отметку не зовут (P528) — в P520 пробел после
+            // паузы перебрасывал текст на новый абзац с отметкой.
             if range.length == 0, range.location == view.textStorage.length,
-               let first = text.first, !first.isNewline, !text.contains("\u{FFFC}"),
+               let first = text.first, !first.isWhitespace, !text.contains("\u{FFFC}"),
+               view.textStorage.string.isEmpty || view.textStorage.string.hasSuffix("\n"),
                let stamp = parent.takeStamp?() {
-                // Не с чистой строки — отметка встаёт абзацем ниже (P520).
-                let before = view.textStorage.string
-                let fresh = before.isEmpty || before.hasSuffix("\n")
-                let piece = (fresh ? "" : "\n\n") + stamp + String(first).uppercased() + String(text.dropFirst())
+                let piece = stamp + String(first).uppercased() + String(text.dropFirst())
                 view.textStorage.replaceCharacters(
                     in: range,
                     with: NSAttributedString(string: piece,
