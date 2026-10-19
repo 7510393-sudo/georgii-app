@@ -1682,7 +1682,9 @@ struct DiaryEditor: UIViewRepresentable {
             else { return }
             // Полоска вложений — часть клавиатуры (P279): верх клавиатуры
             // уже её верх.
-            keyboardTop = window.convert(frame, from: nil).minY
+            // Над клавиатурой ещё лента превью и строка вложений (P541):
+            // строка, в которой пишут, встаёт выше и них.
+            keyboardTop = window.convert(frame, from: nil).minY - KeyboardDock.height
             makeRoom(scroll: true)
             // Страница получает место под клавиатуру чуть позже самой
             // клавиатуры (P516): первая прокрутка к курсору видела ещё

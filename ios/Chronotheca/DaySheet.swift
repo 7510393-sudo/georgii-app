@@ -38,6 +38,10 @@ struct DaySheet<Plan: View, Diary: View>: View {
     /// Накладка над текстом страницы, но под полоской вложений и её рядом
     /// галереи: ловит касание мимо ряда (P527).
     var catcher: AnyView? = nil
+    /// Лента превью и строка вложений над клавиатурой, пока пишут (P541).
+    var dock: AnyView? = nil
+    /// Сколько полоска над клавиатурой отнимает у страницы.
+    private var dockRoom: CGFloat { dock != nil ? KeyboardDock.height : 0 }
 
     @ViewBuilder let plan: () -> Plan
     @ViewBuilder let diary: () -> Diary
@@ -152,7 +156,8 @@ struct DaySheet<Plan: View, Diary: View>: View {
                     // себе: место под клавиатуру — полностью, иначе страница
                     // кончается погодой, а полоска остаётся под клавиатурой
                     // (замечание автора к 121).
-                    .padding(.bottom, max(covered(outer, keyboard), hold))
+                    // И над ней — полоска с превью и вложениями (P541).
+                    .padding(.bottom, max(keyboard > 0 ? covered(outer, keyboard) + dockRoom : 0, hold))
                     .onAppear {
                         goHome(proxy)
                         settle(proxy, fresh: true)
@@ -162,6 +167,16 @@ struct DaySheet<Plan: View, Diary: View>: View {
                 }
             }
             .coordinateSpace(name: Self.window)
+            // Пока поднята клавиатура — над ней лента превью и строка
+            // вложений (P541): их видно, пока пишут, и превью можно унести
+            // в текст, не опуская клавиатуру.
+            .overlay(alignment: .bottom) {
+                if keyboard > 0, let dock {
+                    dock
+                        .padding(.bottom, covered(outer, keyboard))
+                        .transition(.opacity)
+                }
+            }
             // Клавиатура ушла — место под ней остаётся, пока страница стоит
             // ниже, чем позволил бы лист без него: иначе iPhone подтягивает
             // страницу вниз одним рывком (запись экрана автора, P446).
@@ -169,7 +184,7 @@ struct DaySheet<Plan: View, Diary: View>: View {
             // место уже на месте, и лист не становится короче ни на кадр.
             .onChange(of: keyboard) { _, now in
                 if now > 0 {
-                    hold = max(0, covered(outer, now))
+                    hold = max(0, covered(outer, now) + dockRoom)
                 } else if hold > 0 {
                     release()
                 }

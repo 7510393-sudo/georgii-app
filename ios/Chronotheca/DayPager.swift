@@ -368,7 +368,8 @@ struct DayPage: View {
                      onDiary: { [shell] in shell.lookingAtDiary = $0 },
                      diaryMark: AnyView(cloud),
                      strip: AnyView(AttachBar(live: live, date: date)),
-                     catcher: AnyView(galleryCatcher)) {
+                     catcher: AnyView(galleryCatcher),
+                     dock: AnyView(KeyboardDock(date: date))) {
                 PlanView()
             } diary: {
                 DiaryView()
@@ -551,6 +552,62 @@ struct WobblyTitle: View {
 /// Пока открыта клавиатура, та же полоска стоит прямо над ней: курсор
 /// остаётся на месте, а всё нужное под пальцем (P253). Справа тогда —
 /// кнопка «убрать клавиатуру».
+/// Над клавиатурой, пока пишут (P541): лента превью — мельче, чем внизу
+/// страницы, — и строка вложений. Превью уносят в текст тем же жестом, что
+/// внизу страницы: перенос ведёт дневник (`StripBridge`).
+struct KeyboardDock: View {
+    let date: Date
+
+    @EnvironmentObject private var store: DayStore
+    @EnvironmentObject private var shell: Shell
+
+    static let thumb: CGFloat = 56
+    /// Высота с запасом: превью с отступами и строка вложений.
+    static var height: CGFloat { thumb + 16 + KeyboardBar.attachHeight + 10 }
+
+    var body: some View {
+        VStack(spacing: 2) {
+            if !store.stripLinks.isEmpty {
+                PhotoStrip(photos: store.stripLinks.map(store.photoURL),
+                           onOpen: { i in
+                               let n = store.photos.count
+                               shell.openedPhoto = i < n ? .init(tab: .diary, index: i)
+                                                         : .init(tab: .plan, index: i - n)
+                           },
+                           anyKind: true,
+                           onCarry: store.canEditDiary
+                               ? { (i: Int, phase: Lift, spot: CGPoint) in StripBridge.carry?(i, phase, spot) }
+                               : nil,
+                           size: Self.thumb)
+                    // Над ней отпущенное превью возвращается на место.
+                    .background(GeometryReader { g in
+                        let frame = g.frame(in: .global)
+                        Color.clear
+                            .onAppear { StripZones.strip = frame; PlanZones.strip = frame }
+                            .onChange(of: frame) { _, now in
+                                StripZones.strip = now
+                                PlanZones.strip = now
+                            }
+                    })
+            }
+            // Кнопки передают просьбу полоске самой страницы (P279): окна
+            // камеры и галереи открывает она, а не эта строка, которая уйдёт
+            // вместе с клавиатурой и унесла бы окно с собой.
+            KeyboardBarView().attachments
+                .frame(height: KeyboardBar.attachHeight)
+                .padding(.bottom, 4)
+        }
+        .background(Ru.tint(date).opacity(0.97))
+        .overlay(alignment: .top) { Rectangle().fill(Look.rule).frame(height: 0.6) }
+    }
+}
+
+/// Перенос превью из ленты над клавиатурой ведёт тот же дневник, что и
+/// перенос из ленты внизу страницы (P541).
+enum StripBridge {
+    static var carry: ((Int, Lift, CGPoint) -> Void)?
+}
+
 struct AttachBar: View {
 
     var overKeyboard = false

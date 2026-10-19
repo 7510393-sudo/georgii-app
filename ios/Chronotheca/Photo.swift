@@ -231,6 +231,8 @@ struct PhotoStrip: View {
     var onRemove: ((Int) -> Void)? = nil
     /// Предложенные снимки дня — за чертой в конце ряда (P538).
     var extra: AnyView? = nil
+    /// Сторона превью: над клавиатурой они мельче (P541).
+    var size: CGFloat = PhotoStrip.side
     @State private var armed: Int?
     /// Когда крестик появился — отпущенный палец не должен тут же его убрать.
     @State private var armedAt = Date.distantPast
@@ -247,7 +249,7 @@ struct PhotoStrip: View {
 
     var body: some View {
         GeometryReader { geo in
-            let fits = max(1, Int((geo.size.width + gap) / (Self.side + gap)))
+            let fits = max(1, Int((geo.size.width + gap) / (size + gap)))
             // Все превью в ряд, ряд листается вбок (P535): прежде за
             // четвёртым стояло «+N», и дальние снимки нельзя было взять
             // пальцем и унести в текст.
@@ -260,7 +262,7 @@ struct PhotoStrip: View {
                         Text(T("Сюда — вернуть снимок вниз", "Drop here to move a photo back down"))
                             .font(Look.sans(12))
                             .foregroundStyle(Look.inkFaint)
-                            .frame(height: Self.side)
+                            .frame(height: size)
                     }
                     // Обзор всех вложений сеткой (P428) — в конце ряда.
                     if photos.count > fits {
@@ -282,7 +284,7 @@ struct PhotoStrip: View {
             .scrollDisabled(carried != nil || carrying != nil)
             .scrollBounceBehavior(.basedOnSize, axes: .horizontal)
         }
-        .frame(height: Self.side)
+        .frame(height: size)
         .onChange(of: photos.count) { _, _ in carrying = nil }
         .sheet(isPresented: $showingAll) {
             AttachmentGrid(items: photos) { i in
@@ -314,19 +316,33 @@ struct PhotoStrip: View {
         }
     }
 
+    /// Касание по превью — открыть его; при крестике — только убрать крестик.
+    private func tapped(_ i: Int) {
+        // Палец только что отпустили после долгого нажатия — это
+        // касание то же самое, оно крестик не убирает (P536): прежде
+        // крестик мелькал и тут же пропадал.
+        guard Date().timeIntervalSince(armedAt) > 0.5 else { return }
+        if armed != nil { withAnimation(.easeOut(duration: 0.15)) { armed = nil } }
+        else { onOpen?(i) }
+    }
+
     private func cell(_ i: Int) -> some View {
         face(i)
-            .frame(width: Self.side, height: Self.side)
+            .frame(width: size, height: size)
             .contentShape(Rectangle())
-            .onTapGesture {
-                // Палец только что отпустили после долгого нажатия — это
-                // касание то же самое, оно крестик не убирает (P536): прежде
-                // крестик мелькал и тут же пропадал.
-                guard Date().timeIntervalSince(armedAt) > 0.5 else { return }
-                // Касание при крестике — только убрать крестик.
-                if armed != nil { withAnimation(.easeOut(duration: 0.15)) { armed = nil } }
-                else { onOpen?(i) }
-            }
+            .onTapGesture { tapped(i) }
+            // Долгое нажатие и касание — жестами iPhone поверх превью (P541):
+            // быстро провели — ряд едет, подержали — превью взято, и ряд
+            // уже не едет. Крестик ложится выше — его касание своё.
+            .modifier(ThumbCarry(report: onCarry.map { f -> (Lift, CGPoint) -> Void in
+                { phase, spot in
+                    if case .began = phase { armed = nil }
+                    f(i, phase, spot)
+                }
+            }, stayed: onRemove == nil ? nil : {
+                armedAt = Date()
+                withAnimation(.easeOut(duration: 0.15)) { armed = i }
+            }, together: true, tap: { tapped(i) }))
             .overlay(alignment: .topTrailing) {
                 if armed == i, let onRemove {
                     Button {
@@ -338,9 +354,9 @@ struct PhotoStrip: View {
                         // вбок и всё, что за краем превью, обрезает.
                         Image(uiImage: DiaryEditor.Coordinator.crossImage)
                             .resizable()
-                            .frame(width: 40, height: 40)
+                            .frame(width: min(40, size * 0.5), height: min(40, size * 0.5))
                             .shadow(color: .black.opacity(0.3), radius: 3, y: 1)
-                            .frame(width: 48, height: 48)
+                            .frame(width: min(48, size * 0.6), height: min(48, size * 0.6))
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
@@ -357,15 +373,6 @@ struct PhotoStrip: View {
                     .onAppear { if onCarry != nil { StripZones.cells[i] = frame } }
                     .onChange(of: frame) { _, now in if onCarry != nil { StripZones.cells[i] = now } }
             })
-            .modifier(ThumbCarry(report: onCarry.map { f -> (Lift, CGPoint) -> Void in
-                { phase, spot in
-                    if case .began = phase { armed = nil }
-                    f(i, phase, spot)
-                }
-            }, stayed: onRemove == nil ? nil : {
-                armedAt = Date()
-                withAnimation(.easeOut(duration: 0.15)) { armed = i }
-            }, together: true))
             // В плане бросить под дело можно только снимок; в дневнике в
             // текст — и голос, и видео, и документ: там они кнопочкой
             // (P204, P209, P377).
@@ -388,7 +395,7 @@ struct PhotoStrip: View {
         }
             .font(Look.sans(14, weight: .medium))
             .foregroundStyle(Look.inkSoft)
-            .frame(width: Self.side, height: Self.side)
+            .frame(width: size, height: size)
             .background(Look.chrome, in: RoundedRectangle(cornerRadius: 6))
             .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Look.rule))
             .contentShape(Rectangle())
@@ -621,14 +628,60 @@ struct ThumbCarry: ViewModifier {
     /// Жест вместе с прокруткой ряда (P539): лента внизу дневника листается
     /// вбок, а свой жест на каждом превью не давал ей сдвинуться.
     var together = false
+    /// Касание по превью — когда жесты свои, UIKit (P541).
+    var tap: (() -> Void)? = nil
 
     @State private var lifted = false
     /// Палец ушёл от места — рамка остаётся только у копии над пальцем.
     @State private var away = false
     @GestureState private var holding = false
 
+    /// Ход долгого нажатия UIKit — те же отчёты, что у жеста SwiftUI.
+    private func held(_ state: UIGestureRecognizer.State, _ spot: CGPoint, _ moved: CGSize,
+                      _ report: (Lift, CGPoint) -> Void) {
+        switch state {
+        case .began:
+            lifted = true
+            away = false
+            report(.began, spot)
+        case .changed:
+            guard lifted else { return }
+            if hypot(moved.width, moved.height) >= 10 { away = true }
+            report(.moved(moved), spot)
+        case .ended:
+            guard lifted else { return }
+            let still = !away
+            lifted = false
+            away = false
+            if still { stayed?() }
+            report(.ended(.zero), spot)
+        default:
+            guard lifted else { return }
+            lifted = false
+            away = false
+            report(.cancelled, .zero)
+        }
+    }
+
     func body(content: Content) -> some View {
-        if let report {
+        if let report, together {
+            // Жестами iPhone (P541): совместный жест SwiftUI в 137-й отдавал
+            // движение пальца прокрутке ряда — превью так и не бралось.
+            content
+                .overlay {
+                    if lifted && !away {
+                        RoundedRectangle(cornerRadius: 6)
+                            .strokeBorder(Look.glow, lineWidth: 3)
+                            .shadow(color: Look.glow.opacity(0.8), radius: 4)
+                            .allowsHitTesting(false)
+                    }
+                }
+                .scaleEffect(lifted && !away ? 1.05 : 1)
+                .animation(.easeOut(duration: 0.12), value: lifted && !away)
+                .overlay(HoldCatcher(hold: { state, spot, moved in
+                    held(state, spot, moved, report)
+                }, tap: tap))
+        } else if let report {
             content
                 // Подержали — превью сразу в синей рамке и чуть крупнее
                 // (P391), как точка и дело: видно, что взято именно оно.
@@ -642,7 +695,7 @@ struct ThumbCarry: ViewModifier {
                 }
                 .scaleEffect(lifted && !away ? 1.05 : 1)
                 .animation(.easeOut(duration: 0.12), value: lifted && !away)
-                .attach(together: together, LongPressGesture(minimumDuration: 0.3)
+                .gesture(LongPressGesture(minimumDuration: 0.3)
                     .sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .global))
                     .updating($holding) { value, state, _ in
                         if case .second(true, _) = value { state = true }
@@ -1018,14 +1071,45 @@ enum CameraShots {
     }
 }
 
-extension View {
-    /// Свой жест — один на касание или вместе с прокруткой вокруг (P539).
-    @ViewBuilder
-    func attach<G: Gesture>(together: Bool, _ gesture: G) -> some View {
-        if together {
-            simultaneousGesture(gesture)
-        } else {
-            self.gesture(gesture)
+/// Долгое нажатие и касание по превью — жестами iPhone (P541). Они сами
+/// делят палец с прокруткой вокруг: провели быстро — едет ряд или
+/// страница; подержали — нажатие взято, и прокрутки этого касания уже нет.
+struct HoldCatcher: UIViewRepresentable {
+    /// Ход нажатия, место пальца в окне и сдвиг от начала.
+    var hold: (UIGestureRecognizer.State, CGPoint, CGSize) -> Void
+    var tap: (() -> Void)?
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        view.backgroundColor = .clear
+        let press = UILongPressGestureRecognizer(target: context.coordinator,
+                                                 action: #selector(Coordinator.pressed(_:)))
+        press.minimumPressDuration = 0.3
+        view.addGestureRecognizer(press)
+        let touch = UITapGestureRecognizer(target: context.coordinator,
+                                           action: #selector(Coordinator.tapped))
+        view.addGestureRecognizer(touch)
+        return view
+    }
+
+    func updateUIView(_ view: UIView, context: Context) {
+        context.coordinator.parent = self
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator(self) }
+
+    final class Coordinator: NSObject {
+        var parent: HoldCatcher
+        private var start: CGPoint = .zero
+
+        init(_ parent: HoldCatcher) { self.parent = parent }
+
+        @objc func pressed(_ g: UILongPressGestureRecognizer) {
+            let at = g.location(in: nil)
+            if g.state == .began { start = at }
+            parent.hold(g.state, at, CGSize(width: at.x - start.x, height: at.y - start.y))
         }
+
+        @objc func tapped() { parent.tap?() }
     }
 }

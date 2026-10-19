@@ -147,7 +147,11 @@ struct DiaryView: View {
         .task(id: store.date) { health = await HealthDay.summary(for: store.date) }
         // Предложенные снимки — заново при смене дня, после взятия, при
         // возвращении в приложение (новые снимки камерой) (P538).
-        .onAppear { suggest.reload(today: store.isToday) }
+        .onAppear {
+            suggest.reload(today: store.isToday)
+            // Лента над клавиатурой несёт превью через дневник (P541).
+            StripBridge.carry = { i, phase, spot in carryStrip(i, phase, spot) }
+        }
         .onChange(of: store.date) { _, _ in suggest.reload(today: store.isToday) }
         .onReceive(NotificationCenter.default.publisher(for: DaySuggestions.changed)) { _ in
             suggest.reload(today: store.isToday)
