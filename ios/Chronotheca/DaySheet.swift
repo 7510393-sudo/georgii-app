@@ -60,7 +60,7 @@ struct DaySheet<Plan: View, Diary: View>: View {
     /// Строка вложений лежит поверх низа страницы, полупрозрачная (P424):
     /// столько места под концом записи, чтобы её можно было поднять из-под
     /// строки.
-    static var stripRoom: CGFloat { 46 }
+    static var stripRoom: CGFloat { KeyboardDock.height }
 
     var body: some View {
         GeometryReader { outer in
@@ -118,24 +118,9 @@ struct DaySheet<Plan: View, Diary: View>: View {
                     .padding(.bottom, Self.stripRoom)
                     .frame(minHeight: outer.size.height, alignment: .top)
                     .overlay { if let catcher { catcher } }
-                    // Полоска — у самого низа листа: на короткой странице у
-                    // нижнего края окна, на длинной — под концом записи.
-                    .overlay(alignment: .bottom) {
-                        if let strip {
-                            // Полоска стоит на 6 точек выше края страницы (P511):
-                            // на пустой странице она целиком над нижней
-                            // строкой, рваный край которой иначе её закрывает.
-                            // Пока над клавиатурой своя строка вложений (P541),
-                            // эта прячется — место за ней остаётся, ничего
-                            // не сдвигается (P542).
-                            let docked = keyboard > 0 && dock != nil
-                            strip
-                                .frame(height: KeyboardBar.attachHeight)
-                                .padding(.bottom, Self.stripRoom - KeyboardBar.attachHeight)
-                                .opacity(docked ? 0 : 1)
-                                .allowsHitTesting(!docked)
-                        }
-                    }
+                    // Полоски на листе больше нет (P544): одна, у низа экрана,
+                    // над всеми страницами (`StripDock`); лист отводит под неё
+                    // место внизу.
                     .background(Ru.tint(date).overlay(PageTexture(tab: .diary, space: Self.space)))
                     // Клетка и волокно отсчитываются от самого листа, а не
                     // от экрана: тянешь план — клетка едет с текстом (P412).
@@ -173,16 +158,6 @@ struct DaySheet<Plan: View, Diary: View>: View {
                 }
             }
             .coordinateSpace(name: Self.window)
-            // Пока поднята клавиатура — над ней лента превью и строка
-            // вложений (P541): их видно, пока пишут, и превью можно унести
-            // в текст, не опуская клавиатуру.
-            .overlay(alignment: .bottom) {
-                if keyboard > 0, let dock {
-                    dock
-                        .padding(.bottom, covered(outer, keyboard))
-                        .transition(.opacity)
-                }
-            }
             // Клавиатура ушла — место под ней остаётся, пока страница стоит
             // ниже, чем позволил бы лист без него: иначе iPhone подтягивает
             // страницу вниз одним рывком (запись экрана автора, P446).

@@ -337,6 +337,8 @@ struct DiaryPage: View {
     /// Над клавиатурой своя лента (P541) — эта прячется, место остаётся
     /// и не отзывается на палец (P542).
     var docked = false
+    /// Лента превью на самом листе (P502) — выключена (P544).
+    static let stripInPage = false
     /// Где лежат снимки, стоящие посреди текста (P204).
     var resolve: ((String) -> URL?)?
     var onOpenPhoto: ((Int) -> Void)?
@@ -443,7 +445,8 @@ struct DiaryPage: View {
                 .onTapGesture { onHealth?(health) }
                 .accessibilityHint(T("Касание — записать в дневник", "Tap to add to the diary"))
         }
-        if !photos.isEmpty || takesBack || hasSuggested {
+        // Ленты превью на листе больше нет — она одна, у низа экрана (P544).
+        if Self.stripInPage && (!photos.isEmpty || takesBack || hasSuggested) {
             PhotoStrip(photos: photos, onOpen: onOpenPhoto,
                        drag: editable && photoLinks.count == photos.count
                            ? { Diary.line(photoLinks[$0]) } : nil,
