@@ -91,7 +91,6 @@ struct DayPage: View {
                         .allowsHitTesting(false)
                 }
                 .overlay(alignment: .top) { steps }
-                .overlay { galleryCatcher }
                 // Черты между шапкой и страницей больше нет (P434, прежде
                 // P250): шапка — продолжение листа.
         }
@@ -106,6 +105,9 @@ struct DayPage: View {
         }
     }
 
+    /// (P527) Накладка лежала поверх всей страницы, и с ней поверх самого ряда
+    /// галереи: касание по «все фото» или по снимку не доходило до них, а
+    /// закрывало ряд. Теперь она внутри листа, под полоской вложений.
     /// Пока открыт ряд снимков галереи, касание по странице только
     /// закрывает его — курсор не ставится, клавиатура не поднимается;
     /// второе касание уже делает своё (P344).
@@ -355,7 +357,8 @@ struct DayPage: View {
                      land: shell.landing, landDiary: shell.landOnDiary,
                      onDiary: { [shell] in shell.lookingAtDiary = $0 },
                      diaryMark: AnyView(cloud),
-                     strip: AnyView(AttachBar(live: live, date: date))) {
+                     strip: AnyView(AttachBar(live: live, date: date)),
+                     catcher: AnyView(galleryCatcher)) {
                 PlanView()
             } diary: {
                 DiaryView()
