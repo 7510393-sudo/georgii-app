@@ -3,6 +3,7 @@ import UIKit
 import AVFoundation
 import AVKit
 import QuickLook
+import Photos
 import PhotosUI
 import UniformTypeIdentifiers
 
@@ -456,7 +457,10 @@ struct LibraryPicker: UIViewControllerRepresentable {
     let done: ([PHPickerResult]) -> Void
 
     func makeUIViewController(context: Context) -> PHPickerViewController {
-        var config = PHPickerConfiguration()
+        // С галереей телефона: у выбранного есть номер снимка, по нему
+        // взятое больше не предлагается в ленте (P538). Разрешения на всю
+        // галерею это не просит.
+        var config = PHPickerConfiguration(photoLibrary: .shared())
         config.selectionLimit = 0
         config.filter = .any(of: [.images, .videos])
         config.preferredAssetRepresentationMode = .current

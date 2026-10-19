@@ -783,43 +783,7 @@ struct AttachBar: View {
             return shell.say(T("Отмеченное в галерее не добавлено: открыт другой день",
                                  "The selected photos were not added: another day is open"))
         }
-        var left = assets.count
-        var failed = 0
-        let finish: () -> Void = {
-            left -= 1
-            guard left == 0 else { return }
-            if failed > 0 {
-                shell.say(T("Не удалось взять из галереи: \(failed)", "Could not take from Photos: \(failed)"))
-            } else if assets.count > 1 {
-                shell.say(T("Положено в папку: \(assets.count)", "Saved to the folder: \(assets.count)"))
-            }
-        }
-        for asset in assets {
-            if asset.mediaType == .video {
-                GalleryRow.movie(of: asset) { found in
-                    guard let found else { failed += 1; finish(); return }
-                    // Крупный ролик — до 1080p, если так в настройках (P365).
-                    Movie.shrink(found) { url in
-                        defer {
-                            finish()
-                            try? FileManager.default.removeItem(at: found)
-                            if url != found { try? FileManager.default.removeItem(at: url) }
-                        }
-                        guard let data = try? Data(contentsOf: url, options: .mappedIfSafe),
-                              store.addAttachment(data, to: .videos,
-                                                  name: Vault.moment(store.date) + "."
-                                                      + (url.pathExtension.isEmpty ? "mov" : url.pathExtension.lowercased()),
-                                                  tab: tab)
-                        else { failed += 1; return }
-                    }
-                }
-            } else {
-                GalleryRow.data(of: asset) { data in
-                    defer { finish() }
-                    guard let data, store.addPhoto(data, to: tab) else { failed += 1; return }
-                }
-            }
-        }
+        GalleryRow.take(assets, store: store, tab: tab) { shell.say($0) }
     }
 
     /// Фото кладутся туда, где человек стоит: на вкладке плана — в план,
@@ -860,6 +824,8 @@ struct AttachBar: View {
     /// Положить выбранные снимки в папку и показать их в дневнике дня.
     @MainActor
     private func take(_ items: [PHPickerResult]) {
+        // Взятое из галереи больше не предлагается в ленте (P538).
+        DaySuggestions.markTaken(items.compactMap(\.assetIdentifier))
         Task {
             let tab = into
             var added = 0

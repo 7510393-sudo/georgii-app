@@ -140,8 +140,14 @@ struct GalleryRow: View {
             status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
         }
         guard status == .authorized || status == .limited else { return }
-        // Сутки дня — с той же границы, что у приложения: снимок в час ночи
-        // принадлежит ещё вчерашнему дню (P17).
+        assets = Self.assets(of: day)
+        loaded = true
+    }
+
+    /// Снимки и видео галереи, сделанные в этот день. Сутки дня — с той же
+    /// границы, что у приложения: снимок в час ночи принадлежит ещё
+    /// вчерашнему дню (P17).
+    static func assets(of day: Date, limit: Int = 120) -> [PHAsset] {
         let cal = Calendar.current
         let start = cal.date(byAdding: .hour, value: DayStore.boundaryHour,
                              to: cal.startOfDay(for: day)) ?? day
@@ -152,12 +158,55 @@ struct GalleryRow: View {
             PHAssetMediaType.image.rawValue, PHAssetMediaType.video.rawValue,
             start as NSDate, end as NSDate)
         options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
-        options.fetchLimit = 120
+        options.fetchLimit = limit
         let found = PHAsset.fetchAssets(with: options)
         var list: [PHAsset] = []
         found.enumerateObjects { asset, _, _ in list.append(asset) }
-        assets = list
-        loaded = true
+        return list
+    }
+
+    /// Снимки и видео из галереи — в день, в план или дневник (P273, P350,
+    /// P538). Взятое запоминается и больше не предлагается в ленте.
+    static func take(_ assets: [PHAsset], store: DayStore, tab: Shell.Tab,
+                     say: @escaping (String) -> Void) {
+        DaySuggestions.markTaken(assets.map(\.localIdentifier))
+        var left = assets.count
+        var failed = 0
+        let finish: () -> Void = {
+            left -= 1
+            guard left == 0 else { return }
+            if failed > 0 {
+                say(T("Не удалось взять из галереи: \(failed)", "Could not take from Photos: \(failed)"))
+            } else if assets.count > 1 {
+                say(T("Положено в папку: \(assets.count)", "Saved to the folder: \(assets.count)"))
+            }
+        }
+        for asset in assets {
+            if asset.mediaType == .video {
+                movie(of: asset) { found in
+                    guard let found else { failed += 1; finish(); return }
+                    // Крупный ролик — до 1080p, если так в настройках (P365).
+                    Movie.shrink(found) { url in
+                        defer {
+                            finish()
+                            try? FileManager.default.removeItem(at: found)
+                            if url != found { try? FileManager.default.removeItem(at: url) }
+                        }
+                        guard let data = try? Data(contentsOf: url, options: .mappedIfSafe),
+                              store.addAttachment(data, to: .videos,
+                                                  name: Vault.moment(store.date) + "."
+                                                      + (url.pathExtension.isEmpty ? "mov" : url.pathExtension.lowercased()),
+                                                  tab: tab)
+                        else { failed += 1; return }
+                    }
+                }
+            } else {
+                data(of: asset) { data in
+                    defer { finish() }
+                    guard let data, store.addPhoto(data, to: tab) else { failed += 1; return }
+                }
+            }
+        }
     }
 
     /// Видео целиком, файлом во временной папке: ролик может весить
@@ -316,5 +365,156 @@ struct CameraPicker: UIViewControllerRepresentable {
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
             done(nil)
         }
+    }
+}
+
+/// Снимки сегодняшнего дня из галереи — предложением в ленте превью внизу
+/// дневника (P538). Только сегодня и только когда галерея открыта
+/// приложению; взятое (из ленты или из окна галереи) запоминается по номеру
+/// снимка в галерее и больше не предлагается.
+final class DaySuggestions: ObservableObject {
+
+    @Published private(set) var assets: [PHAsset] = []
+    @Published private(set) var status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+    /// Сегодняшняя страница, и это не снимки для сборки.
+    @Published private(set) var active = false
+
+    static let changed = Notification.Name("DaySuggestions.changed")
+    private static let key = "gallery.taken"
+
+    /// Есть что показать: предложенные снимки или плитка «снимки дня»,
+    /// пока приложение о галерее ещё не спрашивало.
+    var shows: Bool { active && (!assets.isEmpty || status == .notDetermined) }
+
+    static var taken: Set<String> { Set(UserDefaults.standard.stringArray(forKey: key) ?? []) }
+
+    static func markTaken(_ ids: [String]) {
+        guard !ids.isEmpty else { return }
+        var list = UserDefaults.standard.stringArray(forKey: key) ?? []
+        list.append(contentsOf: ids.filter { !list.contains($0) })
+        UserDefaults.standard.set(Array(list.suffix(3000)), forKey: key)
+        NotificationCenter.default.post(name: changed, object: nil)
+    }
+
+    func reload(today: Bool) {
+        status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+        active = today && !Vault.isPreview
+        guard active, status == .authorized || status == .limited else {
+            if !assets.isEmpty { assets = [] }
+            return
+        }
+        let taken = Self.taken
+        assets = GalleryRow.assets(of: DayStore.today(), limit: 40)
+            .filter { !taken.contains($0.localIdentifier) }
+    }
+
+    /// Спросить о галерее — только по касанию человека.
+    func ask() {
+        PHPhotoLibrary.requestAuthorization(for: .readWrite) { [weak self] _ in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                self.reload(today: self.active)
+            }
+        }
+    }
+
+    /// Взяли — плитка уходит сразу, не дожидаясь, пока снимок ляжет.
+    func drop(_ asset: PHAsset) {
+        assets.removeAll { $0.localIdentifier == asset.localIdentifier }
+    }
+}
+
+/// Предложенные снимки в ленте (P538): за тонкой чертой с подписью, бледные,
+/// в пунктире и с «+». Касание — снимок берётся в день и встаёт к
+/// добавленным, левее черты.
+struct SuggestedRow: View {
+    @ObservedObject var model: DaySuggestions
+    let add: (PHAsset) -> Void
+
+    private var side: CGFloat { PhotoStrip.side }
+
+    var body: some View {
+        if model.shows {
+            HStack(spacing: 6) {
+                divider
+                if model.status == .notDetermined {
+                    askTile
+                } else {
+                    ForEach(model.assets, id: \.localIdentifier) { asset in
+                        tile(asset)
+                    }
+                }
+            }
+            .padding(.leading, 6)
+        }
+    }
+
+    /// Черта и подпись поперёк: правее — ещё не ваше.
+    private var divider: some View {
+        HStack(spacing: 3) {
+            Rectangle().fill(Look.inkFaint).frame(width: 1.5, height: side)
+            Text(T("сегодня в галерее", "today in Photos"))
+                .font(Look.sans(11))
+                .foregroundStyle(Look.inkFaint)
+                .lineLimit(1)
+                .fixedSize()
+                .rotationEffect(.degrees(-90))
+                .frame(width: 14, height: side)
+        }
+    }
+
+    private var dashed: some View {
+        RoundedRectangle(cornerRadius: 6)
+            .strokeBorder(Look.inkSoft.opacity(0.8), style: StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
+    }
+
+    private func tile(_ asset: PHAsset) -> some View {
+        GalleryThumb(asset: asset)
+            .frame(width: side, height: side)
+            .opacity(0.5)
+            .overlay(dashed)
+            .overlay(alignment: .bottomLeading) {
+                if asset.mediaType == .video {
+                    Image(systemName: "video.fill")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.white)
+                        .shadow(radius: 2)
+                        .padding(5)
+                }
+            }
+            .overlay(alignment: .bottomTrailing) {
+                Image(systemName: "plus.circle.fill")
+                    .font(.system(size: 24))
+                    .foregroundStyle(.white, Look.accent)
+                    .shadow(color: .black.opacity(0.25), radius: 2)
+                    .padding(5)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                Feel.light()
+                model.drop(asset)
+                add(asset)
+            }
+            .accessibilityLabel(T("Добавить снимок из галереи", "Add photo from Photos"))
+            .accessibilityAddTraits(.isButton)
+    }
+
+    /// Приложение о галерее ещё не спрашивало — спросит по касанию, само
+    /// окно с вопросом не выскакивает.
+    private var askTile: some View {
+        Button { model.ask() } label: {
+            VStack(spacing: 4) {
+                Image(systemName: "photo.on.rectangle.angled")
+                    .font(.system(size: 18))
+                Text(T("показывать снимки дня", "show today’s photos"))
+                    .font(Look.sans(10.5))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 6)
+            }
+            .foregroundStyle(Look.accent)
+            .frame(width: side, height: side)
+            .overlay(dashed)
+        }
+        .buttonStyle(.plain)
     }
 }
