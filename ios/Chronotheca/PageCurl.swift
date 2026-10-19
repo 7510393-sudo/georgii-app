@@ -314,12 +314,18 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
             guard let pan = g as? UIPanGestureRecognizer, let view = pan.view else { return false }
             let start = pan.location(in: view)
             let speed = pan.velocity(in: view)
-            guard abs(speed.x) > abs(speed.y) else { return false }
-            let band = EdgeGate.band
-            if start.x < band + 12 { return speed.x < 0 }
-            if start.x > view.bounds.width - band - 12 { return speed.x > 0 }
+            // Наружу пальцу до края экрана меньше сантиметра — полоса для
+            // этого взмаха шире, около сантиметра, а наклон допускается
+            // больший (P543): прежде взмах часто не узнавался.
+            guard abs(speed.x) > abs(speed.y) * 0.7 else { return false }
+            let band = EdgeGate.band + 30
+            if start.x < band { return speed.x < 0 }
+            if start.x > view.bounds.width - band { return speed.x > 0 }
             return false
         }
+
+        /// Этот взмах уже перелистнул — второй раз за одно касание нельзя.
+        private var flickDone = false
 
         func gestureRecognizer(_ g: UIGestureRecognizer,
                                shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool {
@@ -327,14 +333,27 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
         }
 
         @objc func flicked(_ pan: UIPanGestureRecognizer) {
-            guard pan.state == .ended, let book, let view = pan.view, !busy else { return }
-            let moved = pan.translation(in: view).x
-            let speed = pan.velocity(in: view).x
-            guard abs(moved) > 8 || abs(speed) > 250 else { return }
-            // Вправо — назад, влево — вперёд: так же, как внутрь.
-            let step = (moved != 0 ? moved : speed) > 0 ? -1 : 1
-            busy = true
-            turn(book, step)
+            guard let book, let view = pan.view else { return }
+            switch pan.state {
+            case .began:
+                flickDone = false
+            case .changed, .ended:
+                guard !flickDone, !busy else { return }
+                let moved = pan.translation(in: view).x
+                let speed = pan.velocity(in: view).x
+                // Лист идёт, как только палец сдвинулся на пару миллиметров,
+                // не дожидаясь, пока его отпустят (P543): у края места мало.
+                let enough = abs(moved) >= 12
+                    || (pan.state == .ended && (abs(moved) > 4 || abs(speed) > 150))
+                guard enough else { return }
+                flickDone = true
+                // Вправо — назад, влево — вперёд: так же, как внутрь.
+                let step = (moved != 0 ? moved : speed) > 0 ? -1 : 1
+                busy = true
+                turn(book, step)
+            default:
+                break
+            }
         }
 
         /// Настоящий поворот — последний лист дороги.
