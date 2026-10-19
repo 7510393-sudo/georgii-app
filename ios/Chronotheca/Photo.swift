@@ -230,6 +230,8 @@ struct PhotoStrip: View {
     /// точки в тексте; повели — крестик уходит, превью несут.
     var onRemove: ((Int) -> Void)? = nil
     @State private var armed: Int?
+    /// Когда крестик появился — отпущенный палец не должен тут же его убрать.
+    @State private var armedAt = Date.distantPast
 
     /// Превью, которое сейчас несут, — по нему соседи расступаются.
     @State private var carrying: Int?
@@ -313,6 +315,10 @@ struct PhotoStrip: View {
             .frame(width: Self.side, height: Self.side)
             .contentShape(Rectangle())
             .onTapGesture {
+                // Палец только что отпустили после долгого нажатия — это
+                // касание то же самое, оно крестик не убирает (P536): прежде
+                // крестик мелькал и тут же пропадал.
+                guard Date().timeIntervalSince(armedAt) > 0.5 else { return }
                 // Касание при крестике — только убрать крестик.
                 if armed != nil { withAnimation(.easeOut(duration: 0.15)) { armed = nil } }
                 else { onOpen?(i) }
@@ -323,12 +329,17 @@ struct PhotoStrip: View {
                         armed = nil
                         onRemove(i)
                     } label: {
-                        CloseMark()
-                            .scaleEffect(0.8)
-                            .background(Circle().fill(Look.chrome))
+                        // Тот же крестик, что у снимка в тексте (P536):
+                        // крупный, с тенью. Внутри превью — ряд листается
+                        // вбок и всё, что за краем превью, обрезает.
+                        Image(uiImage: DiaryEditor.Coordinator.crossImage)
+                            .resizable()
+                            .frame(width: 40, height: 40)
+                            .shadow(color: .black.opacity(0.3), radius: 3, y: 1)
+                            .frame(width: 48, height: 48)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .offset(x: 8, y: -8)
                     .transition(.scale.combined(with: .opacity))
                     .accessibilityLabel(T("Убрать", "Remove"))
                 }
@@ -348,6 +359,7 @@ struct PhotoStrip: View {
                     f(i, phase, spot)
                 }
             }, stayed: onRemove == nil ? nil : {
+                armedAt = Date()
                 withAnimation(.easeOut(duration: 0.15)) { armed = i }
             }))
             // В плане бросить под дело можно только снимок; в дневнике в
