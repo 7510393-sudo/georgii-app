@@ -1,4 +1,5 @@
 import Foundation
+import CoreLocation
 
 /// Папка пользователя.
 ///
@@ -366,6 +367,27 @@ final class Vault: ObservableObject {
         // «Сделать», а не красное «Пора сделать». Только во временной
         // папке снимков; настоящую копию это не трогает.
         Backup.record(size: 2_400_000, complete: true, missing: 0)
+
+        // Свои места на карте — для снимка карты (P534): Лондон, где живёт
+        // автор. Только один раз: при повторном запуске те же имена легли
+        // бы рядом с номерами.
+        if Places.all(in: self).isEmpty {
+            let spots: [(String, String, String, Double, Double)] = [
+                ("Дом", "Home", "дом", 51.5465, -0.1058),
+                ("Кофе у реки", "Coffee by the river", "кафе", 51.5052, -0.0911),
+                ("Хэмпстед-Хит", "Hampstead Heath", "природа", 51.5608, -0.1630),
+                ("Родители", "Mum and Dad", "сердце", 51.4613, -0.1156),
+                ("Где мы познакомились", "Where we met", "звезда", 51.5071, -0.1160),
+                ("Идея для романа", "Idea for the novel", "вдохновение", 51.5300, -0.1276),
+                ("Ночь костров", "Bonfire night", "огонь", 51.5390, -0.1608),
+            ]
+            for (ru, en, mark, lat, lon) in spots {
+                var place = Place(name: T(ru, en),
+                                  coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lon))
+                place.mark = mark
+                Places.save(place, in: self)
+            }
+        }
     }
 
     // MARK: - Папка

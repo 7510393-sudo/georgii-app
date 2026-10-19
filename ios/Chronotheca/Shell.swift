@@ -331,6 +331,7 @@ final class Shell: ObservableObject {
         case "calendar-menu": screen = .calendar; showingMenu = true
         case "search-menu":   screen = .search; showingMenu = true
         case "settings":  showingSettings = true
+        case "map":       screen = .map
         case "remember":  tab = .diary; previewRemember += 1
         // Дни — от сегодняшнего, а не шагом: повтор не уводит дальше.
         case "past":      if store.date != day(-1) { store.go(to: day(-1)) }

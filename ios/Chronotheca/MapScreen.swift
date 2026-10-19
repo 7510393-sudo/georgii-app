@@ -374,6 +374,9 @@ struct MapScreen: View {
         archive.reload()
         if let point = shell.mapFocus {
             show(point)
+        } else if Vault.isPreview {
+            // Снимок карты (P534): все свои места разом, без вопроса о месте.
+            showAll()
         } else {
             // Где человек сейчас (P281, P294).
             Locator.shared.current { location in
