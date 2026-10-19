@@ -167,8 +167,15 @@ extension DiaryView {
         // Над планом — встанет под дело, в ряд снимков (P408, P409).
         let overTask = overStrip || Diary.kind(of: link) != .photo || !store.canEditPlan
             ? nil : PlanZones.task(at: spot, tasks: store.tasks)
-        // У краёв страница едет к пальцу (P409).
+        // У краёв страница едет к пальцу (P409) — но только когда палец
+        // ушёл с полоски (P531): полоска сама лежит у нижнего края, и на
+        // длинной записи страница уезжала от одного долгого нажатия,
+        // унося превью под нижнюю строку.
         func follow() {
+            guard !overStrip else {
+                DiaryEditor.active?.stopFollowingStrip()
+                return
+            }
             DiaryEditor.active?.followStrip(at: spot) { [self] in
                 carryStrip(i, .moved(.zero), stripSpot)
             }
@@ -178,7 +185,6 @@ extension DiaryView {
             Feel.lift()
             stripCarry = i
             stripSpot = spot
-            follow()
         case .moved:
             stripSpot = spot
             follow()
