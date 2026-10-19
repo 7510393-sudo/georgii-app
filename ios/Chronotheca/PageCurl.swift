@@ -85,6 +85,15 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
         for gesture in pages.gestureRecognizers where gesture is UIPanGestureRecognizer {
             gesture.require(toFail: gate)
         }
+        // От края наружу (P540): у правого края вправо — назад, у левого
+        // влево — вперёд. Тяга системы этого направления не видит, поэтому
+        // свой жест: короткий взмах, и лист перелистывается целиком сам.
+        let outward = UIPanGestureRecognizer(target: context.coordinator,
+                                             action: #selector(Coordinator.flicked(_:)))
+        outward.delegate = context.coordinator
+        outward.cancelsTouchesInView = false
+        pages.view.addGestureRecognizer(outward)
+        context.coordinator.book = pages
         return pages
     }
 
@@ -99,8 +108,10 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
     }
 
     final class Coordinator: NSObject, UIPageViewControllerDataSource,
-                             UIPageViewControllerDelegate {
+                             UIPageViewControllerDelegate, UIGestureRecognizerDelegate {
         var parent: PageCurl
+        /// Сама книга — для взмаха от края наружу (P540).
+        weak var book: UIPageViewController?
 
         /// Пока страница в воздухе, второго поворота не начинаем.
         private var busy = false
@@ -293,6 +304,37 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
                     }
                 }
             }
+        }
+
+        // MARK: - От края наружу (P540)
+
+        /// Взмах начинается только у края и только наружу: у левого — влево,
+        /// у правого — вправо. Внутрь лист ведёт тяга системы, как прежде.
+        func gestureRecognizerShouldBegin(_ g: UIGestureRecognizer) -> Bool {
+            guard let pan = g as? UIPanGestureRecognizer, let view = pan.view else { return false }
+            let start = pan.location(in: view)
+            let speed = pan.velocity(in: view)
+            guard abs(speed.x) > abs(speed.y) else { return false }
+            let band = EdgeGate.band
+            if start.x < band + 12 { return speed.x < 0 }
+            if start.x > view.bounds.width - band - 12 { return speed.x > 0 }
+            return false
+        }
+
+        func gestureRecognizer(_ g: UIGestureRecognizer,
+                               shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool {
+            true
+        }
+
+        @objc func flicked(_ pan: UIPanGestureRecognizer) {
+            guard pan.state == .ended, let book, let view = pan.view, !busy else { return }
+            let moved = pan.translation(in: view).x
+            let speed = pan.velocity(in: view).x
+            guard abs(moved) > 8 || abs(speed) > 250 else { return }
+            // Вправо — назад, влево — вперёд: так же, как внутрь.
+            let step = (moved != 0 ? moved : speed) > 0 ? -1 : 1
+            busy = true
+            turn(book, step)
         }
 
         /// Настоящий поворот — последний лист дороги.
