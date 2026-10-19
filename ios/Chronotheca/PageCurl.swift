@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import UIKit.UIGestureRecognizerSubclass
 
 /// Дорога домой: один поворот на всё расстояние.
 ///
@@ -75,6 +76,14 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
         // правила (P113), поэтому касания снимаем, тяга остаётся.
         for gesture in pages.gestureRecognizers where gesture is UITapGestureRecognizer {
             gesture.isEnabled = false
+        }
+        // Лист берут за край (P532): тяга, начатая посреди страницы, —
+        // это курсор или выделение, а не листание. Привратник отпускает
+        // тягу системы, только если палец лёг у левого или правого края.
+        let gate = EdgeGate.make()
+        pages.view.addGestureRecognizer(gate)
+        for gesture in pages.gestureRecognizers where gesture is UIPanGestureRecognizer {
+            gesture.require(toFail: gate)
         }
         return pages
     }
@@ -410,5 +419,38 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
             // меняется, а соседи теперь считаются от неё (P113).
             current.offset = 0
         }
+    }
+}
+
+/// Привратник листания (P532). Палец лёг у края страницы — привратник сразу
+/// сдаётся, и система листает, как прежде. Лёг посреди — привратник
+/// «срабатывает», и ждавшая его тяга системы не начинается: движение вбок
+/// достаётся тексту — курсору и выделению. Сам он ничего не делает и
+/// никому не мешает: касания не задерживает и работает вместе со всеми.
+final class EdgeGate: UIGestureRecognizer, UIGestureRecognizerDelegate {
+
+    /// Ширина полосы у каждого края, где лист можно взять, — около 7 мм.
+    static let band: CGFloat = 40
+
+    /// Привратник, готовый к делу: касаний не держит и не отменяет.
+    static func make() -> EdgeGate {
+        let gate = EdgeGate(target: nil, action: nil)
+        gate.cancelsTouchesInView = false
+        gate.delaysTouchesBegan = false
+        gate.delaysTouchesEnded = false
+        gate.delegate = gate
+        return gate
+    }
+
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
+        guard state == .possible, let view, let touch = touches.first else { return }
+        let x = touch.location(in: view).x
+        let atEdge = x < Self.band || x > view.bounds.width - Self.band
+        state = atEdge ? .failed : .recognized
+    }
+
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
+                           shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool {
+        true
     }
 }
