@@ -17,6 +17,8 @@ struct DiaryView: View {
     @State private var deleting: String?
     /// Снимки сегодняшнего дня из галереи — предложением в ленте (P538).
     @StateObject private var suggest = DaySuggestions()
+    /// Клавиатура поднята — лента превью над ней, на странице её нет (P542).
+    @State private var keyboard: CGFloat = 0
 
     /// На ступень крупнее прежних 15,5 и растёт с настройкой (P274).
     static var size: CGFloat { 16.5 * Prefs.textScale }
@@ -58,6 +60,7 @@ struct DiaryView: View {
                 GalleryRow.take([asset], store: store, tab: .diary) { shell.say($0) }
             }),
             hasSuggested: store.canEditDiary && suggest.shows,
+            docked: keyboard > 0,
             resolve: store.photoURL,
             onOpenPhoto: { i in
                 let n = store.photos.count
@@ -145,6 +148,7 @@ struct DiaryView: View {
             }
         }
         .task(id: store.date) { health = await HealthDay.summary(for: store.date) }
+        .keyboardHeight($keyboard)
         // Предложенные снимки — заново при смене дня, после взятия, при
         // возвращении в приложение (новые снимки камерой) (P538).
         .onAppear {
@@ -330,6 +334,9 @@ struct DiaryPage: View {
     /// Предложенные снимки дня в конце ленты (P538) — и есть ли они.
     var suggested: AnyView? = nil
     var hasSuggested = false
+    /// Над клавиатурой своя лента (P541) — эта прячется, место остаётся
+    /// и не отзывается на палец (P542).
+    var docked = false
     /// Где лежат снимки, стоящие посреди текста (P204).
     var resolve: ((String) -> URL?)?
     var onOpenPhoto: ((Int) -> Void)?
@@ -442,7 +449,7 @@ struct DiaryPage: View {
                            ? { Diary.line(photoLinks[$0]) } : nil,
                        onMove: editable ? onMovePhoto : nil,
                        anyKind: true,
-                       onCarry: editable ? onStripCarry : nil,
+                       onCarry: editable && !docked ? onStripCarry : nil,
                        carried: stripCarried,
                        onRemove: editable && onRemovePhoto != nil ? { removing = $0 } : nil,
                        extra: hasSuggested ? suggested : nil)
@@ -455,13 +462,19 @@ struct DiaryPage: View {
                 .background(GeometryReader { geo in
                     let frame = geo.frame(in: .global)
                     // Полоска одна на страницу (P408): по ней узнают
-                    // «назад в полоску» и дневник, и план.
+                    // «назад в полоску» и дневник, и план. Пока над
+                    // клавиатурой своя лента — по ней (P542).
                     Color.clear
-                        .onAppear { if editable { StripZones.strip = frame; PlanZones.strip = frame } }
+                        .onAppear { if editable && !docked { StripZones.strip = frame; PlanZones.strip = frame } }
                         .onChange(of: frame) { _, now in
-                            if editable { StripZones.strip = now; PlanZones.strip = now }
+                            if editable && !docked { StripZones.strip = now; PlanZones.strip = now }
+                        }
+                        .onChange(of: docked) { _, now in
+                            if editable && !now { StripZones.strip = frame; PlanZones.strip = frame }
                         }
                 })
+                .opacity(docked ? 0 : 1)
+                .allowsHitTesting(!docked)
         }
     }
 

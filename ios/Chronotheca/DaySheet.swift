@@ -125,9 +125,15 @@ struct DaySheet<Plan: View, Diary: View>: View {
                             // Полоска стоит на 6 точек выше края страницы (P511):
                             // на пустой странице она целиком над нижней
                             // строкой, рваный край которой иначе её закрывает.
+                            // Пока над клавиатурой своя строка вложений (P541),
+                            // эта прячется — место за ней остаётся, ничего
+                            // не сдвигается (P542).
+                            let docked = keyboard > 0 && dock != nil
                             strip
                                 .frame(height: KeyboardBar.attachHeight)
                                 .padding(.bottom, Self.stripRoom - KeyboardBar.attachHeight)
+                                .opacity(docked ? 0 : 1)
+                                .allowsHitTesting(!docked)
                         }
                     }
                     .background(Ru.tint(date).overlay(PageTexture(tab: .diary, space: Self.space)))
