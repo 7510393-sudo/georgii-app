@@ -244,29 +244,37 @@ struct PhotoStrip: View {
     var body: some View {
         GeometryReader { geo in
             let fits = max(1, Int((geo.size.width + gap) / (Self.side + gap)))
-            let shown = photos.count > fits ? fits - 1 : photos.count
-            HStack(spacing: gap) {
-                ForEach(0..<shown, id: \.self) { i in
-                    cell(i)
+            // Все превью в ряд, ряд листается вбок (P535): прежде за
+            // четвёртым стояло «+N», и дальние снимки нельзя было взять
+            // пальцем и унести в текст.
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: gap) {
+                    ForEach(0..<photos.count, id: \.self) { i in
+                        cell(i)
+                    }
+                    if photos.isEmpty {
+                        Text(T("Сюда — вернуть снимок вниз", "Drop here to move a photo back down"))
+                            .font(Look.sans(12))
+                            .foregroundStyle(Look.inkFaint)
+                            .frame(height: Self.side)
+                    }
+                    // Обзор всех вложений сеткой (P428) — в конце ряда.
+                    if photos.count > fits {
+                        more(photos.count, from: 0)
+                    }
+                    Spacer(minLength: 0)
                 }
-                if photos.isEmpty {
-                    Text(T("Сюда — вернуть снимок вниз", "Drop here to move a photo back down"))
-                        .font(Look.sans(12))
-                        .foregroundStyle(Look.inkFaint)
-                        .frame(height: Self.side)
+                .frame(minWidth: geo.size.width, alignment: .leading)
+                .contentShape(Rectangle())
+                // Мимо превью — на пустое место полоски — тоже можно вернуть
+                // снимок из-под дела (P358).
+                .onDrop(of: onTake != nil ? [UTType.plainText] : [], isTargeted: nil) { providers in
+                    guard let onTake else { return false }
+                    return PhotoDrop.read(providers, onTake)
                 }
-                if photos.count > shown {
-                    more(photos.count - shown, from: shown)
-                }
-                Spacer(minLength: 0)
             }
-            .contentShape(Rectangle())
-            // Мимо превью — на пустое место полоски — тоже можно вернуть
-            // снимок из-под дела (P358).
-            .onDrop(of: onTake != nil ? [UTType.plainText] : [], isTargeted: nil) { providers in
-                guard let onTake else { return false }
-                return PhotoDrop.read(providers, onTake)
-            }
+            // Пока превью несут, ряд стоит: иначе он поехал бы за пальцем.
+            .scrollDisabled(photos.count <= fits || carried != nil || carrying != nil)
         }
         .frame(height: Self.side)
         .onChange(of: photos.count) { _, _ in carrying = nil }
@@ -357,7 +365,11 @@ struct PhotoStrip: View {
     }
 
     private func more(_ n: Int, from i: Int) -> some View {
-        Text("+\(n)")
+        VStack(spacing: 3) {
+            Image(systemName: "square.grid.2x2")
+                .font(.system(size: 16))
+            Text("\(n)")
+        }
             .font(Look.sans(14, weight: .medium))
             .foregroundStyle(Look.inkSoft)
             .frame(width: Self.side, height: Self.side)
@@ -367,7 +379,7 @@ struct PhotoStrip: View {
             // Много вложений — не листать по одному, а обзор сеткой по
             // видам (P428).
             .onTapGesture { showingAll = true }
-            .accessibilityLabel(T("Ещё фотографий: \(n)", "More photos: \(n)"))
+            .accessibilityLabel(T("Вложения дня", "The day’s attachments"))
     }
 }
 
