@@ -1371,7 +1371,10 @@ final class DayStore: ObservableObject {
         var diary = DayFile(body: Diary(answers: answers, text: diaryText,
                                      photos: photos).body(order: order))
         diary.set("date", Vault.stamp(date))
-        if !diaryTitle.isEmpty { diary.set("title", diaryTitle) }
+        // В файл — без пробелов по краям: пробел в конце заголовка живёт
+        // только пока его набирают (P529).
+        let title = diaryTitle.trimmingCharacters(in: .whitespaces)
+        if !title.isEmpty { diary.set("title", title) }
         if let place { diary.set("place", place) }
         if let weather { diary.set("weather", weather) }
         if let lastEdit { diary.set("edited", DayStore.moment(lastEdit)) }

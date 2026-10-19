@@ -553,7 +553,10 @@ struct DiaryPage: View {
 
     /// Слова заголовка — без точек: точки стоят за ними значками (P358).
     private var titleWords: Binding<String> {
-        Binding(get: { Geo.stripped(title) },
+        // Без точек заголовок отдаётся как есть: прежде пробел в конце
+        // срезался на лету, и набрать пробел после последнего слова было
+        // нельзя (P529, запись автора).
+        Binding(get: { Geo.points(inText: title).isEmpty ? title : Geo.stripped(title) },
                 set: { title = DiaryPage.title($0, keeping: title) })
     }
 
@@ -569,6 +572,11 @@ struct DiaryPage: View {
     static func title(_ words: String, keeping old: String) -> String {
         let ns = old as NSString
         let points = Geo.points(inText: old).map { ns.substring(with: $0.range) }
+        // Пробел, только что набранный в конце, остаётся (P529): срезается
+        // лишь там, где за словами идут точки.
+        guard !points.isEmpty else {
+            return String(words.drop(while: { $0 == " " || $0 == "\t" }))
+        }
         let head = words.trimmingCharacters(in: .whitespaces)
         return ([head] + points).filter { !$0.isEmpty }.joined(separator: " ")
     }
