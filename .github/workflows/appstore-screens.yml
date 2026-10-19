@@ -122,7 +122,9 @@ jobs:
             for try in 1 2; do
               xcrun simctl terminate "$UDID" "$APP_ID" >/dev/null 2>&1 || true
               sleep 1
+              # Без стрелок шага над страницей (P530).
               SIMCTL_CHILD_CHRONOTHECA_PREVIEW=1 \
+              SIMCTL_CHILD_CHRONOTHECA_APPSTORE=1 \
               SIMCTL_CHILD_CHRONOTHECA_SCREEN="$screen" \
                 xcrun simctl launch "$UDID" "$APP_ID" || true
               sleep $((6 + try * 3 + extra))

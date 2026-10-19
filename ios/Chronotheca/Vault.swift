@@ -95,6 +95,10 @@ final class Vault: ObservableObject {
     /// Имя папки, которую приложение заводит себе само.
     static let folderName = "Chronotheca"
 
+    /// Видимое имя приложения (`CFBundleDisplayName` в project.yml): под ним
+    /// «Файлы» показывают собственную папку приложения на телефоне (P530).
+    static let shownName = "Graphomanus"
+
     /// Метка, по которой приложение узнаёт свои архивы.
     ///
     /// Узнавать по имени подпапки нельзя: у человека может лежать своя папка
@@ -176,7 +180,9 @@ final class Vault: ObservableObject {
         // iPhone» под именем приложения (P223).
         if path.contains("/Data/Application/"), let r = path.range(of: "/Documents") {
             let tail = path[r.upperBound...].split(separator: "/").map(String.init)
-            return ([T("На iPhone", "On My iPhone"), Vault.folderName] + tail).joined(separator: " › ")
+            // Своя папка приложения в «Файлах» — под видимым именем
+            // приложения, Graphomanus, а не под внутренним (P530).
+            return ([T("На iPhone", "On My iPhone"), Vault.shownName] + tail).joined(separator: " › ")
         }
         // Своя папка приложения в iCloud: в «Файлах» — «iCloud Drive ›
         // Chronotheca» (P452).
@@ -236,7 +242,8 @@ final class Vault: ObservableObject {
     private func usePreviewFolder() {
         let url = FileManager.default
             .urls(for: .documentDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("Показ")
+            // По-английски (P530): имя видно в настройках на снимках App Store.
+            .appendingPathComponent("Diary")
         do {
             try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
             try makeTree(in: url)
@@ -352,6 +359,11 @@ final class Vault: ObservableObject {
         old.set("date", Vault.stamp(lastYear))
         old.set("title", T("Иней на перилах", "Frost on the railings"))
         write(old.text, to: .diary, for: lastYear)
+
+        // Копия будто сделана (P530): на снимке настроек — спокойная строка
+        // «Сделать», а не красное «Пора сделать». Только во временной
+        // папке снимков; настоящую копию это не трогает.
+        Backup.record(size: 2_400_000, complete: true, missing: 0)
     }
 
     // MARK: - Папка

@@ -57,6 +57,16 @@ final class Shell: ObservableObject {
     /// Снимки для сборки: облачко «…помнишь?» не показывается (P408).
     @Published var hideCloud = false
 
+    /// Снимок «А вот когда-то…» для App Store: листок облачка открыт (P530).
+    /// Счётчик, а не да/нет: экран для снимка ставится трижды, и записи к
+    /// первому разу могут быть ещё не прочитаны.
+    @Published var previewRemember = 0
+
+    /// Снимки для App Store (P530): без стрелок шага над страницей — на
+    /// дневнике они ложатся на строку плана.
+    static let appStoreShots = Vault.isPreview
+        && ProcessInfo.processInfo.environment["CHRONOTHECA_APPSTORE"] == "1"
+
     /// Дело, которому крутят время, и что именно крутят.
     @Published var roller: Roller?
 
@@ -321,7 +331,7 @@ final class Shell: ObservableObject {
         case "calendar-menu": screen = .calendar; showingMenu = true
         case "search-menu":   screen = .search; showingMenu = true
         case "settings":  showingSettings = true
-        case "remember":  tab = .diary
+        case "remember":  tab = .diary; previewRemember += 1
         // Дни — от сегодняшнего, а не шагом: повтор не уводит дальше.
         case "past":      if store.date != day(-1) { store.go(to: day(-1)) }
         case "editing":

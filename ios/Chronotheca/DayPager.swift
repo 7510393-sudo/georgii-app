@@ -90,7 +90,7 @@ struct DayPage: View {
                         .frame(height: 14)
                         .allowsHitTesting(false)
                 }
-                .overlay(alignment: .top) { steps }
+                .overlay(alignment: .top) { if !Shell.appStoreShots { steps } }
                 // Черты между шапкой и страницей больше нет (P434, прежде
                 // P250): шапка — продолжение листа.
         }
@@ -98,6 +98,10 @@ struct DayPage: View {
         // Фактура страницы и вкладок отсчитывается от одной точки — клетка
         // на вкладке продолжает клетку страницы (P246).
         .coordinateSpace(name: PageTexture.space)
+        // Снимок «А вот когда-то…» (P530): листок открыт, как после нажатия.
+        .onAppear { showRememberForPreview() }
+        .onChange(of: shell.previewRemember) { _, _ in showRememberForPreview() }
+        .onChange(of: live) { _, _ in showRememberForPreview() }
         .sheet(isPresented: $remembering, onDismiss: forget) {
             if let (day, ago) = archive.remembered(for: date) {
                 RememberSheet(day: day, ago: ago, open: $remembering)
@@ -132,6 +136,12 @@ struct DayPage: View {
             forget()
             remembering = true
         }
+    }
+
+    private func showRememberForPreview() {
+        guard shell.previewRemember > 0, live, !remembering,
+              archive.remembered(for: date) != nil else { return }
+        remembering = true
     }
 
     /// Листок прочитан — облачко уходит: оно своё дело сделало, а звать
