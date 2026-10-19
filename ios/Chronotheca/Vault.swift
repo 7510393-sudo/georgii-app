@@ -243,7 +243,9 @@ final class Vault: ObservableObject {
         let url = FileManager.default
             .urls(for: .documentDirectory, in: .userDomainMask)[0]
             // По-английски (P530): имя видно в настройках на снимках App Store.
-            .appendingPathComponent("Diary")
+            // Не «Diary»: так зовётся подпапка архива, и приложение приняло бы
+            // папку снимков за папку внутри архива.
+            .appendingPathComponent("My Journal")
         do {
             try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
             try makeTree(in: url)
