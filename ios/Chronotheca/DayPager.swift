@@ -585,9 +585,9 @@ struct AttachBar: View {
             // Камера — снимок прямо из приложения (P289); первой кнопкой
             // слева, она нужнее с ходу (P301).
             item("camera", T("камера", "camera"), ready: true) { open { shooting = true } }
-            // «Фото» открывает ряд последних снимков галереи над полоской
-            // (P273); повторное касание — прячет.
-            item("photo", T("фото", "photo"), ready: true) { toggleGallery() }
+            // «Фото» сразу открывает галерею (P537); прежде — ряд снимков
+            // дня над полоской (P273), до галереи было на касание дольше.
+            item("photo", T("фото", "photo"), ready: true) { open { choosing = true } }
             // Строка без клавиатуры — пять кнопок, «аудио» третья: центр
             // посередине (P330, P381).
             // Микрофон, а не волна: волна была безликой (P401).
@@ -636,7 +636,7 @@ struct AttachBar: View {
             let row = store.planTyping
             hideKeyboard()
             switch ask {
-            case .photo: toggleGallery()
+            case .photo: open { choosing = true }
             case .camera: open { shooting = true }
             // Полоска над клавиатурой — шесть кнопок, «аудио» третья: центр
             // на 5/12 ширины (P330, P381).
@@ -772,11 +772,6 @@ struct AttachBar: View {
                 Button(action: act) { face }
             }
         }
-    }
-
-    private func toggleGallery() {
-        guard store.canEdit(into) else { return shell.say(store.closedReason) }
-        withAnimation(.easeOut(duration: 0.2)) { shell.gallery.toggle() }
     }
 
     /// Отмеченное в ряду галереи — в полоску этой вкладки, как из окна
