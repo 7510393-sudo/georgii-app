@@ -568,6 +568,15 @@ struct StripDock: View {
                 KeyboardDock(date: store.date)
                     .frame(maxWidth: .infinity)
                     .padding(.bottom, keyboard > 0 ? covered(outer) : 10)
+                    // Плотный лист цвета дня до самой нижней строки (P544):
+                    // сквозь полупрозрачный текст записи путался с превью.
+                    .background {
+                        Ru.tint(store.date)
+                            .overlay(alignment: .top) {
+                                Rectangle().fill(Look.rule).frame(height: 0.6)
+                            }
+                            .shadow(color: .black.opacity(0.08), radius: 4, y: -2)
+                    }
             }
         }
         .keyboardHeight($keyboard)
@@ -649,12 +658,6 @@ struct KeyboardDock: View {
                 .padding(.bottom, 4)
         }
         .padding(.top, 2)
-        .background {
-            if showsStrip {
-                Ru.tint(date).opacity(0.97)
-                    .overlay(alignment: .top) { Rectangle().fill(Look.rule).frame(height: 0.6) }
-            }
-        }
         // Предложенные снимки — заново при смене дня, после взятия, при
         // возвращении в приложение (P538).
         .onAppear { suggest.reload(today: store.isToday) }
