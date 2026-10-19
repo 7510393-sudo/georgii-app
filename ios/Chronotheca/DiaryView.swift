@@ -201,6 +201,7 @@ extension DiaryView {
         switch phase {
         case .began:
             Feel.lift()
+            DiaryEditor.active?.holdPage(true)
             stripCarry = i
             stripSpot = spot
         case .moved:
@@ -221,6 +222,7 @@ extension DiaryView {
                 DiaryEditor.active?.carryIn(line, at: CGPoint(x: spot.x, y: spot.y))
             }
         case .ended:
+            DiaryEditor.active?.holdPage(false)
             DiaryEditor.active?.stopFollowingStrip()
             hover(nil, photo: false)
             if let task = overTask, spot != .zero {
@@ -255,6 +257,7 @@ extension DiaryView {
             stripCarry = nil
             stripSpot = .zero
         case .cancelled:
+            DiaryEditor.active?.holdPage(false)
             DiaryEditor.active?.stopFollowingStrip()
             hover(nil, photo: false)
             AskLine.carryOutAll()

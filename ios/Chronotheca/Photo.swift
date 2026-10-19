@@ -365,7 +365,7 @@ struct PhotoStrip: View {
             }, stayed: onRemove == nil ? nil : {
                 armedAt = Date()
                 withAnimation(.easeOut(duration: 0.15)) { armed = i }
-            }))
+            }, together: true))
             // В плане бросить под дело можно только снимок; в дневнике в
             // текст — и голос, и видео, и документ: там они кнопочкой
             // (P204, P209, P377).
@@ -618,6 +618,9 @@ struct ThumbCarry: ViewModifier {
     let report: ((Lift, CGPoint) -> Void)?
     /// Подержали и отпустили, не уводя пальца (P432).
     var stayed: (() -> Void)? = nil
+    /// Жест вместе с прокруткой ряда (P539): лента внизу дневника листается
+    /// вбок, а свой жест на каждом превью не давал ей сдвинуться.
+    var together = false
 
     @State private var lifted = false
     /// Палец ушёл от места — рамка остаётся только у копии над пальцем.
@@ -639,7 +642,7 @@ struct ThumbCarry: ViewModifier {
                 }
                 .scaleEffect(lifted && !away ? 1.05 : 1)
                 .animation(.easeOut(duration: 0.12), value: lifted && !away)
-                .gesture(LongPressGesture(minimumDuration: 0.3)
+                .attach(together: together, LongPressGesture(minimumDuration: 0.3)
                     .sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .global))
                     .updating($holding) { value, state, _ in
                         if case .second(true, _) = value { state = true }
@@ -1012,5 +1015,17 @@ enum CameraShots {
 
     static func taken(_ url: URL) -> Bool {
         (UserDefaults.standard.stringArray(forKey: key) ?? []).contains(url.lastPathComponent)
+    }
+}
+
+extension View {
+    /// Свой жест — один на касание или вместе с прокруткой вокруг (P539).
+    @ViewBuilder
+    func attach<G: Gesture>(together: Bool, _ gesture: G) -> some View {
+        if together {
+            simultaneousGesture(gesture)
+        } else {
+            self.gesture(gesture)
+        }
     }
 }

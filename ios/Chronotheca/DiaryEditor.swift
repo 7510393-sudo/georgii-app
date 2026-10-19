@@ -1394,6 +1394,14 @@ struct DiaryEditor: UIViewRepresentable {
             if pump == nil { startPump() }
         }
 
+        /// Пока превью из ленты несут, страница пальцем не листается (P539):
+        /// жест превью теперь совместный с прокрутками вокруг. Сама к пальцу
+        /// у края она по-прежнему едет — это не палец, а приложение.
+        func holdPage(_ hold: Bool) {
+            guard let view, let page = page(over: view) else { return }
+            page.isScrollEnabled = !hold
+        }
+
         func stopFollowingStrip() {
             stripFollow = nil
             if taken == nil { stopPump() }
