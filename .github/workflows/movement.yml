@@ -97,6 +97,10 @@ jobs:
             -destination "id=$UDID" \
             CODE_SIGNING_ALLOWED=NO 2>&1 | tee test.log || status=$?
           kill $sampler 2>/dev/null || true
+          # Дальше — разбор снимков и итог; ничто здесь не должно обрывать
+          # шаг до записи итога (P578: «head» закрывал трубу, awk падал, и
+          # итог не писался вовсе).
+          set +e +o pipefail
           # Из каждого снимка — только главный поток, самые тяжёлые места.
           for f in ../docs/motion/sample-*.txt; do
             [ -f "$f" ] || continue
