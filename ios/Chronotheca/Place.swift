@@ -301,12 +301,35 @@ enum Places {
     static func all(in vault: Vault) -> [Place] {
         guard let folder = folder(vault),
               let names = try? FileManager.default.contentsOfDirectory(atPath: folder.path)
-        else { return [] }
-        return names.filter { $0.hasSuffix(".md") }.sorted().compactMap { name in
+        else { known = []; return [] }
+        let list = names.filter { $0.hasSuffix(".md") }.sorted().compactMap { name -> Place? in
             let reading = Vault.reading(at: folder.appendingPathComponent(name))
             guard case .text(let text) = reading else { return nil }
             return Place(text: text, file: name)
         }
+        known = list
+        return list
+    }
+
+    /// Места, прочитанные в последний раз (P559): по ним подписывается
+    /// точка в дневнике без названия. Подпись не хранится в записи — она
+    /// считается заново при каждом показе: место переименовали — подпись
+    /// новая, удалили — подписи нет.
+    static var known: [Place] = []
+
+    /// Подпись точки без названия (P559): «120 м до «Дом»» — до ближайшего
+    /// своего места не дальше километра. Дальше — `nil`.
+    static func caption(for at: CLLocationCoordinate2D) -> String? {
+        let here = CLLocation(latitude: at.latitude, longitude: at.longitude)
+        let near = known.map { place -> (Place, Double) in
+            (place, here.distance(from: CLLocation(latitude: place.latitude, longitude: place.longitude)))
+        }.min { $0.1 < $1.1 }
+        guard let (place, meters) = near, meters <= 1000 else { return nil }
+        let step: Double = meters < 100 ? 10 : 50
+        let shown = String(Int(max(step, (meters / step).rounded() * step)))
+        let name = place.name.trimmingCharacters(in: .whitespaces)
+        guard !name.isEmpty else { return nil }
+        return T("\(shown) м до «\(name)»", "\(shown) m from “\(name)”")
     }
 
     /// Записать место. Файл с таким названием уже есть и он не этого
@@ -331,12 +354,15 @@ enum Places {
             try? FileManager.default.removeItem(at: folder.appendingPathComponent(old))
         }
         stored.file = name
+        known.removeAll { $0.file == place.file || $0.file == name }
+        known.append(stored)
         return stored
     }
 
     static func delete(_ place: Place, in vault: Vault) {
         guard let folder = folder(vault), let file = place.file else { return }
         try? FileManager.default.removeItem(at: folder.appendingPathComponent(file))
+        known.removeAll { $0.file == file }
     }
 }
 

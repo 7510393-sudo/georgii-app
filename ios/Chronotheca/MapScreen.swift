@@ -503,8 +503,9 @@ struct MapScreen: View {
     }
 
     /// Название кнопки — куда ляжет точка (P358).
-    /// Одно слово на любую вкладку (P425): «записать».
-    private var saveName: String { T("записать", "note") }
+    /// Одно слово на любую вкладку (P425): «записать». С P559 — «в этот
+    /// день»: точка ложится в запись дня, а не в «Мои места».
+    private var saveName: String { T("в этот день", "to this day") }
 
     private func remember(to tab: Shell.Tab) {
         guard store.canEdit(tab) else { return shell.say(store.closedReason) }

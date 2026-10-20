@@ -428,7 +428,8 @@ struct DiaryEditor: UIViewRepresentable {
     static func placePhotos(in out: NSMutableAttributedString,
                             resolve: (String) -> URL?, glowing: Bool = false) {
         let ns = out.string as NSString
-        var found: [(NSRange, String, GeoPoint?)] = []
+        // Последнее — точка своей строкой: она квадратом, как снимок (P559).
+        var found: [(NSRange, String, GeoPoint?, Bool)] = []
         var start = 0
         while start < ns.length {
             let line = ns.lineRange(for: NSRange(location: start, length: 0))
@@ -440,21 +441,21 @@ struct DiaryEditor: UIViewRepresentable {
                 // плиткой, как снимок (P456; прежде голос и документ были
                 // кнопочкой с именем, P377): переносятся, раздвигают строки,
                 // возвращаются в полоску и удаляются крестиком так же.
-                found.append((range, link, nil))
+                found.append((range, link, nil, false))
             } else if row.count > 1 {
                 // Несколько снимков в одной строке — рядом, через пробел
                 // (P348). Каждый — своей картинкой, пробел остаётся.
                 for piece in row where Diary.kind(of: piece.link) == .photo {
                     found.append((NSRange(location: line.location + piece.range.location,
-                                          length: piece.range.length), piece.link, nil))
+                                          length: piece.range.length), piece.link, nil, false))
                 }
             } else if let point = Geo.point(in: content) {
-                found.append((range, content, point))
+                found.append((range, content, point, true))
             } else if content.contains("geo:") {
                 // Точка посреди строки — тоже кнопочка (P256).
                 for (r, point) in Geo.points(inText: content) {
                     found.append((NSRange(location: line.location + r.location, length: r.length),
-                                  (content as NSString).substring(with: r), point))
+                                  (content as NSString).substring(with: r), point, false))
                 }
             }
             // Снимок посреди фразы — тоже картинка, а не буквы (P357): так
@@ -462,17 +463,19 @@ struct DiaryEditor: UIViewRepresentable {
             if Diary.picture(in: content) == nil, row.count < 2 {
                 for piece in Diary.anywhere(in: content) where Diary.kind(of: piece.link) == .photo {
                     found.append((NSRange(location: line.location + piece.range.location,
-                                          length: piece.range.length), piece.link, nil))
+                                          length: piece.range.length), piece.link, nil, false))
                 }
             }
             guard line.length > 0 else { break }
             start = line.location + line.length
         }
         // С конца к началу: замена не сдвигает того, что ещё впереди.
-        for (range, link, point) in found.sorted(by: { $0.0.location < $1.0.location }).reversed() {
+        for (range, link, point, own) in found.sorted(by: { $0.0.location < $1.0.location }).reversed() {
             let attachment: NSTextAttachment
             let file = point == nil && Diary.picture(in: link).map { Diary.kind(of: $0) != .photo } == true
-            if let point {
+            if let point, own {
+                attachment = PointChip(tile: point, glowing: glowing)
+            } else if let point {
                 attachment = PointChip(mini: point, glowing: glowing)
             } else if file, let inner = Diary.picture(in: link) {
                 attachment = FileChip(link: inner)
@@ -2023,6 +2026,67 @@ final class PointChip: NSTextAttachment {
         let pad: CGFloat = glowing ? 3 : 0
         bounds = CGRect(origin: CGPoint(x: 0, y: -5 - pad), size: picture.size)
         accessibilityLabel = T("Точка на карте: ", "Place on the map: ") + point.label
+    }
+
+    /// Точка своей строкой — квадрат размером со снимок (P559): булавка
+    /// и подпись — название, а без него — «Место» и, если рядом своё место,
+    /// сколько до него. Как голос и файл, все вложения — одного вида.
+    init(tile point: GeoPoint, glowing: Bool = false) {
+        super.init(data: nil, ofType: nil)
+        let given = point.title.trimmingCharacters(in: .whitespaces)
+        let name = given.isEmpty ? T("Место", "Place") : given
+        let note = given.isEmpty ? Places.caption(for: point.at) : nil
+        let picture = PointChip.square(name, note: note, glowing: glowing)
+        image = picture
+        bounds = CGRect(origin: CGPoint(x: 0, y: -4), size: picture.size)
+        accessibilityLabel = T("Точка на карте: ", "Place on the map: ") + point.label
+    }
+
+    static func square(_ name: String, note: String?, glowing: Bool) -> UIImage {
+        let size = DiaryEditor.photoSize
+        let red = UIColor(Look.pin)
+        return UIGraphicsImageRenderer(size: size).image { _ in
+            let box = CGRect(origin: .zero, size: size).insetBy(dx: 0.75, dy: 0.75)
+            let shape = UIBezierPath(roundedRect: box, cornerRadius: 6)
+            UIColor(Look.planBg).setFill()
+            shape.fill()
+            red.withAlphaComponent(0.10).setFill()
+            shape.fill()
+            (glowing ? UIColor(Look.glow) : red.withAlphaComponent(0.6)).setStroke()
+            shape.lineWidth = glowing ? 2.2 : 1.2
+            shape.stroke()
+            if let pin = UIImage(systemName: "mappin.circle.fill",
+                                 withConfiguration: UIImage.SymbolConfiguration(pointSize: size.width * 0.26,
+                                                                                weight: .semibold))?
+                .withTintColor(red, renderingMode: .alwaysOriginal) {
+                pin.draw(at: CGPoint(x: (size.width - pin.size.width) / 2, y: size.height * 0.12))
+            }
+            let style = NSMutableParagraphStyle()
+            style.alignment = .center
+            style.lineBreakMode = .byTruncatingTail
+            let title: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: max(11, size.width * 0.125), weight: .semibold),
+                .foregroundColor: UIColor(Look.ink), .paragraphStyle: style,
+            ]
+            let small: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: 10.5),
+                .foregroundColor: UIColor(Look.inkSoft), .paragraphStyle: style,
+            ]
+            let top = size.height * 0.52
+            let lines: CGFloat = note == nil ? 2 : 1
+            let titleFont = title[.font] as! UIFont
+            (name as NSString).draw(
+                with: CGRect(x: 5, y: top, width: size.width - 10, height: titleFont.lineHeight * lines),
+                options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine],
+                attributes: title, context: nil)
+            if let note {
+                (note as NSString).draw(
+                    with: CGRect(x: 4, y: top + titleFont.lineHeight + 2, width: size.width - 8,
+                                 height: UIFont.systemFont(ofSize: 10.5).lineHeight * 2),
+                    options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine],
+                    attributes: small, context: nil)
+            }
+        }
     }
 
     /// Булавка; у точки с названием — и название рядом (P284). Красная

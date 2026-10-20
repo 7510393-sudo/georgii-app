@@ -490,6 +490,8 @@ struct RootView: View {
             // облачко «…помнишь?» не знает, есть ли что вспомнить, и не
             // появляется никогда. Читаем папку сразу при запуске.
             archive.reload()
+            // Свои места — для подписи точек в дневнике (P559).
+            _ = Places.all(in: vault)
             // С какой вкладки открывать — из настроек (P249).
             shell.tab = Prefs.openingTab
             shell.openRequestedScreen(store)
