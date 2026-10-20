@@ -1106,6 +1106,68 @@ final class Vault: ObservableObject {
         reading(folder, for: date).text
     }
 
+    // MARK: - Две версии одного дня (P570)
+
+    /// Один день правили на двух устройствах без связи — iCloud оставил
+    /// одну версию файла главной, а другую спрятал как «конфликтную». Её
+    /// не видно, и человек решил бы, что часть записи пропала. Здесь обе
+    /// складываются в одну: всё, чего нет в главной, дописывается под
+    /// пометкой. Спрятанная версия помечается разобранной, но не стирается.
+    /// `true` — запись дополнена.
+    @discardableResult
+    func mergeConflicts(_ folder: Folder, for date: Date) -> Bool {
+        guard let url = file(folder, for: date),
+              let versions = NSFileVersion.unresolvedConflictVersionsOfItem(at: url),
+              !versions.isEmpty,
+              case .text(let current) = Vault.reading(at: url)
+        else { return false }
+        var merged = current
+        for version in versions {
+            guard let other = try? String(contentsOf: version.url, encoding: .utf8) else { continue }
+            merged = Vault.merge(merged, with: other, diary: folder == .diary)
+        }
+        // Не записалось — версии остаются неразобранными: попробуем в
+        // следующий раз, ничего не потеряв.
+        if merged != current, Vault.write(merged, to: url) != nil { return false }
+        for version in versions { version.isResolved = true }
+        return merged != current
+    }
+
+    /// Сложить две версии файла дня. Шапка: чего нет в главной — берётся
+    /// из другой. Текст: строки другой версии, которых нет в главной,
+    /// дописываются в конец — в дневнике под пометкой «записано на другом
+    /// устройстве», в плане — делами (дело узнаётся по названию, сделано
+    /// оно или нет).
+    static func merge(_ current: String, with other: String, diary: Bool) -> String {
+        var file = DayFile(text: current)
+        let theirs = DayFile(text: other)
+        for line in theirs.meta where (file.value(line.key) ?? "").isEmpty && !line.value.isEmpty {
+            file.set(line.key, line.value)
+        }
+        func key(_ line: String) -> String {
+            let t = line.trimmingCharacters(in: .whitespaces)
+            return diary ? t : t.replacingOccurrences(of: #"^- \[[ xX]\] "#, with: "- ",
+                                                      options: .regularExpression)
+        }
+        let have = Set(file.body.components(separatedBy: .newlines).map(key))
+        var extra: [String] = []
+        for line in theirs.body.components(separatedBy: .newlines) {
+            let k = key(line)
+            guard !k.isEmpty, !have.contains(k), !extra.map(key).contains(k) else { continue }
+            extra.append(line)
+        }
+        guard !extra.isEmpty else { return file.text }
+        let body = file.body.trimmingCharacters(in: .newlines)
+        if diary {
+            file.body = (body.isEmpty ? "" : body + "\n\n")
+                + "— " + T("записано на другом устройстве", "written on another device") + " —\n"
+                + extra.joined(separator: "\n") + "\n"
+        } else {
+            file.body = (body.isEmpty ? "" : body + "\n") + extra.joined(separator: "\n") + "\n"
+        }
+        return file.text
+    }
+
     func write(_ text: String, to folder: Folder, for date: Date) {
         guard let url = file(folder, for: date) else { return }
         problem = Vault.write(text, to: url)

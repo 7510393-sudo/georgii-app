@@ -847,6 +847,10 @@ final class DayStore: ObservableObject {
     /// клавиатуру уже убрали. Туда геоточка кладёт место (P253).
     private(set) var lastPlanRow: UUID?
 
+    /// День дополнен версией с другого устройства (P570) — растёт, чтобы
+    /// экран сказал об этом.
+    @Published var syncNotice = 0
+
     /// Просьба полю дневника поставить курсор за вписанной точкой (P253).
     @Published var caretRequest: Int?
     /// Просьба странице доехать до места в записи (P564): точку вписали с
@@ -1239,6 +1243,10 @@ final class DayStore: ObservableObject {
 
     func load() {
         stampPending = false
+        // Две версии дня с разных устройств — сперва в одну (P570).
+        let mergedPlan = vault.mergeConflicts(.planner, for: date)
+        let mergedDiary = vault.mergeConflicts(.diary, for: date)
+        if mergedPlan || mergedDiary { syncNotice += 1 }
         let plan = vault.reading(.planner, for: date)
         let diaryFile = vault.reading(.diary, for: date)
         var gone: Set<Vault.Folder> = []
@@ -1282,6 +1290,11 @@ final class DayStore: ObservableObject {
     func refresh() {
         guard vault.root != nil else { return }
         save()
+        // Пока приложение стояло, iCloud мог принести вторую версию дня.
+        if NSFileVersion.unresolvedConflictVersionsOfItem(at: vault.file(.planner, for: date) ?? URL(fileURLWithPath: "/"))?.isEmpty == false
+            || NSFileVersion.unresolvedConflictVersionsOfItem(at: vault.file(.diary, for: date) ?? URL(fileURLWithPath: "/"))?.isEmpty == false {
+            return load()
+        }
         let stale = [Vault.Folder.planner, .diary].contains { folder in
             let now = vault.reading(folder, for: date)
             if now == .away { return false }

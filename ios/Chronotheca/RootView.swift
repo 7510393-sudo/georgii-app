@@ -521,6 +521,11 @@ struct RootView: View {
             Text(trashMessage)
         }
         .sheet(item: $shell.roller) { RollerSheet(roller: $0) }
+        // Две версии дня сложены в одну (P570) — сказать.
+        .onChange(of: store.syncNotice) { _, _ in
+            shell.say(T("Запись дополнена тем, что было записано на другом устройстве",
+                        "The entry now includes what was written on another device"))
+        }
         .onAppear {
             // Просьбы кнопок над клавиатурой — открытой странице (P279).
             KeyboardBar.ask = { [shell] ask in shell.keyboardAsk = ask }
