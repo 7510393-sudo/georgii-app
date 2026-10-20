@@ -1,0 +1,103 @@
+# Проверки движения (P552): клавиатура, «Сегодня», листание, лишние строки
+# кнопок. Снимки экрана не видят хода — эти проверки трогают приложение
+# пальцем в симуляторе. Сборку в TestFlight не держат: итог и снимки с
+# клавиатурой кладутся в docs/motion/.
+name: Проверки движения
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'ios/**'
+      - '.github/workflows/movement.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: movement-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  movement:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Взять самый новый Xcode
+        run: |
+          latest=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
+          sudo xcode-select -s "$latest/Contents/Developer"
+          xcodebuild -version
+
+      - name: Поставить XcodeGen
+        run: brew install xcodegen
+
+      - name: Собрать проект Xcode из project.yml
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Выбрать симулятор
+        id: sim
+        run: |
+          udid=$(xcrun simctl list devices available -j | python3 -c "
+          import json, sys
+          runtimes = json.load(sys.stdin)['devices']
+          for runtime in sorted(runtimes, reverse=True):
+              for device in runtimes[runtime]:
+                  if device.get('isAvailable') and device['name'].startswith('iPhone'):
+                      print(device['udid']); raise SystemExit
+          sys.exit('нет доступного симулятора iPhone')
+          ")
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+
+      - name: Прогнать проверки движения
+        id: run
+        working-directory: ios
+        env:
+          UDID: ${{ steps.sim.outputs.udid }}
+          TEST_RUNNER_MOTION_DIR: ${{ github.workspace }}/docs/motion
+        run: |
+          set -o pipefail
+          rm -rf ../docs/motion && mkdir -p ../docs/motion
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          # Место заранее запрещено: окна-вопроса о нём быть не должно.
+          xcrun simctl privacy "$UDID" revoke location com.kobiashvili.diary || true
+          status=0
+          xcodebuild test \
+            -project Chronotheca.xcodeproj \
+            -scheme Movement \
+            -destination "id=$UDID" \
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee test.log || status=$?
+          {
+            echo "Проверки движения, $(date -u '+%Y-%m-%d %H:%M') UTC, коммит ${GITHUB_SHA:0:7}"
+            echo
+            grep -E "Test Case .*(passed|failed)|error: -\[|XCTAssert" test.log || echo "строк итога нет — смотри журнал прогона"
+          } > ../docs/motion/итог.txt
+          cat ../docs/motion/итог.txt >> "$GITHUB_STEP_SUMMARY"
+          exit $status
+
+      - name: Положить итог и снимки в репозиторий
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          FRESH=$(mktemp -d)
+          cp -R docs/motion/. "$FRESH"/ 2>/dev/null || exit 0
+          for try in 1 2 3 4; do
+            git add docs/motion
+            if git diff --cached --quiet; then
+              echo "итог не изменился"
+              exit 0
+            fi
+            git commit -m "docs: проверки движения [skip ci]"
+            if git push; then exit 0; fi
+            echo "отправка не прошла, попытка $try"
+            sleep $((try * 5))
+            git fetch origin "$GITHUB_REF_NAME" || exit 1
+            git reset --hard "origin/$GITHUB_REF_NAME" || exit 1
+            rm -rf docs/motion && mkdir -p docs/motion
+            cp -R "$FRESH"/. docs/motion/
+          done
+          echo "::warning::итог не удалось отправить в репозиторий"

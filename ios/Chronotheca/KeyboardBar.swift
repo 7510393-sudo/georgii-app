@@ -128,6 +128,8 @@ struct KeyboardBarView: View {
             BarFace(icon: icon, name: name, tint: Look.stripInk, compact: true, spot: Ru.tint(day.date))
         }
             .buttonStyle(.plain)
+            // Метка для проверок движения (P552).
+            .accessibilityIdentifier("keyboard." + icon)
     }
 }
 

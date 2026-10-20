@@ -735,6 +735,8 @@ struct AttachBar: View {
                 Button(action: act) { face }
             }
         }
+        // Метка для проверок движения (P552).
+        .accessibilityIdentifier("strip." + icon)
     }
 
     /// Видео из окна галереи — копией во временный файл: система уберёт

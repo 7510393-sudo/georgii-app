@@ -371,6 +371,17 @@ struct RootView: View {
                       quiet: !shell.showingMenu && !shell.showingSettings
                           && shell.movingTask == nil && keyboard.height == 0
                           && vault.moving == nil)
+            // Для проверок движения (P552): какой день открыт — невидимой
+            // строкой, только когда приложение запустила проверка.
+            if Vault.isUITest {
+                Text(Calendar.current.isDate(store.date, inSameDayAs: DayStore.today())
+                     ? "today" : String(Int(store.date.timeIntervalSince1970)))
+                    .font(.system(size: 2))
+                    .opacity(0.02)
+                    .allowsHitTesting(false)
+                    .accessibilityIdentifier("openDay")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            }
             if let notice = shell.notice {
                 toast(notice)
                     // Над клавиатурой и полоской на ней, иначе не видно.
@@ -502,6 +513,9 @@ struct RootView: View {
         .padding(.vertical, 4)
         .frame(maxWidth: .infinity)
         .frame(height: Self.topBarHeight)
+        // По этим меткам проверки движения находят строку и её кнопки (P552).
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("topBar")
         // Нижний край неровный — вторая половина той же рваной бумаги, что
         // и верх нижней строки (P517): зубцы те же, выступ у одной —
         // выемка у другой.
@@ -854,6 +868,7 @@ struct RootView: View {
             .frame(maxWidth: .infinity)
             .foregroundStyle(on ? Look.accent : Look.kraftInk)
         }
+        .accessibilityIdentifier((small ? "top." : "bottom.") + "\(target)")
         // Долгого нажатия у кнопок нет (P492): действия дня — в меню на трёх
         // точках; системное меню задерживало и обычное касание.
     }

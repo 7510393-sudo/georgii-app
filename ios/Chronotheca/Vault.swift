@@ -239,6 +239,10 @@ final class Vault: ObservableObject {
     static var isPreview: Bool {
         ProcessInfo.processInfo.environment["CHRONOTHECA_PREVIEW"] == "1"
     }
+    /// Приложение запустили проверки движения (P552).
+    static var isUITest: Bool {
+        ProcessInfo.processInfo.environment["CHRONOTHECA_UITEST"] == "1"
+    }
 
     private func usePreviewFolder() {
         let url = FileManager.default

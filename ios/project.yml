@@ -93,6 +93,21 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.kobiashvili.diary.tests
         GENERATE_INFOPLIST_FILE: YES
 
+  # Проверки движения (P552): клавиатура, «Сегодня», листание. Идут
+  # отдельно от «Сборки iOS» и сборку не держат.
+  ChronothecaUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: ChronothecaUITests
+    dependencies:
+      - target: Chronotheca
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.kobiashvili.diary.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: Chronotheca
+
 schemes:
   Chronotheca:
     build:
@@ -107,3 +122,12 @@ schemes:
         - ChronothecaTests
     archive:
       config: Release
+  Movement:
+    build:
+      targets:
+        Chronotheca: all
+        ChronothecaUITests: [test]
+    test:
+      config: Debug
+      targets:
+        - ChronothecaUITests

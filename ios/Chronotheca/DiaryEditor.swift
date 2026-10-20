@@ -106,6 +106,8 @@ struct DiaryEditor: UIViewRepresentable {
 
     func makeUIView(context: Context) -> UITextView {
         let view = UITextView()
+        // Метка для проверок движения (P552).
+        view.accessibilityIdentifier = "diaryText"
         view.delegate = context.coordinator
         // Над клавиатурой — строка вложений, частью самой клавиатуры, как в
         // Diarium (P546); лента превью — конец страницы, клавиатура её
