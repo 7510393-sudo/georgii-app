@@ -141,6 +141,8 @@ struct SearchView: View {
             // Строки разделов над клавиатурой больше нет (P505).
             .padding(.bottom, keyboard > 0 ? keyboard + 4 : 0)
         }
+        // Второе нажатие на «Поиск» — список заново, с начала (P576).
+        .id(shell.searchHome)
         .scrollDismissesKeyboard(.interactively)
         .animation(.easeOut(duration: 0.25), value: keyboard)
     }

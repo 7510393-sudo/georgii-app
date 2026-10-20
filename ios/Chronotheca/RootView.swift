@@ -834,38 +834,53 @@ struct RootView: View {
         // больше дневник (и iCloud), тем дольше кнопка «думала». Только
         // уход на другой день пишет прежний день сразу — иначе запись
         // легла бы не в тот день.
-        let changesDay = target == .today && !store.isToday
+        let again = shell.screen == target
+        let changesDay = target == .today && again && !store.isToday
         if changesDay { store.save() }
-        // Второе касание по открытому разделу убирает его плашку — под ней
-        // тот экран, с которого пришли (P262, P501).
-        // «Сегодня» — такая же плашка (P505); если открыт не нынешний день,
-        // второе касание возвращает на сегодня, а не убирает плашку.
-        if shell.screen == target, shell.stack.count > 1, !(target == .today && !store.isToday) {
-            hideKeyboard()
-            let previous = shell.stack.dropLast().last ?? .today
-            popping = true
-            shell.screen = previous
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { store.save() }
-            return
-        }
-        if target == .today {
-            if shell.screen == .today && !store.isToday {
-                // Возвращаемся не мгновенно, а перелистнув страницы:
-                // дорога домой должна быть видна (решение P164).
-                shell.say(T("Вернулись на сегодня", "Back to today"))
-                shell.goHome = true
-            } else if !store.isToday {
-                store.go(to: DayStore.today())
+        // Каждый раздел помнит, где его оставили (P576): ушли с прошлого дня,
+        // месяца или находки на карту — по нажатию возвращаемся туда же.
+        // Второе нажатие по открытому разделу — в исходное состояние:
+        // «Сегодня» — на сегодня, календарь — на этот месяц, поиск — пустой.
+        // Прежде второе нажатие убирало плашку (P501) — отменено; только
+        // у карты исходного состояния нет, и там оно по-прежнему убирает
+        // плашку.
+        if again {
+            switch target {
+            case .today:
+                if !store.isToday {
+                    // Возвращаемся не мгновенно, а перелистнув страницы:
+                    // дорога домой должна быть видна (решение P164).
+                    shell.say(T("Вернулись на сегодня", "Back to today"))
+                    shell.goHome = true
+                }
+                return
+            case .calendar:
+                shell.calendarHome = true
+                return
+            case .search:
+                hideKeyboard()
+                shell.query = ""
+                shell.scope = .all
+                shell.find = .all
+                shell.searchHome += 1
+                return
+            case .map:
+                guard shell.stack.count > 1 else { return }
+                hideKeyboard()
+                let previous = shell.stack.dropLast().last ?? .today
+                popping = true
+                shell.screen = previous
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { store.save() }
+                return
             }
-            open(target)
-            if !changesDay { DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { store.save() } }
-        } else {
-            open(target)
+        }
+        open(target)
+        if target != .today {
             // Опись читается в стороне, запись дня — после того, как раздел
             // уже поехал (P483): ничто не стоит между касанием и ходом.
             archive.reloadSoon()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { store.save() }
         }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { store.save() }
     }
 
     private func section(_ icon: String, _ name: String, _ target: Shell.Screen,

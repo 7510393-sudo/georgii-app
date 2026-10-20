@@ -107,6 +107,22 @@ final class MovementTests: XCTestCase {
         save("01-сегодня-после-вчера")
     }
 
+    /// Раздел помнит, где его оставили (P576): с прошлого дня — на карту и
+    /// обратно, день тот же; второе нажатие — на сегодня.
+    func testTodayRemembersDay() {
+        launch("past")
+        let past = openDay
+        XCTAssertNotEqual(past, "today", "образец «вчера» не открылся")
+        app.buttons["top.map"].firstMatch.tap()
+        XCTAssertTrue(wait(6) { openScreen == "map" }, "карта не открылась")
+        app.buttons["top.today"].firstMatch.tap()
+        XCTAssertTrue(wait(6) { openScreen == "today" }, "«Сегодня» не открылось")
+        sleep(1)
+        XCTAssertEqual(openDay, past, "после карты «Сегодня» не вернуло на прежний день")
+        app.buttons["top.today"].firstMatch.tap()
+        XCTAssertTrue(waitDay { $0 == "today" }, "второе нажатие не вернуло на сегодня: \(openDay)")
+    }
+
     /// Верхняя строка не сдвигается, когда поднимается клавиатура (P548),
     /// и над клавиатурой одна строка вложений (P546, P547).
     func testKeyboardKeepsScreen() {

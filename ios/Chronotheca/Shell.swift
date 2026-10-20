@@ -238,6 +238,10 @@ final class Shell: ObservableObject {
     /// страницы. Поднимается из меню календаря; выполняет сам календарь.
     @Published var calendarHome = false
 
+    /// Просьба поиску встать в начало списка — второе нажатие на «Поиск»
+    /// (P576).
+    @Published var searchHome = 0
+
     /// Где искать: везде, только в дневнике или только в плане.
     enum Scope { case all, diary, plan }
 

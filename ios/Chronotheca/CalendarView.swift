@@ -83,6 +83,9 @@ struct CalendarView: View {
         .onChange(of: shell.calendarHome) { _, want in
             guard want else { return }
             shell.calendarHome = false
+            // Домой — и на сегодняшний день (P576: второе нажатие на
+            // «Календарь»).
+            selected = Vault.stamp(DayStore.today())
             goHome(asked: true)
         }
     }
@@ -108,12 +111,9 @@ struct CalendarView: View {
                     // или сегодняшний — стоял вверху экрана (P286).
                     .onAppear { toTop(proxy, in: date, current: current) }
                     .onChange(of: stored) { _, _ in toTop(proxy, in: date, current: current) }
-                    // Календарь не собирается заново при каждом открытии —
-                    // он ждёт на своей плашке. Встаём на день всякий раз,
-                    // как его открывают, а не только в первый (P442).
-                    .onChange(of: shell.screen) { _, now in
-                        if now == .calendar { toTop(proxy, in: date, current: current) }
-                    }
+                    // Календарь ждёт на своей плашке там, где его оставили
+                    // (P576); прежде вставал на день при каждом открытии
+                    // (P442) — отменено.
                 }
             }
         }
