@@ -181,7 +181,10 @@ struct DaySheet<Plan: View, Diary: View>: View {
             .onPreferenceChange(DiaryShare.self) { top in
                 onDiary?(top < (outer.size.height - Self.stripRoom) / 2)
             }
-            .scrollDismissesKeyboard(.interactively)
+            // Клавиатура уходит сразу и целиком, как только страницу
+            // повели (P545): пока её смахивали пальцем, iPhone не сообщал,
+            // где она, — полоса вложений у низа экрана ждала и отставала.
+            .scrollDismissesKeyboard(.immediately)
             // Ход плавный и один: клавиатура и страница едут вместе.
             .animation(.easeOut(duration: 0.25), value: keyboard)
         }

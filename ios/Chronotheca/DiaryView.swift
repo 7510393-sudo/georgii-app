@@ -136,17 +136,9 @@ struct DiaryView: View {
                 if let link = deleting { deleteFromText(link, delete: delete) }
                 deleting = nil
             }))
-        // Взятое из полоски — над пальцем, в синей рамке (P380).
-        .overlay {
-            if let i = stripCarry, stripSpot != .zero, store.stripLinks.indices.contains(i) {
-                GeometryReader { g in
-                    let o = g.frame(in: .global).origin
-                    stripGhost(store.stripLinks[i])
-                        .position(x: stripSpot.x - o.x, y: stripSpot.y - o.y - 48)
-                }
-                .allowsHitTesting(false)
-            }
-        }
+        // Взятое из полоски — над пальцем, в синей рамке (P380): рисуется
+        // поверх полосы у низа экрана, а не на странице под ней (P545,
+        // `StripGhostLayer`).
         .task(id: store.date) { health = await HealthDay.summary(for: store.date) }
         .keyboardHeight($keyboard)
         // Предложенные снимки — заново при смене дня, после взятия, при
@@ -212,8 +204,10 @@ extension DiaryView {
             DiaryEditor.active?.holdPage(true)
             stripCarry = i
             stripSpot = spot
+            StripGhost.shared.show(store.stripLinks[i], at: spot)
         case .moved:
             stripSpot = spot
+            StripGhost.shared.spot = spot
             follow()
             hover(overTask, photo: true)
             if overTask != nil {
@@ -264,6 +258,7 @@ extension DiaryView {
             }
             stripCarry = nil
             stripSpot = .zero
+            StripGhost.shared.link = nil
         case .cancelled:
             DiaryEditor.active?.holdPage(false)
             DiaryEditor.active?.stopFollowingStrip()
@@ -272,6 +267,7 @@ extension DiaryView {
             DiaryEditor.active?.carryOut()
             stripCarry = nil
             stripSpot = .zero
+            StripGhost.shared.link = nil
         }
     }
 
@@ -291,19 +287,6 @@ extension DiaryView {
         shell.say(store.removeAttachment(at: k, from: .diary, delete: delete))
     }
 
-    @ViewBuilder fileprivate func stripGhost(_ link: String) -> some View {
-        Group {
-            if Diary.kind(of: link) == .photo {
-                PlanPhotoThumb(url: store.photoURL(link))
-            } else {
-                // Голос и документ несут той же плиткой, какой они встанут
-                // в текст (P456).
-                Image(uiImage: PhotoAttachment.tile(link))
-            }
-        }
-        .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Look.glow, lineWidth: 2.6))
-        .shadow(color: .black.opacity(0.25), radius: 8, y: 4)
-    }
 }
 
 /// Страница дневника.
@@ -791,5 +774,47 @@ private struct TitlePoint: View {
                     arm?(true)
                 }
             }
+    }
+}
+
+/// Что несут из ленты превью и где палец (P545): копия рисуется поверх всего
+/// экрана — и поверх самой ленты, которая теперь лежит над страницей.
+final class StripGhost: ObservableObject {
+    static let shared = StripGhost()
+    @Published var link: String?
+    @Published var spot: CGPoint = .zero
+
+    func show(_ link: String, at spot: CGPoint) {
+        self.spot = spot
+        self.link = link
+    }
+}
+
+/// Копия взятого превью над пальцем, в синей рамке (P380, P545).
+struct StripGhostLayer: View {
+    @ObservedObject private var ghost = StripGhost.shared
+    @EnvironmentObject private var store: DayStore
+
+    var body: some View {
+        GeometryReader { g in
+            if let link = ghost.link, ghost.spot != .zero {
+                let o = g.frame(in: .global).origin
+                face(link)
+                    .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Look.glow, lineWidth: 2.6))
+                    .shadow(color: .black.opacity(0.25), radius: 8, y: 4)
+                    .position(x: ghost.spot.x - o.x, y: ghost.spot.y - o.y - 48)
+            }
+        }
+        .allowsHitTesting(false)
+    }
+
+    @ViewBuilder private func face(_ link: String) -> some View {
+        if Diary.kind(of: link) == .photo {
+            PlanPhotoThumb(url: store.photoURL(link))
+        } else {
+            // Голос и документ несут той же плиткой, какой они встанут
+            // в текст (P456).
+            Image(uiImage: PhotoAttachment.tile(link))
+        }
     }
 }

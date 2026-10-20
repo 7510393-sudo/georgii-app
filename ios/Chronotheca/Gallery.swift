@@ -429,9 +429,10 @@ final class DaySuggestions: ObservableObject {
 /// добавленным, левее черты.
 struct SuggestedRow: View {
     @ObservedObject var model: DaySuggestions
+    /// Сторона плиток — та же, что у превью рядом (P545): прежде плитки были
+    /// крупнее превью и вылезали из ленты под кнопки.
+    var side: CGFloat = PhotoStrip.side
     let add: (PHAsset) -> Void
-
-    private var side: CGFloat { PhotoStrip.side }
 
     var body: some View {
         if model.shows {

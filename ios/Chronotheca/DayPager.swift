@@ -33,6 +33,8 @@ struct DayPages: View {
         // Лента превью и строка вложений — одна, у низа экрана, над всеми
         // страницами (P544): не листается с днём, а с клавиатурой едет вверх.
         .overlay { StripDock() }
+        // Взятое из ленты превью — поверх всего, и самой ленты тоже (P545).
+        .overlay { StripGhostLayer() }
         .onChange(of: shell.goHome) { _, want in
             guard want else { return }
             shell.goHome = false
@@ -603,7 +605,9 @@ struct KeyboardDock: View {
     @StateObject private var suggest = DaySuggestions()
     @State private var removing: Int?
 
-    static let thumb: CGFloat = 60
+    /// Превью прежнего размера — в пять строк дневника (P545; в 139-й было
+    /// 60, автор: «значительно меньше»).
+    static let thumb: CGFloat = PhotoStrip.side
     /// Высота с запасом: превью с отступами и строка вложений.
     static var height: CGFloat { thumb + 16 + KeyboardBar.attachHeight + 14 }
 
@@ -627,7 +631,7 @@ struct KeyboardDock: View {
                                : nil,
                            onRemove: store.canEditDiary ? { removing = $0 } : nil,
                            extra: store.canEditDiary && suggest.shows
-                               ? AnyView(SuggestedRow(model: suggest) { asset in
+                               ? AnyView(SuggestedRow(model: suggest, side: Self.thumb) { asset in
                                    GalleryRow.take([asset], store: store, tab: .diary) { shell.say($0) }
                                })
                                : nil,
