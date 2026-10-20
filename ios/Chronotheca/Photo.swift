@@ -250,9 +250,10 @@ struct PhotoStrip: View {
     @State private var showingAll = false
 
     /// Как снимок в тексте — в пять строк дневника (P383; прежде 60,
-    /// P275), вплотную, без промежутков.
+    /// P275), с промежутком, как между снимками в тексте (P557).
     static let side: CGFloat = DiaryEditor.photoSize.width
-    private let gap: CGFloat = 0
+    /// Промежуток тот же, что между снимками в тексте (P557).
+    private let gap: CGFloat = DiaryEditor.photoGap
 
     var body: some View {
         GeometryReader { geo in

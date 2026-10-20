@@ -237,7 +237,7 @@ struct SuggestedRow: View {
 
     var body: some View {
         if model.shows {
-            HStack(spacing: 6) {
+            HStack(spacing: DiaryEditor.photoGap) {
                 divider
                 if model.status == .notDetermined {
                     askTile
