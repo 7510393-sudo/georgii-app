@@ -299,16 +299,29 @@ enum Places {
     }
 
     static func all(in vault: Vault) -> [Place] {
-        guard let folder = folder(vault),
-              let names = try? FileManager.default.contentsOfDirectory(atPath: folder.path)
-        else { known = []; return [] }
-        let list = names.filter { $0.hasSuffix(".md") }.sorted().compactMap { name -> Place? in
+        guard let folder = folder(vault) else { known = []; return [] }
+        let list = read(folder)
+        known = list
+        return list
+    }
+
+    private static func read(_ folder: URL) -> [Place] {
+        guard let names = try? FileManager.default.contentsOfDirectory(atPath: folder.path)
+        else { return [] }
+        return names.filter { $0.hasSuffix(".md") }.sorted().compactMap { name -> Place? in
             let reading = Vault.reading(at: folder.appendingPathComponent(name))
             guard case .text(let text) = reading else { return nil }
             return Place(text: text, file: name)
         }
-        known = list
-        return list
+    }
+
+    /// Прочитать места в стороне от экрана (P565) — при запуске.
+    static func loadSoon(_ vault: Vault) {
+        guard let folder = folder(vault) else { return }
+        DispatchQueue.global(qos: .utility).async {
+            let list = read(folder)
+            DispatchQueue.main.async { known = list }
+        }
     }
 
     /// Места, прочитанные в последний раз (P559): по ним подписывается

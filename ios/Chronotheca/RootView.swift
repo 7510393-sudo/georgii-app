@@ -520,9 +520,11 @@ struct RootView: View {
             // Опись архива нужна не только календарю и поиску: без неё
             // облачко «…помнишь?» не знает, есть ли что вспомнить, и не
             // появляется никогда. Читаем папку сразу при запуске.
-            archive.reload()
-            // Свои места — для подписи точек в дневнике (P559).
-            _ = Places.all(in: vault)
+            // В стороне (P565): прежде папка читалась целиком до первого
+            // кадра — чем больше дневник, тем дольше открывалось приложение.
+            archive.reloadSoon()
+            // Свои места — для подписи точек в дневнике (P559), тоже в стороне.
+            Places.loadSoon(vault)
             // С какой вкладки открывать — из настроек (P249).
             shell.tab = Prefs.openingTab
             shell.openRequestedScreen(store)
@@ -859,14 +861,18 @@ struct RootView: View {
         // Верхняя строка и нижняя — одних размеров (P500): значки и названия
         // на 15% мельче прежней нижней (P496).
         let k: CGFloat = (small || compact) ? 0.85 : 1
-        return Button {
+        let act = {
             if small {
                 // Листок открыт — касание по строке только закрывает его.
                 if shell.showingSettings { shell.tuckIn(settings: true); return }
                 if shell.showingMenu { shell.tuckIn(settings: false); return }
             }
             tapSection(target)
-        } label: {
+        }
+        // Срабатывает в миг касания (P565), а не когда палец отпустили, как
+        // обычная кнопка iPhone; само касание кнопки — только если касания
+        // не было (VoiceOver).
+        return Button { if TouchDown.idle { act() } } label: {
             VStack(spacing: 3) {
                 // Значки нарисованы автором от руки и обведены в вектор:
                 // ежедневник, раскрытый в начале, посередине и в конце.
@@ -901,6 +907,7 @@ struct RootView: View {
             .frame(maxWidth: .infinity)
             .foregroundStyle(on ? Look.accent : Look.kraftInk)
         }
+        .buttonStyle(TouchDownStyle(action: act))
         .accessibilityIdentifier((small ? "top." : "bottom.") + "\(target)")
         // Долгого нажатия у кнопок нет (P492): действия дня — в меню на трёх
         // точках; системное меню задерживало и обычное касание.
@@ -940,10 +947,11 @@ struct RootView: View {
     /// нажатие на открытый раздел (`popping`) убирает верхнюю плашку, и под
     /// ней оказывается тот экран, с которого пришли.
     private func follow(from old: Shell.Screen, to new: Shell.Screen) {
-        let heavy = Animation.spring(response: 0.46, dampingFraction: 0.92)
+        // Быстрее прежних 0,46 (P565): медленный ход казался задумчивостью.
+        let heavy = Animation.spring(response: 0.3, dampingFraction: 0.9)
         // Толчок — в начале хода, вместе с нажатием (P268).
         Feel.thud()
-        let lift = Animation.easeIn(duration: 0.26)
+        let lift = Animation.easeIn(duration: 0.2)
         if popping {
             popping = false
             // Уходящая плашка идёт вверх поверх той, что под ней, — иначе она
@@ -1211,4 +1219,28 @@ private struct VoiceSheet: View {
         shell.openedPhoto = nil
         shell.say(store.removeAttachment(at: opened.index, from: opened.tab, delete: delete))
     }
+}
+
+/// Кнопка, которая срабатывает в миг касания, а не когда палец отпустили
+/// (P565). Обычная кнопка iPhone ждёт отпускания — и раздел начинал ехать
+/// с опозданием.
+struct TouchDownStyle: ButtonStyle {
+    let action: () -> Void
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .contentShape(Rectangle())
+            .onChange(of: configuration.isPressed) { _, pressed in
+                guard pressed else { return }
+                TouchDown.last = Date()
+                action()
+            }
+    }
+}
+
+enum TouchDown {
+    static var last = Date.distantPast
+    /// Касания только что не было — значит, кнопку нажали иначе
+    /// (VoiceOver), и сработать должна она сама.
+    static var idle: Bool { Date().timeIntervalSince(last) > 0.6 }
 }

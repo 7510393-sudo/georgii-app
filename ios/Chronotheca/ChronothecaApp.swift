@@ -76,14 +76,19 @@ struct ChronothecaApp: App {
             // старая копия не должна лечь поверх новой (P183).
             case .active:
                 store.comeBack()
-                // Повторяющиеся дела — дописать на год вперёд (P359).
-                Repeats.extendAll(vault: vault, open: store.date)
-                // Файлы, пролежавшие в корзине 30 дней, — стереть (P371).
-                FileTrash.purgeOld(vault)
-                Trash.purgeOld(vault)
-                archive.reload()
-                store.syncUpcomingReminders()
-                store.fetchWeatherIfNeeded()
+                // Опись папки — в стороне (P565): прежде она читалась
+                // целиком до первого кадра, и приложение открывалось долго.
+                archive.reloadSoon()
+                // Прочее — когда страница уже на экране и отвечает (P565).
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [vault, store] in
+                    // Повторяющиеся дела — дописать на год вперёд (P359).
+                    Repeats.extendAll(vault: vault, open: store.date)
+                    // Файлы, пролежавшие в корзине 30 дней, — стереть (P371).
+                    FileTrash.purgeOld(vault)
+                    Trash.purgeOld(vault)
+                    store.syncUpcomingReminders()
+                    store.fetchWeatherIfNeeded()
+                }
                 // Долгая пауза — открыть заново, как после запуска (P346).
                 if let leftAt, Date().timeIntervalSince(leftAt) > Self.pause {
                     shell.startOver(store)
