@@ -154,6 +154,12 @@ struct DaySheet<Plan: View, Diary: View>: View {
                     // себе: место под клавиатуру — полностью, иначе страница
                     // кончается погодой, а полоска остаётся под клавиатурой
                     // (замечание автора к 121).
+                    // Пока клавиатура поднята, полоски на странице не видно
+                    // (P547), и её место под лентой превью не нужно: лента
+                    // встаёт прямо над строкой кнопок (P554, снимок автора —
+                    // зазор был около 1,5 см). Место под полоской вычитается
+                    // из места под клавиатуру, а не из листа: когда
+                    // клавиатура уходит, длина листа та же — ничто не прыгает.
                     .padding(.bottom, max(covered(outer, keyboard), hold))
                     .onAppear {
                         goHome(proxy)
@@ -223,7 +229,14 @@ struct DaySheet<Plan: View, Diary: View>: View {
             .compactMap { ($0 as? UIWindowScene)?.keyWindow?.safeAreaInsets.bottom }
             .first ?? 0
         let top = UIScreen.main.bounds.height - keyboard - safe
-        return max(0, outer.frame(in: .global).maxY - top)
+        return max(0, outer.frame(in: .global).maxY - top - Self.tuck)
+    }
+
+    /// Сколько места под лентой превью не нужно, пока поднята клавиатура
+    /// (P554): место спрятанной полоски и воздух над строкой кнопок — без
+    /// двух точек зазора.
+    private static var tuck: CGFloat {
+        stripRoom + (KeyboardBar.accessoryHeight - KeyboardBar.attachHeight - 4) - 2
     }
 
     /// Встать на место — один раз на каждое открытие приложения: открыли
