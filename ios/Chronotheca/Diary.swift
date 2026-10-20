@@ -132,7 +132,10 @@ struct Diary: Equatable {
     /// Все вложения строки: одно — как прежде, или ряд снимков (P348).
     static func links(in line: String) -> [String] {
         if let one = picture(in: line) { return [one] }
-        return pictures(in: line).map(\.link)
+        let row = pictures(in: line).map(\.link)
+        if !row.isEmpty { return row }
+        // Ряд вперемешку с голосом, файлами и точками (P560): файлы ряда.
+        return objects(in: line).filter { $0.point == nil }.map(\.link)
     }
 
     /// Ссылка на вложение, если строка — только она и ничего больше:

@@ -435,7 +435,7 @@ struct DiaryEditor: UIViewRepresentable {
             let line = ns.lineRange(for: NSRange(location: start, length: 0))
             let content = ns.substring(with: line).trimmingCharacters(in: .newlines)
             let range = NSRange(location: line.location, length: (content as NSString).length)
-            let row = Diary.pictures(in: content)
+            let row = Diary.objects(in: content)
             if let link = Diary.picture(in: content) {
                 // Снимок, голос, видео, документ своей строкой — квадратной
                 // плиткой, как снимок (P456; прежде голос и документ были
@@ -443,11 +443,17 @@ struct DiaryEditor: UIViewRepresentable {
                 // возвращаются в полоску и удаляются крестиком так же.
                 found.append((range, link, nil, false))
             } else if row.count > 1 {
-                // Несколько снимков в одной строке — рядом, через пробел
-                // (P348). Каждый — своей картинкой, пробел остаётся.
-                for piece in row where Diary.kind(of: piece.link) == .photo {
-                    found.append((NSRange(location: line.location + piece.range.location,
-                                          length: piece.range.length), piece.link, nil, false))
+                // Несколько вложений в одной строке — рядом, через пробел
+                // (P348): снимки, голос, файлы и точки вперемешку (P560).
+                // Каждое — своим квадратом, пробел остаётся.
+                for piece in row {
+                    let at = NSRange(location: line.location + piece.range.location,
+                                     length: piece.range.length)
+                    if let point = piece.point {
+                        found.append((at, piece.link, point, true))
+                    } else {
+                        found.append((at, piece.link, nil, false))
+                    }
                 }
             } else if let point = Geo.point(in: content) {
                 found.append((range, content, point, true))
@@ -500,11 +506,11 @@ struct DiaryEditor: UIViewRepresentable {
         guard new.count == old.count + 1 else { return nil }
         var k = 0
         while k < old.count, new[k] == old[k] { k += 1 }
-        guard k > 0, k < new.count,
-              let one = Diary.picture(in: new[k]), Diary.kind(of: one) == .photo
+        // Любое вложение к любому ряду вложений (P560): снимок, голос,
+        // файл, точка — в одну строку.
+        guard k > 0, k < new.count, Diary.objects(in: new[k]).count == 1,
+              !Diary.objects(in: new[k - 1]).isEmpty
         else { return nil }
-        let row = Diary.links(in: new[k - 1])
-        guard !row.isEmpty, row.allSatisfy({ Diary.kind(of: $0) == .photo }) else { return nil }
         new[k - 1] = new[k - 1].trimmingCharacters(in: .whitespaces) + " "
             + new[k].trimmingCharacters(in: .whitespaces)
         new.remove(at: k)
@@ -522,7 +528,9 @@ struct DiaryEditor: UIViewRepresentable {
         var out: [String] = []
         for line in text.components(separatedBy: "\n") {
             let ns = line as NSString
-            guard Diary.picture(in: line) == nil else { out.append(line); continue }
+            // Ряд вложений (P560) не разбирается: голос и файл в нём на месте.
+            guard Diary.picture(in: line) == nil, Diary.objects(in: line).count < 2
+            else { out.append(line); continue }
             let found = fileLink.matches(in: line, range: NSRange(location: 0, length: ns.length))
                 .filter { m in
                     var link = ns.substring(with: m.range(at: 1))
@@ -563,9 +571,9 @@ struct DiaryEditor: UIViewRepresentable {
                                                          length: j - para.location), with: piece)
             return (out, para.location)
         }
-        let isPhoto = { (s: String) in
-            !Diary.links(in: s).isEmpty && Diary.links(in: s).allSatisfy { Diary.kind(of: $0) == .photo }
-        }
+        // Вложение к вложениям — рядом в ту же строку, какого бы вида они
+        // ни были (P560).
+        let isPhoto = { (s: String) in !Diary.objects(in: s).isEmpty }
         let lead = isPhoto(piece) && isPhoto(above) ? " " : "\n"
         let out = ns.replacingCharacters(in: NSRange(location: j, length: 0), with: lead + piece)
         return (out, j + (lead as NSString).length)
@@ -578,6 +586,7 @@ struct DiaryEditor: UIViewRepresentable {
         return text.components(separatedBy: "\n").contains {
             Diary.picture(in: $0) != nil
                 || Diary.pictures(in: $0).contains { Diary.kind(of: $0.link) == .photo }
+                || Diary.objects(in: $0).count > 1
                 || Diary.anywhere(in: $0).contains { Diary.kind(of: $0.link) == .photo }
                 || Geo.point(in: $0) != nil
                 // Посреди строки — когда точка дописана: за ней пробел или
@@ -1538,7 +1547,8 @@ struct DiaryEditor: UIViewRepresentable {
             if j > para.location, ns.character(at: j - 1) == 10 { j -= 1 }
             // Снимок над рядом снимков — встаёт в ряд туда, куда показали:
             // так снимки меняются местами (P409; прежде — всегда в конец ряда).
-            if storage.attribute(DiaryEditor.photoKey, at: i, effectiveRange: nil) != nil,
+            if storage.attribute(DiaryEditor.photoKey, at: i, effectiveRange: nil) != nil
+                || storage.attribute(DiaryEditor.lineKey, at: i, effectiveRange: nil) != nil,
                Self.photoRow(NSRange(location: para.location, length: j - para.location), in: storage) {
                 let spot = min(max(drop, para.location), j)
                 guard spot != i, spot != i + 1 else { return nil }
@@ -1603,10 +1613,8 @@ struct DiaryEditor: UIViewRepresentable {
                 ? rest.substring(with: rest.lineRange(for: NSRange(location: target - 1, length: 0)))
                     .trimmingCharacters(in: .newlines)
                 : ""
-            let pieceIsPhoto = !Diary.links(in: piece).isEmpty
-                && Diary.links(in: piece).allSatisfy { Diary.kind(of: $0) == .photo }
-            let beside = pieceIsPhoto && !Diary.links(in: above).isEmpty
-                && Diary.links(in: above).allSatisfy { Diary.kind(of: $0) == .photo }
+            // Любое вложение к ряду вложений (P560).
+            let beside = !Diary.objects(in: piece).isEmpty && !Diary.objects(in: above).isEmpty
             let lead = target == 0 ? "" : (beside ? " " : "\n")
             let out = rest.replacingCharacters(in: NSRange(location: target, length: 0),
                                                with: lead + piece
@@ -1620,7 +1628,10 @@ struct DiaryEditor: UIViewRepresentable {
             let ns = storage.string as NSString
             var photos = 0
             for k in range.location..<NSMaxRange(range) {
-                if storage.attribute(DiaryEditor.photoKey, at: k, effectiveRange: nil) != nil {
+                // Любое вложение ряда — снимок, файл или точка (P560).
+                if ns.character(at: k) == 0xFFFC,
+                   storage.attribute(DiaryEditor.photoKey, at: k, effectiveRange: nil) != nil
+                    || storage.attribute(DiaryEditor.lineKey, at: k, effectiveRange: nil) != nil {
                     photos += 1
                 } else if ns.character(at: k) != 32 {
                     return false

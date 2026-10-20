@@ -749,3 +749,37 @@ enum GlyphArt {
 enum PlaceLabelSize {
     static let dot: CGFloat = 24
 }
+
+extension Diary {
+
+    private static let objectToken = try! NSRegularExpression(
+        pattern: #"(!\[[^\]]*\]\((?:<[^>]*>|[^)\s]+)\))|(\[[^\]]*\]\((?:<[^>]*>|[^)\s]+)\))|(geo:-?\d+(?:\.\d+)?,\s?-?\d+(?:\.\d+)?)"#)
+
+    /// Ряд вложений в одной строке (P560): снимки, видео, голос, файлы и
+    /// точки вперемешку через пробел — `![](a.jpg) [голос](b.m4a) [Дом](geo:…)`.
+    /// Пусто — в строке есть что-то, кроме них. `point` — у точки,
+    /// `link` — путь к файлу у остальных.
+    static func objects(in line: String) -> [(range: NSRange, link: String, point: GeoPoint?)] {
+        guard line.contains("](") || line.contains("geo:") else { return [] }
+        let ns = line as NSString
+        var found: [(range: NSRange, link: String, point: GeoPoint?)] = []
+        for m in objectToken.matches(in: line, range: NSRange(location: 0, length: ns.length)) {
+            let token = ns.substring(with: m.range)
+            if m.range(at: 3).location != NSNotFound || token.contains("](geo:") {
+                guard let point = Geo.point(in: token) else { return [] }
+                found.append((range: m.range, link: token, point: point))
+                continue
+            }
+            guard let open = token.range(of: "](") else { return [] }
+            var link = String(token[open.upperBound...].dropLast())
+            if link.hasPrefix("<"), link.hasSuffix(">") { link = String(link.dropFirst().dropLast()) }
+            guard !link.contains("://"), !link.isEmpty else { return [] }
+            found.append((range: m.range, link: link, point: nil))
+        }
+        guard !found.isEmpty else { return [] }
+        let rest = NSMutableString(string: line)
+        for piece in found.reversed() { rest.replaceCharacters(in: piece.range, with: "") }
+        guard (rest as String).trimmingCharacters(in: .whitespaces).isEmpty else { return [] }
+        return found
+    }
+}
