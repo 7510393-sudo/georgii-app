@@ -21,7 +21,13 @@ final class MovementTests: XCTestCase {
         app = XCUIApplication()
         app.launchEnvironment["CHRONOTHECA_PREVIEW"] = "1"
         app.launchEnvironment["CHRONOTHECA_UITEST"] = "1"
-        if big { app.launchEnvironment["CHRONOTHECA_BIG"] = "1" }
+        if big {
+            app.launchEnvironment["CHRONOTHECA_BIG"] = "1"
+            // Замирания экрана — изнутри приложения (P573).
+            if let dir = ProcessInfo.processInfo.environment["MOTION_DIR"], !dir.isEmpty {
+                app.launchEnvironment["CHRONOTHECA_TRACE"] = dir + "/замирания.txt"
+            }
+        }
         if !screen.isEmpty { app.launchEnvironment["CHRONOTHECA_SCREEN"] = screen }
         app.launch()
         sleep(5)

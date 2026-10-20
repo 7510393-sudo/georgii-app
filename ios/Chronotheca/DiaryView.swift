@@ -454,7 +454,8 @@ struct DiaryPage: View {
             .padding(.horizontal, 16)
             .padding(.top, 4)
             .padding(.bottom, 20)
-            Spacer(minLength: 0)
+            // Погода и лента превью — сразу под записью (P573), а не у низа
+            // экрана: на почти пустом листе превью уезжало под нижнюю строку.
             footer
         }
         .onAppear { startWriting() }
@@ -669,7 +670,9 @@ struct DiaryPage: View {
                     // набегало девять — автор просил четыре (P433): своих
                     // пустых строк у поля больше нет, остальное даёт низ
                     // страницы.
-                    grows: true, minHeight: 320, room: 0, resolve: resolve,
+                    // Пустая запись — место на несколько строк, не на полэкрана
+                    // (P573): под ней сразу погода и лента превью.
+                    grows: true, minHeight: 160, room: 0, resolve: resolve,
                     onOpenPhoto: onOpenInline, onReturnPhoto: onReturnPhoto,
                     onOpenPoint: onOpenPoint, onPointToTitle: onPointToTitle, onCaret: onCaret,
                     moving: editable, onEditing: onEditing,

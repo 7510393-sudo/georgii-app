@@ -345,3 +345,47 @@ final class Shell: ObservableObject {
     }
 
 }
+
+/// Замер замираний экрана для проверок (P573): только когда приложение
+/// запустила проверка и назвала файл. Раз в 50 мс из стороннего потока
+/// спрашиваем главный: ответил позже чем через 250 мс — экран стоял;
+/// записываем, сколько и на каком разделе. Робот проверок сам медлителен
+/// на больших экранах — по этому файлу видно, что медлит именно
+/// приложение.
+enum LagWatch {
+    private static var screen = "?"
+    static func note(_ now: Shell.Screen) { screen = "\(now)" }
+
+    static func start() {
+        guard Vault.isUITest,
+              let path = ProcessInfo.processInfo.environment["CHRONOTHECA_TRACE"], !path.isEmpty
+        else { return }
+        let url = URL(fileURLWithPath: path)
+        let thread = Thread {
+            while true {
+                let asked = Date()
+                let answered = DispatchSemaphore(value: 0)
+                var place = "?"
+                DispatchQueue.main.async {
+                    place = screen
+                    answered.signal()
+                }
+                answered.wait()
+                let stood = Date().timeIntervalSince(asked)
+                if stood > 0.25 {
+                    let line = String(format: "%@ экран стоял %.2f с (%@)\n",
+                                      ISO8601DateFormatter().string(from: asked), stood, place)
+                    if let handle = try? FileHandle(forWritingTo: url) {
+                        handle.seekToEndOfFile()
+                        handle.write(Data(line.utf8))
+                        try? handle.close()
+                    } else {
+                        try? line.write(to: url, atomically: true, encoding: .utf8)
+                    }
+                }
+                Thread.sleep(forTimeInterval: 0.05)
+            }
+        }
+        thread.start()
+    }
+}

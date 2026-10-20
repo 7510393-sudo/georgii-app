@@ -431,6 +431,7 @@ struct RootView: View {
                 .compactMap { ($0 as? UIWindowScene)?.keyWindow }.first?.safeAreaInsets.bottom ?? 0
         }
         .onChange(of: shell.screen) { old, new in
+            LagWatch.note(new)
             follow(from: old, to: new)
             if new == .map {
                 keepMap = true
@@ -532,6 +533,7 @@ struct RootView: View {
             // Опись архива нужна не только календарю и поиску: без неё
             // облачко «…помнишь?» не знает, есть ли что вспомнить, и не
             // появляется никогда. Читаем папку сразу при запуске.
+            LagWatch.start()
             // В стороне (P565): прежде папка читалась целиком до первого
             // кадра — чем больше дневник, тем дольше открывалось приложение.
             archive.reloadSoon()

@@ -99,8 +99,8 @@ struct DaySheet<Plan: View, Diary: View>: View {
                         .frame(minHeight: landDiary && diaryOpen
                                ? max(0, outer.size.height - Self.stripRoom) : nil,
                                alignment: .top)
-                        // Короткая страница — низ дневника (погода, полоска)
-                        // всё равно у нижнего края экрана.
+                        // Погода и лента — сразу под записью (P573); место ниже
+                        // них на короткой странице просто пустое.
                         .frame(maxHeight: .infinity, alignment: .top)
                     }
                     // Место под строкой вложений — всегда, и с клавиатурой
@@ -110,24 +110,6 @@ struct DaySheet<Plan: View, Diary: View>: View {
                     // обратно (видео автора).
                     .padding(.bottom, Self.stripRoom)
                     .frame(minHeight: outer.size.height, alignment: .top)
-                    // Полоска — у самого низа листа: на короткой странице у
-                    // нижнего края окна, на длинной — под концом записи, как в
-                    // Diarium (P546; полоса поверх экрана P544 отменена).
-                    .overlay(alignment: .bottom) {
-                        if let strip {
-                            // Полоска стоит на 6 точек выше края страницы (P511):
-                            // на пустой странице она целиком над нижней
-                            // строкой, рваный край которой иначе её закрывает.
-                            // Пока поднята клавиатура, такая же строка — над
-                            // ней (P546); эта прячется, место за ней остаётся
-                            // (P547: автор видел две строки кнопок).
-                            strip
-                                .frame(height: KeyboardBar.attachHeight)
-                                .padding(.bottom, Self.stripRoom - KeyboardBar.attachHeight)
-                                .opacity(keyboard > 0 ? 0 : 1)
-                                .allowsHitTesting(keyboard == 0)
-                        }
-                    }
                     .background(Ru.tint(date).overlay(PageTexture(tab: .diary, space: Self.space)))
                     // Клетка и волокно отсчитываются от самого листа, а не
                     // от экрана: тянешь план — клетка едет с текстом (P412).
@@ -170,6 +152,23 @@ struct DaySheet<Plan: View, Diary: View>: View {
                 }
             }
             .coordinateSpace(name: Self.window)
+            // Строка кнопок вложений — только в двух местах (P573, вместо
+            // P546): над нижней строкой разделов — поверх страницы, не
+            // уезжая с ней, — и над клавиатурой, её приставкой. Пока
+            // клавиатура поднята, эта прячется. Место под ней у листа есть
+            // всегда (`stripRoom`): конец записи и лента превью не уходят
+            // под строку.
+            .overlay(alignment: .bottom) {
+                if let strip {
+                    // На 6 точек выше края страницы (P511): рваный край нижней
+                    // строки её не закрывает.
+                    strip
+                        .frame(height: KeyboardBar.attachHeight)
+                        .padding(.bottom, Self.stripRoom - KeyboardBar.attachHeight)
+                        .opacity(keyboard > 0 ? 0 : 1)
+                        .allowsHitTesting(keyboard == 0)
+                }
+            }
             // Клавиатура ушла — место под ней остаётся, пока страница стоит
             // ниже, чем позволил бы лист без него: иначе iPhone подтягивает
             // страницу вниз одним рывком (запись экрана автора, P446).
