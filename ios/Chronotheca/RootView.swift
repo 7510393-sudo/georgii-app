@@ -381,6 +381,13 @@ struct RootView: View {
                     .allowsHitTesting(false)
                     .accessibilityIdentifier("openDay")
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                // Какой раздел открыт — для замеров большого архива (P567).
+                Text("\(shell.screen)")
+                    .font(.system(size: 2))
+                    .opacity(0.02)
+                    .allowsHitTesting(false)
+                    .accessibilityIdentifier("openScreen")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
             }
             if let notice = shell.notice {
                 toast(notice)

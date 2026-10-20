@@ -1,0 +1,86 @@
+# Мёртвый код (P567): Periphery находит в приложении то, чем никто не
+# пользуется, — остатки прежних решений. Сборку не держит: список кладётся
+# в docs/unused.txt, его смотрят перед «собери».
+name: Мёртвый код
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'ios/**'
+      - '.github/workflows/unused.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: unused-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unused:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Взять самый новый Xcode
+        run: |
+          latest=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
+          sudo xcode-select -s "$latest/Contents/Developer"
+          xcodebuild -version
+
+      - name: Поставить XcodeGen и Periphery
+        run: brew install xcodegen periphery
+
+      - name: Собрать проект Xcode из project.yml
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Найти неиспользуемое
+        working-directory: ios
+        run: |
+          set +e
+          periphery scan \
+            --project Chronotheca.xcodeproj \
+            --schemes Chronotheca \
+            --retain-swift-ui-previews \
+            --format xcode \
+            -- -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO \
+            > periphery.log 2>&1
+          status=$?
+          {
+            echo "Мёртвый код, $(date -u '+%Y-%m-%d %H:%M') UTC, коммит ${GITHUB_SHA:0:7}"
+            echo
+            grep -E "warning:" periphery.log \
+              | sed "s#^$GITHUB_WORKSPACE/##" \
+              | sed 's#^.*/ios/#ios/#' \
+              | sort || true
+            if [ $status -ne 0 ]; then
+              echo
+              echo "Periphery закончил с ошибкой ($status) — смотри журнал прогона:"
+              tail -20 periphery.log
+            fi
+          } > ../docs/unused.txt
+          echo "Найдено: $(grep -c 'warning:' periphery.log || true)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Положить список в репозиторий
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          [ -f docs/unused.txt ] || exit 0
+          cp docs/unused.txt "$RUNNER_TEMP/unused.txt"
+          for try in 1 2 3 4; do
+            git add docs/unused.txt
+            if git diff --cached --quiet; then
+              echo "список не изменился"
+              exit 0
+            fi
+            git commit -m "docs: мёртвый код [skip ci]"
+            if git push; then exit 0; fi
+            sleep $((try * 5))
+            git fetch origin "$GITHUB_REF_NAME" || exit 1
+            git reset --hard "origin/$GITHUB_REF_NAME" || exit 1
+            cp "$RUNNER_TEMP/unused.txt" docs/unused.txt
+          done
+          echo "::warning::список не удалось отправить в репозиторий"

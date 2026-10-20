@@ -17,13 +17,41 @@ final class MovementTests: XCTestCase {
 
     /// Запуск на образцах. Экран снимков ставится ещё раз через 1,5 и 4
     /// секунды (P448) — поэтому трогать приложение только после этого.
-    private func launch(_ screen: String = "") {
+    private func launch(_ screen: String = "", big: Bool = false) {
         app = XCUIApplication()
         app.launchEnvironment["CHRONOTHECA_PREVIEW"] = "1"
         app.launchEnvironment["CHRONOTHECA_UITEST"] = "1"
+        if big { app.launchEnvironment["CHRONOTHECA_BIG"] = "1" }
         if !screen.isEmpty { app.launchEnvironment["CHRONOTHECA_SCREEN"] = screen }
         app.launch()
         sleep(5)
+    }
+
+    private var openScreen: String {
+        app.staticTexts["openScreen"].firstMatch.label
+    }
+
+    private func wait(_ seconds: TimeInterval, until check: () -> Bool) -> Bool {
+        let end = Date().addingTimeInterval(seconds)
+        while Date() < end {
+            if check() { return true }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+        }
+        return check()
+    }
+
+    private func note(_ name: String, _ text: String) {
+        print("ЗАМЕР \(name): \(text)")
+        guard let dir = ProcessInfo.processInfo.environment["MOTION_DIR"], !dir.isEmpty else { return }
+        let url = URL(fileURLWithPath: dir).appendingPathComponent("замеры.txt")
+        let line = name + ": " + text + "\n"
+        if let handle = try? FileHandle(forWritingTo: url) {
+            handle.seekToEndOfFile()
+            handle.write(Data(line.utf8))
+            try? handle.close()
+        } else {
+            try? line.write(to: url, atomically: true, encoding: .utf8)
+        }
     }
 
     /// Какой день открыт: «today» или число секунд.
@@ -117,5 +145,58 @@ final class MovementTests: XCTestCase {
                      thenHoldForDuration: 0)
         XCTAssertTrue(waitDay { $0 != start }, "с клавиатурой быстрое движение к краю не перелистнуло")
         save("03-листание-с-клавиатурой")
+    }
+
+    /// Вложение в ленте (P561, P562): подержал — крестик, вложение не
+    /// открылось; крестик — ровно одно окно вопроса; «убрать» — оно ушло, и
+    /// второго окна нет.
+    func testRemovingFromStripAsksOnce() {
+        launch("diary")
+        let photo = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "Photo 1")).firstMatch
+        XCTAssertTrue(photo.waitForExistence(timeout: 5), "в ленте нет снимка")
+        for _ in 0..<4 where !photo.isHittable { app.swipeUp() }
+        photo.press(forDuration: 0.8)
+        let cross = app.buttons["Remove"].firstMatch
+        XCTAssertTrue(cross.waitForExistence(timeout: 3), "после долгого нажатия нет крестика")
+        save("04-крестик-в-ленте")
+        XCTAssertEqual(openScreen, "today", "долгое нажатие что-то открыло")
+        cross.tap()
+        XCTAssertTrue(app.alerts.firstMatch.waitForExistence(timeout: 3), "крестик не спросил")
+        XCTAssertEqual(app.alerts.count, 1, "окон вопроса: \(app.alerts.count)")
+        save("05-вопрос-об-удалении")
+        app.alerts.firstMatch.buttons["Remove from the page"].tap()
+        sleep(2)
+        XCTAssertEqual(app.alerts.count, 0, "после ответа появилось ещё одно окно")
+        XCTAssertFalse(photo.exists, "снимок остался в ленте")
+    }
+
+    /// Большой архив (P567): десять лет дней. Приложение открывается и
+    /// разделы отвечают так же быстро, как на маленьком.
+    func testBigArchiveStaysQuick() {
+        // Первый запуск складывает архив — его не мерим.
+        launch(big: true)
+        XCTAssertTrue(topBar.waitForExistence(timeout: 300), "архив не сложился")
+        sleep(8)
+        app.terminate()
+
+        let start = Date()
+        app.launch()
+        XCTAssertTrue(app.buttons["bottom.calendar"].firstMatch.waitForExistence(timeout: 60))
+        let opened = Date().timeIntervalSince(start)
+        note("запуск", String(format: "%.2f с", opened))
+        sleep(3)
+
+        for (button, screen) in [("bottom.calendar", "calendar"), ("bottom.search", "search"),
+                                 ("bottom.map", "map"), ("bottom.today", "today")] {
+            let tap = Date()
+            app.buttons[button].firstMatch.tap()
+            XCTAssertTrue(wait(10) { openScreen == screen }, "\(screen) не открылся")
+            let took = Date().timeIntervalSince(tap)
+            note(screen, String(format: "%.2f с", took))
+            XCTAssertLessThan(took, 1.5, "\(screen) открывался \(took) с")
+            sleep(2)
+        }
+        save("06-большой-архив")
+        XCTAssertLessThan(opened, 8, "запуск занял \(opened) с")
     }
 }

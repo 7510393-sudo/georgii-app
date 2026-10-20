@@ -392,6 +392,39 @@ final class Vault: ObservableObject {
                 Places.save(place, in: self)
             }
         }
+        if Vault.isBigArchive { seedBigArchive(before: today) }
+    }
+
+    /// Проверка большого архива (P567): только в симуляторе, по переменной
+    /// окружения — десять лет дней с планом и записью, чтобы мерить, не
+    /// замедляется ли приложение с ростом архива. В руках человека не
+    /// включается.
+    static var isBigArchive: Bool {
+        isPreview && ProcessInfo.processInfo.environment["CHRONOTHECA_BIG"] == "1"
+    }
+
+    private func seedBigArchive(before today: Date) {
+        guard let root else { return }
+        let ready = root.appendingPathComponent(".big-archive")
+        guard !FileManager.default.fileExists(atPath: ready.path) else { return }
+        let cal = Calendar.current
+        let words = ["lamp", "river", "train", "garden", "letter", "rain", "market", "violin", "bridge", "kitchen"]
+        for k in 2...3650 {
+            guard let day = cal.date(byAdding: .day, value: -k, to: today) else { continue }
+            let w = words[k % words.count]
+            let stamp = Vault.stamp(day)
+            if let url = file(.planner, for: day), !FileManager.default.fileExists(atPath: url.path) {
+                Vault.write("---\ndate: \(stamp)\n---\n- [x] 09:00 Morning walk\n- [ ] Buy \(w)\n- [x] Call home\n",
+                            to: url)
+            }
+            if let url = file(.diary, for: day), !FileManager.default.fileExists(atPath: url.path) {
+                let line = "Day \(k). The \(w) by the window again, and the light was soft all afternoon. "
+                Vault.write("---\ndate: \(stamp)\ntitle: Notes \(k)\n---\n\n08:30 "
+                            + String(repeating: line, count: 4) + "\n\n21:10 " + line + "\n",
+                            to: url)
+            }
+        }
+        FileManager.default.createFile(atPath: ready.path, contents: Data())
     }
 
     // MARK: - Папка

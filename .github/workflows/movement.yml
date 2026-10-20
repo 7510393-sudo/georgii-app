@@ -74,6 +74,8 @@ jobs:
             echo "Проверки движения, $(date -u '+%Y-%m-%d %H:%M') UTC, коммит ${GITHUB_SHA:0:7}"
             echo
             grep -E "Test Case .*(passed|failed)|error: -\[|XCTAssert" test.log || echo "строк итога нет — смотри журнал прогона"
+            echo
+            grep -E "ЗАМЕР " test.log | sed 's/.*ЗАМЕР /замер /' || true
           } > ../docs/motion/итог.txt
           cat ../docs/motion/итог.txt >> "$GITHUB_STEP_SUMMARY"
           exit $status
