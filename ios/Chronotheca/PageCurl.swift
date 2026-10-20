@@ -93,6 +93,15 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
         outward.delegate = context.coordinator
         outward.cancelsTouchesInView = false
         pages.view.addGestureRecognizer(outward)
+        // Пока пишут — палец лёг посреди страницы и быстро, почти прямо
+        // довёл движение до края: лист переворачивается (P550). Медленное
+        // ведение курсора или выделения — нет.
+        let reach = UIPanGestureRecognizer(target: context.coordinator,
+                                           action: #selector(Coordinator.reached(_:)))
+        reach.delegate = context.coordinator
+        reach.cancelsTouchesInView = false
+        pages.view.addGestureRecognizer(reach)
+        context.coordinator.reachPan = reach
         context.coordinator.book = pages
         return pages
     }
@@ -112,6 +121,9 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
         var parent: PageCurl
         /// Сама книга — для взмаха от края наружу (P540).
         weak var book: UIPageViewController?
+        /// Взмах «довёл до края», пока пишут (P550).
+        weak var reachPan: UIPanGestureRecognizer?
+        private var reachDone = false
 
         /// Пока страница в воздухе, второго поворота не начинаем.
         private var busy = false {
@@ -322,6 +334,13 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
             guard let pan = g as? UIPanGestureRecognizer, let view = pan.view else { return false }
             let start = pan.location(in: view)
             let speed = pan.velocity(in: view)
+            if pan === reachPan {
+                // Только пока пишут и только начатое не у края: у края лист
+                // ведёт тяга системы или взмах наружу.
+                let band = EdgeGate.band
+                return EdgeGate.keyboardUp && abs(speed.x) > abs(speed.y)
+                    && start.x > band && start.x < view.bounds.width - band
+            }
             // Наружу пальцу до края экрана меньше сантиметра — полоса для
             // этого взмаха шире, около сантиметра, а наклон допускается
             // больший (P543): прежде взмах часто не узнавался.
@@ -360,6 +379,33 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
                 let step = (moved != 0 ? moved : speed) > 0 ? -1 : 1
                 busy = true
                 turn(book, step)
+            default:
+                break
+            }
+        }
+
+        @objc func reached(_ pan: UIPanGestureRecognizer) {
+            guard let book, let view = pan.view else { return }
+            switch pan.state {
+            case .began:
+                reachDone = false
+            case .changed:
+                guard !reachDone else { return }
+                if stuck { busy = false }
+                guard !busy else { return }
+                let at = pan.location(in: view).x
+                let moved = pan.translation(in: view)
+                let speed = pan.velocity(in: view)
+                let band = EdgeGate.band
+                // Быстро, почти прямо и не на пару миллиметров.
+                let fast = abs(speed.x) > 500 && abs(speed.x) > abs(speed.y) * 2 && abs(moved.x) > 60
+                let right = moved.x > 0 && at > view.bounds.width - band
+                let left = moved.x < 0 && at < band
+                guard fast, right || left else { return }
+                reachDone = true
+                busy = true
+                // Вправо — назад, влево — вперёд, как везде.
+                turn(book, right ? -1 : 1)
             default:
                 break
             }
@@ -516,7 +562,7 @@ final class EdgeGate: UIGestureRecognizer, UIGestureRecognizerDelegate {
     /// Поднята ли клавиатура (P549): спор листания с курсором бывает только
     /// пока пишут. Без клавиатуры движение вбок курсор не двигает — лист
     /// берут где угодно; с клавиатурой — только у края (P532).
-    private static var keyboardUp = false
+    static var keyboardUp = false
     private static let watching: Void = {
         let centre = NotificationCenter.default
         centre.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil,
