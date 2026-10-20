@@ -849,6 +849,9 @@ final class DayStore: ObservableObject {
 
     /// Просьба полю дневника поставить курсор за вписанной точкой (P253).
     @Published var caretRequest: Int?
+    /// Просьба странице доехать до места в записи (P564): точку вписали с
+    /// карты — после возвращения её должно быть видно, а не верх страницы.
+    @Published var revealRequest: Int?
 
     /// Где был курсор, когда ушли на карту: место в дневнике и дело в плане.
     /// Пусто — курсора не было (P240).
@@ -867,7 +870,9 @@ final class DayStore: ObservableObject {
     /// Записать точку с карты — туда, где был курсор перед уходом на карту.
     @discardableResult
     func writeFromMap(_ point: GeoPoint, to tab: Shell.Tab, here: Bool = false) -> Bool {
-        writePoint(point, to: tab, here: here, caret: leftCaret, after: leftRow)
+        guard writePoint(point, to: tab, here: here, caret: leftCaret, after: leftRow) else { return false }
+        if tab == .diary { revealRequest = diaryCaret }
+        return true
     }
 
     /// Записать точку своей строкой (P165, P213, P240). В дневник — туда,
@@ -1206,6 +1211,17 @@ final class DayStore: ObservableObject {
     }
 
     func links(_ tab: Shell.Tab) -> [String] { tab == .diary ? photos : planPhotos }
+
+    /// Все снимки дня одним рядом (P564): сначала стоящие в записи — по
+    /// порядку, потом лента. Открытый снимок листается по нему вбок.
+    var dayPhotos: [String] {
+        var out: [String] = []
+        for link in DayStore.attachmentLinks(in: diaryText) + stripLinks
+        where Diary.kind(of: link) == .photo && !out.contains(link) {
+            out.append(link)
+        }
+        return out
+    }
 
     func canEdit(_ tab: Shell.Tab) -> Bool { tab == .diary ? canEditDiary : canEditPlan }
 

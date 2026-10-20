@@ -81,6 +81,8 @@ struct DiaryEditor: UIViewRepresentable {
     /// Просьба поставить курсор сюда — отступом в тексте записи. Её подаёт
     /// геоточка, вписанная посреди набора: писать дальше — за точкой (P253).
     var placeCaret: Binding<Int?> = .constant(nil)
+    /// Доехать страницей до этого места записи (P564) — в буквах записи.
+    var reveal: Binding<Int?> = .constant(nil)
     /// Отметка времени, ждущая первой буквы новой строки (P403): `nil` —
     /// не ждёт.
     var takeStamp: (() -> String?)? = nil
@@ -193,6 +195,15 @@ struct DiaryEditor: UIViewRepresentable {
             context.coordinator.loadPhotos()
         } else {
             context.coordinator.restyle(view)
+        }
+
+        if let at = reveal.wrappedValue {
+            // Карта ещё уходит, страница могла встать наверх (P346): едем
+            // к месту, когда всё улеглось.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { [weak coordinator = context.coordinator] in
+                coordinator?.reveal(plain: at)
+            }
+            DispatchQueue.main.async { reveal.wrappedValue = nil }
         }
 
         if let at = placeCaret.wrappedValue {
@@ -1787,6 +1798,21 @@ struct DiaryEditor: UIViewRepresentable {
             guard куда > страница.contentOffset.y else { return }
             страница.setContentOffset(CGPoint(x: страница.contentOffset.x, y: куда),
                                       animated: animated)
+        }
+
+        /// Страница доезжает так, чтобы место записи стояло посередине
+        /// экрана (P564).
+        func reveal(plain at: Int) {
+            guard let view, let страница = page(over: view) else { return }
+            let spot = DiaryEditor.viewOffset(plain: at, in: view.attributedText)
+            guard let position = view.position(from: view.beginningOfDocument,
+                                               offset: min(spot, view.textStorage.length))
+            else { return }
+            let место = view.convert(view.caretRect(for: position), to: страница)
+            let inset = страница.adjustedContentInset
+            let предел = max(-inset.top, страница.contentSize.height + inset.bottom - страница.bounds.height)
+            let куда = min(max(место.midY - страница.bounds.height / 2, -inset.top), предел)
+            страница.setContentOffset(CGPoint(x: страница.contentOffset.x, y: куда), animated: true)
         }
 
         /// Ближайшая прокрутка над полем — сама страница дневника.

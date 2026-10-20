@@ -895,17 +895,23 @@ struct PlanPhotoLine: View {
 struct StripViewer: View {
     let count: Int
     let url: (Int) -> URL?
-    var remove: ((Int, Bool) -> Void)?
+    /// Что можно сделать с каждым: удалить (из ленты), вернуть в ленту (из
+    /// записи) — у каждого своё (P564).
+    var remove: (Int) -> ((Bool) -> Void)?
+    var giveBack: (Int) -> (() -> Void)?
     let close: () -> Void
 
     @State private var index: Int
     @State private var forward = true
 
     init(count: Int, start: Int, url: @escaping (Int) -> URL?,
-         remove: ((Int, Bool) -> Void)?, close: @escaping () -> Void) {
+         remove: @escaping (Int) -> ((Bool) -> Void)?,
+         giveBack: @escaping (Int) -> (() -> Void)? = { _ in nil },
+         close: @escaping () -> Void) {
         self.count = count
         self.url = url
         self.remove = remove
+        self.giveBack = giveBack
         self.close = close
         _index = State(initialValue: start)
     }
@@ -913,8 +919,8 @@ struct StripViewer: View {
     var body: some View {
         ZStack {
             AttachmentViewer(url: url(index),
-                             onRemove: remove.map { r in { r(index, $0) } },
-                             onReturn: nil,
+                             onRemove: remove(index),
+                             onReturn: giveBack(index),
                              close: close,
                              onSwipe: step)
                 .id(index)

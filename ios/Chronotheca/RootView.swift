@@ -437,15 +437,46 @@ struct RootView: View {
         // из плана, и из дневника (P203).
         .fullScreenCover(item: coverShown) { opened in
             let links = store.links(opened.tab)
-            // Открыли из полоски — снимки листаются вбок, как в «Фото»:
-            // влево — следующий в полоске, вправо — прежний (P278).
-            if opened.url == nil, links.indices.contains(opened.index) {
+            let link = opened.link ?? (links.indices.contains(opened.index) ? links[opened.index] : nil)
+            let all = store.dayPhotos
+            // Снимок — листаются все снимки дня, и из записи, и из ленты, не
+            // закрывая открытого (P564; прежде только снимки своей ленты, P278).
+            if let link, let start = all.firstIndex(of: link) {
+                StripViewer(count: all.count, start: start,
+                            url: { store.photoURL(all[$0]) },
+                            remove: { i in
+                                let one = all[i]
+                                for tab in [Shell.Tab.diary, .plan] {
+                                    if let k = store.links(tab).firstIndex(of: one), store.canEdit(tab) {
+                                        return { delete in
+                                            shell.openedPhoto = nil
+                                            shell.say(store.removeAttachment(at: k, from: tab, delete: delete))
+                                        }
+                                    }
+                                }
+                                return nil
+                            },
+                            // Снимок из записи — вернуть в ленту (P216).
+                            giveBack: { i in
+                                let one = all[i]
+                                guard store.canEditDiary, !store.stripLinks.contains(one) else { return nil }
+                                return {
+                                    store.returnToStrip(one)
+                                    shell.openedPhoto = nil
+                                }
+                            },
+                            close: { shell.openedPhoto = nil })
+            // Видео и файл из ленты — листаются по ленте, как прежде (P278).
+            } else if opened.url == nil, links.indices.contains(opened.index) {
                 StripViewer(count: links.count, start: opened.index,
                             url: { store.photoURL(links[$0]) },
-                            remove: store.canEdit(opened.tab) ? { i, delete in
-                                shell.openedPhoto = nil
-                                shell.say(store.removeAttachment(at: i, from: opened.tab, delete: delete))
-                            } : nil,
+                            remove: { i in
+                                guard store.canEdit(opened.tab) else { return nil }
+                                return { delete in
+                                    shell.openedPhoto = nil
+                                    shell.say(store.removeAttachment(at: i, from: opened.tab, delete: delete))
+                                }
+                            },
                             close: { shell.openedPhoto = nil })
             } else {
             AttachmentViewer(

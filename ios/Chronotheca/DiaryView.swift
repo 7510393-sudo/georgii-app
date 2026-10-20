@@ -82,6 +82,7 @@ struct DiaryView: View {
                 if $0 { shell.tab = .diary }
             },
             placeCaret: $store.caretRequest,
+            reveal: $store.revealRequest,
             // Снимок, отпущенный над полоской, возвращается в неё (P272).
             onReturnPhoto: { link in
                 store.returnToStrip(link)
@@ -312,6 +313,7 @@ struct DiaryPage: View {
     var onCaret: ((Int) -> Void)?
     var onEditing: ((Bool) -> Void)?
     var placeCaret: Binding<Int?> = .constant(nil)
+    var reveal: Binding<Int?> = .constant(nil)
     var onReturnPhoto: ((String) -> Void)?
     /// Точку перенесли из текста в заголовок дня — и обратно (P358).
     var onPointToTitle: ((String) -> Void)?
@@ -671,7 +673,7 @@ struct DiaryPage: View {
                     onOpenPhoto: onOpenInline, onReturnPhoto: onReturnPhoto,
                     onOpenPoint: onOpenPoint, onPointToTitle: onPointToTitle, onCaret: onCaret,
                     moving: editable, onEditing: onEditing,
-                    placeCaret: placeCaret, takeStamp: takeStamp, onWrite: onWrite,
+                    placeCaret: placeCaret, reveal: reveal, takeStamp: takeStamp, onWrite: onWrite,
                     planTarget: planTarget, onPlanHover: onPlanHover, onToPlan: onToPlan,
                     onDeleteAttachment: onDeleteAttachment)
             // Вдвое меньше, чем было: пробел между заголовком и записью не
