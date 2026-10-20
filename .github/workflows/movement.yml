@@ -71,10 +71,14 @@ jobs:
             n=0
             while [ $n -lt 40 ]; do
               sleep 12
-              pid=$(pgrep -x Chronotheca | head -1)
+              pid=$(pgrep -f "Chronotheca.app/Chronotheca" | head -1)
               if [ -n "$pid" ]; then
                 n=$((n + 1))
-                sample "$pid" 2 -file "../docs/motion/sample-$n.txt" >/dev/null 2>&1 || true
+                sample "$pid" 2 -file "../docs/motion/sample-$n.txt" >/dev/null 2>&1 \
+                  || sudo sample "$pid" 2 -file "../docs/motion/sample-$n.txt" >/dev/null 2>&1 \
+                  || echo "снимок $n не снялся (pid $pid)"
+              else
+                echo "приложения нет среди процессов"; ps aux | grep -i chronothec | grep -v grep | head -3
               fi
             done
           ) &

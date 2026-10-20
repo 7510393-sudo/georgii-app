@@ -164,7 +164,9 @@ struct MapScreen: View {
     /// тексте, заголовке, под делами и в ответах. Близкие точки одного
     /// дня — одно место.
     private var entries: [MapEntry] {
-        archive.days.values.flatMap { day -> [MapEntry] in
+        // Только дни с точками (P572): прежде для каждого дня архива искался
+        // файл обложки — на архиве за десять лет карта открывалась секундами.
+        archive.days.values.filter { !$0.points.isEmpty }.flatMap { day -> [MapEntry] in
             var seen = Set<String>()
             let cover = day.cover.flatMap { link -> (URL, Bool)? in
                 let kind = Diary.kind(of: link)
@@ -260,7 +262,7 @@ struct MapScreen: View {
                 selected = nil
             }
             shell.mapEntries = on
-            if on, entries.isEmpty {
+            if on, !archive.days.values.contains(where: { !$0.points.isEmpty }) {
                 shell.say(T("На карте пока нет записей: поставьте точку в тексте дня — и день появится здесь.",
                             "No entries on the map yet: add a place to a day's text and the day will appear here."))
             }
