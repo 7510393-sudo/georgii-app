@@ -79,7 +79,6 @@ struct DayPage: View {
         VStack(spacing: 0) {
             // Облачко «…помнишь?» — над заголовком «Дневник» (P436).
             heading
-                .overlay { galleryCatcher }
                 .zIndex(1)
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -110,22 +109,6 @@ struct DayPage: View {
             if let (day, ago) = archive.remembered(for: date) {
                 RememberSheet(day: day, ago: ago, open: $remembering)
             }
-        }
-    }
-
-    /// (P527) Накладка лежала поверх всей страницы, и с ней поверх самого ряда
-    /// галереи: касание по «все фото» или по снимку не доходило до них, а
-    /// закрывало ряд. Теперь она внутри листа, под полоской вложений.
-    /// Пока открыт ряд снимков галереи, касание по странице только
-    /// закрывает его — курсор не ставится, клавиатура не поднимается;
-    /// второе касание уже делает своё (P344).
-    @ViewBuilder private var galleryCatcher: some View {
-        if live && shell.gallery {
-            Color.clear
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    withAnimation(.easeOut(duration: 0.2)) { shell.gallery = false }
-                }
         }
     }
 
@@ -371,8 +354,7 @@ struct DayPage: View {
                      land: shell.landing, landDiary: shell.landOnDiary,
                      onDiary: { [shell] in shell.lookingAtDiary = $0 },
                      diaryMark: AnyView(cloud),
-                     strip: AnyView(AttachBar(live: live, date: date)),
-                     catcher: AnyView(galleryCatcher)) {
+                     strip: AnyView(AttachBar(live: live, date: date))) {
                 PlanView()
             } diary: {
                 DiaryView()
@@ -552,21 +534,15 @@ struct WobblyTitle: View {
 
 /// Полоска вложений. Едет вместе со страницей: вложения принадлежат дню.
 ///
-/// Пока открыта клавиатура, та же полоска стоит прямо над ней: курсор
-/// остаётся на месте, а всё нужное под пальцем (P253). Справа тогда —
-/// кнопка «убрать клавиатуру».
+/// Пока открыта клавиатура, её кнопки — в строке над клавиатурой
+/// (`KeyboardBar`), а сама полоска прячется (P546).
 struct AttachBar: View {
 
-    var overKeyboard = false
     /// Полоска открытой страницы: она исполняет просьбы кнопок над
     /// клавиатурой (P279).
     var live = false
     /// День страницы: полоска — нижний край его листа, в его цвет (P297).
     var date = DayStore.today()
-
-    /// Сколько полоска занимает над клавиатурой, с запасом. Строка, в
-    /// которой пишут, должна вставать выше неё, а не прятаться (P269).
-    static let overKeyboardHeight: CGFloat = 58
 
     @EnvironmentObject private var shell: Shell
     @EnvironmentObject private var store: DayStore
@@ -614,23 +590,9 @@ struct AttachBar: View {
         .overlay(Capsule(style: .continuous)
             .strokeBorder(Color.black.opacity(0.08), lineWidth: 0.6))
         .padding(.horizontal, KeyboardBar.inset)
-        // Куда втекает строка над клавиатурой, когда та уходит (P440).
+        // Где полоска на экране — сюда возвращают снимок из текста (P547).
         // Уходящая страница не стирает место: новая открытая уже сообщила своё.
-        .reportsY { [live] y in if live, let y { KeyboardBar.glide.pillTarget = y } }
-        // Ряд галереи лежит над полоской, поверх страницы: страница под
-        // ним не сдвигается (P113, P114).
-        .overlay(alignment: .top) {
-            if live && shell.gallery {
-                GalleryRow(day: date, add: { addFromGallery($0, day: date) }, more: {
-                    withAnimation(.easeOut(duration: 0.2)) { shell.gallery = false }
-                    // Окно галереи — следом, когда ряд уже убран: в одном
-                    // такте с его уходом окно не открывалось (P522).
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { choosePhotos() }
-                })
-                .offset(y: -GalleryRow.height)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
-        }
+        .reportsY { [live] y in if live, let y { KeyboardBar.pillTarget = y } }
         .onChange(of: shell.keyboardAsk) { _, ask in
             guard live, let ask else { return }
             shell.keyboardAsk = nil
@@ -652,7 +614,6 @@ struct AttachBar: View {
             case .map: openMap()
             }
         }
-        .onChange(of: store.date) { _, _ in if live { shell.gallery = false } }
         // Системное окно галереи: приложению не нужно разрешение на всю
         // галерею — оно получает только те снимки, которые выбрал человек.
         // Снимки и видео вместе, без предела на число (P214).
@@ -691,8 +652,6 @@ struct AttachBar: View {
     /// (P203). В закрытый день — нельзя, и об этом говорится.
     private func open(_ show: () -> Void) {
         guard store.canEdit(into) else { return shell.say(store.closedReason) }
-        // Камера, голос или файлы — ряд снимков больше не нужен (P344).
-        if shell.gallery { shell.gallery = false }
         show()
     }
 
@@ -776,25 +735,6 @@ struct AttachBar: View {
                 Button(action: act) { face }
             }
         }
-    }
-
-    /// Отмеченное в ряду галереи — в полоску этой вкладки, как из окна
-    /// галереи (P273, P350). Ряд убрали, перелистнув на другой день, —
-    /// в чужой день ничего не ложится, об этом говорится.
-    private func addFromGallery(_ assets: [PHAsset], day: Date) {
-        let tab = into
-        guard Calendar.current.isDate(store.date, inSameDayAs: day), store.canEdit(tab) else {
-            return shell.say(T("Отмеченное в галерее не добавлено: открыт другой день",
-                                 "The selected photos were not added: another day is open"))
-        }
-        GalleryRow.take(assets, store: store, tab: tab) { shell.say($0) }
-    }
-
-    /// Фото кладутся туда, где человек стоит: на вкладке плана — в план,
-    /// в дневнике — в дневник (решение P203).
-    private func choosePhotos() {
-        guard store.canEdit(into) else { return shell.say(store.closedReason) }
-        choosing = true
     }
 
     /// Видео из окна галереи — копией во временный файл: система уберёт

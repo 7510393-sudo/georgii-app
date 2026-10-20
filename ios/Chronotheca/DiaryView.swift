@@ -311,11 +311,6 @@ struct DiaryPage: View {
     /// Предложенные снимки дня в конце ленты (P538) — и есть ли они.
     var suggested: AnyView? = nil
     var hasSuggested = false
-    /// Над клавиатурой своя лента (P541) — эта прячется, место остаётся
-    /// и не отзывается на палец (P542).
-    var docked = false
-    /// Лента превью на самом листе (P502; снова, P546).
-    static let stripInPage = true
     /// Где лежат снимки, стоящие посреди текста (P204).
     var resolve: ((String) -> URL?)?
     var onOpenPhoto: ((Int) -> Void)?
@@ -423,13 +418,13 @@ struct DiaryPage: View {
                 .accessibilityHint(T("Касание — записать в дневник", "Tap to add to the diary"))
         }
         // Лента превью — конец листа, едет с текстом, как в Diarium (P546).
-        if Self.stripInPage && (!photos.isEmpty || takesBack || hasSuggested) {
+        if (!photos.isEmpty || takesBack || hasSuggested) {
             PhotoStrip(photos: photos, onOpen: onOpenPhoto,
                        drag: editable && photoLinks.count == photos.count
                            ? { Diary.line(photoLinks[$0]) } : nil,
                        onMove: editable ? onMovePhoto : nil,
                        anyKind: true,
-                       onCarry: editable && !docked ? onStripCarry : nil,
+                       onCarry: editable ? onStripCarry : nil,
                        carried: stripCarried,
                        onRemove: editable && onRemovePhoto != nil ? { removing = $0 } : nil,
                        extra: hasSuggested ? suggested : nil)
@@ -442,21 +437,15 @@ struct DiaryPage: View {
                 .background(GeometryReader { geo in
                     let frame = geo.frame(in: .global)
                     // Полоска одна на страницу (P408): по ней узнают
-                    // «назад в полоску» и дневник, и план. Пока над
-                    // клавиатурой своя лента — по ней (P542).
+                    // «назад в полоску» и дневник, и план.
                     Color.clear
-                        .onAppear { if editable && !docked { StripZones.strip = frame; PlanZones.strip = frame } }
+                        .onAppear { if editable { StripZones.strip = frame; PlanZones.strip = frame } }
                         .onChange(of: frame) { _, now in
-                            if editable && !docked { StripZones.strip = now; PlanZones.strip = now }
-                        }
-                        .onChange(of: docked) { _, now in
-                            if editable && !now { StripZones.strip = frame; PlanZones.strip = frame }
+                            if editable { StripZones.strip = now; PlanZones.strip = now }
                         }
                         // Ленты нет — нет и места, куда возвращать (P547).
                         .onDisappear { if editable { StripZones.strip = nil; PlanZones.strip = nil } }
                 })
-                .opacity(docked ? 0 : 1)
-                .allowsHitTesting(!docked)
         }
     }
 

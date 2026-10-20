@@ -367,7 +367,6 @@ struct RootView: View {
             // (P499): верхняя строка всегда на месте.
             // Подсказки для первого знакомства (P427) — поверх всего, когда
             // экран спокоен.
-            GlideView()
             HintLayer(screen: shell.screen,
                       quiet: !shell.showingMenu && !shell.showingSettings
                           && shell.movingTask == nil && keyboard.height == 0
@@ -473,16 +472,9 @@ struct RootView: View {
             Text(trashMessage)
         }
         .sheet(item: $shell.roller) { RollerSheet(roller: $0) }
-        .onChange(of: shell.keyboardGo) { _, go in
-            guard let go else { return }
-            shell.keyboardGo = nil
-            tapSection(go)
-        }
         .onAppear {
             // Просьбы кнопок над клавиатурой — открытой странице (P279).
             KeyboardBar.ask = { [shell] ask in shell.keyboardAsk = ask }
-            // Разделы над клавиатурой (P423) — так же, как внизу.
-            KeyboardBar.go = { [shell] target in shell.keyboardGo = target }
             // Опись архива нужна не только календарю и поиску: без неё
             // облачко «…помнишь?» не знает, есть ли что вспомнить, и не
             // появляется никогда. Читаем папку сразу при запуске.
@@ -848,7 +840,6 @@ struct RootView: View {
                     // Не сжимать по высоте (P510): в тесной нижней полосе
                     // надпись ужималась на 8%, и выходило мельче, чем вверху.
                     .fixedSize(horizontal: false, vertical: true)
-                    .reportsY { y in if target == .today, !small { KeyboardBar.glide.namesTarget = y } }
             }
             // Открытый раздел — на светлой подушке. Подушка выходит за
             // значок наружу и не меняет высоты полосы (P218).
@@ -867,15 +858,11 @@ struct RootView: View {
         // точках; системное меню задерживало и обычное касание.
     }
 
-    /// Убрать шторку «Подробности» или ряд снимков галереи, если открыты.
+    /// Убрать шторку «Подробности», если открыта.
     /// Касание мимо них — по разделам внизу или по уголкам — сперва
     /// закрывает их, как и касание по странице (P342, P344). `true` —
     /// что-то убрали, больше ничего делать не надо.
     private func closeDrawer() -> Bool {
-        if shell.gallery {
-            withAnimation(.easeOut(duration: 0.2)) { shell.gallery = false }
-            return true
-        }
         guard shell.drawer != nil else { return false }
         hideKeyboard()
         store.save()

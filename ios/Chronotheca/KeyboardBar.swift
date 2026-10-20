@@ -16,26 +16,13 @@ enum KeyboardBar {
 
     /// Кто исполняет просьбы — оболочка приложения.
     static var ask: (Ask) -> Void = { _ in }
-    /// Кто открывает разделы — оболочка приложения (P423).
-    static var go: (Shell.Screen) -> Void = { _ in }
 
-    /// Строка вложений и под ней строка разделов вдвое тоньше (P423):
-    /// клавиатура закрывает нижнюю строку экрана — она поднимается над
-    /// клавиатурой вместе со строкой вложений. Разделы не пропадают (P113).
+    /// Высота строки вложений над клавиатурой (P423).
     static let attachHeight: CGFloat = 36
-    /// Вдвое шире прежней (P425): названия разделов читаются.
-    static let sectionsHeight: CGFloat = 36
-    static let height: CGFloat = attachHeight + sectionsHeight
     /// Насколько проступает цвет дня у строки вложений: сквозь неё видно
     /// страницу — и над клавиатурой, и внизу страницы (P424).
     /// Плотнее прежней половины (P435): сквозь строку страница едва видна.
     static let see: Double = 0.85
-    /// Нижняя безопасная полоса телефона (жест «домой»).
-    static var safeBottom: CGFloat {
-        UIApplication.shared.connectedScenes
-            .compactMap { ($0 as? UIWindowScene)?.keyWindow?.safeAreaInsets.bottom }
-            .first ?? 0
-    }
     /// Отступ строк от краёв экрана — бока скруглены (P424).
     static let inset: CGFloat = 6
 
@@ -47,65 +34,10 @@ enum KeyboardBar {
     }
     static let day = Day()
 
-    /// Куда строки над клавиатурой «втекают», когда она уходит (P440).
-    static let glide = Glide()
-
-    /// Строки над клавиатурой не уезжают вместе с ней вниз и не гаснут на
-    /// полпути: как только клавиатуру отпустили, их место занимают такие же
-    /// строки в окне приложения — они едут к настоящим нижним строкам
-    /// (полоске вложений у низа страницы и названиям разделов внизу), на
-    /// месте тают и сливаются с ними. Прежде строки над клавиатурой
-    /// уезжали ниже настоящих, гасли, а настоящие «подпрыгивали» (запись
-    /// экрана автора, P440).
-    final class Glide: ObservableObject {
-        @Published var on = false
-        @Published var pillY: CGFloat = 0
-        @Published var namesY: CGFloat = 0
-        @Published var opacity: Double = 1
-        /// Строка вложений не тает, а доезжает до нижней (P456): была
-        /// приглушена смахиванием — по пути возвращает яркость.
-        @Published var pillOpacity: Double = 1
-        /// Где настоящие строки — по высоте экрана; их сообщают сами.
-        var pillTarget: CGFloat?
-        var namesTarget: CGFloat?
-        private var token = 0
-
-        func start(pill: CGFloat, names: CGFloat, opacity from: Double, duration: Double) -> Bool {
-            guard let pt = pillTarget, let nt = namesTarget else { return false }
-            token += 1
-            let mine = token
-            var quiet = Transaction()
-            quiet.disablesAnimations = true
-            withTransaction(quiet) {
-                on = true
-                pillY = min(pill, pt)
-                namesY = min(names, nt)
-                // Названия могли уже наполовину растаять, пока клавиатуру
-                // вели пальцем (P464).
-                opacity = min(from, KeyboardBar.names.value)
-                pillOpacity = from
-            }
-            DispatchQueue.main.async {
-                withAnimation(.easeOut(duration: duration)) {
-                    self.pillY = pt
-                    self.namesY = nt
-                }
-                // Тают только названия разделов; строка вложений доезжает
-                // до нижней целиком и сливается с ней (P456).
-                withAnimation(.easeOut(duration: duration * 0.6)) { self.opacity = 0 }
-                withAnimation(.easeOut(duration: duration)) { self.pillOpacity = 1 }
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + duration + 0.05) {
-                if self.token == mine { self.on = false }
-            }
-            return true
-        }
-
-        func stop() {
-            token += 1
-            on = false
-        }
-    }
+    /// Где по высоте экрана полоска вложений открытой страницы — её
+    /// сообщает сама полоска. Снимок, отпущенный над ней, возвращается в
+    /// ленту (P547). Прежнее «втекание» строк (P440) убрано (P551).
+    static var pillTarget: CGFloat?
 
     private static var host: UIHostingController<KeyboardBarView>?
 
@@ -143,14 +75,6 @@ enum KeyboardBar {
 
     /// Высота строки над клавиатурой: строка вложений и воздух над ней.
     static let accessoryHeight: CGFloat = attachHeight + 10
-
-
-    /// Насколько видны названия разделов над клавиатурой: тают, когда
-    /// клавиатуру ведут вниз пальцем (P464).
-    final class Names: ObservableObject {
-        @Published var value: Double = 1
-    }
-    static let names = Names()
 }
 
 struct KeyboardBarView: View {
@@ -162,18 +86,6 @@ struct KeyboardBarView: View {
             .frame(height: KeyboardBar.attachHeight)
             .padding(.top, 6)
             .padding(.bottom, 4)
-    }
-
-    /// Разделы — одни названия, на том же крафте, что и внизу (P423).
-    /// Пишут всегда на «Сегодня» — оно и обведено.
-    var sections: some View {
-        SectionsRow(current: .today) { KeyboardBar.go($0) }
-            .padding(.horizontal, KeyboardBar.inset)
-    }
-
-    /// Названия над клавиатурой — с таянием, пока её ведут пальцем (P464).
-    var fadingSections: some View {
-        FadingSections { sections }
     }
 
     /// Строка вложений — полупрозрачная: сквозь неё видна страница (P423).
@@ -216,20 +128,6 @@ struct KeyboardBarView: View {
             BarFace(icon: icon, name: name, tint: Look.stripInk, compact: true, spot: Ru.tint(day.date))
         }
             .buttonStyle(.plain)
-    }
-}
-
-/// Строка разделов над клавиатурой, которая тает вместе с её уходом (P464).
-private struct FadingSections<Content: View>: View {
-    @ObservedObject var names = KeyboardBar.names
-    let content: () -> Content
-
-    init(@ViewBuilder content: @escaping () -> Content) {
-        self.content = content
-    }
-
-    var body: some View {
-        content().opacity(names.value)
     }
 }
 
@@ -305,80 +203,10 @@ struct TitleLine: UIViewRepresentable {
     }
 }
 
-/// Строка разделов над клавиатурой (P423, P425): одни названия на крафте,
-/// бока скруглены, открытый раздел обведён — как в нижней строке. Над
-/// клавиатурой на странице дня, на карте и в поиске.
-struct SectionsRow: View {
-    let current: Shell.Screen
-    /// Верхняя строка-ориентир мельче нижней (P494).
-    var compact = false
-    let go: (Shell.Screen) -> Void
-
-    /// Размер названий — тот же, что под значками внизу (P425).
+/// Размер названий разделов в нижней строке (P425). Строки разделов над
+/// клавиатурой больше нет (P546, P551).
+enum SectionsRow {
     static let font: CGFloat = 15
-
-    var body: some View {
-        HStack(spacing: 0) {
-            // Календарь первым, «Сегодня» вторым (P496).
-            name(T("Календарь", "Calendar"), .calendar)
-            name(T("Сегодня", "Today"), .today)
-            name(T("Карта", "Map"), .map)
-            name(T("Поиск", "Search"), .search)
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: compact ? 40 : KeyboardBar.sectionsHeight)
-        .background(KraftPaper())
-        // Верхняя строка — полоса от края до края (P495), нижняя над
-        // клавиатурой — капсула.
-        .clipShape(RoundedRectangle(cornerRadius: compact ? 0 : 18, style: .continuous))
-    }
-
-    private func name(_ title: String, _ target: Shell.Screen) -> some View {
-        let on = target == current
-        return Button { go(target) } label: {
-            Text(title)
-                .font(Look.sans(compact ? 14 : Self.font, weight: on ? .medium : .regular))
-                .foregroundStyle(on ? Look.accent : Look.kraftInk)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-                .padding(.horizontal, 8)
-                .padding(.vertical, compact ? 2 : 3)
-                .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(on ? Look.tabLit : .clear)
-                        .overlay(RoundedRectangle(cornerRadius: 10)
-                            .strokeBorder(on ? Look.accent.opacity(0.75) : .clear, lineWidth: 1.3)))
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-/// Строки, втекающие в нижние, когда клавиатура уходит (P440): рисуются в
-/// окне приложения поверх всего и не ловят касаний.
-struct GlideView: View {
-    @ObservedObject private var glide = KeyboardBar.glide
-
-    var body: some View {
-        if glide.on {
-            let width = UIScreen.main.bounds.width
-            let rows = KeyboardBarView()
-            ZStack {
-                rows.attachments
-                    .frame(width: width, height: KeyboardBar.attachHeight)
-                    .position(x: width / 2, y: glide.pillY)
-                    .opacity(glide.pillOpacity)
-                rows.sections
-                    .frame(width: width, height: KeyboardBar.sectionsHeight)
-                    .position(x: width / 2, y: glide.namesY)
-                    .opacity(glide.opacity)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .ignoresSafeArea()
-            .allowsHitTesting(false)
-        }
-    }
 }
 
 extension View {

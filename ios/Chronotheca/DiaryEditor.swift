@@ -1007,7 +1007,7 @@ struct DiaryEditor: UIViewRepresentable {
             // экрана: над ними — значит вниз, в ленту (P547). Прежде
             // считался только низ страницы — снимок из текста не возвращался.
             if let strip = StripZones.strip, y >= strip.minY - 8, y <= strip.maxY + 60 { return true }
-            if let pill = KeyboardBar.glide.pillTarget, y >= pill - KeyboardBar.attachHeight { return true }
+            if let pill = KeyboardBar.pillTarget, y >= pill - KeyboardBar.attachHeight { return true }
             return y > page.convert(page.bounds, to: window).maxY - 24
         }
 

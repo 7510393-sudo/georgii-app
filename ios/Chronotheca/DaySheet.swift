@@ -35,9 +35,6 @@ struct DaySheet<Plan: View, Diary: View>: View {
     /// Полоска вложений — конец самой страницы, под погодой, в самом низу
     /// (P502): едет со страницей, а не стоит у нижней строки.
     var strip: AnyView? = nil
-    /// Накладка над текстом страницы, но под полоской вложений и её рядом
-    /// галереи: ловит касание мимо ряда (P527).
-    var catcher: AnyView? = nil
 
     @ViewBuilder let plan: () -> Plan
     @ViewBuilder let diary: () -> Diary
@@ -113,7 +110,6 @@ struct DaySheet<Plan: View, Diary: View>: View {
                     // обратно (видео автора).
                     .padding(.bottom, Self.stripRoom)
                     .frame(minHeight: outer.size.height, alignment: .top)
-                    .overlay { if let catcher { catcher } }
                     // Полоска — у самого низа листа: на короткой странице у
                     // нижнего края окна, на длинной — под концом записи, как в
                     // Diarium (P546; полоса поверх экрана P544 отменена).
