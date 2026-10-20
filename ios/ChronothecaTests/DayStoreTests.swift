@@ -134,6 +134,32 @@ extension DayStoreTests {
         XCTAssertEqual(опись.day(стамп)?.title, "Туман")
         XCTAssertEqual(опись.newestFirst.count, 1)
     }
+
+    /// P566: опись перечитывает только изменённое — но правку файла в
+    /// другом месте видит всегда: файл главнее описи.
+    func testОписьВидитПравкуСнаружи() throws {
+        let день = store(0)
+        день.diaryTitle = "Туман"
+        день.save()
+        let опись = Archive(vault: vault)
+        опись.reload()
+        let стамп = Vault.stamp(день.date)
+        XCTAssertEqual(опись.day(стамп)?.title, "Туман")
+
+        // Правка «на Mac»: файл переписан мимо приложения.
+        let файл = try XCTUnwrap(vault.file(.diary, for: день.date))
+        let было = try String(contentsOf: файл, encoding: .utf8)
+        Thread.sleep(forTimeInterval: 0.05)
+        try было.replacingOccurrences(of: "Туман", with: "Ясно, солнце")
+            .write(to: файл, atomically: true, encoding: .utf8)
+        опись.reload()
+        XCTAssertEqual(опись.day(стамп)?.title, "Ясно, солнце")
+
+        // Новая опись с той же папкой — из временного хранилища, но тоже свежая.
+        let снова = Archive(vault: vault)
+        снова.reload()
+        XCTAssertEqual(снова.day(стамп)?.title, "Ясно, солнце")
+    }
 }
 
 extension DayStoreTests {
