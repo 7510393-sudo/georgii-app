@@ -114,12 +114,20 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
         weak var book: UIPageViewController?
 
         /// Пока страница в воздухе, второго поворота не начинаем.
-        private var busy = false
+        private var busy = false {
+            didSet { if busy { busySince = Date() } }
+        }
+        /// Когда лист поднялся. Поворот, который так и не лёг (взмах от края
+        /// столкнулся с тягой системы), не должен запирать книгу навсегда:
+        /// «Сегодня» писал «вернулись», а страница стояла (P548).
+        private var busySince = Date.distantPast
+        private var stuck: Bool { busy && Date().timeIntervalSince(busySince) > 2 }
 
         init(_ parent: PageCurl) { self.parent = parent }
 
         /// Выполнить первый шаг очереди, если он есть.
         func obey(_ pages: UIPageViewController) {
+            if stuck { busy = false }
             guard !busy, let step = parent.plan.wrappedValue.first, step != 0 else { return }
             busy = true
             // Подстраховка (P480): если ход почему-то не закончился, книга не
@@ -338,6 +346,7 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
             case .began:
                 flickDone = false
             case .changed, .ended:
+                if stuck { busy = false }
                 guard !flickDone, !busy else { return }
                 let moved = pan.translation(in: view).x
                 let speed = pan.velocity(in: view).x
