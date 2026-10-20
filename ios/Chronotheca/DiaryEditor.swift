@@ -922,7 +922,8 @@ struct DiaryEditor: UIViewRepresentable {
                 if let link = photo {
                     self.askAbout(link, in: view)
                 } else {
-                    self.remove(at: i, in: view)
+                    // Точка — тоже после вопроса, тем же окошком (P563).
+                    self.askPoint(at: i, line: line, in: view)
                 }
             }, for: .touchUpInside)
             cross.alpha = 0
@@ -952,6 +953,25 @@ struct DiaryEditor: UIViewRepresentable {
 
         /// Что сделать со снимком из текста: убрать в полоску внизу или
         /// удалить файл — в корзину на 30 дней (P371, P409).
+        /// Удалить точку из записи — после вопроса, как и файл (P563): всё
+        /// удаляется по одному лекалу.
+        private func askPoint(at i: Int, line: String, in view: UITextView) {
+            let sheet = UIAlertController(title: T("Удалить точку?", "Delete the place?"),
+                                          message: nil, preferredStyle: .alert)
+            sheet.addAction(UIAlertAction(title: T("Удалить точку", "Delete place"),
+                                          style: .destructive) { [weak self, weak view] _ in
+                guard let self, let view, i < view.textStorage.length,
+                      view.textStorage.attribute(DiaryEditor.lineKey, at: i,
+                                                 effectiveRange: nil) as? String == line
+                else { return }
+                self.remove(at: i, in: view)
+            })
+            sheet.addAction(UIAlertAction(title: T("Отмена", "Cancel"), style: .cancel))
+            var top = view.window?.rootViewController
+            while let next = top?.presentedViewController { top = next }
+            top?.present(sheet, animated: true)
+        }
+
         private func askAbout(_ link: String, in view: UITextView) {
             // Окошко посередине экрана, над клавиатурой (P556): лист,
             // привязанный ко всему полю записи, вставал под клавиатуру.
