@@ -50,6 +50,8 @@ struct AskLine: UIViewRepresentable {
     func makeUIView(context: Context) -> UITextView {
         let view = UITextView()
         view.delegate = context.coordinator
+        // Строка вложений над клавиатурой (P546).
+        view.inputAccessoryView = KeyboardBar.view
         view.backgroundColor = .clear
         view.textContainerInset = .zero
         view.textContainer.lineFragmentPadding = 0

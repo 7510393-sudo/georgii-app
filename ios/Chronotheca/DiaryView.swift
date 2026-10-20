@@ -17,8 +17,6 @@ struct DiaryView: View {
     @State private var deleting: String?
     /// Снимки сегодняшнего дня из галереи — предложением в ленте (P538).
     @StateObject private var suggest = DaySuggestions()
-    /// Клавиатура поднята — лента превью над ней, на странице её нет (P542).
-    @State private var keyboard: CGFloat = 0
 
     /// На ступень крупнее прежних 15,5 и растёт с настройкой (P274).
     static var size: CGFloat { 16.5 * Prefs.textScale }
@@ -60,7 +58,6 @@ struct DiaryView: View {
                 GalleryRow.take([asset], store: store, tab: .diary) { shell.say($0) }
             }),
             hasSuggested: store.canEditDiary && suggest.shows,
-            docked: keyboard > 0,
             resolve: store.photoURL,
             onOpenPhoto: { i in
                 let n = store.photos.count
@@ -140,13 +137,10 @@ struct DiaryView: View {
         // поверх полосы у низа экрана, а не на странице под ней (P545,
         // `StripGhostLayer`).
         .task(id: store.date) { health = await HealthDay.summary(for: store.date) }
-        .keyboardHeight($keyboard)
         // Предложенные снимки — заново при смене дня, после взятия, при
         // возвращении в приложение (новые снимки камерой) (P538).
         .onAppear {
             suggest.reload(today: store.isToday)
-            // Лента над клавиатурой несёт превью через дневник (P541).
-            StripBridge.carry = { i, phase, spot in carryStrip(i, phase, spot) }
         }
         .onChange(of: store.date) { _, _ in suggest.reload(today: store.isToday) }
         .onReceive(NotificationCenter.default.publisher(for: DaySuggestions.changed)) { _ in
@@ -320,8 +314,8 @@ struct DiaryPage: View {
     /// Над клавиатурой своя лента (P541) — эта прячется, место остаётся
     /// и не отзывается на палец (P542).
     var docked = false
-    /// Лента превью на самом листе (P502) — выключена (P544).
-    static let stripInPage = false
+    /// Лента превью на самом листе (P502; снова, P546).
+    static let stripInPage = true
     /// Где лежат снимки, стоящие посреди текста (P204).
     var resolve: ((String) -> URL?)?
     var onOpenPhoto: ((Int) -> Void)?
@@ -428,7 +422,7 @@ struct DiaryPage: View {
                 .onTapGesture { onHealth?(health) }
                 .accessibilityHint(T("Касание — записать в дневник", "Tap to add to the diary"))
         }
-        // Ленты превью на листе больше нет — она одна, у низа экрана (P544).
+        // Лента превью — конец листа, едет с текстом, как в Diarium (P546).
         if Self.stripInPage && (!photos.isEmpty || takesBack || hasSuggested) {
             PhotoStrip(photos: photos, onOpen: onOpenPhoto,
                        drag: editable && photoLinks.count == photos.count

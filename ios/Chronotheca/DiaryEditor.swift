@@ -107,8 +107,10 @@ struct DiaryEditor: UIViewRepresentable {
     func makeUIView(context: Context) -> UITextView {
         let view = UITextView()
         view.delegate = context.coordinator
-        // Строк над клавиатурой нет (P496): полоска вложений — конец самой
-        // страницы, клавиатура её закрывает, пока страницу не подняли.
+        // Над клавиатурой — строка вложений, частью самой клавиатуры, как в
+        // Diarium (P546); лента превью — конец страницы, клавиатура её
+        // закрывает, пока страницу не подняли.
+        view.inputAccessoryView = KeyboardBar.view
         // Превью из полоски бросают прямо в текст (решение P204).
         view.textDropDelegate = context.coordinator
         // Своё перетаскивание поля выключено (P374): оно перехватывало
@@ -1682,9 +1684,9 @@ struct DiaryEditor: UIViewRepresentable {
             else { return }
             // Полоска вложений — часть клавиатуры (P279): верх клавиатуры
             // уже её верх.
-            // Над клавиатурой ещё лента превью и строка вложений (P541):
-            // строка, в которой пишут, встаёт выше и них.
-            keyboardTop = window.convert(frame, from: nil).minY - KeyboardDock.height
+            // Строка вложений над клавиатурой — её часть (P546): верх
+            // клавиатуры уже её верх.
+            keyboardTop = window.convert(frame, from: nil).minY
             makeRoom(scroll: true)
             // Страница получает место под клавиатуру чуть позже самой
             // клавиатуры (P516): первая прокрутка к курсору видела ещё

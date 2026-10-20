@@ -67,6 +67,8 @@ struct PlanTitle: UIViewRepresentable {
         // отдельный зазор после первой строки (P186).
         let view = TitleView(usingTextLayoutManager: false)
         view.delegate = context.coordinator
+        // Строка вложений над клавиатурой (P546).
+        view.inputAccessoryView = KeyboardBar.view
         view.layoutManager.delegate = context.coordinator
         view.backgroundColor = .clear
         // Ни отступов, ни полей: строчка письма должна считаться от самого

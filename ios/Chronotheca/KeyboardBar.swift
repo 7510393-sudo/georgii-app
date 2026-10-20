@@ -118,67 +118,32 @@ enum KeyboardBar {
     private static var holder: UIView?
 
     /// Одна приставка на все поля: видна она только у того, в котором пишут.
+    ///
+    /// Строка вложений — часть клавиатуры, как строка оформления в Diarium
+    /// (P546): iPhone сам несёт её вместе с клавиатурой — и когда та уходит,
+    /// и когда её смахивают пальцем. Ничего не догоняет и не «втекает» в
+    /// нижние строки (прежние P438–P468 убраны).
     static var view: UIView {
         if let holder { return holder }
         let made = UIHostingController(rootView: KeyboardBarView())
         // Без этого приставка отступает от собственного нижнего края, как
-        // от клавиатуры под ней, — а клавиатура под ней и есть: остаётся
-        // пустая полоса между приставкой и настоящей клавиатурой (P310).
+        // от клавиатуры под ней (P310).
         made.safeAreaRegions = []
         made.view.backgroundColor = .clear
-        // Простая подложка, а не клавиатурная: строка вложений
-        // полупрозрачная, сквозь неё видна страница (P423).
         let box = UIView(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width,
-                                       height: height))
+                                       height: accessoryHeight))
         box.backgroundColor = .clear
         made.view.frame = box.bounds
         made.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         box.addSubview(made.view)
         host = made
         holder = box
-        // Клавиатура уходит — строки над ней гаснут сразу, а не едут с ней
-        // до самого низа и пропадают там (P429). Пришла — снова видны.
-        //
-        // Клавиатуру смахивают пальцем — тогда iPhone молчит до самого
-        // конца, и строки доезжали до низа экрана, ложились поверх нижней
-        // строки разделов и только потом пропадали: это и был «скачок»
-        // (запись экрана автора, P438). Теперь строки гаснут по ходу: чем
-        // ниже их увели, тем прозрачнее.
-        KeyboardBar.fader.box = box
-        let centre = NotificationCenter.default
-        centre.addObserver(forName: UIResponder.keyboardWillHideNotification, object: nil,
-                           queue: .main) { _ in
-            // Строки едут вниз вместе с клавиатурой до самого конца и
-            // встают в нижнюю строку, где та стоит (P468). Прежде на уходе
-            // их подменяли копией, которая догоняла свою анимацию: смахнули
-            // клавиатуру быстро — копия отставала и висела посреди экрана
-            // (запись экрана автора со 108-й). Теперь следит тот же
-            // счётчик кадров, что и при смахивании пальцем, — по видимому
-            // положению клавиатуры, а не по конечному.
-            if KeyboardBar.fader.following { return }
-            UIView.animate(withDuration: 0.12) { box.alpha = 0 }
-        }
-        centre.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil,
-                           queue: .main) { _ in
-            KeyboardBar.glide.stop()
-            KeyboardBar.names.value = 1
-            box.alpha = 1
-        }
-        centre.addObserver(forName: UIResponder.keyboardDidShowNotification, object: nil,
-                           queue: .main) { note in
-            let frame = note.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect ?? .zero
-            KeyboardBar.fader.start(below: max(0, frame.height - KeyboardBar.height))
-        }
-        centre.addObserver(forName: UIResponder.keyboardDidHideNotification, object: nil,
-                           queue: .main) { _ in
-            KeyboardBar.fader.stop()
-            // Ушла совсем — строк над ней нет, где бы счётчик их ни застал.
-            box.alpha = 0
-        }
         return box
     }
 
-    private static let fader = Fader()
+    /// Высота строки над клавиатурой: строка вложений и воздух над ней.
+    static let accessoryHeight: CGFloat = attachHeight + 10
+
 
     /// Насколько видны названия разделов над клавиатурой: тают, когда
     /// клавиатуру ведут вниз пальцем (P464).
@@ -186,87 +151,17 @@ enum KeyboardBar {
         @Published var value: Double = 1
     }
     static let names = Names()
-
-    /// Следит, пока клавиатура открыта, где строки над ней: смахивают
-    /// клавиатуру — строки тают, пройдя половину её высоты, гаснут совсем.
-    private final class Fader: NSObject {
-        weak var box: UIView?
-        private var link: CADisplayLink?
-        /// Высота самой клавиатуры под строками, когда она открыта.
-        private var full: CGFloat = 0
-
-        func start(below: CGFloat) {
-            full = below
-            box?.alpha = 1
-            KeyboardBar.names.value = 1
-            guard link == nil, below > 0 else { return }
-            let made = CADisplayLink(target: self, selector: #selector(tick))
-            made.add(to: .main, forMode: .common)
-            link = made
-        }
-
-        func stop() {
-            link?.invalidate()
-            link = nil
-        }
-
-        /// Следит ли сейчас за строками.
-        var following: Bool { link != nil && box != nil && full > 0 }
-
-        /// Верх строк на экране — там, где их сейчас видно. Пока клавиатура
-        /// уезжает анимацией, её место в окне уже конечное, а видна она
-        /// ещё на пути: считать по видимым слоям (P468).
-        private func shownTop(_ view: UIView) -> CGFloat {
-            var y: CGFloat = 0
-            var layer: CALayer? = view.layer
-            while let current = layer {
-                let shown = current.presentation() ?? current
-                y += shown.frame.minY
-                if let parent = current.superlayer {
-                    y -= (parent.presentation() ?? parent).bounds.minY
-                }
-                layer = current.superlayer
-            }
-            return y
-        }
-
-        @objc private func tick() {
-            guard let box, let window = box.window, full > 0 else { return }
-            let top = shownTop(box) - shownTop(window)
-            let frame = CGRect(x: 0, y: top, width: box.bounds.width, height: box.bounds.height)
-            // Сколько клавиатуры ещё видно под строками.
-            let left = window.bounds.height - frame.maxY
-            // Строка вложений не тает, а встаёт в нижнюю (P464): едет с
-            // клавиатурой целиком, и как только дошла до строки вложений
-            // внизу страницы — уступает ей место, та точно такая же. Тают
-            // только названия разделов под ней — и успевают растаять,
-            // прежде чем лягут на нижнюю строку вложений (P463).
-            guard let pill = KeyboardBar.glide.pillTarget else {
-                box.alpha = max(0, min(1, left / (full * 0.5)))
-                return
-            }
-            let travel = pill - (frame.minY + KeyboardBar.attachHeight / 2)
-            box.alpha = travel > 0.5 ? 1 : 0
-            let gap = KeyboardBar.attachHeight + KeyboardBar.sectionsHeight
-            let names = Double(max(0, min(1, (travel - gap) / 60)))
-            if abs(KeyboardBar.names.value - names) > 0.02 || names == 0 || names == 1,
-               KeyboardBar.names.value != names {
-                KeyboardBar.names.value = names
-            }
-        }
-    }
 }
 
 struct KeyboardBarView: View {
     @ObservedObject private var day = KeyboardBar.day
 
     var body: some View {
-        VStack(spacing: 0) {
-            attachments
-                .frame(height: KeyboardBar.attachHeight)
-            fadingSections
-                .frame(height: KeyboardBar.sectionsHeight)
-        }
+        // Только строка вложений (P546): разделов над клавиатурой нет.
+        attachments
+            .frame(height: KeyboardBar.attachHeight)
+            .padding(.top, 6)
+            .padding(.bottom, 4)
     }
 
     /// Разделы — одни названия, на том же крафте, что и внизу (P423).
@@ -355,6 +250,8 @@ struct TitleLine: UIViewRepresentable {
     func makeUIView(context: Context) -> UITextField {
         let field = UITextField()
         field.delegate = context.coordinator
+        // Строка вложений над клавиатурой (P546).
+        field.inputAccessoryView = KeyboardBar.view
         field.addTarget(context.coordinator, action: #selector(Coordinator.changed(_:)),
                         for: .editingChanged)
         field.borderStyle = .none

@@ -32,8 +32,7 @@ struct DayPages: View {
         }, plan: $plan)
         // Лента превью и строка вложений — одна, у низа экрана, над всеми
         // страницами (P544): не листается с днём, а с клавиатурой едет вверх.
-        .overlay { StripDock() }
-        // Взятое из ленты превью — поверх всего, и самой ленты тоже (P545).
+        // Взятое из ленты превью — поверх всего (P545).
         .overlay { StripGhostLayer() }
         .onChange(of: shell.goHome) { _, want in
             guard want else { return }
@@ -372,6 +371,7 @@ struct DayPage: View {
                      land: shell.landing, landDiary: shell.landOnDiary,
                      onDiary: { [shell] in shell.lookingAtDiary = $0 },
                      diaryMark: AnyView(cloud),
+                     strip: AnyView(AttachBar(live: live, date: date)),
                      catcher: AnyView(galleryCatcher)) {
                 PlanView()
             } diary: {
@@ -555,133 +555,6 @@ struct WobblyTitle: View {
 /// Пока открыта клавиатура, та же полоска стоит прямо над ней: курсор
 /// остаётся на месте, а всё нужное под пальцем (P253). Справа тогда —
 /// кнопка «убрать клавиатуру».
-/// Лента превью и строка вложений открытого дня (P544): одна на экран, у
-/// его низа, над нижней строкой разделов; с клавиатурой едет вверх и стоит
-/// над ней. Прежде полоска была концом листа (P502), а над клавиатурой —
-/// её копия (P541, P542).
-struct StripDock: View {
-    @EnvironmentObject private var store: DayStore
-    @State private var keyboard: CGFloat = 0
-
-    var body: some View {
-        GeometryReader { outer in
-            VStack(spacing: 0) {
-                Spacer(minLength: 0)
-                KeyboardDock(date: store.date)
-                    .frame(maxWidth: .infinity)
-                    .padding(.bottom, keyboard > 0 ? covered(outer) : 10)
-                    // Плотный лист цвета дня до самой нижней строки (P544):
-                    // сквозь полупрозрачный текст записи путался с превью.
-                    .background {
-                        Ru.tint(store.date)
-                            .overlay(alignment: .top) {
-                                Rectangle().fill(Look.rule).frame(height: 0.6)
-                            }
-                            .shadow(color: .black.opacity(0.08), radius: 4, y: -2)
-                    }
-            }
-        }
-        .keyboardHeight($keyboard)
-        .animation(.easeOut(duration: 0.25), value: keyboard)
-    }
-
-    /// Сколько клавиатура закрывает снизу — тот же счёт, что у листа.
-    private func covered(_ outer: GeometryProxy) -> CGFloat {
-        let safe = UIApplication.shared.connectedScenes
-            .compactMap { ($0 as? UIWindowScene)?.keyWindow?.safeAreaInsets.bottom }
-            .first ?? 0
-        let top = UIScreen.main.bounds.height - keyboard - safe
-        return max(0, outer.frame(in: .global).maxY - top)
-    }
-}
-
-/// Сама полоса: лента превью дня с предложенными снимками и строка вложений.
-/// Превью уносят в текст переносом дневника (`StripBridge`).
-struct KeyboardDock: View {
-    let date: Date
-
-    @EnvironmentObject private var store: DayStore
-    @EnvironmentObject private var shell: Shell
-    @StateObject private var suggest = DaySuggestions()
-    @State private var removing: Int?
-
-    /// Превью прежнего размера — в пять строк дневника (P545; в 139-й было
-    /// 60, автор: «значительно меньше»).
-    static let thumb: CGFloat = PhotoStrip.side
-    /// Высота с запасом: превью с отступами и строка вложений.
-    static var height: CGFloat { thumb + 16 + KeyboardBar.attachHeight + 14 }
-
-    private var showsStrip: Bool {
-        !store.stripLinks.isEmpty || Plan.hasPhotoRows(store.planRows)
-            || (store.canEditDiary && suggest.shows)
-    }
-
-    var body: some View {
-        VStack(spacing: 0) {
-            if showsStrip {
-                PhotoStrip(photos: store.stripLinks.map(store.photoURL),
-                           onOpen: { i in
-                               let n = store.photos.count
-                               shell.openedPhoto = i < n ? .init(tab: .diary, index: i)
-                                                         : .init(tab: .plan, index: i - n)
-                           },
-                           anyKind: true,
-                           onCarry: store.canEditDiary
-                               ? { (i: Int, phase: Lift, spot: CGPoint) in StripBridge.carry?(i, phase, spot) }
-                               : nil,
-                           onRemove: store.canEditDiary ? { removing = $0 } : nil,
-                           extra: store.canEditDiary && suggest.shows
-                               ? AnyView(SuggestedRow(model: suggest, side: Self.thumb) { asset in
-                                   GalleryRow.take([asset], store: store, tab: .diary) { shell.say($0) }
-                               })
-                               : nil,
-                           size: Self.thumb)
-                    // Отпущенное над полосой превью возвращается на место.
-                    .background(GeometryReader { g in
-                        let frame = g.frame(in: .global)
-                        Color.clear
-                            .onAppear { StripZones.strip = frame; PlanZones.strip = frame }
-                            .onChange(of: frame) { _, now in
-                                StripZones.strip = now
-                                PlanZones.strip = now
-                            }
-                    })
-                    .modifier(RemoveQuestion(
-                        asking: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } }),
-                        act: { delete in
-                            if let i = removing {
-                                let n = store.photos.count
-                                shell.say(i < n ? store.removeAttachment(at: i, from: .diary, delete: delete)
-                                                : store.removeAttachment(at: i - n, from: .plan, delete: delete))
-                            }
-                            removing = nil
-                        }))
-            }
-            AttachBar(live: true, date: date)
-                .frame(height: KeyboardBar.attachHeight)
-                .padding(.bottom, 4)
-        }
-        .padding(.top, 2)
-        // Предложенные снимки — заново при смене дня, после взятия, при
-        // возвращении в приложение (P538).
-        .onAppear { suggest.reload(today: store.isToday) }
-        .onChange(of: store.date) { _, _ in suggest.reload(today: store.isToday) }
-        .onReceive(NotificationCenter.default.publisher(for: DaySuggestions.changed)) { _ in
-            suggest.reload(today: store.isToday)
-        }
-        .onReceive(NotificationCenter.default.publisher(
-            for: UIApplication.willEnterForegroundNotification)) { _ in
-            suggest.reload(today: store.isToday)
-        }
-    }
-}
-
-/// Перенос превью из ленты над клавиатурой ведёт тот же дневник, что и
-/// перенос из ленты внизу страницы (P541).
-enum StripBridge {
-    static var carry: ((Int, Lift, CGPoint) -> Void)?
-}
-
 struct AttachBar: View {
 
     var overKeyboard = false

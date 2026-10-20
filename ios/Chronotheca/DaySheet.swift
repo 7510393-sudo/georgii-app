@@ -38,10 +38,6 @@ struct DaySheet<Plan: View, Diary: View>: View {
     /// Накладка над текстом страницы, но под полоской вложений и её рядом
     /// галереи: ловит касание мимо ряда (P527).
     var catcher: AnyView? = nil
-    /// Лента превью и строка вложений над клавиатурой, пока пишут (P541).
-    var dock: AnyView? = nil
-    /// Сколько полоска над клавиатурой отнимает у страницы.
-    private var dockRoom: CGFloat { dock != nil ? KeyboardDock.height : 0 }
 
     @ViewBuilder let plan: () -> Plan
     @ViewBuilder let diary: () -> Diary
@@ -60,7 +56,7 @@ struct DaySheet<Plan: View, Diary: View>: View {
     /// Строка вложений лежит поверх низа страницы, полупрозрачная (P424):
     /// столько места под концом записи, чтобы её можно было поднять из-под
     /// строки.
-    static var stripRoom: CGFloat { KeyboardDock.height }
+    static var stripRoom: CGFloat { 46 }
 
     var body: some View {
         GeometryReader { outer in
@@ -118,9 +114,19 @@ struct DaySheet<Plan: View, Diary: View>: View {
                     .padding(.bottom, Self.stripRoom)
                     .frame(minHeight: outer.size.height, alignment: .top)
                     .overlay { if let catcher { catcher } }
-                    // Полоски на листе больше нет (P544): одна, у низа экрана,
-                    // над всеми страницами (`StripDock`); лист отводит под неё
-                    // место внизу.
+                    // Полоска — у самого низа листа: на короткой странице у
+                    // нижнего края окна, на длинной — под концом записи, как в
+                    // Diarium (P546; полоса поверх экрана P544 отменена).
+                    .overlay(alignment: .bottom) {
+                        if let strip {
+                            // Полоска стоит на 6 точек выше края страницы (P511):
+                            // на пустой странице она целиком над нижней
+                            // строкой, рваный край которой иначе её закрывает.
+                            strip
+                                .frame(height: KeyboardBar.attachHeight)
+                                .padding(.bottom, Self.stripRoom - KeyboardBar.attachHeight)
+                        }
+                    }
                     .background(Ru.tint(date).overlay(PageTexture(tab: .diary, space: Self.space)))
                     // Клетка и волокно отсчитываются от самого листа, а не
                     // от экрана: тянешь план — клетка едет с текстом (P412).
@@ -147,8 +153,7 @@ struct DaySheet<Plan: View, Diary: View>: View {
                     // себе: место под клавиатуру — полностью, иначе страница
                     // кончается погодой, а полоска остаётся под клавиатурой
                     // (замечание автора к 121).
-                    // И над ней — полоска с превью и вложениями (P541).
-                    .padding(.bottom, max(keyboard > 0 ? covered(outer, keyboard) + dockRoom : 0, hold))
+                    .padding(.bottom, max(covered(outer, keyboard), hold))
                     .onAppear {
                         goHome(proxy)
                         settle(proxy, fresh: true)
@@ -165,7 +170,7 @@ struct DaySheet<Plan: View, Diary: View>: View {
             // место уже на месте, и лист не становится короче ни на кадр.
             .onChange(of: keyboard) { _, now in
                 if now > 0 {
-                    hold = max(0, covered(outer, now) + dockRoom)
+                    hold = max(0, covered(outer, now))
                 } else if hold > 0 {
                     release()
                 }
@@ -181,10 +186,9 @@ struct DaySheet<Plan: View, Diary: View>: View {
             .onPreferenceChange(DiaryShare.self) { top in
                 onDiary?(top < (outer.size.height - Self.stripRoom) / 2)
             }
-            // Клавиатура уходит сразу и целиком, как только страницу
-            // повели (P545): пока её смахивали пальцем, iPhone не сообщал,
-            // где она, — полоса вложений у низа экрана ждала и отставала.
-            .scrollDismissesKeyboard(.immediately)
+            // Клавиатуру смахивают пальцем — строка над ней едет с ней сама,
+            // она часть клавиатуры (P546; P545 отменён).
+            .scrollDismissesKeyboard(.interactively)
             // Ход плавный и один: клавиатура и страница едут вместе.
             .animation(.easeOut(duration: 0.25), value: keyboard)
         }
