@@ -452,6 +452,8 @@ struct DiaryPage: View {
                         .onChange(of: docked) { _, now in
                             if editable && !now { StripZones.strip = frame; PlanZones.strip = frame }
                         }
+                        // Ленты нет — нет и места, куда возвращать (P547).
+                        .onDisappear { if editable { StripZones.strip = nil; PlanZones.strip = nil } }
                 })
                 .opacity(docked ? 0 : 1)
                 .allowsHitTesting(!docked)

@@ -1002,7 +1002,13 @@ struct DiaryEditor: UIViewRepresentable {
             else { return false }
             // Считается сам палец, а не поднятая над ним картинка: её край
             // уже над полоской, когда палец ещё на странице.
-            return g.location(in: window).y > page.convert(page.bounds, to: window).maxY - 24
+            let y = g.location(in: window).y
+            // Лента и строка вложений — конец самой записи (P546), а не низ
+            // экрана: над ними — значит вниз, в ленту (P547). Прежде
+            // считался только низ страницы — снимок из текста не возвращался.
+            if let strip = StripZones.strip, y >= strip.minY - 8, y <= strip.maxY + 60 { return true }
+            if let pill = KeyboardBar.glide.pillTarget, y >= pill - KeyboardBar.attachHeight { return true }
+            return y > page.convert(page.bounds, to: window).maxY - 24
         }
 
         /// Где палец взял снимок или точку — в окне.

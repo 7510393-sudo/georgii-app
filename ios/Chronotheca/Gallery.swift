@@ -450,30 +450,24 @@ struct SuggestedRow: View {
         }
     }
 
-    /// Черта и подпись поперёк: правее — ещё не ваше.
+    /// Между взятыми и предложенными — только воздух (P547): без черты и
+    /// без подписи.
     private var divider: some View {
-        HStack(spacing: 3) {
-            Rectangle().fill(Look.inkFaint).frame(width: 1.5, height: side)
-            Text(T("сегодня в галерее", "today in Photos"))
-                .font(Look.sans(11))
-                .foregroundStyle(Look.inkFaint)
-                .lineLimit(1)
-                .fixedSize()
-                .rotationEffect(.degrees(-90))
-                .frame(width: 14, height: side)
-        }
+        Color.clear.frame(width: 10, height: side)
     }
 
-    private var dashed: some View {
+    /// Предложенное — бледнее, без рамки, со знаком «+» в углу (P547:
+    /// пунктир выглядел неаккуратно).
+    private var veil: some View {
         RoundedRectangle(cornerRadius: 6)
-            .strokeBorder(Look.inkSoft.opacity(0.8), style: StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
+            .fill(Color.white.opacity(0.28))
     }
 
     private func tile(_ asset: PHAsset) -> some View {
         GalleryThumb(asset: asset)
             .frame(width: side, height: side)
-            .opacity(0.5)
-            .overlay(dashed)
+            .opacity(0.6)
+            .overlay(veil)
             .overlay(alignment: .bottomLeading) {
                 if asset.mediaType == .video {
                     Image(systemName: "video.fill")
@@ -514,7 +508,8 @@ struct SuggestedRow: View {
             }
             .foregroundStyle(Look.accent)
             .frame(width: side, height: side)
-            .overlay(dashed)
+            .background(veil)
+            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Look.rule, lineWidth: 1))
         }
         .buttonStyle(.plain)
     }
