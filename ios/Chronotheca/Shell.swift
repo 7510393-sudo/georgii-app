@@ -269,6 +269,9 @@ final class Shell: ObservableObject {
 
     /// Просьбы к карте из её меню: показать все места, открыть список мест.
     @Published var mapShowAll = 0
+    /// Второе нажатие на «Карту» — карта к тому месту, где человек сейчас
+    /// (P577).
+    @Published var mapHome = 0
     @Published var mapList = false
 
     @Published var notice: String?

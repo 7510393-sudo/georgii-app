@@ -17,10 +17,6 @@ struct RootView: View {
 
     /// Карта ещё на плашке, пока та уезжает (P242).
     @State private var keepMap = false
-    /// Второе нажатие на открытый раздел: плашку убирают, а не опускают (P501).
-    @State private var popping = false
-    /// Плашка, что сейчас уезжает вверх: пока едет, она остаётся поверх (P509).
-    @State private var lifting: Shell.Screen?
 
     /// Клавиатура: над ней встаёт полоска вложений (P253).
     @StateObject private var keyboard = KeyboardWatch()
@@ -555,7 +551,7 @@ struct RootView: View {
     private var topBar: some View {
         HStack(spacing: 0) {
             section("календарь", T("Календарь", "Calendar"), .calendar, small: true)
-            section("сегодня", T("Сегодня", "Today"), .today, small: true)
+            section("сегодня", T("День", "Day"), .today, small: true)
             section("карта", T("Карта", "Map"), .map, small: true)
             section("поиск", T("Поиск", "Search"), .search, small: true)
         }
@@ -753,7 +749,7 @@ struct RootView: View {
             }
             .offset(y: down ? 0 : away)
             // Новая плашка ложится поверх прежних (P501).
-            .zIndex(which == lifting ? 100 : (down ? Double((shell.stack.firstIndex(of: which) ?? 0) + 1) : 0))
+            .zIndex(down ? Double((shell.stack.firstIndex(of: which) ?? 0) + 1) : 0)
             // Ловит касания только верхняя: под ней другая плашка или
             // живая книга.
             .allowsHitTesting(on)
@@ -766,7 +762,7 @@ struct RootView: View {
             // Сегодня, календарь, карта, поиск (P239). Глобус нарисован
             // автором (P248).
             section("календарь", T("Календарь", "Calendar"), .calendar, compact: true)
-            section("сегодня", T("Сегодня", "Today"), .today, compact: true)
+            section("сегодня", T("День", "Day"), .today, compact: true)
             section("карта", T("Карта", "Map"), .map, compact: true)
             section("поиск", T("Поиск", "Search"), .search, compact: true)
         }
@@ -840,10 +836,9 @@ struct RootView: View {
         // Каждый раздел помнит, где его оставили (P576): ушли с прошлого дня,
         // месяца или находки на карту — по нажатию возвращаемся туда же.
         // Второе нажатие по открытому разделу — в исходное состояние:
-        // «Сегодня» — на сегодня, календарь — на этот месяц, поиск — пустой.
-        // Прежде второе нажатие убирало плашку (P501) — отменено; только
-        // у карты исходного состояния нет, и там оно по-прежнему убирает
-        // плашку.
+        // «День» — на сегодня, календарь — на этот месяц, поиск — пустой,
+        // карта — туда, где человек сейчас (P577). Прежде второе нажатие
+        // убирало плашку (P501) — отменено.
         if again {
             switch target {
             case .today:
@@ -865,12 +860,7 @@ struct RootView: View {
                 shell.searchHome += 1
                 return
             case .map:
-                guard shell.stack.count > 1 else { return }
-                hideKeyboard()
-                let previous = shell.stack.dropLast().last ?? .today
-                popping = true
-                shell.screen = previous
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { store.save() }
+                shell.mapHome += 1
                 return
             }
         }
@@ -972,26 +962,13 @@ struct RootView: View {
     /// Опустить или убрать плашку вслед за сменой экрана (P501).
     ///
     /// Нажатие на раздел просто опускает его плашку поверх того, что было, —
-    /// прежнюю никто не поднимает. «Сегодня» убирает все плашки. Второе
-    /// нажатие на открытый раздел (`popping`) убирает верхнюю плашку, и под
-    /// ней оказывается тот экран, с которого пришли.
+    /// прежнюю никто не поднимает. «День» убирает все плашки. Второе
+    /// нажатие плашку больше не убирает (P576, P577).
     private func follow(from old: Shell.Screen, to new: Shell.Screen) {
         // Быстрее прежних 0,46 (P565): медленный ход казался задумчивостью.
         let heavy = Animation.spring(response: 0.3, dampingFraction: 0.9)
         // Толчок — в начале хода, вместе с нажатием (P268).
         Feel.thud()
-        let lift = Animation.easeIn(duration: 0.2)
-        if popping {
-            popping = false
-            // Уходящая плашка идёт вверх поверх той, что под ней, — иначе она
-            // сразу проваливалась под неё и просто пропадала (P509).
-            lifting = old
-            withAnimation(lift) { shell.stack.removeAll { $0 == old } }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [old] in
-                if lifting == old { lifting = nil }
-            }
-            return
-        }
         if let i = shell.stack.firstIndex(of: new) {
             // Эта плашка уже лежит, но под другой: снимаем её без хода (её не
             // видно) и опускаем заново поверх.

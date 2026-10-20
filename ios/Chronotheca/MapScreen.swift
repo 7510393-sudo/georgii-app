@@ -137,6 +137,17 @@ struct MapScreen: View {
         }
         // Из меню карты: все места разом и список мест (P249).
         .onChange(of: shell.mapShowAll) { _, _ in showAll() }
+        // Второе нажатие на «Карту» — к тому месту, где вы сейчас (P577).
+        .onChange(of: shell.mapHome) { _, _ in
+            hideKeyboard()
+            Locator.shared.current { location in
+                guard let at = location?.coordinate else {
+                    return shell.say(T("Не удалось узнать, где вы. Проверьте, разрешено ли приложению место.",
+                                     "Could not find where you are. Check that the app may use Location."))
+                }
+                focus = MapFocus(center: at, meters: 2000)
+            }
+        }
         .sheet(isPresented: $shell.mapList) {
             PlacesList(places: places) { place in
                 shell.mapList = false
