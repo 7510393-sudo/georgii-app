@@ -935,7 +935,11 @@ struct DiaryEditor: UIViewRepresentable {
         /// Что сделать со снимком из текста: убрать в полоску внизу или
         /// удалить файл — в корзину на 30 дней (P371, P409).
         private func askAbout(_ link: String, in view: UITextView) {
-            let sheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+            // Окошко посередине экрана, над клавиатурой (P556): лист,
+            // привязанный ко всему полю записи, вставал под клавиатуру.
+            // Тот же вопрос и те же слова, что у превью в ленте.
+            let sheet = UIAlertController(title: T("Что сделать с файлом?", "What should happen to the file?"),
+                                          message: nil, preferredStyle: .alert)
             if let giveBack = parent.onReturnPhoto {
                 sheet.addAction(UIAlertAction(title: T("Убрать в полоску внизу", "Move to the strip below"),
                                               style: .default) { _ in giveBack(link) })
@@ -946,7 +950,6 @@ struct DiaryEditor: UIViewRepresentable {
                                               style: .destructive) { _ in delete(link) })
             }
             sheet.addAction(UIAlertAction(title: T("Отмена", "Cancel"), style: .cancel))
-            sheet.popoverPresentationController?.sourceView = view
             var top = view.window?.rootViewController
             while let next = top?.presentedViewController { top = next }
             top?.present(sheet, animated: true)

@@ -1061,15 +1061,17 @@ struct RemoveQuestion: ViewModifier {
     @Binding var asking: Bool
     let act: ((Bool) -> Void)?
 
+    /// Один короткий вопрос посередине экрана (P556): прежде — лист у
+    /// превью с длинным объяснением, он мог уйти под клавиатуру, а снимку
+    /// из текста задавался ещё и свой вопрос. Что файл в корзине и где её
+    /// найти — говорит строчка после удаления.
     func body(content: Content) -> some View {
-        content.confirmationDialog(T("Что сделать с файлом?", "What should happen to the file?"),
-                                   isPresented: $asking, titleVisibility: .visible) {
+        content.alert(T("Что сделать с файлом?", "What should happen to the file?"),
+                      isPresented: $asking) {
             Button(T("Убрать со страницы", "Remove from the page")) { act?(false) }
-            Button(T("Удалить из хранилища", "Delete from storage"), role: .destructive) { act?(true) }
+            Button(T("Удалить файл — в корзину на 30 дней",
+                     "Delete the file — trash for 30 days"), role: .destructive) { act?(true) }
             Button(T("Отмена", "Cancel"), role: .cancel) { }
-        } message: {
-            Text(T("«Убрать со страницы» — файл останется в папке. «Удалить из хранилища» — файл уйдёт в корзину на 30 дней: вернуть его можно в Настройки → Корзина, потом он сотрётся насовсем.",
-                   "“Remove from the page” keeps the file in the folder. “Delete from storage” moves it to the trash for 30 days: you can restore it in Settings → Trash; after that it is erased for good."))
         }
     }
 }
