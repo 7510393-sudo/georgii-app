@@ -504,6 +504,7 @@ final class EdgeGate: UIGestureRecognizer, UIGestureRecognizerDelegate {
 
     /// Привратник, готовый к делу: касаний не держит и не отменяет.
     static func make() -> EdgeGate {
+        _ = watching
         let gate = EdgeGate(target: nil, action: nil)
         gate.cancelsTouchesInView = false
         gate.delaysTouchesBegan = false
@@ -512,11 +513,27 @@ final class EdgeGate: UIGestureRecognizer, UIGestureRecognizerDelegate {
         return gate
     }
 
+    /// Поднята ли клавиатура (P549): спор листания с курсором бывает только
+    /// пока пишут. Без клавиатуры движение вбок курсор не двигает — лист
+    /// берут где угодно; с клавиатурой — только у края (P532).
+    private static var keyboardUp = false
+    private static let watching: Void = {
+        let centre = NotificationCenter.default
+        centre.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil,
+                           queue: .main) { _ in EdgeGate.keyboardUp = true }
+        centre.addObserver(forName: UIResponder.keyboardWillHideNotification, object: nil,
+                           queue: .main) { _ in EdgeGate.keyboardUp = false }
+    }()
+
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
+        _ = Self.watching
         guard state == .possible, let view, let touch = touches.first else { return }
         let x = touch.location(in: view).x
         let atEdge = x < Self.band || x > view.bounds.width - Self.band
-        state = atEdge ? .failed : .recognized
+        // Лента превью листается вбок сама (P535): на ней лист не берут.
+        let onStrip = StripZones.strip?.contains(touch.location(in: nil)) ?? false
+        let free = !Self.keyboardUp && !onStrip
+        state = atEdge || free ? .failed : .recognized
     }
 
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
