@@ -1013,6 +1013,47 @@ final class Vault: ObservableObject {
     приложение снова её нашло, укажите ей это место заново.
     """
 
+    // MARK: - Ушло ли в iCloud (P575)
+
+    /// Папка записей лежит в iCloud Drive — синхронизируется.
+    var inCloud: Bool {
+        guard let root else { return false }
+        return (try? root.resourceValues(forKeys: [.isUbiquitousItemKey]))?.isUbiquitousItem == true
+    }
+
+    /// Записи последних трёх дней изменены давно, а в iCloud так и не
+    /// ушли — обычно кончилось место в iCloud или выключен iCloud Drive.
+    /// Тогда на других устройствах их нет, а копия у Apple отстаёт.
+    /// Читает только свойства файлов, не сами файлы.
+    func uploadStuck(now: Date = Date()) -> Bool {
+        guard inCloud else { return false }
+        let keys: Set<URLResourceKey> = [.isUbiquitousItemKey, .ubiquitousItemIsUploadedKey,
+                                         .ubiquitousItemUploadingErrorKey, .contentModificationDateKey]
+        let cal = Calendar.current
+        for back in 0..<3 {
+            guard let day = cal.date(byAdding: .day, value: -back, to: now) else { continue }
+            for folder in [Folder.diary, .planner] {
+                guard let url = file(folder, for: day),
+                      let v = try? url.resourceValues(forKeys: keys),
+                      v.isUbiquitousItem == true else { continue }
+                if v.ubiquitousItemUploadingError != nil { return true }
+                if v.ubiquitousItemIsUploaded == false,
+                   let changed = v.contentModificationDate,
+                   now.timeIntervalSince(changed) > 6 * 3600 { return true }
+            }
+        }
+        return false
+    }
+
+    /// Сказать о застрявших записях не чаще раза в день (P575, P482).
+    static func mayTellStuck(now: Date = Date()) -> Bool {
+        let key = "vault.stuck.told"
+        let stamp = Vault.stamp(now)
+        guard UserDefaults.standard.string(forKey: key) != stamp else { return false }
+        UserDefaults.standard.set(stamp, forKey: key)
+        return true
+    }
+
     // MARK: - Файлы
 
     /// <папка>/<раздел>/<год>/<ГГГГ-ММ-ДД>.md

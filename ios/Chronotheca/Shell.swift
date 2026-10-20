@@ -274,14 +274,14 @@ final class Shell: ObservableObject {
     ///
     /// Молчаливый отказ — худшее, что может сделать приложение: человек решает,
     /// что сломалось оно, хотя оно просто не даёт нарушить правило.
-    func say(_ text: String) {
+    func say(_ text: String, for seconds: Double = 2.3) {
         hiding?.cancel()
         withAnimation { notice = text }
         let item = DispatchWorkItem { [weak self] in
             withAnimation { self?.notice = nil }
         }
         hiding = item
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.3, execute: item)
+        DispatchQueue.main.asyncAfter(deadline: .now() + seconds, execute: item)
     }
 
     /// Открыть экран, названный в переменной окружения, — для снимков.

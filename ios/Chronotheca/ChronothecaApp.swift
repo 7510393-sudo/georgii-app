@@ -80,7 +80,7 @@ struct ChronothecaApp: App {
                 // целиком до первого кадра, и приложение открывалось долго.
                 archive.reloadSoon()
                 // Прочее — когда страница уже на экране и отвечает (P565).
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [vault, store] in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [vault, store, shell] in
                     // Повторяющиеся дела — дописать на год вперёд (P359).
                     Repeats.extendAll(vault: vault, open: store.date)
                     // Файлы, пролежавшие в корзине 30 дней, — стереть (P371).
@@ -88,6 +88,13 @@ struct ChronothecaApp: App {
                     Trash.purgeOld(vault)
                     store.syncUpcomingReminders()
                     store.fetchWeatherIfNeeded()
+                    // Записи давно не уходят в iCloud — мягко сказать, раз в день (P575).
+                    if vault.uploadStuck(), Vault.mayTellStuck() {
+                        shell.say(T("Записи этих дней пока не ушли в iCloud — может быть, в нём нет места. "
+                                    + "Подробнее — «Данные в сохранности?» в настройках.",
+                                    "Entries from these days have not reached iCloud yet — perhaps it has no space. "
+                                    + "More in Settings, “Is my data safe?”."), for: 6)
+                    }
                 }
                 // Долгая пауза — открыть заново, как после запуска (P346).
                 if let leftAt, Date().timeIntervalSince(leftAt) > Self.pause {

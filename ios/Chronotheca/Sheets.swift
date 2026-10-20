@@ -833,7 +833,7 @@ struct SettingsSticker: View {
             .buttonStyle(.plain)
         }
         .sheet(isPresented: $showingSafety) {
-            SafetySheet(onPhone: vault.onPhone) {
+            SafetySheet(onPhone: vault.onPhone, inCloud: vault.inCloud, stuck: vault.uploadStuck()) {
                 showingSafety = false
                 choosingPlace = true
             }
@@ -890,6 +890,10 @@ struct SettingsSticker: View {
 /// если «нет» (P326).
 struct SafetySheet: View {
     let onPhone: Bool
+    /// Папка в iCloud: строки про «Недавно удалённые» и про записи,
+    /// которые не уходят в iCloud (P575).
+    var inCloud = false
+    var stuck = false
     /// Закрыть и сразу открыть выбор папки — из «нет» ведёт прямо к делу.
     let moveNow: () -> Void
 
@@ -914,6 +918,27 @@ struct SafetySheet: View {
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
 
+                if !onPhone, inCloud {
+                    if stuck {
+                        Text(T("Записи этих дней пока не ушли в iCloud, и на других устройствах их ещё нет. "
+                               + "Обычно в iCloud кончилось место или выключен iCloud Drive: это видно в "
+                               + "«Настройки» › ваше имя › iCloud. На этом iPhone записи целы.",
+                               "Entries from these days have not reached iCloud yet, so other devices do not have "
+                               + "them. Usually iCloud is out of space or iCloud Drive is off: see Settings › your "
+                               + "name › iCloud. On this iPhone the entries are safe."))
+                            .font(.callout)
+                            .foregroundStyle(Look.ink)
+                            .multilineTextAlignment(.center)
+                    }
+                    Text(T("Удалили что-то по ошибке — в «Файлах» есть «Недавно удалённые»: "
+                           + "iCloud Drive держит там удалённое 30 дней.",
+                           "Deleted something by mistake? Files has “Recently Deleted”: "
+                           + "iCloud Drive keeps deleted items there for 30 days."))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+
                 if onPhone {
                     Button {
                         moveNow()
@@ -931,7 +956,7 @@ struct SafetySheet: View {
                 ToolbarItem(placement: .topBarTrailing) { Button(T("Готово", "Done")) { dismiss() } }
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
     }
 }
 

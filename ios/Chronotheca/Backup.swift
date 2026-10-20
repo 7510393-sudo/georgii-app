@@ -88,8 +88,11 @@ enum Backup {
 
     /// Архив и копия в одном iCloud: копия не защитит от беды с iCloud и
     /// займёт там вдвое больше места.
+    /// Своя папка приложения в iCloud (P452) лежит рядом с iCloud Drive, а
+    /// не внутри «com~apple~CloudDocs» — потому сверяем по «Mobile
+    /// Documents», общему корню всего iCloud Drive (P575).
     static func sameCloud(_ dest: URL, archive root: URL) -> Bool {
-        let cloud = "com~apple~CloudDocs"
+        let cloud = "/Mobile Documents/"
         return dest.path.contains(cloud) && root.path.contains(cloud)
     }
 
@@ -510,8 +513,8 @@ enum Backup {
         }
         if days >= 30, grew > 0 {
             return last == nil
-                ? T("Копии записей ещё нет — сделайте её, это несколько минут.",
-                    "There is no backup of your entries yet — making one takes a few minutes.")
+                ? T("Копии записей ещё нет — её можно сделать за несколько минут, на флешку или в другое облако, не в тот же iCloud.",
+                    "There is no backup of your entries yet — it takes a few minutes, onto a USB stick or another cloud, not the same iCloud.")
                 : T("Последней копии больше месяца; с тех пор добавилось \(bytes).",
                     "The last backup is over a month old; \(bytes) added since.")
         }
@@ -604,6 +607,11 @@ struct BackupSheet: View {
                            "A backup is a second folder with the same entries, photos and videos, kept somewhere "
                            + "else: on a USB stick or in another cloud (Google Drive, OneDrive, Dropbox). If "
                            + "something happens to your phone or iCloud, your entries stay there."))
+                    // Копия в том же iCloud — не копия (P575): удалённое там
+                    // удалится на всех устройствах сразу.
+                    Text(T("Копия в той же папке iCloud удалится вместе с записями — поэтому её лучше держать вне iCloud.",
+                           "A backup in the same iCloud folder would be deleted together with your entries — so it is better kept outside iCloud."))
+                        .foregroundStyle(Look.inkSoft)
                     Text(T("Копируется только новое и изменённое. В копии ничего не стирается, даже если "
                            + "запись удалили здесь. Сами записи копия не трогает.",
                            "Only new and changed files are copied. Nothing is ever deleted from the backup, "
