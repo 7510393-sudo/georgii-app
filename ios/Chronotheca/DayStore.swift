@@ -757,8 +757,8 @@ final class DayStore: ObservableObject {
         save()
     }
 
-    /// Убрать фотографию из файла дня. Сам снимок остаётся в папке:
-    /// удалять файлы человека приложение не берётся — это делают в «Файлах».
+    /// Убрать вложение из файла дня; сам файл остаётся в папке. Удалить
+    /// файл — `removeAttachment(delete: true)`: в корзину на 30 дней (P371).
     func removePhoto(at index: Int, from tab: Shell.Tab) {
         guard canEdit(tab) else { return }
         switch tab {

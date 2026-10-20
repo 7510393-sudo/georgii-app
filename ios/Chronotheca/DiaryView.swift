@@ -62,15 +62,6 @@ struct DiaryView: View {
                 let n = store.photos.count
                 shell.openedPhoto = i < n ? .init(tab: .diary, index: i) : .init(tab: .plan, index: i - n)
             },
-            onMovePhoto: { from, to in
-                // Переставляются внутри своей части полоски.
-                let n = store.photos.count
-                if from < n, to < n {
-                    store.movePhoto(from: from, to: to, in: .diary)
-                } else if from >= n, to >= n {
-                    store.movePhoto(from: from - n, to: to - n, in: .plan)
-                }
-            },
             // Брошенный в текст снимок отметку времени не ставит — это
             // знает само поле записи (P362).
             onFocusText: { store.openNewLine(always: $0) },
@@ -308,7 +299,6 @@ struct DiaryPage: View {
     /// Где лежат снимки, стоящие посреди текста (P204).
     var resolve: ((String) -> URL?)?
     var onOpenPhoto: ((Int) -> Void)?
-    var onMovePhoto: ((Int, Int) -> Void)?
     /// Возвращает `true`, если приложение поставило отметку времени: тогда
     /// курсор переезжает за неё.
     /// `true` в ответ — курсор переезжает в конец, в новую строку. Отдаётся,
@@ -414,10 +404,6 @@ struct DiaryPage: View {
         // Лента превью — конец листа, едет с текстом, как в Diarium (P546).
         if (!photos.isEmpty || takesBack || hasSuggested) {
             PhotoStrip(photos: photos, onOpen: onOpenPhoto,
-                       drag: editable && photoLinks.count == photos.count
-                           ? { Diary.line(photoLinks[$0]) } : nil,
-                       onMove: editable ? onMovePhoto : nil,
-                       anyKind: true,
                        onCarry: editable ? onStripCarry : nil,
                        carried: stripCarried,
                        onRemove: editable && onRemovePhoto != nil ? { removing = $0 } : nil,

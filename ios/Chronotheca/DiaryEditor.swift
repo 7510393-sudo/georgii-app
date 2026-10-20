@@ -1044,8 +1044,6 @@ struct DiaryEditor: UIViewRepresentable {
         private var before: NSAttributedString?
         /// Где взятое стоит сейчас — в показанном поле.
         private var now: Int?
-        /// Над пальцем едет строка, а не картинка (точка, голос, файл).
-        private var ghostLine = false
         /// Запись, как она станет после переноса.
         private var result: String?
 
@@ -1087,8 +1085,7 @@ struct DiaryEditor: UIViewRepresentable {
                     lift(i, g, in: view)
                 }
                 let local = g.location(in: ghost?.superview ?? view)
-                ghost?.center = CGPoint(x: ghostLine ? (ghost?.center.x ?? local.x) : local.x,
-                                        y: local.y - Self.lift)
+                ghost?.center = CGPoint(x: local.x, y: local.y - Self.lift)
                 // Над полоской снимок бледнеет — видно, что отпустить здесь
                 // значит вернуть его вниз; над заголовком — то же для точки.
                 // Над делом плана — встанет под него (P409): план подсвечивает
@@ -1208,39 +1205,18 @@ struct DiaryEditor: UIViewRepresentable {
             shadow.layer.borderColor = UIColor(Look.glow).cgColor
             shadow.layer.borderWidth = 2.6
             shadow.layer.cornerRadius = min(8, (picture?.size.height ?? 0) / 2)
-            // Точка — маленькая кнопочка: над пальцем она крупнее, чтобы
-            // её было видно (P349).
+            // Точка посреди фразы — маленькая кнопочка: над пальцем она
+            // крупнее, чтобы её было видно (P349). Едет только она сама —
+            // строки целиком в синей рамке больше нет (P561, прежде P380).
             let small = (picture?.size.height ?? 0) < 40
             shadow.transform = CGAffineTransform(scaleX: small ? 1.8 : 1.1, y: small ? 1.8 : 1.1)
             // Тень снимка — поверх всего окна: её можно донести и до
             // полоски внизу, за край страницы (P272).
             let host: UIView = view.window ?? view
             let spot = g.location(in: host)
-            if small {
-                // Точка, голос, файл — строкой (P380): над пальцем едет вся
-                // строка в синей рамке, во всю ширину текста.
-                let field = view.convert(view.bounds, to: host)
-                let size = picture?.size ?? .zero
-                let row = UIView(frame: CGRect(x: 0, y: 0, width: field.width + 12, height: size.height * 1.3 + 16))
-                row.backgroundColor = UIColor(Look.planBg).withAlphaComponent(0.95)
-                row.layer.borderColor = UIColor(Look.glow).cgColor
-                row.layer.borderWidth = 2
-                row.layer.cornerRadius = 9
-                row.layer.shadowOpacity = 0.25
-                row.layer.shadowRadius = 8
-                let chip = UIImageView(image: picture)
-                chip.frame = CGRect(x: 6, y: 8, width: size.width * 1.3, height: size.height * 1.3)
-                row.addSubview(chip)
-                row.center = CGPoint(x: field.midX, y: spot.y - Self.lift)
-                host.addSubview(row)
-                ghost = row
-                ghostLine = true
-            } else {
-                shadow.center = CGPoint(x: spot.x, y: spot.y - Self.lift)
-                host.addSubview(shadow)
-                ghost = shadow
-                ghostLine = false
-            }
+            shadow.center = CGPoint(x: spot.x, y: spot.y - Self.lift)
+            host.addSubview(shadow)
+            ghost = shadow
             before = view.attributedText.copy() as? NSAttributedString
             now = i
             result = nil
@@ -1258,8 +1234,12 @@ struct DiaryEditor: UIViewRepresentable {
         private func slots(around i: Int, in view: UITextView)
             -> (band: CGRect, cells: [(index: Int, rect: CGRect)], original: NSAttributedString)? {
             let storage = view.textStorage
-            guard i < storage.length,
-                  storage.attribute(DiaryEditor.photoKey, at: i, effectiveRange: nil) != nil,
+            // Любое вложение ряда — снимок, файл или точка (P560).
+            func object(_ k: Int) -> Bool {
+                storage.attribute(DiaryEditor.photoKey, at: k, effectiveRange: nil) != nil
+                    || storage.attribute(DiaryEditor.lineKey, at: k, effectiveRange: nil) != nil
+            }
+            guard i < storage.length, object(i),
                   let original = view.attributedText.copy() as? NSAttributedString
             else { return nil }
             let ns = storage.string as NSString
@@ -1269,8 +1249,7 @@ struct DiaryEditor: UIViewRepresentable {
             let row = NSRange(location: para.location, length: end - para.location)
             guard Self.photoRow(row, in: storage) else { return nil }
             var cells: [(index: Int, rect: CGRect)] = []
-            for k in row.location..<NSMaxRange(row)
-            where storage.attribute(DiaryEditor.photoKey, at: k, effectiveRange: nil) != nil {
+            for k in row.location..<NSMaxRange(row) where object(k) {
                 guard let start = view.position(from: view.beginningOfDocument, offset: k),
                       let stop = view.position(from: start, offset: 1),
                       let range = view.textRange(from: start, to: stop) else { continue }
@@ -1476,7 +1455,7 @@ struct DiaryEditor: UIViewRepresentable {
         private func ghostFollows(_ view: UITextView) {
             guard let ghost, let host = ghost.superview else { return }
             let local = host.convert(finger, from: nil)
-            ghost.center = CGPoint(x: ghostLine ? ghost.center.x : local.x, y: local.y - Self.lift)
+            ghost.center = CGPoint(x: local.x, y: local.y - Self.lift)
         }
 
         /// Показать, как ляжет взятое, — но не чаще раза в 0,16 секунды и

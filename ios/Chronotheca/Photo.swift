@@ -204,29 +204,14 @@ struct PhotoThumb: View {
     }
 }
 
-/// Фотографии дня — полоска внизу страницы, над кнопками вложений, как в
-/// Diarium. У плана и у дневника она своя (решение P203).
-///
-/// Полоска не прокручивается вбок: движение пальца вбок листает день.
-/// Сколько не поместилось — показывает последняя клетка «+N»; касание по
-/// ней открывает первый из не поместившихся снимков.
-///
-/// Превью берут долгим нажатием, без всякого режима (P362).
+/// Лента вложений дня — конец страницы, как в Diarium (P546): снимки,
+/// видео, голос и файлы, листается вбок (P535). Превью берут долгим
+/// нажатием своим жестом (P380, P541) — несут в текст, в план или на другое
+/// место в ленте; подержали и не повели — крестик (P432).
 struct PhotoStrip: View {
 
     let photos: [URL?]
     var onOpen: ((Int) -> Void)?
-    /// Что понесёт палец, взяв превью: строку-ссылку на снимок. Задано —
-    /// превью можно взять долгим нажатием и бросить в текст (P204).
-    var drag: ((Int) -> String)?
-    /// Переставить превью в полоске — перетаскиванием вбок (P210).
-    var onMove: ((Int, Int) -> Void)?
-    /// Снимок принесли сюда из-под дела в плане — вернуть его в полоску
-    /// (P358). Пусто — полоска чужих снимков не принимает.
-    var onTake: ((String) -> Void)? = nil
-    /// В текст можно бросить не только снимок, но и голос, видео, документ
-    /// (дневник, P377).
-    var anyKind = false
     /// Своё перенесение превью (дневник, P380): долгое нажатие и ход
     /// пальца по экрану — вместо системного перетаскивания, у которого
     /// не было ни синей рамки, ни раздвигания строк.
@@ -243,9 +228,6 @@ struct PhotoStrip: View {
     @State private var armed: Int?
     /// Когда крестик появился — отпущенный палец не должен тут же его убрать.
     @State private var armedAt = Date.distantPast
-
-    /// Превью, которое сейчас несут, — по нему соседи расступаются.
-    @State private var carrying: Int?
 
     /// Как снимок в тексте — в пять строк дневника (P383; прежде 60,
     /// P275), с промежутком, как между снимками в тексте (P557).
@@ -276,15 +258,9 @@ struct PhotoStrip: View {
                 }
                 .frame(minWidth: geo.size.width, alignment: .leading)
                 .contentShape(Rectangle())
-                // Мимо превью — на пустое место полоски — тоже можно вернуть
-                // снимок из-под дела (P358).
-                .onDrop(of: onTake != nil ? [UTType.plainText] : [], isTargeted: nil) { providers in
-                    guard let onTake else { return false }
-                    return PhotoDrop.read(providers, onTake)
-                }
             }
             // Пока превью несут, ряд стоит: иначе он поехал бы за пальцем.
-            .scrollDisabled(carried != nil || carrying != nil)
+            .scrollDisabled(carried != nil)
             .scrollBounceBehavior(.basedOnSize, axes: .horizontal)
             // Новое вложение — в конце ряда, часто за краем экрана: ряд
             // сам доезжает до него, иначе голос или файл будто не
@@ -296,7 +272,6 @@ struct PhotoStrip: View {
             }
         }
         .frame(height: size)
-        .onChange(of: photos.count) { _, _ in carrying = nil }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
     }
@@ -378,15 +353,6 @@ struct PhotoStrip: View {
                     .onAppear { if onCarry != nil { StripZones.cells[i] = frame } }
                     .onChange(of: frame) { _, now in if onCarry != nil { StripZones.cells[i] = now } }
             })
-            // В плане бросить под дело можно только снимок; в дневнике в
-            // текст — и голос, и видео, и документ: там они кнопочкой
-            // (P204, P209, P377).
-            .modifier(Carried(
-                on: onCarry == nil && (onMove != nil || (drag != nil && (anyKind || kind(i) == .photo))),
-                text: anyKind || kind(i) == .photo ? drag.map { $0(i) } : nil,
-                start: { carrying = i }))
-            .onDrop(of: onMove != nil || onTake != nil ? [UTType.plainText, Carried.strip] : [],
-                    delegate: StripDrop(index: i, carrying: $carrying, move: onMove, take: onTake))
             .accessibilityLabel(kind(i) == .photo ? T("Фотография \(i + 1)", "Photo \(i + 1)")
                                 : kind(i) == .video ? T("Видео", "Video")
                                 : kind(i) == .audio ? T("Голосовая запись", "Voice note") : T("Файл", "File"))
@@ -472,72 +438,6 @@ struct FileTile: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Look.chrome, in: RoundedRectangle(cornerRadius: 6))
         .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Look.rule))
-    }
-}
-
-/// Превью, которое можно взять пальцем. Несёт строку-ссылку: поле записи
-/// принимает её как текст и рисует на её месте снимок.
-///
-/// Снимок несёт строку-ссылку как текст: поле записи принимает её и рисует
-/// снимок на её месте (P204). Голос и документ несут только свою метку:
-/// в текст их не бросить, только переставить в полоске (P209, P210).
-struct Carried: ViewModifier {
-    let on: Bool
-    let text: String?
-    let start: () -> Void
-
-    /// Своя метка превью из полоски — её понимает только сама полоска.
-    static let strip = UTType(importedAs: "com.kobiashvili.diary.strip")
-
-    func body(content: Content) -> some View {
-        if on {
-            content.onDrag {
-                start()
-                // Толчок в тот миг, когда снимок оторвался от места (P358).
-                Feel.light()
-                if let text { return NSItemProvider(object: ("\n" + text) as NSString) }
-                let item = NSItemProvider()
-                item.registerDataRepresentation(forTypeIdentifier: Carried.strip.identifier,
-                                                visibility: .ownProcess) { done in
-                    done(Data(), nil)
-                    return nil
-                }
-                return item
-            } preview: {
-                // Поднятое превью — в синей рамке, как всё, что несут
-                // своим жестом (P391).
-                content
-                    .frame(width: PhotoStrip.side, height: PhotoStrip.side)
-                    .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Look.glow, lineWidth: 3))
-            }
-        } else {
-            content
-        }
-    }
-}
-
-/// Превью несут вдоль полоски: соседи расступаются, превью встаёт туда,
-/// где его отпустили (P210). Снимок, принесённый не из полоски, — из-под
-/// дела в плане — возвращается в неё (P358).
-private struct StripDrop: DropDelegate {
-    let index: Int
-    @Binding var carrying: Int?
-    let move: ((Int, Int) -> Void)?
-    var take: ((String) -> Void)? = nil
-
-    func dropEntered(info: DropInfo) {
-        guard let from = carrying, from != index else { return }
-        withAnimation(.easeOut(duration: 0.18)) { move?(from, index) }
-        carrying = index
-    }
-
-    func dropUpdated(info: DropInfo) -> DropProposal? { DropProposal(operation: .move) }
-
-    func performDrop(info: DropInfo) -> Bool {
-        let ours = carrying != nil
-        carrying = nil
-        guard !ours, let take else { return true }
-        return PhotoDrop.read(info.itemProviders(for: [UTType.plainText]), take)
     }
 }
 
