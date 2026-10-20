@@ -144,6 +144,9 @@ struct PhotoThumb: View {
     /// Видео: вместо снимка — его первый кадр и знак «играть» (P214).
     var video = false
     @State private var image: UIImage?
+    /// Чья картинка сейчас показана (P555): на том же месте ряда может
+    /// оказаться другой снимок — тогда прежняя картинка не годится.
+    @State private var shown: URL?
 
     init(url: URL?, video: Bool = false) {
         self.url = url
@@ -182,6 +185,10 @@ struct PhotoThumb: View {
     }
 
     private func load() async {
+        if shown != url {
+            shown = url
+            image = url.flatMap { Photo.cache.object(forKey: $0.path as NSString) }
+        }
         guard image == nil, let url else { return }
         let got: UIImage?
         if video {
@@ -741,6 +748,9 @@ struct PlanPhotoThumb: View {
     let url: URL?
     var onOpen: (() -> Void)?
     @State private var image: UIImage?
+    /// Чья картинка сейчас показана (P555): копия над пальцем — одна на все
+    /// переносы, и прежде показывала снимок, который несли в прошлый раз.
+    @State private var shown: URL?
 
     init(url: URL?, onOpen: (() -> Void)? = nil) {
         self.url = url
@@ -755,6 +765,10 @@ struct PlanPhotoThumb: View {
             .contentShape(Rectangle())
             .onTapGesture { onOpen?() }
             .task(id: url) {
+                if shown != url {
+                    shown = url
+                    image = url.flatMap { Photo.cache.object(forKey: PhotoAttachment.key($0)) }
+                }
                 guard image == nil, let url else { return }
                 let got = await Task.detached(priority: .userInitiated) { () -> UIImage? in
                     guard let raw = Photo.load(url, side: 280) else { return nil }
@@ -954,6 +968,8 @@ struct PlanPhotoLine: View {
     let url: URL?
     var onOpen: (() -> Void)?
     @State private var image: UIImage?
+    /// Чья картинка сейчас показана (P555).
+    @State private var shown: URL?
 
     static let height: CGFloat = DiaryEditor.photoSize.height + 16
 
@@ -975,6 +991,10 @@ struct PlanPhotoLine: View {
         .padding(.horizontal, 14)
         .frame(height: Self.height)
         .task(id: url) {
+            if shown != url {
+                shown = url
+                image = url.flatMap { Photo.cache.object(forKey: PhotoAttachment.key($0)) }
+            }
             guard image == nil, let url else { return }
             let got = await Task.detached(priority: .userInitiated) { () -> UIImage? in
                 guard let raw = Photo.load(url, side: 280) else { return nil }

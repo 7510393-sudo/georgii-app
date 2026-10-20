@@ -785,6 +785,9 @@ struct StripGhostLayer: View {
             if let link = ghost.link, ghost.spot != .zero {
                 let o = g.frame(in: .global).origin
                 face(link)
+                    // Каждый перенос — своя копия (P555): прежде над пальцем
+                    // оставалась картинка прошлого переноса.
+                    .id(link)
                     .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Look.glow, lineWidth: 2.6))
                     .shadow(color: .black.opacity(0.25), radius: 8, y: 4)
                     .position(x: ghost.spot.x - o.x, y: ghost.spot.y - o.y - 48)
