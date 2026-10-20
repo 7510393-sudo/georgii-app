@@ -309,6 +309,13 @@ struct PhotoStrip: View {
     private func cell(_ i: Int) -> some View {
         face(i)
             .frame(width: size, height: size)
+            // Название — у самого превью, а не у всей клетки (P571): прежде
+            // оно накрывало и крестик, и тот был не виден ни VoiceOver, ни
+            // проверкам.
+            .accessibilityElement()
+            .accessibilityLabel(kind(i) == .photo ? T("Фотография \(i + 1)", "Photo \(i + 1)")
+                                : kind(i) == .video ? T("Видео", "Video")
+                                : kind(i) == .audio ? T("Голосовая запись", "Voice note") : T("Файл", "File"))
             .contentShape(Rectangle())
             .onTapGesture { tapped(i) }
             // Долгое нажатие и касание — жестами iPhone поверх превью (P541):
@@ -353,9 +360,6 @@ struct PhotoStrip: View {
                     .onAppear { if onCarry != nil { StripZones.cells[i] = frame } }
                     .onChange(of: frame) { _, now in if onCarry != nil { StripZones.cells[i] = now } }
             })
-            .accessibilityLabel(kind(i) == .photo ? T("Фотография \(i + 1)", "Photo \(i + 1)")
-                                : kind(i) == .video ? T("Видео", "Video")
-                                : kind(i) == .audio ? T("Голосовая запись", "Voice note") : T("Файл", "File"))
     }
 }
 
