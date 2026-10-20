@@ -71,14 +71,18 @@ jobs:
             n=0
             while [ $n -lt 40 ]; do
               sleep 12
+              log=../docs/motion/sampler.txt
               pid=$(pgrep -f "Chronotheca.app/Chronotheca" | head -1)
               if [ -n "$pid" ]; then
                 n=$((n + 1))
-                sample "$pid" 2 -file "../docs/motion/sample-$n.txt" >/dev/null 2>&1 \
-                  || sudo sample "$pid" 2 -file "../docs/motion/sample-$n.txt" >/dev/null 2>&1 \
-                  || echo "снимок $n не снялся (pid $pid)"
+                if ! sample "$pid" 2 -file "../docs/motion/sample-$n.txt" >>"$log" 2>&1; then
+                  echo "снимок $n: sample не смог, пробую sudo" >> "$log"
+                  sudo sample "$pid" 2 -file "../docs/motion/sample-$n.txt" >>"$log" 2>&1 \
+                    || echo "снимок $n не снялся (pid $pid)" >> "$log"
+                fi
               else
-                echo "приложения нет среди процессов"; ps aux | grep -i chronothec | grep -v grep | head -3
+                echo "$(date -u +%T) приложения нет среди процессов:" >> "$log"
+                ps axo pid,comm | grep -i -E "chrono|xctrunner" | head -5 >> "$log"
               fi
             done
           ) &
