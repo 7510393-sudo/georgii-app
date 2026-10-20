@@ -132,6 +132,9 @@ struct DiaryEditor: UIViewRepresentable {
         carry.minimumPressDuration = 0.25
         carry.delegate = context.coordinator
         view.addGestureRecognizer(carry)
+        // Подержали вложение и отпустили — оно не открывается (P561).
+        // Касание по тексту не ждёт: там долгое нажатие сразу не берётся.
+        tap.require(toFail: carry)
         view.backgroundColor = .clear
         view.textContainerInset = UIEdgeInsets(top: 8, left: 0, bottom: 40, right: 0)
         view.textContainer.lineFragmentPadding = 0
@@ -861,28 +864,24 @@ struct DiaryEditor: UIViewRepresentable {
             let veil = UIControl(frame: window.bounds)
             veil.backgroundColor = UIColor.black.withAlphaComponent(0.06)
             veil.addTarget(self, action: #selector(disarm), for: .touchDown)
-            // Строка точки — в тонкой синей рамке во всю ширину текста (P380).
+            // Синей рамки во всю строку больше нет (P561, прежде P380): в
+            // ряду стоят и другие вложения — выделяется только взятое.
             let field = view.convert(view.bounds, to: window)
-            let row = UIView(frame: CGRect(x: field.minX - 6, y: place.minY - 10,
-                                           width: field.width + 12, height: place.height + 20))
-            row.layer.borderColor = UIColor(Look.glow).cgColor
-            row.layer.borderWidth = 1.5
-            row.layer.cornerRadius = 9
-            row.backgroundColor = UIColor(Look.planBg).withAlphaComponent(0.55)
-            row.isUserInteractionEnabled = false
-            veil.addSubview(row)
             let chip = UIImageView(image: picture)
             chip.center = CGPoint(x: place.midX, y: place.midY)
+            // Квадрат — снимок, файл и точка своей строкой или в ряду (P560);
+            // кнопочка — точка посреди фразы.
+            let square = picture.size.height >= 40
             // Синяя кромка — та же, что у поднятого дела (P374).
             chip.layer.borderColor = UIColor(Look.glow).cgColor
-            chip.layer.borderWidth = photo != nil ? 3 : 2
-            chip.layer.cornerRadius = photo != nil ? 8 : picture.size.height / 2
+            chip.layer.borderWidth = square ? 3 : 2
+            chip.layer.cornerRadius = square ? 8 : picture.size.height / 2
             chip.layer.shadowOpacity = 0.25
             chip.layer.shadowRadius = 6
             chip.layer.shadowOffset = CGSize(width: 0, height: 2)
             veil.addSubview(chip)
             // Снимок и так крупный — он лишь чуть приподнимается (P392).
-            let grow: CGFloat = photo != nil ? 1.05 : 1.4
+            let grow: CGFloat = square ? 1.05 : 1.4
             // Крестик нарисован свой (P409): системный значок с двумя
             // цветами в кнопке выходил пустым кружком без креста.
             let cross = UIControl(frame: CGRect(x: 0, y: 0, width: 56, height: 56))
@@ -896,12 +895,13 @@ struct DiaryEditor: UIViewRepresentable {
             cross.layer.shadowOffset = CGSize(width: 0, height: 1)
             cross.isAccessibilityElement = true
             cross.accessibilityTraits = .button
-            if photo != nil {
+            if square {
                 // У снимка крестик — на верхнем правом углу, как у значка
                 // на экране «Домой».
                 cross.center = CGPoint(x: min(place.midX + picture.size.width * grow / 2, field.maxX - 10),
                                        y: place.midY - picture.size.height * grow / 2 + 4)
-                cross.accessibilityLabel = T("Убрать снимок из текста", "Remove photo from text")
+                cross.accessibilityLabel = photo != nil
+                    ? T("Убрать снимок из текста", "Remove photo from text") : T("Удалить точку", "Delete place")
             } else {
                 cross.center = CGPoint(x: min(place.midX + picture.size.width * grow / 2 + 22, field.maxX - 10),
                                        y: place.midY)

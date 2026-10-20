@@ -14,7 +14,6 @@ struct DiaryView: View {
     @State private var stripCarry: Int?
     @State private var stripSpot: CGPoint = .zero
     /// Крестик у вложения в тексте нажат — сперва вопрос (P456).
-    @State private var deleting: String?
     /// Снимки сегодняшнего дня из галереи — предложением в ленте (P538).
     @StateObject private var suggest = DaySuggestions()
 
@@ -125,14 +124,9 @@ struct DiaryView: View {
             planTarget: store.canEditPlan ? { PlanZones.task(at: $0, tasks: store.tasks) } : nil,
             onPlanHover: { hover($0, photo: $1) },
             onToPlan: { piece, task in store.textToPlan(piece, under: task) },
-            onDeleteAttachment: { deleting = $0 })
-        // Удаление — только после вопроса, как в полоске (P456).
-        .modifier(RemoveQuestion(
-            asking: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }),
-            act: { delete in
-                if let link = deleting { deleteFromText(link, delete: delete) }
-                deleting = nil
-            }))
+            // Вопрос уже задан у самого крестика (P556): второй такой же
+            // после «Удалить файл» не нужен (P561 — автор видел два подряд).
+            onDeleteAttachment: { deleteFromText($0, delete: true) })
         // Взятое из полоски — над пальцем, в синей рамке (P380): рисуется
         // поверх полосы у низа экрана, а не на странице под ней (P545,
         // `StripGhostLayer`).

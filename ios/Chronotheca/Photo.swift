@@ -1090,6 +1090,9 @@ struct HoldCatcher: UIViewRepresentable {
         view.addGestureRecognizer(press)
         let touch = UITapGestureRecognizer(target: context.coordinator,
                                            action: #selector(Coordinator.tapped))
+        // Касание — только если это было не долгое нажатие (P561): прежде
+        // подержанное превью, отпущенное на месте, ещё и открывалось.
+        touch.require(toFail: press)
         view.addGestureRecognizer(touch)
         return view
     }
