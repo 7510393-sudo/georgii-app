@@ -1789,6 +1789,11 @@ struct DiaryEditor: UIViewRepresentable {
         /// Текст записи перед броском снимка из полоски — по нему видно,
         /// куда снимок лёг (P348).
         private var dropBefore: String?
+        /// Последняя правка добавила буквы (P558): только она — «писали».
+        /// Стёртые пустые строки под записью, перенос строки, вставленный
+        /// снимок — не набор, и час до новой отметки времени от них не
+        /// отсчитывается заново.
+        private var typedLetters = false
 
         func textDroppableView(_ droppable: UIView & UITextDroppable,
                                willPerformDrop drop: UITextDropRequest) {
@@ -1813,9 +1818,11 @@ struct DiaryEditor: UIViewRepresentable {
                 }
             }
             parent.text = now
-            if view.isFirstResponder, view.selectedRange.location >= view.textStorage.length {
+            if typedLetters, view.isFirstResponder,
+               view.selectedRange.location >= view.textStorage.length {
                 parent.onWrite?()
             }
+            typedLetters = false
             if resolve != nil, merged || DiaryEditor.hasLoosePicture(view.text) {
                 // Строку-ссылку только что бросили или вписали — рисуем её
                 // картинкой. Курсор остаётся примерно там, где был.
@@ -1840,6 +1847,7 @@ struct DiaryEditor: UIViewRepresentable {
         /// первая буква должна вести себя так же.
         func textView(_ view: UITextView, shouldChangeTextIn range: NSRange,
                       replacementText text: String) -> Bool {
+            typedLetters = text.contains { !$0.isWhitespace && $0 != "\u{FFFC}" }
             if let decided = keepObjectsApart(view, range, text) { return decided }
             // Первая буква в новой строке под записью — и только тогда
             // перед ней встаёт время (P403). Буква — заглавная.

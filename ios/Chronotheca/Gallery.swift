@@ -235,7 +235,27 @@ struct SuggestedRow: View {
     var side: CGFloat = PhotoStrip.side
     let add: (PHAsset) -> Void
 
+    /// Снимок, открытый посмотреть (P558).
+    @State private var looking: Looked?
+
+    struct Looked: Identifiable {
+        let asset: PHAsset
+        var id: String { asset.localIdentifier }
+    }
+
     var body: some View {
+        rows
+            .fullScreenCover(item: $looking) { looked in
+                SuggestedPreview(asset: looked.asset,
+                                 close: { looking = nil },
+                                 add: {
+                                     looking = nil
+                                     take(looked.asset)
+                                 })
+            }
+    }
+
+    @ViewBuilder private var rows: some View {
         if model.shows {
             HStack(spacing: DiaryEditor.photoGap) {
                 divider
@@ -278,21 +298,36 @@ struct SuggestedRow: View {
                         .padding(5)
                 }
             }
-            .overlay(alignment: .bottomTrailing) {
-                Image(systemName: "plus.circle.fill")
-                    .font(.system(size: 24))
-                    .foregroundStyle(.white, Look.accent)
-                    .shadow(color: .black.opacity(0.25), radius: 2)
-                    .padding(5)
-            }
             .contentShape(Rectangle())
+            // Касание по снимку — рассмотреть его (P558): прежде он сразу
+            // брался в день, и брался по ошибке.
             .onTapGesture {
                 Feel.light()
-                model.drop(asset)
-                add(asset)
+                looking = Looked(asset: asset)
             }
-            .accessibilityLabel(T("Добавить снимок из галереи", "Add photo from Photos"))
-            .accessibilityAddTraits(.isButton)
+            // Взять сразу — только «+» в самом углу (P558): на него и
+            // приходится касание, остальной снимок его не берёт.
+            .overlay(alignment: .bottomTrailing) {
+                Button {
+                    take(asset)
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 24))
+                        .foregroundStyle(.white, Look.accent)
+                        .shadow(color: .black.opacity(0.25), radius: 2)
+                        .padding(1)
+                        .frame(width: 40, height: 40, alignment: .bottomTrailing)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(T("Добавить снимок из галереи", "Add photo from Photos"))
+            }
+    }
+
+    private func take(_ asset: PHAsset) {
+        Feel.light()
+        model.drop(asset)
+        add(asset)
     }
 
     /// Приложение о галерее ещё не спрашивало — спросит по касанию, само
@@ -313,5 +348,67 @@ struct SuggestedRow: View {
             .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Look.rule, lineWidth: 1))
         }
         .buttonStyle(.plain)
+    }
+}
+
+/// Предложенный снимок во весь экран (P558): рассмотреть и решить —
+/// «Добавить» в день или «Закрыть». Видео — первым кадром.
+struct SuggestedPreview: View {
+    let asset: PHAsset
+    let close: () -> Void
+    let add: () -> Void
+
+    @State private var image: UIImage?
+
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+            if let image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .ignoresSafeArea()
+            } else {
+                ProgressView().tint(.white)
+            }
+            VStack {
+                Spacer()
+                HStack(spacing: 16) {
+                    Button(action: close) {
+                        Text(T("Закрыть", "Close"))
+                            .font(Look.sans(16))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 22)
+                            .padding(.vertical, 12)
+                            .background(Color.black.opacity(0.55), in: Capsule())
+                    }
+                    Spacer()
+                    Button(action: add) {
+                        Label(T("Добавить", "Add"), systemImage: "plus.circle.fill")
+                            .font(Look.sans(16, weight: .medium))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 22)
+                            .padding(.vertical, 12)
+                            .background(Look.accent, in: Capsule())
+                    }
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 24)
+            }
+        }
+        .task {
+            let options = PHImageRequestOptions()
+            options.isNetworkAccessAllowed = true
+            options.deliveryMode = .opportunistic
+            let scale = UIScreen.main.scale
+            let size = CGSize(width: UIScreen.main.bounds.width * scale,
+                              height: UIScreen.main.bounds.height * scale)
+            PHImageManager.default().requestImage(for: asset, targetSize: size,
+                                                  contentMode: .aspectFit,
+                                                  options: options) { got, _ in
+                if let got { image = got }
+            }
+        }
     }
 }

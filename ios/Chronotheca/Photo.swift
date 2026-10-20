@@ -246,8 +246,6 @@ struct PhotoStrip: View {
 
     /// Превью, которое сейчас несут, — по нему соседи расступаются.
     @State private var carrying: Int?
-    /// Обзор всех вложений сеткой (P428).
-    @State private var showingAll = false
 
     /// Как снимок в тексте — в пять строк дневника (P383; прежде 60,
     /// P275), с промежутком, как между снимками в тексте (P557).
@@ -257,10 +255,11 @@ struct PhotoStrip: View {
 
     var body: some View {
         GeometryReader { geo in
-            let fits = max(1, Int((geo.size.width + gap) / (size + gap)))
             // Все превью в ряд, ряд листается вбок (P535): прежде за
             // четвёртым стояло «+N», и дальние снимки нельзя было взять
-            // пальцем и унести в текст.
+            // пальцем и унести в текст. Плашки с числом в конце ряда тоже
+            // нет (P558): ряд и так листается.
+            ScrollViewReader { reader in
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: gap) {
                     ForEach(0..<photos.count, id: \.self) { i in
@@ -271,10 +270,6 @@ struct PhotoStrip: View {
                             .font(Look.sans(12))
                             .foregroundStyle(Look.inkFaint)
                             .frame(height: size)
-                    }
-                    // Обзор всех вложений сеткой (P428) — в конце ряда.
-                    if photos.count > fits {
-                        more(photos.count, from: 0)
                     }
                     if let extra { extra }
                     Spacer(minLength: 0)
@@ -291,15 +286,17 @@ struct PhotoStrip: View {
             // Пока превью несут, ряд стоит: иначе он поехал бы за пальцем.
             .scrollDisabled(carried != nil || carrying != nil)
             .scrollBounceBehavior(.basedOnSize, axes: .horizontal)
+            // Новое вложение — в конце ряда, часто за краем экрана: ряд
+            // сам доезжает до него, иначе голос или файл будто не
+            // добавились (P558, замечание автора).
+            .onChange(of: photos.count) { was, now in
+                guard now > was, now > 0 else { return }
+                withAnimation(.easeOut(duration: 0.3)) { reader.scrollTo(now - 1, anchor: .trailing) }
+            }
+            }
         }
         .frame(height: size)
         .onChange(of: photos.count) { _, _ in carrying = nil }
-        .sheet(isPresented: $showingAll) {
-            AttachmentGrid(items: photos) { i in
-                showingAll = false
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { onOpen?(i) }
-            }
-        }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
     }
@@ -393,24 +390,6 @@ struct PhotoStrip: View {
             .accessibilityLabel(kind(i) == .photo ? T("Фотография \(i + 1)", "Photo \(i + 1)")
                                 : kind(i) == .video ? T("Видео", "Video")
                                 : kind(i) == .audio ? T("Голосовая запись", "Voice note") : T("Файл", "File"))
-    }
-
-    private func more(_ n: Int, from i: Int) -> some View {
-        VStack(spacing: 3) {
-            Image(systemName: "square.grid.2x2")
-                .font(.system(size: 16))
-            Text("\(n)")
-        }
-            .font(Look.sans(14, weight: .medium))
-            .foregroundStyle(Look.inkSoft)
-            .frame(width: size, height: size)
-            .background(Look.chrome, in: RoundedRectangle(cornerRadius: 6))
-            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Look.rule))
-            .contentShape(Rectangle())
-            // Много вложений — не листать по одному, а обзор сеткой по
-            // видам (P428).
-            .onTapGesture { showingAll = true }
-            .accessibilityLabel(T("Вложения дня", "The day’s attachments"))
     }
 }
 
