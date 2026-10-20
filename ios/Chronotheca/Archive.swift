@@ -117,6 +117,11 @@ final class Archive: ObservableObject {
     /// это время запросили ещё одно — берётся только последнее.
     func reloadSoon() {
         guard let root = vault.root else { days = [:]; return }
+        // Чтение уже идёт — новое начнётся сразу после него (P569). Прежде
+        // каждое нажатие бросало начатое и начинало заново — на большом
+        // архиве опись так и не успевала собраться.
+        if reading { again = true; return }
+        reading = true
         scanning = true
         scanTicket += 1
         let ticket = scanTicket
@@ -126,13 +131,21 @@ final class Archive: ObservableObject {
             let start = cached ? known : Archive.Memo.read(for: root)
             let result = Archive.scan(root, memo: start, previous: cached ? previous : [:])
             DispatchQueue.main.async {
-                guard let self, ticket == self.scanTicket else { return }
-                self.publish(result, root: root)
+                guard let self else { return }
+                self.reading = false
+                if ticket == self.scanTicket { self.publish(result, root: root) }
+                if self.again {
+                    self.again = false
+                    self.reloadSoon()
+                }
             }
         }
     }
 
     private var scanTicket = 0
+    /// Идёт ли чтение в стороне и просили ли ещё одно, пока оно шло.
+    private var reading = false
+    private var again = false
 
     private func publish(_ r: Scanned, root: URL) {
         days = r.found

@@ -371,7 +371,8 @@ struct MapScreen: View {
     /// человек сейчас. Разрешение на место просится здесь, по его жесту.
     private func begin() {
         places = Places.all(in: vault)
-        archive.reload()
+        // В стороне (P569): опись читалась прямо на экране.
+        archive.reloadSoon()
         if let point = shell.mapFocus {
             show(point)
         } else if Vault.isPreview {

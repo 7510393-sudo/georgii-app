@@ -75,7 +75,9 @@ struct CalendarView: View {
         }
         .onAppear {
             DayEvents.forgetCache()
-            archive.reload()
+            // В стороне (P569): на архиве за десять лет календарь открывался
+            // 17 секунд — опись читалась прямо на экране.
+            archive.reloadSoon()
         }
         // Просьба из меню календаря: та же дорога домой, что у кнопки вида.
         .onChange(of: shell.calendarHome) { _, want in

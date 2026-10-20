@@ -36,7 +36,8 @@ struct SearchView: View {
                 list
             }
         }
-        .onAppear { archive.reload() }
+        // В стороне (P569): опись читалась прямо на экране.
+        .onAppear { archive.reloadSoon() }
         .keyboardHeight($keyboard)
     }
 

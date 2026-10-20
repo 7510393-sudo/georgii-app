@@ -156,7 +156,7 @@ final class MovementTests: XCTestCase {
         XCTAssertTrue(photo.waitForExistence(timeout: 5), "в ленте нет снимка")
         for _ in 0..<4 where !photo.isHittable { app.swipeUp() }
         photo.press(forDuration: 0.8)
-        let cross = app.buttons["Remove"].firstMatch
+        let cross = app.buttons.matching(NSPredicate(format: "label == %@", "Remove")).firstMatch
         XCTAssertTrue(cross.waitForExistence(timeout: 3), "после долгого нажатия нет крестика")
         save("04-крестик-в-ленте")
         XCTAssertEqual(openScreen, "today", "долгое нажатие что-то открыло")
@@ -164,7 +164,8 @@ final class MovementTests: XCTestCase {
         XCTAssertTrue(app.alerts.firstMatch.waitForExistence(timeout: 3), "крестик не спросил")
         XCTAssertEqual(app.alerts.count, 1, "окон вопроса: \(app.alerts.count)")
         save("05-вопрос-об-удалении")
-        app.alerts.firstMatch.buttons["Remove from the page"].tap()
+        app.alerts.firstMatch.buttons.matching(NSPredicate(format: "label == %@", "Remove from the page"))
+            .firstMatch.tap()
         sleep(2)
         XCTAssertEqual(app.alerts.count, 0, "после ответа появилось ещё одно окно")
         XCTAssertFalse(photo.exists, "снимок остался в ленте")
