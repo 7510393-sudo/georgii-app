@@ -1672,10 +1672,6 @@ struct DiaryEditor: UIViewRepresentable {
             DiaryEditor.loadPhotos(in: view)
         }
 
-        /// Куда встанет брошенное превью: в конец абзаца, над которым его
-        /// отпустили. Снимок стоит своей строкой и не рвёт фразу пополам.
-        func textDroppableView(_ droppable: UIView & UITextDroppable,
-
         // MARK: - Клавиатура
 
         @objc private func keyboardMoved(_ note: Notification) {
