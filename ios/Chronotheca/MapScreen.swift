@@ -177,7 +177,8 @@ struct MapScreen: View {
     private var entries: [MapEntry] {
         // Только дни с точками (P572): прежде для каждого дня архива искался
         // файл обложки — на архиве за десять лет карта открывалась секундами.
-        archive.days.values.filter { !$0.points.isEmpty }.flatMap { day -> [MapEntry] in
+        // Дни с точками отобраны заранее, при смене описи (P579).
+        archive.withPoints.flatMap { day -> [MapEntry] in
             var seen = Set<String>()
             let cover = day.cover.flatMap { link -> (URL, Bool)? in
                 let kind = Diary.kind(of: link)
@@ -273,7 +274,7 @@ struct MapScreen: View {
                 selected = nil
             }
             shell.mapEntries = on
-            if on, !archive.days.values.contains(where: { !$0.points.isEmpty }) {
+            if on, archive.withPoints.isEmpty {
                 shell.say(T("На карте пока нет записей: поставьте точку в тексте дня — и день появится здесь.",
                             "No entries on the map yet: add a place to a day's text and the day will appear here."))
             }
@@ -384,8 +385,7 @@ struct MapScreen: View {
     /// человек сейчас. Разрешение на место просится здесь, по его жесту.
     private func begin() {
         places = Places.all(in: vault)
-        // В стороне (P569): опись читалась прямо на экране.
-        archive.reloadSoon()
+        // Опись проверяет само нажатие на «Карту» (P579) — второй раз незачем.
         if let point = shell.mapFocus {
             show(point)
         } else if Vault.isPreview {

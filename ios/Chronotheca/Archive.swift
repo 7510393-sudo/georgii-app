@@ -74,8 +74,19 @@ final class Archive: ObservableObject {
         }
     }
 
-    @Published private(set) var days: [String: Day] = [:]
-    @Published private(set) var scanning = false
+    @Published private(set) var days: [String: Day] = [:] {
+        // Списки, которые экраны берут целиком, собираются один раз — когда
+        // опись поменялась, а не при каждой перерисовке экрана (P579).
+        didSet {
+            newestFirst = days.values.filter { $0.hasSomething }.sorted { $0.stamp > $1.stamp }
+            withPoints = days.values.filter { !$0.points.isEmpty }
+        }
+    }
+
+    /// Дни с записями, от новых к старым.
+    private(set) var newestFirst: [Day] = []
+    /// Дни с точками — для карты «Записи».
+    private(set) var withPoints: [Day] = []
 
     /// Сколько файлов лежит в папке и сколько из них ещё не на телефоне.
     /// Показывается в настройках: человек должен видеть, что записи на
@@ -94,17 +105,11 @@ final class Archive: ObservableObject {
     func day(_ stamp: String) -> Day? { days[stamp] }
     func tasks(_ stamp: String) -> [PlanRow] { days[stamp]?.tasks.filter { $0.isTask } ?? [] }
 
-    /// Дни с записями, от новых к старым.
-    var newestFirst: [Day] {
-        days.values.filter { $0.hasSomething }.sorted { $0.stamp > $1.stamp }
-    }
-
     /// Перечитать папку на месте — тот, кто зовёт, ждёт готовую опись.
     /// Перечитываются только изменённые файлы (P566) — остальное сверяется
     /// по времени изменения и размеру и берётся из прежней описи.
     func reload() {
         guard let root = vault.root else { days = [:]; return }
-        scanning = true
         scanTicket += 1          // чтение «в стороне», ещё не кончившееся, устарело
         loadMemo(root)
         let result = Archive.scan(root, memo: memo, previous: days)
@@ -122,7 +127,6 @@ final class Archive: ObservableObject {
         // архиве опись так и не успевала собраться.
         if reading { again = true; return }
         reading = true
-        scanning = true
         scanTicket += 1
         let ticket = scanTicket
         let known = memo, previous = days, cached = memoRoot == root
@@ -147,12 +151,15 @@ final class Archive: ObservableObject {
     private var reading = false
     private var again = false
 
+    /// Отдать опись экранам — только если в папке что-то поменялось (P579).
+    /// Прежде новая опись отдавалась при каждой проверке, и календарь, поиск
+    /// и карта перебирали весь архив заново как раз тогда, когда экран
+    /// выезжал: на архиве за десять лет — секунды.
     private func publish(_ r: Scanned, root: URL) {
-        days = r.found
-        files = r.counted
-        awayFiles = r.away.count
-        scanning = false
-        let changed = r.memo.files != memo.files || memoRoot != root
+        let changed = r.fresh || memoRoot != root
+        if changed { days = r.found }
+        if files != r.counted { files = r.counted }
+        if awayFiles != r.away.count { awayFiles = r.away.count }
         memo = r.memo
         memoRoot = root
         if changed { r.memo.writeSoon(for: root) }
@@ -212,7 +219,8 @@ final class Archive: ObservableObject {
         days = [:]
     }
 
-    typealias Scanned = (found: [String: Day], counted: Int, away: [URL], memo: Memo)
+    /// `fresh` — опись не та, что была: день перечитан, появился или пропал.
+    typealias Scanned = (found: [String: Day], counted: Int, away: [URL], memo: Memo, fresh: Bool)
 
     /// Прочитать все дни папки — не трогая ничего общего.
     ///
@@ -226,6 +234,7 @@ final class Archive: ObservableObject {
         var counted = 0
         var away: [URL] = []
         var next = Memo()
+        var fresh = false
 
         // Сначала — все файлы по дням, с их отметками.
         struct Seen { let folder: Vault.Folder; let file: URL; let key: String; let stub: Bool;
@@ -271,6 +280,7 @@ final class Archive: ObservableObject {
                 found[stamp] = old
                 continue
             }
+            fresh = true
             var day = Day(stamp: stamp, date: entry.date)
             // План — первым: так дни собирались и прежде.
             for s in entry.files.sorted(by: { $0.folder == .planner && $1.folder != .planner }) {
@@ -292,7 +302,8 @@ final class Archive: ObservableObject {
             }
             found[stamp] = day
         }
-        return (found, counted, away, next)
+        if found.count != previous.count { fresh = true }
+        return (found, counted, away, next, fresh)
     }
 
     /// Разобрать текст файла дня в опись.
