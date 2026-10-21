@@ -983,3 +983,34 @@ struct PointSquare: View {
             .scaledToFit()
     }
 }
+
+/// Картинки пробного архива (P589): дюжина разных снимков размером с
+/// обычный снимок iPhone после сжатия приложения — с полосами и пятнами,
+/// чтобы сжатие не сводило их к нескольким байтам.
+enum SeedPictures {
+    static func make() -> [Data] {
+        let size = CGSize(width: 1200, height: 900)
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        return (0..<12).compactMap { i -> Data? in
+            let image = UIGraphicsImageRenderer(size: size, format: format).image { ctx in
+                let hue = CGFloat(i) / 12
+                UIColor(hue: hue, saturation: 0.35, brightness: 0.85, alpha: 1).setFill()
+                ctx.fill(CGRect(origin: .zero, size: size))
+                var seed = UInt64(i + 1) &* 6_364_136_223_846_793_005
+                func next() -> CGFloat {
+                    seed = seed &* 6_364_136_223_846_793_005 &+ 1_442_695_040_888_963_407
+                    return CGFloat(seed >> 33) / CGFloat(UInt32.max >> 1)
+                }
+                for _ in 0..<900 {
+                    UIColor(hue: hue + next() * 0.2, saturation: 0.2 + next() * 0.6,
+                            brightness: 0.3 + next() * 0.7, alpha: 0.6).setFill()
+                    let r = CGRect(x: next() * size.width, y: next() * size.height,
+                                   width: 8 + next() * 90, height: 8 + next() * 90)
+                    ctx.cgContext.fillEllipse(in: r)
+                }
+            }
+            return image.jpegData(compressionQuality: 0.7)
+        }
+    }
+}

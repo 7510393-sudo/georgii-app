@@ -264,6 +264,11 @@ final class Vault: ObservableObject {
     func speedTest(_ on: Bool, done: @escaping () -> Void) {
         if on {
             DispatchQueue.global(qos: .userInitiated).async {
+                // Прежний пробный архив — только текст (P589): пишется заново.
+                if !FileManager.default.fileExists(
+                    atPath: Vault.speedFolder.appendingPathComponent(".big-archive-2").path) {
+                    try? FileManager.default.removeItem(at: Vault.speedFolder)
+                }
                 try? Vault.makeSpeedFolder()
                 Vault.seedBigArchive(in: Vault.speedFolder, before: DayStore.today())
                 DispatchQueue.main.async {
@@ -464,10 +469,27 @@ final class Vault: ObservableObject {
     /// Десять лет выдуманных дней в папке `root` — для симулятора и для
     /// «Проверки скорости» на телефоне (P581). Второй раз не пишет.
     static func seedBigArchive(in root: URL, before today: Date) {
-        let ready = root.appendingPathComponent(".big-archive")
+        // Вторая метка (P589): прежний пробный архив был только из текста.
+        let ready = root.appendingPathComponent(".big-archive-2")
         guard !FileManager.default.fileExists(atPath: ready.path) else { return }
         let cal = Calendar.current
         let words = ["lamp", "river", "train", "garden", "letter", "rain", "market", "violin", "bridge", "kitchen"]
+        // Снимки, голос и файлы — как в настоящем дневнике (P589): вложения
+        // и весят больше всего, и их больше всего читать. Снимков — дюжина
+        // разных картинок, каждый день своими файлами.
+        let pictures = SeedPictures.make()
+        let voice = Data(repeating: 7, count: 180_000)
+        let paper = Data(repeating: 9, count: 60_000)
+        func put(_ data: Data, _ kind: Folder, _ name: String, _ year: String) -> String {
+            let home = Vault.folder(kind, in: root)
+            let url = home.appendingPathComponent(year).appendingPathComponent(name)
+            if !FileManager.default.fileExists(atPath: url.path) {
+                try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(),
+                                                         withIntermediateDirectories: true)
+                Vault.write(data: data, to: url)
+            }
+            return "../../" + home.lastPathComponent + "/" + year + "/" + name
+        }
         for k in 2...3650 {
             guard let day = cal.date(byAdding: .day, value: -k, to: today) else { continue }
             let w = words[k % words.count]
@@ -477,19 +499,42 @@ final class Vault: ObservableObject {
                 .appendingPathComponent(stamp + ".md")
             let diary = Vault.folder(.diary, in: root).appendingPathComponent(year)
                 .appendingPathComponent(stamp + ".md")
+            // Снимки — в два дня из трёх, по одному-два.
+            var shots: [String] = []
+            if k % 3 != 0 {
+                for n in 0..<(1 + k % 2) where !pictures.isEmpty {
+                    shots.append(put(pictures[(k + n) % pictures.count], .photos, "\(stamp)_\(n).jpg", year))
+                }
+            }
+            let point = "[Café \(k % 40)](geo:\(String(format: "%.5f", 51.48 + Double(k % 40) * 0.002)),"
+                + "\(String(format: "%.5f", -0.15 + Double(k % 37) * 0.003)))"
             if !FileManager.default.fileExists(atPath: plan.path) {
+                var text = "---\ndate: \(stamp)\n---\n- [x] 09:00 Morning walk\n"
+                // Раз в неделю — снимок под делом, раз в девять дней — точка.
+                if k % 7 == 0, let first = shots.first { text += Diary.line(first) + "\n" }
+                if k % 9 == 0 { text += point + "\n" }
+                text += "- [ ] Buy \(w)\n- [x] Call home\n"
                 try? FileManager.default.createDirectory(at: plan.deletingLastPathComponent(),
                                                          withIntermediateDirectories: true)
-                Vault.write("---\ndate: \(stamp)\n---\n- [x] 09:00 Morning walk\n- [ ] Buy \(w)\n- [x] Call home\n",
-                            to: plan)
+                Vault.write(text, to: plan)
             }
             if !FileManager.default.fileExists(atPath: diary.path) {
+                let line = "Day \(k). The \(w) by the window again, and the light was soft all afternoon. "
+                var text = "---\ndate: \(stamp)\ntitle: Notes \(k)\n---\n\n08:30 "
+                    + String(repeating: line, count: 4) + "\n"
+                // Через день — снимки рядом посреди записи, иначе — в ленте.
+                if k % 2 == 0, !shots.isEmpty {
+                    text += shots.map(Diary.line).joined(separator: " ") + "\n"
+                }
+                if k % 4 == 0 { text += point + "\n" }
+                text += "\n21:10 " + line + "\n"
+                var strip = k % 2 == 0 ? [] : shots
+                if k % 10 == 0 { strip.append(put(voice, .audio, "\(stamp) voice.m4a", year)) }
+                if k % 30 == 0 { strip.append(put(paper, .documents, "\(stamp) ticket.pdf", year)) }
+                if !strip.isEmpty { text += "\n" + strip.map(Diary.line).joined(separator: "\n") + "\n" }
                 try? FileManager.default.createDirectory(at: diary.deletingLastPathComponent(),
                                                          withIntermediateDirectories: true)
-                let line = "Day \(k). The \(w) by the window again, and the light was soft all afternoon. "
-                Vault.write("---\ndate: \(stamp)\ntitle: Notes \(k)\n---\n\n08:30 "
-                            + String(repeating: line, count: 4) + "\n\n21:10 " + line + "\n",
-                            to: diary)
+                Vault.write(text, to: diary)
             }
         }
         FileManager.default.createFile(atPath: ready.path, contents: Data())

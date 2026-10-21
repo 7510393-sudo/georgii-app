@@ -1492,17 +1492,20 @@ struct SpeedTestSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var on = Vault.speedTestOn
     @State private var busy = false
+    @State private var erased = false
 
     var body: some View {
         NavigationStack {
             List {
                 Section {
-                    Text(T("Пробный архив — десять лет выдуманных записей в отдельной папке внутри приложения. "
+                    Text(T("Пробный архив — десять лет выдуманных записей со снимками, голосом, файлами и точками "
+                           + "(около полугигабайта, пишется несколько минут) в отдельной папке внутри приложения. "
                            + "Ваши записи и ваша папка не трогаются. Пока он открыт, всё, что вы пишете, "
-                           + "ложится в него, а не в ваш архив.",
-                           "The test archive is ten years of made-up entries in a separate folder inside the app. "
+                           + "ложится в него, а не в ваш архив. Вернулись к своим — пробный можно стереть.",
+                           "The test archive is ten years of made-up entries with photos, voice notes, files and places "
+                           + "(about half a gigabyte, takes a few minutes to write) in a separate folder inside the app. "
                            + "Your entries and your folder are not touched. While it is open, whatever you write "
-                           + "goes into it, not into your archive."))
+                           + "goes into it, not into your archive. Once you are back to your own, the test one can be erased."))
                         .font(.callout)
                         .foregroundStyle(.secondary)
                     if busy {
@@ -1514,6 +1517,13 @@ struct SpeedTestSheet: View {
                         Button(on ? T("Вернуться к своим записям", "Back to my entries")
                                   : T("Открыть пробный архив", "Open the test archive")) {
                             switchArchive()
+                        }
+                        // Полгигабайта на телефоне — стереть, когда проверили (P589).
+                        if !on, !erased, FileManager.default.fileExists(atPath: Vault.speedFolder.path) {
+                            Button(T("Стереть пробный архив", "Erase the test archive"), role: .destructive) {
+                                try? FileManager.default.removeItem(at: Vault.speedFolder)
+                                erased = true
+                            }
                         }
                     }
                 }
