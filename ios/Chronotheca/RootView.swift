@@ -532,7 +532,7 @@ struct RootView: View {
             // Свои места — для подписи точек в дневнике (P559), тоже в стороне.
             Places.loadSoon(vault)
             // Карту — заранее, когда запуск уже позади (P581).
-            DispatchQueue.main.asyncAfter(deadline: .now() + 4) { mapReady = true }
+            warmMapSoon()
             LaunchClock.step(T("первый экран", "first screen"))
             if Vault.speedTestOn {
                 shell.say(T("Открыт пробный архив. Вернуться — в настройках, долгим нажатием на «Версия».",
@@ -818,6 +818,20 @@ struct RootView: View {
         case .today:    return 1.10
         case .search:   return 1.05
         case .calendar, .map: return 1
+        }
+    }
+
+    /// Собрать карту заранее, но не под пальцем (P582): сборка на полсекунды
+    /// занимает экран, и если в это время пишут или листают, жест мог
+    /// сорваться. Пока поднята клавиатура или открыт не «День» — позже.
+    private func warmMapSoon(after seconds: Double = 4) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + seconds) {
+            guard !mapReady else { return }
+            if keyboard.height > 0 || shell.screen != .today || shell.movingTask != nil {
+                warmMapSoon(after: 3)
+            } else {
+                mapReady = true
+            }
         }
     }
 
