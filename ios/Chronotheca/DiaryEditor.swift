@@ -1049,6 +1049,53 @@ struct DiaryEditor: UIViewRepresentable {
         private var now: Int?
         /// Запись, как она станет после переноса.
         private var result: String?
+        /// Где начинались абзацы поля до переноса — верх каждого (P584).
+        /// Место под пальцем считается по ним, а не по полю, уже
+        /// раздвинутому показом: высокий снимок раздвигал строки, под
+        /// пальцем оказывалась другая строка, место прыгало — и снимок
+        /// вставал не туда, выдавливая текст и точки.
+        private var paraTops: [(start: Int, top: CGFloat, cells: [(index: Int, midX: CGFloat)])] = []
+        /// Что несут из полоски — строка вложения (P584).
+        private var carriedPiece: String?
+
+        private func measureParagraphs(_ view: UITextView) {
+            let storage = view.textStorage
+            let ns = storage.string as NSString
+            func rect(_ k: Int, _ length: Int) -> CGRect? {
+                guard let s = view.position(from: view.beginningOfDocument, offset: k),
+                      let e = view.position(from: s, offset: length),
+                      let range = view.textRange(from: s, to: e) else { return nil }
+                return view.firstRect(for: range)
+            }
+            var out: [(start: Int, top: CGFloat, cells: [(index: Int, midX: CGFloat)])] = []
+            var k = 0
+            while k < ns.length {
+                let para = ns.paragraphRange(for: NSRange(location: k, length: 0))
+                var end = NSMaxRange(para)
+                if end > para.location, ns.character(at: end - 1) == 10 { end -= 1 }
+                // Ряд вложений — где стоит каждое: встать можно между ними.
+                var cells: [(index: Int, midX: CGFloat)] = []
+                let row = NSRange(location: para.location, length: end - para.location)
+                if Self.photoRow(row, in: storage) {
+                    for c in row.location..<NSMaxRange(row) where ns.character(at: c) == 0xFFFC {
+                        if let r = rect(c, 1) { cells.append((c, r.midX)) }
+                    }
+                }
+                if let r = rect(para.location, min(1, para.length)) {
+                    out.append((para.location, r.minY, cells))
+                }
+                k = max(NSMaxRange(para), k + 1)
+            }
+            paraTops = out
+        }
+
+        /// Место в поле до переноса, над которым палец: начало абзаца, а в
+        /// ряду вложений — между ними, по их местам.
+        private func paragraph(at point: CGPoint) -> Int {
+            guard let para = paraTops.last(where: { $0.top <= point.y }) ?? paraTops.first else { return 0 }
+            guard let last = para.cells.last else { return para.start }
+            return para.cells.first(where: { $0.midX > point.x })?.index ?? last.index + 1
+        }
 
         @objc func carried(_ g: UILongPressGestureRecognizer) {
             guard let view, let i = taken else { return }
@@ -1221,6 +1268,7 @@ struct DiaryEditor: UIViewRepresentable {
             host.addSubview(shadow)
             ghost = shadow
             before = view.attributedText.copy() as? NSAttributedString
+            measureParagraphs(view)
             now = i
             result = nil
             previewing = true
@@ -1287,11 +1335,32 @@ struct DiaryEditor: UIViewRepresentable {
                 }
                 return
             }
-            guard let current = now, let position = view.closestPosition(to: at) else { return }
-            let drop = view.offset(from: view.beginningOfDocument, to: position)
-            guard let next = placed(from: current, to: drop, in: view.textStorage),
-                  next.0 != result
-            else { return }
+            // Всё считается по полю до переноса, одним шагом (P584): прежде —
+            // от последнего показа к следующему, и ошибка копилась.
+            guard let original = before else { return }
+            let drop = paragraph(at: at)
+            let next: (String, Int)?
+            if let piece = carriedPiece {
+                let plainDrop = (DiaryEditor.plain(original.attributedSubstring(
+                    from: NSRange(location: 0, length: min(drop, original.length)))) as NSString).length
+                next = DiaryEditor.putting(piece, at: plainDrop, into: DiaryEditor.plain(original))
+            } else if let i = taken {
+                next = placed(from: i, to: drop, in: original)
+            } else {
+                return
+            }
+            guard let next else {
+                // Над своим же местом — поле как было.
+                if result != nil {
+                    result = nil
+                    view.attributedText = original
+                    view.typingAttributes = DiaryEditor.body(parent.size, serif: parent.serif)
+                    loadPhotos()
+                    now = taken
+                }
+                return
+            }
+            guard next.0 != result else { return }
             result = next.0
             show(next.0, in: view)
             now = DiaryEditor.viewOffset(plain: next.1, in: view.attributedText)
@@ -1311,22 +1380,13 @@ struct DiaryEditor: UIViewRepresentable {
             }
             let at = CGPoint(x: local.x, y: local.y - Self.lift)
             quietUntil = Date().addingTimeInterval(1.5)
-            if result == nil {
-                guard let position = view.closestPosition(to: at) else { return true }
-                let drop = min(view.offset(from: view.beginningOfDocument, to: position),
-                               view.textStorage.length)
-                let plainDrop = (DiaryEditor.plain(view.attributedText.attributedSubstring(
-                    from: NSRange(location: 0, length: drop))) as NSString).length
+            if !previewing {
                 before = view.attributedText.copy() as? NSAttributedString
+                measureParagraphs(view)
                 previewing = true
-                let next = DiaryEditor.putting(piece, at: plainDrop,
-                                               into: DiaryEditor.plain(view.attributedText))
-                result = next.0
-                show(next.0, in: view)
-                now = DiaryEditor.viewOffset(plain: next.1, in: view.attributedText)
-            } else {
-                preview(at, in: view)
             }
+            carriedPiece = piece
+            preview(at, in: view)
             return true
         }
 
@@ -1361,6 +1421,8 @@ struct DiaryEditor: UIViewRepresentable {
             now = taken
             previewing = false
             shownSpot = nil
+            carriedPiece = nil
+            paraTops = []
         }
 
         private func show(_ text: String, in view: UITextView) {
