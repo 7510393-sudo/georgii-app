@@ -151,6 +151,7 @@ final class Archive: ObservableObject {
     /// выезжал: на архиве за десять лет — секунды.
     private func publish(_ r: Scanned, root: URL) {
         let changed = r.fresh || memoRoot != root
+        if memoRoot == nil { LaunchClock.step(T("опись архива готова", "archive list ready")) }
         if changed { days = r.found }
         if files != r.counted { files = r.counted }
         if awayFiles != r.away.count { awayFiles = r.away.count }

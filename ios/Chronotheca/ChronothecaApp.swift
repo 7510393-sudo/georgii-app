@@ -19,6 +19,7 @@ struct ChronothecaApp: App {
     private static let pause: TimeInterval = 5 * 60
 
     init() {
+        _ = LaunchClock.start
         // Граница суток из настроек — до того, как откроется «сегодня».
         Prefs.applyBoundary()
         // Напоминания видны и при открытом приложении (P260).
@@ -29,6 +30,7 @@ struct ChronothecaApp: App {
         _vault = StateObject(wrappedValue: vault)
         _store = StateObject(wrappedValue: DayStore(vault: vault))
         _archive = StateObject(wrappedValue: Archive(vault: vault))
+        LaunchClock.step(T("приложение создано", "app created"))
     }
 
     /// Сегодняшний день — на плане или на дневнике. План и дневник — одна

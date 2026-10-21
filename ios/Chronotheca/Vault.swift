@@ -222,7 +222,63 @@ final class Vault: ObservableObject {
     }
 
     init() {
-        if Vault.isPreview { usePreviewFolder() } else { restore() }
+        if Vault.isPreview { usePreviewFolder() }
+        else if Vault.speedTestOn, (try? Vault.makeSpeedFolder()) != nil { useSpeedFolder() }
+        else { restore() }
+    }
+
+    // MARK: - Проверка скорости (P581)
+
+    /// Открыт пробный архив за десять лет — вместо своей папки, до тех
+    /// пор, пока его не закроют. Помнится и после перезапуска: так видно,
+    /// сколько идёт запуск на большом архиве.
+    static let speedTestKey = "debug.speedTest"
+    static var speedTestOn: Bool { UserDefaults.standard.bool(forKey: speedTestKey) }
+
+    /// Пробный архив лежит внутри самого приложения, в его служебной папке:
+    /// не в «Файлах», не в iCloud и не внутри своей папки «На iPhone»
+    /// (та — вся папка «Документы» приложения).
+    static var speedFolder: URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("Speed test archive")
+    }
+
+    private static func makeSpeedFolder() throws {
+        try FileManager.default.createDirectory(at: speedFolder, withIntermediateDirectories: true)
+    }
+
+    private func useSpeedFolder() {
+        let url = Vault.speedFolder
+        do {
+            try makeTree(in: url)
+            granted = url
+            root = url
+        } catch {
+            problem = error.localizedDescription
+        }
+    }
+
+    /// Открыть пробный архив (сперва написав его — это полминуты) или
+    /// вернуться к своей папке. Своя папка и её закладка не трогаются:
+    /// возвращение — та же дорога, что при обычном запуске.
+    func speedTest(_ on: Bool, done: @escaping () -> Void) {
+        if on {
+            DispatchQueue.global(qos: .userInitiated).async {
+                try? Vault.makeSpeedFolder()
+                Vault.seedBigArchive(in: Vault.speedFolder, before: DayStore.today())
+                DispatchQueue.main.async {
+                    UserDefaults.standard.set(true, forKey: Vault.speedTestKey)
+                    self.useSpeedFolder()
+                    done()
+                }
+            }
+        } else {
+            UserDefaults.standard.set(false, forKey: Vault.speedTestKey)
+            root = nil
+            granted = nil
+            restore()
+            done()
+        }
     }
 
     // MARK: - Режим показа
@@ -402,6 +458,12 @@ final class Vault: ObservableObject {
 
     private func seedBigArchive(before today: Date) {
         guard let root else { return }
+        Vault.seedBigArchive(in: root, before: today)
+    }
+
+    /// Десять лет выдуманных дней в папке `root` — для симулятора и для
+    /// «Проверки скорости» на телефоне (P581). Второй раз не пишет.
+    static func seedBigArchive(in root: URL, before today: Date) {
         let ready = root.appendingPathComponent(".big-archive")
         guard !FileManager.default.fileExists(atPath: ready.path) else { return }
         let cal = Calendar.current
@@ -410,15 +472,24 @@ final class Vault: ObservableObject {
             guard let day = cal.date(byAdding: .day, value: -k, to: today) else { continue }
             let w = words[k % words.count]
             let stamp = Vault.stamp(day)
-            if let url = file(.planner, for: day), !FileManager.default.fileExists(atPath: url.path) {
+            let year = String(stamp.prefix(4))
+            let plan = Vault.folder(.planner, in: root).appendingPathComponent(year)
+                .appendingPathComponent(stamp + ".md")
+            let diary = Vault.folder(.diary, in: root).appendingPathComponent(year)
+                .appendingPathComponent(stamp + ".md")
+            if !FileManager.default.fileExists(atPath: plan.path) {
+                try? FileManager.default.createDirectory(at: plan.deletingLastPathComponent(),
+                                                         withIntermediateDirectories: true)
                 Vault.write("---\ndate: \(stamp)\n---\n- [x] 09:00 Morning walk\n- [ ] Buy \(w)\n- [x] Call home\n",
-                            to: url)
+                            to: plan)
             }
-            if let url = file(.diary, for: day), !FileManager.default.fileExists(atPath: url.path) {
+            if !FileManager.default.fileExists(atPath: diary.path) {
+                try? FileManager.default.createDirectory(at: diary.deletingLastPathComponent(),
+                                                         withIntermediateDirectories: true)
                 let line = "Day \(k). The \(w) by the window again, and the light was soft all afternoon. "
                 Vault.write("---\ndate: \(stamp)\ntitle: Notes \(k)\n---\n\n08:30 "
                             + String(repeating: line, count: 4) + "\n\n21:10 " + line + "\n",
-                            to: url)
+                            to: diary)
             }
         }
         FileManager.default.createFile(atPath: ready.path, contents: Data())

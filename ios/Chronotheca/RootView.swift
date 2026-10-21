@@ -16,7 +16,9 @@ struct RootView: View {
     @EnvironmentObject private var shell: Shell
 
     /// Карта ещё на плашке, пока та уезжает (P242).
-    @State private var keepMap = false
+    /// Карта собрана заранее, в стороне, вскоре после запуска (P581): на
+    /// большом архиве её сборка по нажатию держала экран секундами.
+    @State private var mapReady = false
 
     /// Клавиатура: над ней встаёт полоска вложений (P253).
     @StateObject private var keyboard = KeyboardWatch()
@@ -429,13 +431,7 @@ struct RootView: View {
         .onChange(of: shell.screen) { old, new in
             LagWatch.note(new)
             follow(from: old, to: new)
-            if new == .map {
-                keepMap = true
-            } else if old == .map {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
-                    if shell.screen != .map { keepMap = false }
-                }
-            }
+            if new == .map { mapReady = true }
         }
         // Снимок во весь экран — один на всё приложение: открывают его и
         // из плана, и из дневника (P203).
@@ -535,6 +531,13 @@ struct RootView: View {
             archive.reloadSoon()
             // Свои места — для подписи точек в дневнике (P559), тоже в стороне.
             Places.loadSoon(vault)
+            // Карту — заранее, когда запуск уже позади (P581).
+            DispatchQueue.main.asyncAfter(deadline: .now() + 4) { mapReady = true }
+            LaunchClock.step(T("первый экран", "first screen"))
+            if Vault.speedTestOn {
+                shell.say(T("Открыт пробный архив. Вернуться — в настройках, долгим нажатием на «Версия».",
+                            "The test archive is open. To go back, long-press “Version” in Settings."), for: 5)
+            }
             // С какой вкладки открывать — из настроек (P249).
             shell.tab = Prefs.openingTab
             shell.openRequestedScreen(store)
@@ -699,13 +702,14 @@ struct RootView: View {
                     DayPages().allowsHitTesting(shell.screen == .today)
                 }
                 panel(.calendar, from: .top, over: geo.size) { CalendarView() }
-                // Карта — такая же плашка. Рисуется, только пока нужна:
-                // иначе приложение спрашивало бы место при самом запуске.
-                // Уходя, она остаётся на плашке, пока та не уедет за край, —
-                // иначе плашка уезжала пустой и карта просто пропадала (P242).
+                // Карта — такая же плашка. Собирается заранее, через несколько
+                // секунд после запуска, и дальше ждёт на своей плашке (P581);
+                // о месте спрашивает, только когда её впервые открыли.
+                // Прежде собиралась по нажатию и разбиралась после ухода (P242).
                 panel(.map, from: .top, over: geo.size) {
-                    if shell.screen == .map || keepMap || shell.stack.contains(.map) { MapScreen() } else { Color.clear }
+                    if mapReady || shell.screen == .map { MapScreen() } else { Color.clear }
                 }
+                .accessibilityHidden(shell.screen != .map)
                 panel(.search, from: .top, over: geo.size) { SearchView() }
             }
             .frame(width: geo.size.width, height: geo.size.height)
@@ -831,6 +835,7 @@ struct RootView: View {
         // уход на другой день пишет прежний день сразу — иначе запись
         // легла бы не в тот день.
         let again = shell.screen == target
+        if !again { LaunchClock.opened("\(target)", since: Date()) }
         let changesDay = target == .today && again && !store.isToday
         if changesDay { store.save() }
         // Каждый раздел помнит, где его оставили (P576): ушли с прошлого дня,

@@ -30,6 +30,8 @@ struct MapScreen: View {
     /// кнопки внизу ждут, а потом мягко становятся живыми (P509).
     @State private var settling = false
     @State private var focus: MapFocus?
+    /// Карту уже открывали — место спрашивали (P581).
+    @State private var begun = false
     @State private var locating = false
     @State private var asking = false
     @State private var choosingTab = false
@@ -129,7 +131,10 @@ struct MapScreen: View {
             Button(T("В дневник", "To the diary")) { remember(to: .diary) }
             Button(T("Отмена", "Cancel"), role: .cancel) { }
         }
-        .onAppear(perform: begin)
+        // Карта собрана заранее и ждёт на плашке (P581): о месте и о своих
+        // местах — только когда её открыли, а не когда собрали.
+        .onAppear { if shell.screen == .map { opened() } }
+        .onChange(of: shell.screen) { _, now in if now == .map { opened() } }
         // Карта ещё не ушла с экрана, а человек уже коснулся точки в
         // тексте, — плашка открывается и тогда.
         .onChange(of: shell.mapFocus) { _, point in
@@ -381,10 +386,21 @@ struct MapScreen: View {
 
     // MARK: - Действия
 
+    /// Карту открыли: свои места — заново (их могли поменять), а в первый
+    /// раз ещё и туда, где человек сейчас.
+    private func opened() {
+        places = Places.all(in: vault)
+        if begun {
+            if let point = shell.mapFocus { show(point) }
+            return
+        }
+        begun = true
+        begin()
+    }
+
     /// Открыть карту: на точке из текста, на месте дня, иначе — где
     /// человек сейчас. Разрешение на место просится здесь, по его жесту.
     private func begin() {
-        places = Places.all(in: vault)
         // Опись проверяет само нажатие на «Карту» (P579) — второй раз незачем.
         if let point = shell.mapFocus {
             show(point)

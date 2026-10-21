@@ -777,6 +777,8 @@ struct SettingsSticker: View {
 
     @State private var choosingPlace = false
     @State private var showingSafety = false
+    /// «Проверка скорости» — долгим нажатием на «Версия» (P581).
+    @State private var showingSpeed = false
     @EnvironmentObject private var store: DayStore
 
     @EnvironmentObject private var archive: Archive
@@ -875,10 +877,13 @@ struct SettingsSticker: View {
             Text(Build.label)
                 .font(Look.mono(12))
                 .foregroundStyle(Look.inkSoft)
-                .textSelection(.enabled)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 9)
+        .contentShape(Rectangle())
+        // Скрытая «Проверка скорости» (P581): для автора, не для всех.
+        .onLongPressGesture(minimumDuration: 1.5) { showingSpeed = true }
+        .sheet(isPresented: $showingSpeed) { SpeedTestSheet() }
     }
 
     private func close() {
@@ -1472,5 +1477,68 @@ struct WelcomeView: View {
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.bottom, 6)
+    }
+}
+
+/// «Проверка скорости» (P581): пробный архив за десять лет в отдельной
+/// папке внутри приложения и время запуска и разделов по шагам.
+struct SpeedTestSheet: View {
+    @EnvironmentObject private var vault: Vault
+    @EnvironmentObject private var store: DayStore
+    @EnvironmentObject private var archive: Archive
+    @Environment(\.dismiss) private var dismiss
+    @State private var on = Vault.speedTestOn
+    @State private var busy = false
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    Text(T("Пробный архив — десять лет выдуманных записей в отдельной папке внутри приложения. "
+                           + "Ваши записи и ваша папка не трогаются. Пока он открыт, всё, что вы пишете, "
+                           + "ложится в него, а не в ваш архив.",
+                           "The test archive is ten years of made-up entries in a separate folder inside the app. "
+                           + "Your entries and your folder are not touched. While it is open, whatever you write "
+                           + "goes into it, not into your archive."))
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                    if busy {
+                        HStack {
+                            ProgressView()
+                            Text(T("Пишу пробный архив…", "Writing the test archive…"))
+                        }
+                    } else {
+                        Button(on ? T("Вернуться к своим записям", "Back to my entries")
+                                  : T("Открыть пробный архив", "Open the test archive")) {
+                            switchArchive()
+                        }
+                    }
+                }
+                Section(T("По шагам, с начала запуска", "Step by step, since launch")) {
+                    if LaunchClock.lines.isEmpty {
+                        Text(T("Пока пусто", "Nothing yet")).foregroundStyle(.secondary)
+                    }
+                    ForEach(Array(LaunchClock.lines.enumerated()), id: \.offset) { _, line in
+                        Text(line).font(Look.mono(12))
+                    }
+                }
+            }
+            .navigationTitle(T("Проверка скорости", "Speed check"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) { Button(T("Готово", "Done")) { dismiss() } }
+            }
+        }
+    }
+
+    private func switchArchive() {
+        busy = true
+        store.save()
+        vault.speedTest(!on) {
+            on = Vault.speedTestOn
+            busy = false
+            store.load()
+            archive.reload()
+        }
     }
 }
