@@ -538,7 +538,26 @@ struct MapScreen: View {
     /// Название кнопки — куда ляжет точка (P358).
     /// Одно слово на любую вкладку (P425): «записать». С P559 — «в этот
     /// день»: точка ложится в запись дня, а не в «Мои места».
-    private var saveName: String { T("в этот день", "to this day") }
+    ///
+    /// С P590 — каким днём (автор): «сохранить в сегодня», «в завтра»,
+    /// «в послезавтра», дальше и в прошлом — числом и месяцем в две строки:
+    /// «сохранить в 25» / «ноября». Год не пишется.
+    private var saveName: String {
+        let cal = Calendar.current
+        let days = cal.dateComponents([.day], from: cal.startOfDay(for: DayStore.today()),
+                                      to: cal.startOfDay(for: store.date)).day ?? 0
+        switch days {
+        case 0: return T("сохранить\nв сегодня", "save to\ntoday")
+        case 1: return T("сохранить\nв завтра", "save to\ntomorrow")
+        case 2: return T("сохранить\nв послезавтра", "save to the\nday after")
+        default:
+            let date = Ru.shortDate(store.date)
+            guard let gap = date.firstIndex(of: " ") else {
+                return T("сохранить в", "save to") + "\n" + date
+            }
+            return T("сохранить в ", "save to ") + date[..<gap] + "\n" + date[date.index(after: gap)...]
+        }
+    }
 
     private func remember(to tab: Shell.Tab) {
         guard store.canEdit(tab) else { return shell.say(store.closedReason) }
