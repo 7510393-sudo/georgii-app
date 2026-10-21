@@ -1,0 +1,66 @@
+    940 Thread_41675   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 940 start  (in dyld) + 6992  [0x102c184e4]
+    +   940 start_sim  (in dyld_sim) + 20  [0x102e9f0e4]
+    +     940 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x104a4d4d0]  ChronothecaApp.swift:0
+    +       940 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x104a4d424]  /<compiler-generated>:0
+    +         940 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           940 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             940 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               940 UIApplicationMain  (in UIKitCore) + 100  [0x186b9f8fc]
+    +                 940 _UIApplicationMainPreparations  (in UIKitCore) + 936  [0x1864a9bc8]
+    +                   940 UIApplicationInstantiateSingleton  (in UIKitCore) + 112  [0x1864a9710]
+    +                     940 @objc SwiftUIApplication.init()  (in SwiftUI) + 44  [0x1d2ece07c]
+    +                       939 -[UIApplication init]  (in UIKitCore) + 344  [0x18649e6ec]
+    +                       ! 939 -[UIGestureEnvironment init]  (in UIKitCore) + 452  [0x185f0ff1c]
+    +                       !   939 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +                       !     939 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                       !       939 ___UIIsGesturesFrameworkEnabled_block_invoke  (in UIKitCore) + 100  [0x185dff600]
+    +                       !         939 _os_feature_enabled_SLOWPATH  (in libsystem_featureflags.dylib) + 1088  [0x1cc2c1ed8]
+    +                       !           939 _os_feature_enabled_load  (in libsystem_featureflags.dylib) + 248  [0x1cc2c2380]
+    +                       !             939 pread  (in libsystem_kernel.dylib) + 8  [0x102d5234c]
+    +                       1 -[UIApplication init]  (in UIKitCore) + 408  [0x18649e72c]
+    +                         1 -[UIEventDispatcher initWithApplication:]  (in UIKitCore) + 76  [0x186359e88]
+    +                           1 -[UIEventEnvironment initWithApplication:]  (in UIKitCore) + 112  [0x186356614]
+    +                             1 -[UIEvent _initWithEnvironment:]  (in UIKitCore) + 32  [0x185df4514]
+    +                               1 -[UIPressesEvent _init]  (in UIKitCore) + 0  [0x1861d174c]
+
+Sort by top of stack, same collapsed (when >= 5):
+        pread  (in libsystem_kernel.dylib)        1877
+        mach_msg2_trap  (in libsystem_kernel.dylib)        940
+
+Binary Images:
+       0x102b98000 -        0x102b9b507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/E839A11B-51B4-4AD3-ACF4-A53B95B7C957/data/Containers/Bundle/Application/6A136787-9AD3-4FCC-8B12-81E71889A355/Chronotheca.app/Chronotheca
+       0x102bac000 -        0x102bb43d3  libsystem_platform.dylib (375.120.2) <7E129155-1748-370C-8EDC-D762067A6D9F> /usr/lib/system/libsystem_platform.dylib
+       0x102bf8000 -        0x102cab4ff  dyld (1.0.0 - 1387) <74E52480-C2BD-3C8D-812D-95FE2B74A096> /usr/lib/dyld
+       0x102d50000 -        0x102d8aed7  libsystem_kernel.dylib (12377.161.14) <26CFE427-C180-3145-8D46-DE3129B1CD2A> /usr/lib/system/libsystem_kernel.dylib
+       0x102e38000 -        0x102e4410b  libsystem_pthread.dylib (539.100.4) <85A501D2-0B0E-3DEA-B121-B24119D80CFE> /usr/lib/system/libsystem_pthread.dylib
+       0x102e80000 -        0x102e8803f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x102e94000 -        0x102ee2e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x102f50000 -        0x102f9365f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x1030a4000 -        0x10313d2af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x103fc4000 -        0x10421fbbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+       0x10497c000 -        0x1050a427f +Chronotheca.debug.dylib (0) <81AB797E-80D4-3A8A-9EB1-D40AB87C01BD> /Users/*/Library/Developer/CoreSimulator/Devices/E839A11B-51B4-4AD3-ACF4-A53B95B7C957/data/Containers/Bundle/Application/6A136787-9AD3-4FCC-8B12-81E71889A355/Chronotheca.app/Chronotheca.debug.dylib
+       0x180038000 -        0x180074943 +libobjc.A.dylib (951.7) <727C4040-5E6D-3DAE-B22C-9A337D46C34F> /Volumes/*/libobjc.A.dylib
+       0x180075000 -        0x1800a01d2 +libdyld.dylib (1378) <2B7568E6-5EEE-33E0-B471-2FDAAE4FF448> /Volumes/*/libdyld.dylib
+       0x1800a1000 -        0x1800bf01f +libsystem_trace.dylib (1861.120.4) <4138F7EF-2588-38B1-9977-1502A60E2E36> /Volumes/*/libsystem_trace.dylib
+       0x1800c0000 -        0x18010481f +libxpc.dylib (3102.120.13) <FF603B08-461E-35C4-82E6-3AD8E5D12848> /Volumes/*/libxpc.dylib
+       0x180105000 -        0x180107da8 +libsystem_blocks.dylib (96) <A5FDF1FF-B793-3574-8903-D24571EACD25> /Volumes/*/libsystem_blocks.dylib
+       0x180108000 -        0x1801842b7 +libsystem_c.dylib (1752.120.2) <05F4B01B-E685-39FA-93F3-DE10CD9B511A> /Volumes/*/libsystem_c.dylib
+       0x180185000 -        0x1801ca3bf +libdispatch.dylib (1542.100.32) <42B50931-38D5-3A5D-90EF-0FD7239C408D> /Volumes/*/libdispatch.dylib
+       0x1801cb000 -        0x18021213f +libsystem_malloc.dylib (812.100.31) <F71AEB05-0D59-37BA-B0F2-457432BB09B5> /Volumes/*/libsystem_malloc.dylib
+       0x180213000 -        0x1802bd50f +libcorecrypto.dylib (1922.122.1) <730B0835-7D7B-35A3-B73E-7FC1D2C4403E> /Volumes/*/libcorecrypto.dylib
+       0x1802be000 -        0x1802d66df +libc++abi.dylib (2100.43) <CA04D801-3E4B-3A57-AEAD-0A5EB2DB0671> /Volumes/*/libc++abi.dylib
+       0x1802d7000 -        0x1802df38b +libsystem_darwin.dylib (1752.120.2) <C063C99F-5786-3246-A3D5-1FDB58B6E724> /Volumes/*/libsystem_darwin.dylib
+       0x1802e0000 -        0x18036909f +libc++.1.dylib (2100.43) <FD646C4C-99C5-3828-8199-3A66A48FF1A1> /Volumes/*/libc++.1.dylib
+       0x18036a000 -        0x18038e713 +libsystem_info.dylib (600) <29821F88-C763-338E-A4CC-4FB7C6FB5D35> /Volumes/*/libsystem_info.dylib
+       0x18038f000 -        0x1807c04ff  com.apple.CoreFoundation (6.9 - 5026.5.4) <E74D7B62-0AAC-3013-A55B-F15135D4BD2E> /Volumes/*/CoreFoundation.framework/CoreFoundation
+       0x1807c1000 -        0x18083f74f  com.apple.SystemConfiguration (1.21 - 1.21) <374CDDD1-FAE2-39A7-B824-6F019733EB4F> /Volumes/*/SystemConfiguration.framework/SystemConfiguration
+       0x180840000 -        0x1815f8ddf  com.apple.Foundation (6.9 - 5026.5.4) <2CC9FCE0-08F9-3A0D-8A2F-6DB229462DE5> /Volumes/*/Foundation.framework/Foundation
+       0x1815f9000 -        0x1816264bb +libCRFSuite.dylib (55) <FE8035C1-8537-39AE-A899-1E34ECBA2DCB> /Volumes/*/libCRFSuite.dylib
+       0x181627000 -        0x1818626df  com.apple.CoreServices (839 - 839) <27D2320D-91DF-3974-A815-FBEE4375327A> /Volumes/*/CoreServices.framework/CoreServices
+       0x181863000 -        0x1819cac4f +libSparse.dylib (184.80.2) <31390263-73E7-304B-B2E7-E86F3889F9C7> /Volumes/*/Accelerate.framework/Frameworks/vecLib.framework/libSparse.dylib
+       0x1819cb000 -        0x181ea971f  com.apple.ImageIO (3.3.0 - 2784.5.4) <3F851F82-F2EF-3EB4-8AB8-5556EA0E05E9> /Volumes/*/ImageIO.framework/ImageIO
+       0x181eaa000 -        0x181ead09f  com.apple.ConstantClasses (1.0 - 1) <60CE0423-E7B4-3646-A945-6DFB11D6EA8C> /Volumes/*/ConstantClasses.framework/ConstantClasses
+       0x181eae000 -        0x18209ae1f  com.apple.CoreText (877.4.0.7 - 877.4.0.7) <384D2572-6E61-33B4-8CBC-FFFCB002A1D2> /Volumes/*/CoreText.framework/CoreText
+       0x18209b000 -        0x1822650ff  com.apple.Security (10.0 - 61901.120.67) <0AF8A4FB-209E-31F7-BA57-F4084C1D23AF> /Volumes/*/Security.framework/Security
+       0x182266000 -        0x182307b9f  com.apple.framework.IOKit (2.0.2 - 100231.120.3) <21AB2359-DEEC-3444-94FE-B7257E43BE34> /Volumes/*/IOKit.framework/Versions/A/IOKit
