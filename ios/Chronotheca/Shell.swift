@@ -21,6 +21,11 @@ final class Shell: ObservableObject {
 
     @Published var screen: Screen = .today
 
+    /// Плашки экранов, опущенные друг на друга, снизу вверх (P501, P505).
+    /// Нажатие на раздел опускает его плашку сверху поверх остальных, не
+    /// поднимая прежнюю. «День» — такая же плашка, как остальные; при
+    /// запуске лежит одна она.
+    @Published var stack: [Screen] = [.today]
     @Published var tab: Tab = .plan {
         // Запомнить, где был, — для «Открывать на: где был» (P402).
         didSet { UserDefaults.standard.set(tab == .diary ? "diary" : "plan", forKey: Prefs.lastTab) }
@@ -72,6 +77,7 @@ final class Shell: ObservableObject {
     }
     @Published var openedPhoto: OpenedPhoto?
 
+    @Published var showingMenu = false
     /// Точка, на которой открыть карту: её нажали в тексте дня (P213).
     @Published var mapFocus: GeoPoint?
     /// Точка, выбранная сейчас на карте. По ней работают «в навигатор» и
