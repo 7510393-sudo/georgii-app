@@ -246,7 +246,6 @@ enum Look {
     static let plateDark   = Color(light: 0xF4E7BC, dark: 0x2B261A)
     static let stickerEdge = Color(light: 0xE8DCAE, dark: 0x3D3520)
     static let note        = Color(light: 0xE9F1F8, dark: 0x1A2430)
-    static let noteEdge    = Color(light: 0xC7DBEC, dark: 0x2C3A48)
 
     /// Крафт-картон нижней строки разделов (P297): обложка блокнота, одна
     /// во все дни. Значки на нём — тёмно-коричневыми чернилами.

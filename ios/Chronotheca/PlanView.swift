@@ -34,10 +34,6 @@ struct PlanRowLine: View {
 
     var onTime: (() -> Void)?
     var onBell: (() -> Void)?
-    var onDetails: (() -> Void)?
-    var onUp: (() -> Void)?
-    var onDown: (() -> Void)?
-    var onDelete: (() -> Void)?
     /// Касание по номеру — сделано или снова не сделано (P383).
     var onCheck: (() -> Void)?
     /// Правка названия кончилась.
@@ -87,14 +83,6 @@ struct PlanRowLine: View {
     /// Номера остаются столбиком — за них дело берут, — а название
     /// занимает всю остальную ширину (решение P177).
     static let wrap = badgeWidth + gap
-
-    /// Насколько площадка колокольчика выступает над квадратиком номера.
-    ///
-    /// На столько же поджимается закладка: её верх должен совпадать с
-    /// верхом строки, а верх строки — это номер, а не пустое поле вокруг
-    /// колокольчика. Прежде здесь стояла тройка, взятая на глаз, и закладки
-    /// сходились со строками лишь приблизительно (решение P177).
-    static let bellRise: CGFloat = 0
 
     /// Дело сейчас держат за номер. Сбрасывается и тогда, когда жест
     /// оборвался сам, — тогда дело опускается на место.
@@ -423,16 +411,6 @@ struct WeekEnd: Shape {
     }
 }
 
-/// Черта под временем: касанием по ней открывается ролик.
-struct Line: Shape {
-    func path(in r: CGRect) -> Path {
-        var p = Path()
-        p.move(to: CGPoint(x: r.minX, y: r.midY))
-        p.addLine(to: CGPoint(x: r.maxX, y: r.midY))
-        return p
-    }
-}
-
 
 // MARK: - Открытая страница
 
@@ -528,7 +506,7 @@ struct PlanView: View {
         ScrollViewReader { proxy in
             VStack(alignment: .leading, spacing: 0) {
                 if store.away.contains(.planner) {
-                    PlanEmpty(isPast: store.isPast, inCloud: true)
+                    PlanEmpty(inCloud: true)
                 } else {
                     eventBlock
                     list
@@ -655,7 +633,6 @@ struct PlanView: View {
                         bellColor: Look.accent,
                         onTime: { add(then: .time) },
                         onBell: { add(then: .bell) },
-                        onDetails: { add() },
                         ghost: true)
         }
         .contentShape(Rectangle())
@@ -725,9 +702,6 @@ struct PlanView: View {
             typing: typingIn == id,
             onTime: { openRoller(id, .time) },
             onBell: { openRoller(id, .bell) },
-            onUp: { store.move(id, by: -1) },
-            onDown: { store.move(id, by: 1) },
-            onDelete: { store.delete(id) },
             onCheck: { toggle(row) },
             // Правку кончила эта самая строка, а не соседняя, которой
             // только что отдали ввод: иначе курсор гас бы сразу после
@@ -995,7 +969,6 @@ struct PlanView: View {
                         stripe: e.color,
                         onTime: { open(e) },
                         onBell: { open(e) },
-                        onDetails: { open(e) },
                         onCheck: { checkEvent(e) },
                         onLift: { eventLift(e, $0) },
                         lifted: up,
@@ -1355,7 +1328,6 @@ extension View {
 
 /// Пустой день. Общий для открытой страницы и соседних.
 struct PlanEmpty: View {
-    let isPast: Bool
     /// Файл плана лежит в iCloud и ещё не скачан. Пустая страница здесь
     /// не значит пустой день — так и надо сказать (решение P182).
     var inCloud = false
@@ -1377,28 +1349,6 @@ struct PlanEmpty: View {
         .frame(maxWidth: .infinity)
         .padding(.top, 40)
         .padding(.horizontal, 22)
-    }
-}
-
-/// Счёт под списком. Тоже общий.
-struct PlanStat: View {
-    let planned: Int
-    let done: Int
-
-    var body: some View {
-        // Пустой день — без «Запланировано 0»: там одна пустая плашка (P406).
-        if planned > 0 { line }
-    }
-
-    private var line: some View {
-        Text(T("Запланировано \(planned) · сделано \(done)", "Planned \(planned) · done \(done)"))
-            .font(Look.mono(11.5))
-            .tracking(0.35)
-            .foregroundStyle(Look.inkFaint)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 20)
-            // Две клетки листа (P413).
-            .frame(height: GridSnap.cell * 2)
     }
 }
 
@@ -1684,33 +1634,5 @@ struct PointChipView: View {
         let picture = PointChip.mark(glowing: false, title: point.title)
         Image(uiImage: picture)
             .frame(width: picture.size.width, height: picture.size.height)
-    }
-}
-
-/// Надпись над прошедшим днём плана, открытым для правки (P362): что
-/// сейчас можно и как выйти.
-struct EditBanner: View {
-
-    @EnvironmentObject private var store: DayStore
-
-    var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text(T("Прошедший день открыт для правки.", "This past day is open for editing."))
-                .font(Look.sans(12.5))
-            Spacer(minLength: 0)
-            Button(T("Выйти", "Done")) {
-                withAnimation(.easeOut(duration: 0.2)) { store.setEditing(.plan, false) }
-            }
-            .font(Look.sans(12.5, weight: .semibold))
-            .underline()
-        }
-        .foregroundStyle(Look.accent)
-        .padding(.horizontal, 11)
-        .padding(.vertical, 8)
-        .background(Look.accent.opacity(0.08), in: RoundedRectangle(cornerRadius: 7))
-        .overlay(RoundedRectangle(cornerRadius: 7)
-            .strokeBorder(Look.accent, style: StrokeStyle(lineWidth: 1, dash: [4, 3])))
-        .padding(.horizontal, 12)
-        .padding(.top, 10)
     }
 }

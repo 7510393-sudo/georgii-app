@@ -291,7 +291,6 @@ final class DayStore: ObservableObject {
 
     /// Дела дня — без строк, которые приложение не разбирало.
     var tasks: [PlanRow] { planRows.filter { $0.isTask } }
-    var doneCount: Int { tasks.filter { $0.done }.count }
 
     func index(of id: UUID) -> Int? { planRows.firstIndex { $0.id == id } }
 
@@ -576,7 +575,6 @@ final class DayStore: ObservableObject {
         backOrder = []
         aheadOrder = []
         diaryCaret = nil
-        lastPlanRow = nil
         caretRequest = nil
         leftCaret = nil
         leftRow = nil
@@ -817,17 +815,6 @@ final class DayStore: ObservableObject {
         save()
     }
 
-    /// Отметить, где человек был в этот день. Место — часть дневника:
-    /// в будущий день его не поставить (A9, P207).
-    @discardableResult
-    func mark(_ where_: CLLocationCoordinate2D) -> Bool {
-        guard canEditDiary else { return false }
-        place = Geo.text(where_)
-        touchDiary()
-        save()
-        return true
-    }
-
     /// Где стоял курсор в записи дневника — отступом от начала текста.
     /// Туда встаёт точка с карты (P213). Пусто — курсора не было, и точка
     /// ложится в конец записи.
@@ -839,13 +826,7 @@ final class DayStore: ObservableObject {
     /// В каком деле «Как прошло?» сейчас пишут (P407): «место» встаёт в
     /// конец этого ответа, в ту же строку.
     var answerTyping: String?
-    var planTyping: UUID? {
-        didSet { if let planTyping { lastPlanRow = planTyping } }
-    }
-
-    /// Дело плана, в котором курсор стоял последним, — даже если
-    /// клавиатуру уже убрали. Туда геоточка кладёт место (P253).
-    private(set) var lastPlanRow: UUID?
+    var planTyping: UUID?
 
     /// День дополнен версией с другого устройства (P570) — растёт, чтобы
     /// экран сказал об этом.
@@ -1025,18 +1006,6 @@ final class DayStore: ObservableObject {
         save()
     }
 
-    /// Точку, стоявшую своей строкой, — в название дела, в конец (P358).
-    func putPointIntoTask(_ pointRow: UUID, task: UUID) {
-        guard canEditPlan, let r = index(of: pointRow),
-              let line = planRows[r].verbatim, Geo.point(in: line) != nil,
-              index(of: task) != nil else { return }
-        planRows.remove(at: r)
-        guard let t = index(of: task) else { return }
-        let text = planRows[t].text.trimmingCharacters(in: .whitespaces)
-        planRows[t].text = text.isEmpty ? line : text + " " + line
-        save()
-    }
-
     /// Снимок из-под дела — назад в полоску плана внизу (P358).
     /// Снимок из полоски внизу страницы — под дело плана (P408): полоска
     /// одна, в неё ложится всё новое, а под дело снимок переносят пальцем.
@@ -1137,8 +1106,6 @@ final class DayStore: ObservableObject {
         touchDiary()
         save()
     }
-
-    var placeCoordinate: CLLocationCoordinate2D? { place.flatMap(Geo.parse) }
 
     /// Записать погоду там, где человек сейчас. Только в сегодняшний день:
     /// погода — это «как было, когда писал», а не справка о прошлом (P208).

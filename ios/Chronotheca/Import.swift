@@ -189,10 +189,6 @@ enum DayOneImport {
         if let data = try? JSONEncoder().encode(done.sorted()) { try? data.write(to: url, options: .atomic) }
     }
 
-    static func forget() {
-        if let url = doneURL { try? FileManager.default.removeItem(at: url) }
-    }
-
     /// Перенести выгрузку в архив. Работает в стороне от главного потока;
     /// `step` — сколько дней из скольких пройдено.
     static func run(folder: URL, vault: Vault, step: @escaping (Int, Int) -> Void) -> Result<Report, Failure> {
@@ -383,7 +379,6 @@ struct DayOneImportView: View {
 
     @EnvironmentObject private var vault: Vault
     @EnvironmentObject private var store: DayStore
-    @Environment(\.dismiss) private var dismiss
 
     @State private var choosing = false
     @State private var progress: (Int, Int)?

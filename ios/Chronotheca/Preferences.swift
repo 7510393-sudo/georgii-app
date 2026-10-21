@@ -6,7 +6,6 @@ import LocalAuthentication
 /// телефоне, не в папке записей: это привычки человека, а не его записи.
 enum Prefs {
     static let lock = "prefs.lock"
-    static let hide = "prefs.hide"
     static let theme = "prefs.theme"            // "system", "light", "dark"
     static let boundary = "prefs.boundary"      // час границы суток, 0…6
     static let startTab = "prefs.startTab"      // "last", "plan", "diary"
@@ -98,14 +97,6 @@ enum Prefs {
         }
     }
 
-    static var scheme: ColorScheme? {
-        switch UserDefaults.standard.string(forKey: theme) {
-        case "light": return .light
-        case "dark":  return .dark
-        default:      return nil
-        }
-    }
-
     /// Граница суток из настроек — применить к расчёту «сегодня».
     static func applyBoundary() {
         // По умолчанию день начинается в полночь (P374; прежде в 4:00).
@@ -164,22 +155,6 @@ enum Share {
         while let shown = top.presentedViewController { top = shown }
         sheet.popoverPresentationController?.sourceView = top.view
         top.present(sheet, animated: true)
-    }
-}
-
-/// Заголовок раздела на бумажке настроек.
-struct StickerSection: View {
-    let title: String
-
-    var body: some View {
-        Text(title.uppercased())
-            .font(Look.sans(10.5, weight: .semibold))
-            .tracking(0.7)
-            .foregroundStyle(Look.inkFaint)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 14)
-            .padding(.top, 12)
-            .padding(.bottom, 4)
     }
 }
 

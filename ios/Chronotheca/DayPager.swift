@@ -486,52 +486,6 @@ struct BarFace: View {
     }
 }
 
-/// Название вкладки. В режиме изменений каждая буква качается вокруг
-/// своей оси, вправо-влево до 15°, каждая в своём ритме: режим виден
-/// издалека, и забыть его включённым трудно (P211).
-struct WobblyTitle: View {
-
-    let text: String
-    let wobbling: Bool
-    let font: Font
-    let color: Color
-
-    var body: some View {
-        if wobbling {
-            TimelineView(.animation) { clock in
-                let t = clock.date.timeIntervalSinceReferenceDate
-                HStack(spacing: 0) {
-                    ForEach(Array(text.enumerated()), id: \.offset) { i, letter in
-                        Text(String(letter))
-                            .font(font)
-                            .tracking(1.56)
-                            .foregroundStyle(color)
-                            .rotationEffect(.degrees(WobblyTitle.angle(t, i)))
-                    }
-                }
-            }
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(text.capitalized + T(". Правка прошедшего дня, нажмите, чтобы выйти", ". Editing a past day, tap to leave"))
-        } else {
-            Text(text)
-                .font(font)
-                .tracking(1.56)
-                .foregroundStyle(color)
-        }
-    }
-
-    /// Наклон буквы в минуту `t`: две волны с несоразмерными частотами, у
-    /// каждой буквы свои — со стороны это выглядит беспорядком.
-    static func angle(_ t: TimeInterval, _ i: Int) -> Double {
-        // Впятеро-вшестеро живее прежнего: буквы дрожат, а не покачиваются
-        // (P227).
-        let a = (2.3 + Double((i * 7) % 5) * 0.45) * 5.5
-        let b = (3.7 + Double((i * 3) % 4) * 0.6) * 5.5
-        let p = Double(i) * 1.9
-        return 15 * (0.6 * sin(t * a + p) + 0.4 * sin(t * b + p * 0.7))
-    }
-}
-
 /// Полоска вложений. Едет вместе со страницей: вложения принадлежат дню.
 ///
 /// Пока открыта клавиатура, её кнопки — в строке над клавиатурой
@@ -816,25 +770,6 @@ struct AttachBar: View {
     }
 }
 
-/// Видео из галереи: система отдаёт его файлом, а не в память — ролик
-/// может весить гигабайт. Файл сразу копируется к себе: чужой исчезнет,
-/// как только окно галереи закроется.
-struct PickedMovie: Transferable {
-    let url: URL
-
-    static var transferRepresentation: some TransferRepresentation {
-        FileRepresentation(contentType: .movie) { movie in
-            SentTransferredFile(movie.url)
-        } importing: { received in
-            let ext = received.file.pathExtension.isEmpty ? "mov" : received.file.pathExtension
-            let copy = FileManager.default.temporaryDirectory
-                .appendingPathComponent(UUID().uuidString + "." + ext)
-            try FileManager.default.copyItem(at: received.file, to: copy)
-            return PickedMovie(url: copy)
-        }
-    }
-}
-
 /// Соседний день — только чтобы его было видно, пока он едет.
 ///
 /// Рисует ровно те же страницы, что и открытый день, только без правки.
@@ -982,66 +917,6 @@ struct PlanPage: View {
     }
 }
 
-/// Полоса под облачком без того места, где локоть лежит на вкладке
-/// (P256). Вне облачка черта уже нарисована — второй раз не нужно.
-private struct ElbowGap: Shape {
-    let start: CGFloat
-    let from: CGFloat
-    let to: CGFloat
-    let end: CGFloat
-
-    func path(in rect: CGRect) -> Path {
-        var p = Path()
-        p.addRect(CGRect(x: start, y: rect.minY, width: max(0, from - start), height: rect.height))
-        p.addRect(CGRect(x: to, y: rect.minY, width: max(0, end - to), height: rect.height))
-        return p
-    }
-}
-
-/// Где стоит открытая вкладка — её рамка на странице передаётся наверх,
-/// к рамке режима изменений (P341).
-private struct OpenTabKey: PreferenceKey {
-    static var defaultValue: Anchor<CGRect>? = nil
-    static func reduce(value: inout Anchor<CGRect>?, nextValue: () -> Anchor<CGRect>?) {
-        value = value ?? nextValue()
-    }
-}
-
-/// Контур папки: страница с выступающей над ней вкладкой (P341).
-///
-/// Снизу вверх по левому краю страницы, по её верхнему краю до вкладки,
-/// вокруг вкладки — вверх, поверху со скруглениями, вниз — и дальше по
-/// верхнему краю страницы до правого края и вниз. Закрытая соседняя
-/// вкладка остаётся за линией, над страницей. Низ не обводится: страница
-/// продолжается в строку вложений.
-struct FolderOutline: Shape {
-    let tab: CGRect
-    let radius: CGFloat
-    /// Отступ от краёв, чтобы линию не срезал край экрана.
-    var inset: CGFloat = 0
-
-    func path(in rect: CGRect) -> Path {
-        let left = rect.minX + inset, right = rect.maxX - inset
-        let seam = tab.maxY
-        let tabLeft = max(left, tab.minX), tabRight = min(right, tab.maxX)
-        let top = tab.minY + inset
-        var p = Path()
-        p.move(to: CGPoint(x: left, y: rect.maxY))
-        p.addLine(to: CGPoint(x: left, y: seam))
-        p.addLine(to: CGPoint(x: tabLeft, y: seam))
-        p.addLine(to: CGPoint(x: tabLeft, y: top + radius))
-        p.addArc(center: CGPoint(x: tabLeft + radius, y: top + radius), radius: radius,
-                 startAngle: .degrees(180), endAngle: .degrees(270), clockwise: false)
-        p.addLine(to: CGPoint(x: tabRight - radius, y: top))
-        p.addArc(center: CGPoint(x: tabRight - radius, y: top + radius), radius: radius,
-                 startAngle: .degrees(270), endAngle: .degrees(0), clockwise: false)
-        p.addLine(to: CGPoint(x: tabRight, y: seam))
-        p.addLine(to: CGPoint(x: right, y: seam))
-        p.addLine(to: CGPoint(x: right, y: rect.maxY))
-        return p
-    }
-}
-
 
 /// Облачко «А вот когда-то…» одной и той же отрисовки на открытой и на
 /// соседних страницах (P114, P484). Касание — только у открытой.
@@ -1090,7 +965,7 @@ struct DayCloud: View {
             let half = (UIScreen.main.bounds.width - 30) / 2
             let width = half * 0.50
             let height = width / RememberCloud.ratio
-            RememberCloud(date: date, width: width) { if live { open() } }
+            RememberCloud(width: width) { if live { open() } }
                 .frame(width: width, height: height)
                 // Сидит над заголовком «Дневник», у правого края, и едет вместе
                 // со страницей (P436); у края несколько миллиметров (P437);

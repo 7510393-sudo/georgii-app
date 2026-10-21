@@ -15,30 +15,12 @@ final class Shell: ObservableObject {
         case diary = "Дневник"
         var id: String { rawValue }
 
-        /// Название на языке приложения (P355). `rawValue` — прежнее
-        /// русское, его не показываем.
-        var title: String { self == .plan ? T("План", "Plan") : T("Дневник", "Diary") }
-
         /// Чей это файл в папке записей — для корзины (P300).
         var vaultFolder: Vault.Folder { self == .diary ? .diary : .planner }
     }
 
-    @Published var screen: Screen = .today {
-        didSet { if screen == .map && oldValue != .map { mapFrom = oldValue } }
-    }
-    /// С какого экрана пришли на карту: с «Сегодня» точка ложится туда, где
-    /// был курсор; из календаря и поиска — спрашивается, в план или в
-    /// дневник (P240).
-    private(set) var mapFrom: Screen = .today
+    @Published var screen: Screen = .today
 
-    /// Плашки экранов, опущенные друг на друга, снизу вверх (P501, P505).
-    /// Нажатие на раздел просто опускает его плашку сверху поверх остальных,
-    /// не поднимая прежнюю; второе нажатие на открытый раздел убирает верхнюю
-    /// плашку, и под ней оказывается тот экран, с которого пришли. «Сегодня»
-    /// — такая же плашка, как остальные; при запуске лежит одна она.
-    @Published var stack: [Screen] = [.today]
-    /// Верхняя опущенная плашка или книга.
-    var lowered: Screen { stack.last ?? .today }
     @Published var tab: Tab = .plan {
         // Запомнить, где был, — для «Открывать на: где был» (P402).
         didSet { UserDefaults.standard.set(tab == .diary ? "diary" : "plan", forKey: Prefs.lastTab) }
@@ -90,13 +72,6 @@ final class Shell: ObservableObject {
     }
     @Published var openedPhoto: OpenedPhoto?
 
-    @Published var showingMenu = false
-    /// Своя карта мест — теперь раздел внизу, плашка сверху, как календарь
-    /// и поиск (P239).
-    var showingMap: Bool {
-        get { screen == .map }
-        set { screen = newValue ? .map : (screen == .map ? .today : screen) }
-    }
     /// Точка, на которой открыть карту: её нажали в тексте дня (P213).
     @Published var mapFocus: GeoPoint?
     /// Точка, выбранная сейчас на карте. По ней работают «в навигатор» и

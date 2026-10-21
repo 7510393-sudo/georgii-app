@@ -363,71 +363,6 @@ struct PhotoStrip: View {
     }
 }
 
-/// Все вложения дня сеткой, по видам: снимки, видео, голос, файлы (P428).
-/// Касание открывает вложение так же, как из полоски.
-struct AttachmentGrid: View {
-    let items: [URL?]
-    let open: (Int) -> Void
-    @Environment(\.dismiss) private var dismiss
-
-    private static let columns = [GridItem(.adaptive(minimum: 84), spacing: 4)]
-
-    private func kind(_ i: Int) -> Diary.Kind {
-        items[i].map { Diary.kind(of: $0.lastPathComponent) } ?? .photo
-    }
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    group(T("Снимки", "Photos"), .photo)
-                    group(T("Видео", "Video"), .video)
-                    group(T("Голос", "Voice"), .audio)
-                    group(T("Файлы", "Files"), .file)
-                }
-                .padding(12)
-            }
-            .background(Look.chrome)
-            .navigationTitle(T("Вложения дня", "The day’s attachments"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(T("Готово", "Done")) { dismiss() }.fontWeight(.semibold)
-                }
-            }
-        }
-    }
-
-    @ViewBuilder private func group(_ title: String, _ k: Diary.Kind) -> some View {
-        let found = items.indices.filter { kind($0) == k }
-        if !found.isEmpty {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("\(title) · \(found.count)")
-                    .font(Look.sans(13, weight: .semibold))
-                    .foregroundStyle(Look.inkSoft)
-                LazyVGrid(columns: Self.columns, spacing: 4) {
-                    ForEach(found, id: \.self) { i in
-                        tile(i)
-                            .aspectRatio(1, contentMode: .fill)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
-                            .contentShape(Rectangle())
-                            .onTapGesture { open(i) }
-                    }
-                }
-            }
-        }
-    }
-
-    @ViewBuilder private func tile(_ i: Int) -> some View {
-        switch kind(i) {
-        case .photo: PhotoThumb(url: items[i])
-        case .video: PhotoThumb(url: items[i], video: true)
-        case .audio: FileTile(icon: "waveform", label: items[i]?.lastPathComponent ?? T("голос", "voice"))
-        case .file: FileTile(icon: "doc.text", label: items[i]?.lastPathComponent ?? T("файл", "file"))
-        }
-    }
-}
-
 /// Плитка голоса или документа в полоске.
 struct FileTile: View {
     let icon: String
@@ -845,53 +780,6 @@ struct OverPhoto: ViewModifier {
     }
 }
 
-/// Снимок, поставленный между делами плана, — своей строкой, того же
-/// размера, что снимок в тексте дневника (P204, P205).
-struct PlanPhotoLine: View {
-
-    let url: URL?
-    var onOpen: (() -> Void)?
-    @State private var image: UIImage?
-    /// Чья картинка сейчас показана (P555).
-    @State private var shown: URL?
-
-    static let height: CGFloat = DiaryEditor.photoSize.height + 16
-
-    init(url: URL?, onOpen: (() -> Void)? = nil) {
-        self.url = url
-        self.onOpen = onOpen
-        _image = State(initialValue: url.flatMap { Photo.cache.object(forKey: PhotoAttachment.key($0)) })
-    }
-
-    var body: some View {
-        HStack(spacing: 0) {
-            Image(uiImage: image ?? PhotoAttachment.empty)
-                .resizable()
-                .frame(width: DiaryEditor.photoSize.width, height: DiaryEditor.photoSize.height)
-                .contentShape(Rectangle())
-                .onTapGesture { onOpen?() }
-            Spacer(minLength: 0)
-        }
-        .padding(.horizontal, 14)
-        .frame(height: Self.height)
-        .task(id: url) {
-            if shown != url {
-                shown = url
-                image = url.flatMap { Photo.cache.object(forKey: PhotoAttachment.key($0)) }
-            }
-            guard image == nil, let url else { return }
-            let got = await Task.detached(priority: .userInitiated) { () -> UIImage? in
-                guard let raw = Photo.load(url, side: 280) else { return nil }
-                return PhotoAttachment.frame(raw)
-            }.value
-            guard let got else { return }
-            Photo.cache.setObject(got, forKey: PhotoAttachment.key(url))
-            image = got
-        }
-        .accessibilityLabel(T("Фотография", "Photo"))
-    }
-}
-
 /// Вложения полоски во весь экран — листаются вбок (P278): влево —
 /// следующее в полоске, вправо — прежнее. Жест один с «убрать вниз», в
 /// самом просмотре снимка: общий листатель перехватывал бы то одно, то
@@ -1027,4 +915,10 @@ struct HoldCatcher: UIViewRepresentable {
 
         @objc func tapped() { parent.tap?() }
     }
+}
+
+/// Высота строки снимка между делами плана (P204, P205). Сама строка
+/// рисуется в ряду вложений; осталась только мерка.
+enum PlanPhotoLine {
+    static let height: CGFloat = DiaryEditor.photoSize.height + 16
 }

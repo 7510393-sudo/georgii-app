@@ -173,9 +173,6 @@ final class Vault: ObservableObject {
         return root.deletingLastPathComponent().lastPathComponent
     }
 
-    /// Прежнее место словами «Файлов».
-    var previousFriendly: String? { previousPath.map(Vault.friendly) }
-
     static func friendly(_ path: String) -> String {
         // Своя папка приложения на телефоне: в «Файлах» она лежит в «На
         // iPhone» под именем приложения (P223).
@@ -753,16 +750,6 @@ final class Vault: ObservableObject {
                 self?.transferDone = report
             }
         }
-    }
-
-    /// Прежнее место, если оно было. Показывается в настройках.
-    var previousPath: String? {
-        let defaults = UserDefaults.standard
-        guard defaults.data(forKey: Vault.previousBookmarkKey) != nil,
-              let path = defaults.string(forKey: Vault.previousPathKey),
-              !path.isEmpty, path != root?.path
-        else { return nil }
-        return path.removingPercentEncoding ?? path
     }
 
     /// Вернуться к прежнему месту. Ошибочный выбор — обычное дело, и он

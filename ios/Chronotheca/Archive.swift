@@ -66,12 +66,6 @@ final class Archive: ObservableObject {
                 .joined(separator: "\n")
         }
 
-        /// Строка, которой день представляется в поиске.
-        var line: String {
-            if !title.isEmpty { return title }
-            if !text.isEmpty { return text.replacingOccurrences(of: "\n", with: " ") }
-            return tasks.first(where: { $0.isTask })?.text ?? ""
-        }
     }
 
     @Published private(set) var days: [String: Day] = [:] {

@@ -1002,44 +1002,6 @@ struct RootView: View {
     }
 }
 
-/// Обводка закладки «Детали»: скруглена слева, открыта справа —
-/// полоска выглядывает из-за правого края строки.
-struct SideTabBorder: Shape {
-    let radius: CGFloat
-
-    func path(in r: CGRect) -> Path {
-        var p = Path()
-        p.move(to: CGPoint(x: r.maxX, y: r.minY))
-        p.addLine(to: CGPoint(x: r.minX + radius, y: r.minY))
-        p.addArc(center: CGPoint(x: r.minX + radius, y: r.minY + radius), radius: radius,
-                 startAngle: .degrees(270), endAngle: .degrees(180), clockwise: true)
-        p.addLine(to: CGPoint(x: r.minX, y: r.maxY - radius))
-        p.addArc(center: CGPoint(x: r.minX + radius, y: r.maxY - radius), radius: radius,
-                 startAngle: .degrees(180), endAngle: .degrees(90), clockwise: true)
-        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
-        return p
-    }
-}
-
-/// Обводка закладки: верх и бока, без низа — чтобы выбранная вкладка
-/// сливалась со своей страницей, как лист в картотеке.
-struct TabBorder: Shape {
-    let radius: CGFloat
-
-    func path(in r: CGRect) -> Path {
-        var p = Path()
-        p.move(to: CGPoint(x: r.minX, y: r.maxY))
-        p.addLine(to: CGPoint(x: r.minX, y: r.minY + radius))
-        p.addArc(center: CGPoint(x: r.minX + radius, y: r.minY + radius), radius: radius,
-                 startAngle: .degrees(180), endAngle: .degrees(270), clockwise: false)
-        p.addLine(to: CGPoint(x: r.maxX - radius, y: r.minY))
-        p.addArc(center: CGPoint(x: r.maxX - radius, y: r.minY + radius), radius: radius,
-                 startAngle: .degrees(270), endAngle: .degrees(0), clockwise: false)
-        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
-        return p
-    }
-}
-
 /// Уголок стикера, наклеенного выше экрана: слева торчит правый нижний
 /// угол голубого стикера, справа — левый нижний угол желтоватого. Стикер
 /// наклеен ровно, по вертикали; у него тень — он лежит поверх страницы

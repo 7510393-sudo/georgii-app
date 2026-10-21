@@ -51,7 +51,6 @@ struct DiaryView: View {
             // Полоска одна на всю страницу (P408): снимки дневника, за ними
             // — прежние снимки полоски плана.
             photos: store.stripLinks.map(store.photoURL),
-            photoLinks: store.stripLinks,
             takesBack: Plan.hasPhotoRows(store.planRows),
             suggested: AnyView(SuggestedRow(model: suggest) { asset in
                 GalleryRow.take([asset], store: store, tab: .diary) { shell.say($0) }
@@ -96,8 +95,6 @@ struct DiaryView: View {
             onPointFromTitle: { line in
                 store.pointFromTitle(line)
             },
-            undo: store.diaryBack.isEmpty || !store.canEditDiary ? nil : { store.undoDiary() },
-            redo: store.diaryAhead.isEmpty || !store.canEditDiary ? nil : { store.redoDiary() },
             writeNow: shell.writeNow,
             health: health,
             // Касание по строке «Здоровья» — она ложится в запись (P378).
@@ -289,8 +286,6 @@ struct DiaryPage: View {
     var weather: String?
     /// Фотографии дня. Стоят над текстом, под заголовком (P200).
     var photos: [URL?] = []
-    /// Строки-ссылки тех же снимков: их несёт палец из полоски в текст.
-    var photoLinks: [String] = []
     /// Под делами плана есть снимки — полоска видна и пустой: в неё их
     /// возвращают (P358, P408).
     var takesBack = false
@@ -318,9 +313,6 @@ struct DiaryPage: View {
     /// Точку перенесли из текста в заголовок дня — и обратно (P358).
     var onPointToTitle: ((String) -> Void)?
     var onPointFromTitle: ((String) -> Void)?
-    /// Шаг назад и вперёд (P261) — там же, где в плане (P312).
-    var undo: (() -> Void)?
-    var redo: (() -> Void)?
     /// Приложение открыли на дневнике (P403): поле само берёт ввод, курсор —
     /// в начале новой строки. У соседних страниц не меняется.
     var writeNow = 0

@@ -1019,34 +1019,6 @@ struct DiaryEditor: UIViewRepresentable {
             return DiaryEditor.titleZone.insetBy(dx: -8, dy: -10).contains(lifted)
         }
 
-        /// Показать, куда ляжет взятое: точка — ровно в место под картинкой,
-        /// снимок — в конец абзаца под ней.
-        private func showMark(at at: CGPoint, in view: UITextView, hidden: Bool) {
-            guard !hidden, let window = view.window, let position = view.closestPosition(to: at)
-            else { mark?.isHidden = true; return }
-            var spot = position
-            do {
-                let ns = view.textStorage.string as NSString
-                let offset = min(view.offset(from: view.beginningOfDocument, to: position), ns.length)
-                let para = ns.paragraphRange(for: NSRange(location: offset, length: 0))
-                var end = para.location + para.length
-                if end > para.location, ns.character(at: end - 1) == 10 { end -= 1 }
-                spot = view.position(from: view.beginningOfDocument, offset: end) ?? position
-            }
-            let rect = view.convert(view.caretRect(for: spot), to: window)
-            let bar = mark ?? {
-                let v = UIView()
-                v.backgroundColor = UIColor(Look.glow)
-                v.layer.cornerRadius = 1.5
-                v.isUserInteractionEnabled = false
-                window.addSubview(v)
-                self.mark = v
-                return v
-            }()
-            bar.isHidden = false
-            bar.frame = CGRect(x: rect.minX - 1.5, y: rect.minY - 2, width: 3, height: rect.height + 4)
-        }
-
         /// Палец со взятым снимком ниже страницы — над полоской превью:
         /// отпустить здесь значит вернуть снимок вниз (P272, P349).
         private func overStrip(_ g: UIGestureRecognizer, in view: UITextView) -> Bool {
@@ -2043,16 +2015,6 @@ struct DiaryEditor: UIViewRepresentable {
 /// как отметка времени (P213).
 final class PointChip: NSTextAttachment {
 
-    /// `small` — для строки дела в плане: кнопочка не выше букв названия,
-    /// иначе строка раздаётся и номер со временем съезжают с неё (P256).
-    init(point: GeoPoint, glowing: Bool = false, small: Bool = false) {
-        super.init(data: nil, ofType: nil)
-        let picture = PointChip.draw(point.label, glowing: glowing, small: small)
-        image = picture
-        let drop: CGFloat = small ? -4 : (glowing ? -12 : -7)
-        bounds = CGRect(origin: CGPoint(x: 0, y: drop), size: picture.size)
-    }
-
     /// Точка в тексте — значок шириной в знак-два, прямо в строке (P259).
     /// Название и координаты — на карте, куда ведёт касание.
     init(mini point: GeoPoint, glowing: Bool = false) {
@@ -2178,41 +2140,6 @@ final class PointChip: NSTextAttachment {
 
     required init?(coder: NSCoder) { nil }
 
-    /// В режиме изменений точка светится, как превью снимков (P241).
-    static func draw(_ label: String, glowing: Bool = false, small: Bool = false) -> UIImage {
-        let font = UIFont.monospacedSystemFont(ofSize: small ? 11 : 12.5, weight: .regular)
-        let ink = UIColor(Look.inkFaint)
-        let words = [NSAttributedString.Key.font: font, .foregroundColor: ink]
-        let pin = UIImage(systemName: "mappin.and.ellipse",
-                          withConfiguration: UIImage.SymbolConfiguration(pointSize: 11))?
-            .withTintColor(ink, renderingMode: .alwaysOriginal)
-        let wide = min((label as NSString).size(withAttributes: words).width, 250)
-        let pinSide: CGFloat = small ? 11 : 14
-        let chip = CGSize(width: 10 + pinSide + 5 + wide + 10, height: small ? 18 : 24)
-        let pad: CGFloat = glowing && !small ? 5 : 0
-        let size = CGSize(width: chip.width + pad * 2, height: chip.height + pad * 2)
-        return UIGraphicsImageRenderer(size: size).image { ctx in
-            let box = CGRect(x: pad, y: pad, width: chip.width, height: chip.height)
-                .insetBy(dx: 0.5, dy: 0.5)
-            let shape = UIBezierPath(roundedRect: box, cornerRadius: chip.height / 2)
-            if glowing {
-                ctx.cgContext.setShadow(offset: .zero, blur: 5, color: UIColor(Look.glow).cgColor)
-            }
-            UIColor(Look.chrome).setFill()
-            shape.fill()
-            ctx.cgContext.setShadow(offset: .zero, blur: 0, color: nil)
-            UIColor(glowing ? Look.glow : Look.rule).setStroke()
-            shape.lineWidth = glowing ? 2 : 1
-            shape.stroke()
-            pin?.draw(in: CGRect(x: pad + 10, y: pad + (chip.height - pinSide) / 2,
-                                 width: pinSide, height: pinSide))
-            (label as NSString).draw(
-                with: CGRect(x: pad + 15 + pinSide, y: (size.height - font.lineHeight) / 2,
-                             width: wide, height: font.lineHeight),
-                options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine],
-                attributes: words, context: nil)
-        }
-    }
 }
 
 /// Голос, видео или документ в тексте записи (P377) — кнопочка со значком

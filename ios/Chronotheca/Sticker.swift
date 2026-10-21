@@ -121,19 +121,6 @@ struct CloseMark: View {
     }
 }
 
-/// Бумажка на пути из-за края экрана: `amount` 1 — за краем, 0 — на месте.
-struct Pulled: ViewModifier {
-    let side: StickerSide
-    let amount: CGFloat
-
-    func body(content: Content) -> some View {
-        let sign: CGFloat = side == .leading ? -1 : 1
-        // Без поворота: стикеры наклеены ровно (P236).
-        content
-            .offset(x: sign * 60 * amount, y: -720 * amount)
-    }
-}
-
 /// Как бумажку тянут и отпускают: тяжело, без отскока — как экраны (P202).
 extension Animation {
     static let pull = Animation.spring(response: 0.6, dampingFraction: 0.9)
