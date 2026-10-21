@@ -50,11 +50,14 @@ final class PlaceTests: XCTestCase {
         XCTAssertEqual(Geo.point(in: "geo:59.93863,30.31413")?.title, "")
         XCTAssertNil(Geo.point(in: "[Дом](../../Фотографии/2026/x.jpg)"))
         XCTAssertNil(Geo.point(in: "Были у [Дом](geo:1,2) вечером"))
-        // Точка — не вложение: она остаётся в тексте, а не уходит в полоску.
+        // Точка — не файл, но в конце записи она — лента, как снимки (P588).
         XCTAssertNil(Diary.picture(in: строка))
         let запись = Diary(body: "Гуляли.\n\n" + строка)
-        XCTAssertEqual(запись.photos, [])
-        XCTAssertTrue(запись.text.hasSuffix(строка))
+        XCTAssertEqual(запись.photos, [строка])
+        XCTAssertEqual(запись.text, "Гуляли.")
+        // Посреди записи — остаётся в тексте.
+        let посреди = Diary(body: "Гуляли.\n" + строка + "\nВечер.")
+        XCTAssertEqual(посреди.photos, [])
     }
 
     /// Точка с карты встаёт своей строкой — следующей за абзацем, где
