@@ -56,19 +56,28 @@ final class DayEventsTests: XCTestCase {
     }
 }
 
-/// P377: голос или файл, брошенный посреди фразы, встаёт своей строкой;
-/// снимки и точки не трогаются.
+/// P586: одно правило, куда встаёт вложение, — для переноса в тексте и из
+/// ленты: голос под текстом своей строкой, к ряду вложений — в ряд, точка
+/// и снимок вместе.
 final class FileLineTests: XCTestCase {
 
-    func testГолосПосредиФразыВстаётСвоейСтрокой() {
-        let text = "Утром гуляли [Голос 1](Audio/2026/a.m4a) и пили чай"
-        XCTAssertEqual(DiaryEditor.ownLine(text),
-                       "Утром гуляли\n[Голос 1](Audio/2026/a.m4a)\nи пили чай")
+    func testГолосПодФразойСвоейСтрокой() {
+        let голос = "[Голос 1](Audio/2026/a.m4a)"
+        XCTAssertEqual(DiaryEditor.putting(голос, at: 3, into: "Утром гуляли и пили чай").0,
+                       "Утром гуляли и пили чай\n" + голос)
     }
 
-    func testСнимокИТочкаНеТрогаются() {
-        XCTAssertNil(DiaryEditor.ownLine("Вот ![](Photos/a.heic) снимок"))
-        XCTAssertNil(DiaryEditor.ownLine("Были [Дом](geo:51.5,-0.1) вечером"))
-        XCTAssertNil(DiaryEditor.ownLine("[Голос](Audio/a.m4a)"), "уже своей строкой")
+    func testСнимокКТочкеВРяд() {
+        let точка = "[Дом](geo:51.5,-0.1)"
+        let снимок = "![](Photos/a.heic)"
+        XCTAssertEqual(DiaryEditor.putting(снимок, at: 1, into: точка + "\nВечер").0,
+                       точка + " " + снимок + "\nВечер")
+    }
+
+    func testСнимокНеВстаётВСтрокуСТочкойПосредиТекста() {
+        let строка = "Были [Дом](geo:51.5,-0.1) вечером"
+        let снимок = "![](Photos/a.heic)"
+        XCTAssertEqual(DiaryEditor.putting(снимок, at: 2, into: строка).0,
+                       строка + "\n" + снимок)
     }
 }

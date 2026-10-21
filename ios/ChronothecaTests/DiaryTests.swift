@@ -254,11 +254,11 @@ final class DiaryTests: XCTestCase {
 
     func testСнимокИзПолоскиВстаётРядом() {
         let was = "Утро\n![](a.jpg)\nВечер"
-        let now = "Утро\n![](a.jpg)\n![](b.jpg)\nВечер"
-        XCTAssertEqual(DiaryEditor.besideDropped(now, was: was),
+        XCTAssertEqual(DiaryEditor.putting("![](b.jpg)", at: 6, into: was).0,
                        "Утро\n![](a.jpg) ![](b.jpg)\nВечер")
         // Под текстом — своей строкой, как прежде.
-        XCTAssertNil(DiaryEditor.besideDropped("Утро\n![](b.jpg)\n![](a.jpg)\nВечер", was: was))
+        XCTAssertEqual(DiaryEditor.putting("![](b.jpg)", at: 1, into: was).0,
+                       "Утро\n![](b.jpg)\n![](a.jpg)\nВечер")
     }
 
     // P357: снимок посреди фразы — картинкой, а не буквами.

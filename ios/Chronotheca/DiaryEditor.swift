@@ -115,8 +115,6 @@ struct DiaryEditor: UIViewRepresentable {
         // Diarium (P546); лента превью — конец страницы, клавиатура её
         // закрывает, пока страницу не подняли.
         view.inputAccessoryView = KeyboardBar.view
-        // Превью из полоски бросают прямо в текст (решение P204).
-        view.textDropDelegate = context.coordinator
         // Своё перетаскивание поля выключено (P374): оно перехватывало
         // долгое нажатие на снимок или точку, поднимало свою копию и, не
         // найдя, куда её положить, возвращало назад. Переносит только своё
@@ -511,62 +509,9 @@ struct DiaryEditor: UIViewRepresentable {
         }
     }
 
-    /// Снимок из полоски бросили на строку, где уже стоят снимки, — он
-    /// встаёт рядом с ними в ту же строку, а не новой строкой под ними
-    /// (P348). `was` — запись до броска; `nil` — ставить рядом не с чем.
-    static func besideDropped(_ now: String, was: String) -> String? {
-        let old = was.components(separatedBy: "\n")
-        var new = now.components(separatedBy: "\n")
-        guard new.count == old.count + 1 else { return nil }
-        var k = 0
-        while k < old.count, new[k] == old[k] { k += 1 }
-        // Любое вложение к любому ряду вложений (P560): снимок, голос,
-        // файл, точка — в одну строку.
-        guard k > 0, k < new.count, Diary.objects(in: new[k]).count == 1,
-              !Diary.objects(in: new[k - 1]).isEmpty
-        else { return nil }
-        new[k - 1] = new[k - 1].trimmingCharacters(in: .whitespaces) + " "
-            + new[k].trimmingCharacters(in: .whitespaces)
-        new.remove(at: k)
-        return new.joined(separator: "\n")
-    }
-
+    /// Ссылка на голос, видео или документ — `[Голос](…)`, не снимок.
     static let fileLink = try! NSRegularExpression(
         pattern: #"(?<!!)\[[^\]\n]*\]\((<[^>\n]+>|[^)\s]+)\)"#)
-
-    /// Ссылка на голос, видео или документ посреди строки — на свою строку.
-    /// `nil` — таких нет.
-    static func ownLine(_ text: String) -> String? {
-        guard text.contains("](") else { return nil }
-        var changed = false
-        var out: [String] = []
-        for line in text.components(separatedBy: "\n") {
-            let ns = line as NSString
-            // Ряд вложений (P560) не разбирается: голос и файл в нём на месте.
-            guard Diary.picture(in: line) == nil, Diary.objects(in: line).count < 2
-            else { out.append(line); continue }
-            let found = fileLink.matches(in: line, range: NSRange(location: 0, length: ns.length))
-                .filter { m in
-                    var link = ns.substring(with: m.range(at: 1))
-                    if link.hasPrefix("<") { link = String(link.dropFirst().dropLast()) }
-                    return !link.contains("://") && !link.hasPrefix("geo:")
-                        && Diary.kind(of: link) != .photo
-                }
-            guard !found.isEmpty else { out.append(line); continue }
-            changed = true
-            var from = 0
-            for m in found {
-                let before = ns.substring(with: NSRange(location: from, length: m.range.location - from))
-                    .trimmingCharacters(in: .whitespaces)
-                if !before.isEmpty { out.append(before) }
-                out.append(ns.substring(with: m.range))
-                from = NSMaxRange(m.range)
-            }
-            let rest = ns.substring(from: from).trimmingCharacters(in: .whitespaces)
-            if !rest.isEmpty { out.append(rest) }
-        }
-        return changed ? out.joined(separator: "\n") : nil
-    }
 
     /// Поставить вложение своей строкой за абзацем, где `drop` (в тексте
     /// записи); снимок к снимкам — рядом в ту же строку (P348, P380).
@@ -645,7 +590,7 @@ struct DiaryEditor: UIViewRepresentable {
 
     // MARK: - Поведение
 
-    final class Coordinator: NSObject, UITextViewDelegate, UITextDropDelegate,
+    final class Coordinator: NSObject, UITextViewDelegate,
                              UIGestureRecognizerDelegate {
         fileprivate var parent: DiaryEditor
 
@@ -1627,8 +1572,12 @@ struct DiaryEditor: UIViewRepresentable {
                 return (out, target + (lead as NSString).length)
             }
             guard j != i, j != i + 1 else { return nil }
+            // Вынуть взятое — и поставить тем же правилом, что и из ленты
+            // (P586): своей строкой за абзацем, к ряду вложений — в ряд, на
+            // пустую строку — на неё. Прежде у переноса в тексте, из ленты и
+            // броска системой были три своих правила, и они расходились.
             var cut = NSRange(location: plainLength(i), length: (piece as NSString).length)
-            var target = plainLength(j)
+            var target = plainLength(para.location)
             let after = NSMaxRange(cut) < text.length ? text.character(at: NSMaxRange(cut)) : 10
             let before = cut.location > 0 ? text.character(at: cut.location - 1) : 10
             // Снимок из ряда (P348) уходит со своим пробелом, ряд остаётся
@@ -1644,26 +1593,13 @@ struct DiaryEditor: UIViewRepresentable {
                 cut.location -= 1
                 cut.length += 1
             }
-            if target >= cut.location + cut.length {
+            if target >= NSMaxRange(cut) {
                 target -= cut.length
             } else if target > cut.location {
                 target = cut.location
             }
-            let rest = text.replacingCharacters(in: cut, with: "") as NSString
-            target = min(target, rest.length)
-            // Отпустили над строкой, где уже стоят снимки, — встаёт рядом с
-            // ними, в ту же строку, а не новой строкой под ними (P348).
-            let above = target > 0
-                ? rest.substring(with: rest.lineRange(for: NSRange(location: target - 1, length: 0)))
-                    .trimmingCharacters(in: .newlines)
-                : ""
-            // Любое вложение к ряду вложений (P560).
-            let beside = !Diary.objects(in: piece).isEmpty && !Diary.objects(in: above).isEmpty
-            let lead = target == 0 ? "" : (beside ? " " : "\n")
-            let out = rest.replacingCharacters(in: NSRange(location: target, length: 0),
-                                               with: lead + piece
-                                                   + (target == 0 && rest.length > 0 ? "\n" : ""))
-            return (out, target + (lead as NSString).length)
+            let rest = text.replacingCharacters(in: cut, with: "")
+            return DiaryEditor.putting(piece, at: target, into: rest)
         }
 
         /// Строка поля — только снимки рядом (и пробелы между ними).
@@ -1739,16 +1675,6 @@ struct DiaryEditor: UIViewRepresentable {
         /// Куда встанет брошенное превью: в конец абзаца, над которым его
         /// отпустили. Снимок стоит своей строкой и не рвёт фразу пополам.
         func textDroppableView(_ droppable: UIView & UITextDroppable,
-                               positionForDrop drop: UITextDropRequest) -> UITextPosition {
-            guard let view = droppable as? UITextView else { return drop.dropPosition }
-            let ns = view.text as NSString
-            let at = min(view.offset(from: view.beginningOfDocument, to: drop.dropPosition),
-                         ns.length)
-            let para = ns.paragraphRange(for: NSRange(location: at, length: 0))
-            var end = para.location + para.length
-            if end > para.location, ns.character(at: end - 1) == 10 { end -= 1 }
-            return view.position(from: view.beginningOfDocument, offset: end) ?? drop.dropPosition
-        }
 
         // MARK: - Клавиатура
 
@@ -1859,44 +1785,21 @@ struct DiaryEditor: UIViewRepresentable {
             return nil
         }
 
-        /// Текст записи перед броском снимка из полоски — по нему видно,
-        /// куда снимок лёг (P348).
-        private var dropBefore: String?
         /// Последняя правка добавила буквы (P558): только она — «писали».
         /// Стёртые пустые строки под записью, перенос строки, вставленный
         /// снимок — не набор, и час до новой отметки времени от них не
         /// отсчитывается заново.
         private var typedLetters = false
 
-        func textDroppableView(_ droppable: UIView & UITextDroppable,
-                               willPerformDrop drop: UITextDropRequest) {
-            dropBefore = parent.text
-            quietUntil = Date().addingTimeInterval(1.5)
-        }
-
         func textViewDidChange(_ view: UITextView) {
-            var now = DiaryEditor.plain(view.attributedText)
-            var merged = false
-            if let was = dropBefore {
-                dropBefore = nil
-                if let beside = DiaryEditor.besideDropped(now, was: was) {
-                    now = beside
-                    merged = true
-                }
-                // Голос или файл бросили посреди фразы — он встаёт своей
-                // строкой: кнопочкой он бывает только так (P377).
-                if let own = DiaryEditor.ownLine(now) {
-                    now = own
-                    merged = true
-                }
-            }
+            let now = DiaryEditor.plain(view.attributedText)
             parent.text = now
             if typedLetters, view.isFirstResponder,
                view.selectedRange.location >= view.textStorage.length {
                 parent.onWrite?()
             }
             typedLetters = false
-            if resolve != nil, merged || DiaryEditor.hasLoosePicture(view.text) {
+            if resolve != nil, DiaryEditor.hasLoosePicture(view.text) {
                 // Строку-ссылку только что бросили или вписали — рисуем её
                 // картинкой. Курсор остаётся примерно там, где был.
                 let at = view.selectedRange.location
