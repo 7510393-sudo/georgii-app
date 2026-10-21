@@ -1,12 +1,86 @@
+    363 Thread_59888   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 363 start  (in dyld) + 6992  [0x10490c4e4]
+    +   363 start_sim  (in dyld_sim) + 20  [0x1047db0e4]
+    +     363 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x1065414d0]  ChronothecaApp.swift:0
+    +       363 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x106541424]  /<compiler-generated>:0
+    +         363 static App.main()  (in SwiftUI) + 132  [0x1d2c5f084]
+    +           363 protocol witness for App.init() in conformance ChronothecaApp  (in Chronotheca.debug.dylib) + 12  [0x1065414bc]  /<compiler-generated>:0
+    +             363 ChronothecaApp.init()  (in Chronotheca.debug.dylib) + 792  [0x10653df34]  ChronothecaApp.swift:29
+    +               363 Vault.__allocating_init()  (in Chronotheca.debug.dylib) + 44  [0x106a85188]  Vault.swift:0
+    +                 363 Vault.init()  (in Chronotheca.debug.dylib) + 2076  [0x106a859b0]  Vault.swift:225
+    +                   358 Vault.usePreviewFolder()  (in Chronotheca.debug.dylib) + 804  [0x106a86500]  Vault.swift:315
+    +                   ! 358 Vault.granted.setter  (in Chronotheca.debug.dylib) + 192  [0x106a7ffac]  <stdin>:0
+    +                   !   358 static Published.subscript.setter  (in Combine) + 44  [0x1c3288d14]
+    +                   !     358 specialized static Published.subscript.setter  (in Combine) + 48  [0x1c3289a14]
+    +                   !       358 specialized static Published.withMutation<A>(of:keyPath:storage:apply:)  (in Combine) + 152  [0x1c3289838]
+    +                   !         358 swift_dynamicCastSlow(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*, swift::DynamicCastFlags, std::atomic<unsigned long>&, unsigned long, bool (*)(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*, swift::DynamicCastFlags))  (in libswiftCore.dylib) + 176  [0x198184274]
+    +                   !           358 tryCast(swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*&, swift::TargetMetadata<swift::InProcess> const*&, bool, bool, bool)  (in libswiftCore.dylib) + 796  [0x1981845fc]
+    +                   !             358 tryCastToConstrainedOpaqueExistential(swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*&, swift::TargetMetadata<swift::InProcess> const*&, bool, bool, bool)  (in libswiftCore.dylib) + 56  [0x198185874]
+    +                   !               358 _conformsToProtocols(swift::OpaqueValue const*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetExistentialTypeMetadata<swift::InProcess> const*, swift::TargetWitnessTable<swift::InProcess> const**, bool)  (in libswiftCore.dylib) + 172  [0x198186838]
+    +                   !                 358 swift::_conformsToProtocolInContext(swift::OpaqueValue const*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptorRef<swift::InProcess>, swift::TargetWitnessTable<swift::InProcess> const**, bool)  (in libswiftCore.dylib) + 36  [0x19817f2b0]
+    +                   !                   358 swift::_conformsToProtocol(swift::OpaqueValue const*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptorRef<swift::InProcess>, swift::TargetWitnessTable<swift::InProcess> const**, swift::ConformanceExecutionContext*)  (in libswiftCore.dylib) + 48  [0x19817f170]
+    +                   !                     358 swift_conformsToProtocolWithExecutionContext  (in libswiftCore.dylib) + 68  [0x1981d1b30]
+    +                   !                       358 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib) + 3292  [0x1981d3cbc]
+    +                   !                         358 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib) + 32,52,...  [0x1981d4e64,0x1981d4e78,...]
+    +                   5 Vault.usePreviewFolder()  (in Chronotheca.debug.dylib) + 904  [0x106a86564]  Vault.swift:317
+    +                     3 Vault.seedPreview()  (in Chronotheca.debug.dylib) + 892  [0x106a8cf84]  Vault.swift:341
+    +                     : 2 static Vault.stamp(_:)  (in Chronotheca.debug.dylib) + 348  [0x106a8e6d4]  Vault.swift:1495
+    +                     : | 2 -[NSDateFormatter stringForObjectValue:]  (in Foundation) + 100  [0x181061ddc]
+    +                     : |   2 -[NSDateFormatter _regenerateFormatter]  (in Foundation) + 200  [0x1810612a4]
+    +                     : |     2 __CreateCFDateFormatter  (in CoreFoundation) + 320  [0x1803d1780]
+    +                     : |       1 __ResetUDateFormat  (in CoreFoundation) + 484  [0x1803d1e64]
+    +                     : |       + 1 udat_open  (in libicucore.A.dylib) + 388  [0x1825caef4]
+    +                     : |       +   1 icu::Locale::Locale(char const*, char const*, char const*, char const*)  (in libicucore.A.dylib) + 0  [0x1823d6630]
+    +                     : |       1 __ResetUDateFormat  (in CoreFoundation) + 864  [0x1803d1fe0]
+    +                     : |         1 @objc _NSSwiftLocale._pref(forKey:)  (in Foundation) + 124  [0x180d7e814]
+    +                     : |           1 _LocaleICU.pref(for:)  (in Foundation) + 0  [0x180d5b170]
+    +                     : 1 static Vault.stamp(_:)  (in Chronotheca.debug.dylib) + 120  [0x106a8e5f0]  Vault.swift:1492
+    +                     :   1 NSDateFormatter.__allocating_init()  (in Chronotheca.debug.dylib) + 0  [0x1065cb75c]  NSObject.h:66
+    +                     2 Vault.seedPreview()  (in Chronotheca.debug.dylib) + 788  [0x106a8cf1c]  Vault.swift:328
+    +                       2 T(_:_:)  (in Chronotheca.debug.dylib) + 76  [0x106703fd4]  Lang.swift:55
+    +                         2 static Lang.code.getter  (in Chronotheca.debug.dylib) + 540  [0x106703594]  Lang.swift:25
+    +                           2 static Lang.phone.getter  (in Chronotheca.debug.dylib) + 64  [0x106703688]  Lang.swift:30
+    +                             1 static Locale.preferredLanguages.getter  (in Foundation) + 200  [0x180be6b2c]
+    +                             | 1 swift_dynamicCast  (in libswiftCore.dylib) + 92  [0x19818405c]
+    +                             |   1 tryCast(swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*&, swift::TargetMetadata<swift::InProcess> const*&, bool, bool, bool)  (in libswiftCore.dylib) + 1476  [0x1981848a4]
+    +                             |     1 tryCast(swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*&, swift::TargetMetadata<swift::InProcess> const*&, bool, bool, bool)  (in libswiftCore.dylib) + 2184  [0x198184b68]
+    +                             |       1 tryCastFromClassToObjCBridgeable(swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*&, swift::TargetMetadata<swift::InProcess> const*&, bool, bool)  (in libswiftCore.dylib) + 336  [0x198184e38]
+    +                             |         1 static Array._conditionallyBridgeFromObjectiveC(_:result:)  (in Foundation) + 88  [0x1808a8cd4]
+    +                             |           1 specialized _arrayConditionalCast<A, B>(_:)  (in Foundation) + 340  [0x18089806c]
+    +                             |             1 swift_dynamicCast  (in libswiftCore.dylib) + 92  [0x19818405c]
+    +                             |               1 tryCast(swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*&, swift::TargetMetadata<swift::InProcess> const*&, bool, bool, bool)  (in libswiftCore.dylib) + 1476  [0x1981848a4]
+    +                             |                 1 tryCast(swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*&, swift::TargetMetadata<swift::InProcess> const*&, bool, bool, bool)  (in libswiftCore.dylib) + 796  [0x1981845fc]
+    +                             |                   1 ObjCBridgeMemo::tryBridge(swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*&, swift::TargetMetadata<swift::InProcess> const*&, bool, bool)  (in libswiftCore.dylib) + 304  [0x198186664]
+    +                             |                     1 protocol witness for static _ObjectiveCBridgeable._conditionallyBridgeFromObjectiveC(_:result:) in conformance String  (in Foundation) + 0  [0x180e38ef4]
+    +                             1 static Locale.preferredLanguages.getter  (in Foundation) + 1308  [0x180be6f80]
+    +                               1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +                                 1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                                   1 one-time initialization function for cache  (in Foundation) + 84  [0x180bf29d8]
+    +                                     1 __swift_instantiateConcreteTypeFromMangledNameV2  (in Foundation) + 64  [0x180845674]
+    +                                       1 swift_getTypeByMangledNameInContextImpl(char const*, unsigned long, swift::TargetContextDescriptor<swift::InProcess> const*, void const* const*)  (in libswiftCore.dylib) + 152  [0x1981b74bc]
+    +                                         1 swift_getTypeByMangledName  (in libswiftCore.dylib) + 272  [0x1981b7090]
+    +                                           1 swift_getTypeByMangledNameImpl(swift::MetadataRequest, __swift::__runtime::llvm::StringRef, void const* const*, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>)  (in libswiftCore.dylib) + 1016  [0x1981bcd58]
+    +                                             1 swift_getTypeByMangledNode  (in libswiftCore.dylib) + 272  [0x1981b8ab0]
+    +                                               1 swift_getTypeByMangledNodeImpl(swift::MetadataRequest, swift::Demangle::__runtime::Demangler&, swift::Demangle::__runtime::Node*, void const* const*, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>)  (in libswiftCore.dylib) + 576  [0x1981bc55c]
+    +                                                 1 swift::Demangle::__runtime::TypeDecoder<(anonymous namespace)::DecodedMetadataBuilder>::decodeMangledType(swift::Demangle::__runtime::Node*, unsigned int, bool)  (in libswiftCore.dylib) + 892  [0x1981c0a0c]
+    +                                                   1 swift::Demangle::__runtime::TypeDecoder<(anonymous namespace)::DecodedMetadataBuilder>::decodeGenericArgs(swift::Demangle::__runtime::Node*, unsigned int, __swift::__runtime::llvm::SmallVectorImpl<swift::MetadataPackOrValue>&)  (in libswiftCore.dylib) + 352  [0x1981c5e08]
+    +                                                     1 swift::Demangle::__runtime::TypeDecoder<(anonymous namespace)::DecodedMetadataBuilder>::decodeMangledType(swift::Demangle::__runtime::Node*, unsigned int, bool)  (in libswiftCore.dylib) + 892  [0x1981c0a0c]
+    +                                                       1 swift::Demangle::__runtime::TypeDecoder<(anonymous namespace)::DecodedMetadataBuilder>::decodeGenericArgs(swift::Demangle::__runtime::Node*, unsigned int, __swift::__runtime::llvm::SmallVectorImpl<swift::MetadataPackOrValue>&)  (in libswiftCore.dylib) + 352  [0x1981c5e08]
+    +                                                         1 swift::Demangle::__runtime::TypeDecoder<(anonymous namespace)::DecodedMetadataBuilder>::decodeMangledType(swift::Demangle::__runtime::Node*, unsigned int, bool)  (in libswiftCore.dylib) + 6884  [0x1981c2174]
+    +                                                           1 (anonymous namespace)::DecodedMetadataBuilder::createBoundGenericType(swift::TargetContextDescriptor<swift::InProcess> const*, __swift::__runtime::llvm::ArrayRef<swift::MetadataPackOrValue>, swift::MetadataPackOrValue) const  (in libswiftCore.dylib) + 520  [0x1981c6114]
+    +                                                             1 type metadata accessor for _NSSwiftLocale  (in Foundation) + 20  [0x180d7ed6c]
+    +                                                               1 _objc_msgSend_uncached  (in libobjc.A.dylib) + 64  [0x18003af00]
+    +                                                                 1 lookUpImpOrForward  (in libobjc.A.dylib) + 208  [0x1800533a4]
+    +                                                                   1 initializeAndMaybeRelock(objc_class*, objc_object*, locker_mixin<lockdebug::lock_mixin<objc_lock_base_t>>&, bool)  (in libobjc.A.dylib) + 216  [0x1800410e0]
+    +                                                                     1 initializeNonMetaClass  (in libobjc.A.dylib) + 96  [0x18003fcbc]
+    +                                                                       1 initializeNonMetaClass  (in libobjc.A.dylib) + 592  [0x18003feac]
+    +                                                                         1 lockAndFinishInitializing(objc_class*, objc_class*)  (in libobjc.A.dylib) + 304  [0x18003f618]
+    +                                                                           1 _finishInitializing(objc_class*, objc_class*)  (in libobjc.A.dylib) + 208  [0x18003f7ec]
+    +                                                                             1 os_unfair_recursive_lock_tryunlock4objc  (in libsystem_platform.dylib) + 64  [0x104711580]
 
 Sort by top of stack, same collapsed (when >= 5):
-        mach_msg2_trap  (in dyld)        752
-        dyld3::MachOFile::trieWalk(Diagnostics&, unsigned char const*, unsigned char const*, char const*)  (in dyld_sim)        96
-        PatchTableV2::clientsExportsForImageAndClient(unsigned int, unsigned int) const  (in dyld_sim)        44
-        invocation function for block in dyld4::Loader::applyInterposingToDyldCache(dyld4::RuntimeState&)  (in dyld_sim)        41
-        mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim)        31
-        invocation function for block in dyld4::Loader::applyCachePatchesToOverride(dyld4::RuntimeState&, dyld4::Loader const*, unsigned short, dyld4::Loader::DylibPatch const*, dyld4::DyldCacheDataConstLazyScopedWriter&) const  (in dyld_sim)        11
-        PatchTableV4::forEachPatchableCacheUseOfExport(unsigned int, unsigned int, unsigned long long, unsigned long long (unsigned int) block_pointer, void (unsigned long long, dyld3::MachOFile::PointerMetaData, unsigned long long, bool) block_pointer) const  (in dyld_sim)        8
+        __workq_kernreturn  (in libsystem_kernel.dylib)        363
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        358
 
 Binary images description not available
 
