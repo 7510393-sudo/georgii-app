@@ -891,7 +891,7 @@ struct RootView: View {
         // Срабатывает в миг касания (P565), а не когда палец отпустили, как
         // обычная кнопка iPhone; само касание кнопки — только если касания
         // не было (VoiceOver).
-        return Button { if TouchDown.idle { act() } } label: {
+        return Button { if TouchDown.takeRelease() { act() } } label: {
             VStack(spacing: 3) {
                 // Значки нарисованы автором от руки и обведены в вектор:
                 // ежедневник, раскрытый в начале, посередине и в конце.
@@ -1238,15 +1238,25 @@ struct TouchDownStyle: ButtonStyle {
             .contentShape(Rectangle())
             .onChange(of: configuration.isPressed) { _, pressed in
                 guard pressed else { return }
-                TouchDown.last = Date()
+                TouchDown.pressed = Date()
                 action()
             }
     }
 }
 
 enum TouchDown {
-    static var last = Date.distantPast
-    /// Касания только что не было — значит, кнопку нажали иначе
-    /// (VoiceOver), и сработать должна она сама.
-    static var idle: Bool { Date().timeIntervalSince(last) > 0.6 }
+    /// Когда кнопка сработала от касания и ещё не отпущена.
+    static var pressed: Date?
+
+    /// Срабатывать ли кнопке при отпускании. Нет, если она уже сработала
+    /// от касания этого же пальца (P578): прежде мерили 0,6 с от касания —
+    /// подержал палец дольше или телефон замешкался, и кнопка срабатывала
+    /// дважды; у «Дня» второе срабатывание уводило на сегодня. Касания не
+    /// было (VoiceOver) — срабатывает сама. Давнее касание, после которого
+    /// отпускания не пришло (палец ушёл с кнопки), не в счёт.
+    static func takeRelease() -> Bool {
+        defer { pressed = nil }
+        guard let pressed else { return true }
+        return Date().timeIntervalSince(pressed) > 10
+    }
 }
