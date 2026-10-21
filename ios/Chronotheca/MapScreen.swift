@@ -528,8 +528,11 @@ struct MapScreen: View {
     private func remember() {
         hideKeyboard()
         // Куда — написано на самой кнопке (P358): в ту вкладку, что была
-        // открыта последней. Спрашивать незачем.
-        remember(to: shell.tab)
+        // открыта последней. Спрашивать незачем. В день, который ещё не
+        // наступил, дневника нет — точка встаёт в его план (P587): прежде
+        // она не ложилась никуда.
+        let tab: Shell.Tab = store.canEdit(shell.tab) || !store.canEditPlan ? shell.tab : .plan
+        remember(to: tab)
     }
 
     /// Название кнопки — куда ляжет точка (P358).
@@ -568,8 +571,11 @@ struct MapScreen: View {
                 return shell.say(store.closedReason)
             }
         }
-        shell.say(tab == .diary ? T("Точка записана в дневник", "Place noted in the diary")
-                                 : T("Точка записана в план", "Place noted in the plan"))
+        // В какой день — словами (P587): точка ложится в день, открытый в
+        // «Дне», и человек видит, в какой.
+        let day = store.isToday ? T("сегодня", "today") : Ru.shortDate(store.date)
+        shell.say(tab == .diary ? T("Точка записана в дневник — ", "Place noted in the diary — ") + day
+                                 : T("Точка записана в план — ", "Place noted in the plan — ") + day)
         Feel.light()
         // Записали — назад к странице дня, на ту вкладку, где точка теперь
         // видна.

@@ -1564,11 +1564,22 @@ struct PlanPointLine: View {
     var glowing = false
     var onDelete: (() -> Void)?
 
+    /// Точка в плане — такой же квадрат, как снимок и как точка в дневнике
+    /// (P587): булавка и название, без названия — «Место» и сколько до
+    /// своего места. Прежде — строкой.
+    private var tile: UIImage {
+        let given = point.title.trimmingCharacters(in: .whitespaces)
+        return PointChip.square(given.isEmpty ? T("Место", "Place") : given,
+                                note: given.isEmpty ? Places.caption(for: point.at) : nil,
+                                glowing: false)
+    }
+
     var body: some View {
         HStack(spacing: 0) {
-            PointChipView(point: point)
-                .scaleEffect(armed ? 1.25 : 1, anchor: .leading)
-                .contentShape(Capsule())
+            Image(uiImage: tile)
+                .frame(width: DiaryEditor.photoSize.width, height: DiaryEditor.photoSize.height)
+                .scaleEffect(armed ? 1.1 : 1, anchor: .leading)
+                .contentShape(Rectangle())
                 .onTapGesture { open?(point) }
                 .accessibilityAddTraits(.isButton)
                 .accessibilityLabel(T("Точка на карте: ", "Place on the map: ") + point.label)
@@ -1578,7 +1589,7 @@ struct PlanPointLine: View {
             if armed, let onDelete { DeleteBadge(action: onDelete) }
         }
         .padding(.horizontal, 14)
-        .frame(height: 40)
+        .frame(height: PlanPhotoLine.height)
         // Строка точки — в тонкой синей рамке, пока точку держат или у
         // неё крестик; рамка едет вместе с точкой (P380).
         .background {
