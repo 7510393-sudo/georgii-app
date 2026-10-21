@@ -198,8 +198,9 @@ final class MovementTests: XCTestCase {
     func testBigArchiveStaysQuick() {
         // Первый запуск складывает архив — его не мерим.
         launch(big: true)
-        XCTAssertTrue(topBar.waitForExistence(timeout: 300), "архив не сложился")
-        sleep(8)
+        // Архив со вложениями пишется в стороне (P589) — ждать его.
+        XCTAssertTrue(app.staticTexts["bigReady"].waitForExistence(timeout: 900), "архив не сложился")
+        sleep(3)
         app.terminate()
 
         let start = Date()

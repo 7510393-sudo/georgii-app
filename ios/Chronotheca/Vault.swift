@@ -461,9 +461,17 @@ final class Vault: ObservableObject {
         isPreview && ProcessInfo.processInfo.environment["CHRONOTHECA_BIG"] == "1"
     }
 
+    /// Большой архив сложен — проверка движения ждёт этого (P589).
+    @Published private(set) var bigReady = false
+
+    /// В стороне (P589): со снимками архив пишется минуту-другую, и запуск,
+    /// который ждал бы его, симулятор прерывал.
     private func seedBigArchive(before today: Date) {
         guard let root else { return }
-        Vault.seedBigArchive(in: root, before: today)
+        DispatchQueue.global(qos: .userInitiated).async {
+            Vault.seedBigArchive(in: root, before: today)
+            DispatchQueue.main.async { self.bigReady = true }
+        }
     }
 
     /// Десять лет выдуманных дней в папке `root` — для симулятора и для

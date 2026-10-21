@@ -386,6 +386,15 @@ struct RootView: View {
                     .allowsHitTesting(false)
                     .accessibilityIdentifier("openScreen")
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                // Большой архив сложен (P589).
+                if vault.bigReady {
+                    Text("bigReady")
+                        .font(.system(size: 2))
+                        .opacity(0.02)
+                        .allowsHitTesting(false)
+                        .accessibilityIdentifier("bigReady")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                }
             }
             if let notice = shell.notice {
                 toast(notice)
