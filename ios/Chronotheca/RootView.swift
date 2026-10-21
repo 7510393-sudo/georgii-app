@@ -986,6 +986,14 @@ struct RootView: View {
     private func follow(from old: Shell.Screen, to new: Shell.Screen) {
         // Быстрее прежних 0,46 (P565): медленный ход казался задумчивостью.
         let heavy = Animation.spring(response: 0.3, dampingFraction: 0.9)
+        // С виджета, из напоминания, после паузы — сразу, без хода (P583).
+        if shell.instant {
+            shell.instant = false
+            var still = Transaction()
+            still.disablesAnimations = true
+            withTransaction(still) { shell.stack = [new] }
+            return
+        }
         // Толчок — в начале хода, вместе с нажатием (P268).
         Feel.thud()
         if let i = shell.stack.firstIndex(of: new) {

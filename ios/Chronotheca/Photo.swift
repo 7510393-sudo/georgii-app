@@ -611,8 +611,11 @@ struct PhotoViewer: View {
     /// Вернуть снимок из текста в полоску внизу (P216).
     var onReturn: (() -> Void)?
     let close: () -> Void
-    /// Листнули вбок: +1 — следующий снимок, −1 — прежний (P278).
-    var onSwipe: ((Int) -> Void)?
+    /// Снимок ведут пальцем вбок (P583): сколько сдвинут — листатель
+    /// двигает за пальцем весь ряд, с соседями.
+    var onSlide: ((CGFloat) -> Void)?
+    /// Палец отпустили: сдвиг и куда бы он долетел по инерции.
+    var onSlideEnd: ((CGFloat, CGFloat) -> Void)?
 
     @State private var image: UIImage?
     @State private var scale: CGFloat = 1
@@ -620,8 +623,6 @@ struct PhotoViewer: View {
     @State private var saved = false
     /// Насколько снимок стянут пальцем вниз (P270).
     @State private var pulled: CGSize = .zero
-    /// Насколько снимок сдвинут вбок, пока его листают (P278).
-    @State private var slid: CGFloat = 0
     /// Куда пошёл палец: решается по первому движению.
     @State private var sideways: Bool?
 
@@ -638,7 +639,7 @@ struct PhotoViewer: View {
                     .resizable()
                     .scaledToFit()
                     .scaleEffect(scale * (1 - gone * 0.3))
-                    .offset(x: pulled.width * 0.6 + slid, y: max(0, pulled.height))
+                    .offset(x: pulled.width * 0.6, y: max(0, pulled.height))
                     .gesture(MagnificationGesture()
                         .onChanged { scale = max(1, $0) }
                         .onEnded { _ in withAnimation(.easeOut(duration: 0.2)) { scale = 1 } })
@@ -676,8 +677,7 @@ struct PhotoViewer: View {
                     sideways = abs(v.translation.width) > abs(v.translation.height)
                 }
                 if sideways == true {
-                    guard onSwipe != nil else { return }
-                    slid = v.translation.width
+                    onSlide?(v.translation.width)
                 } else if v.translation.height > 0 || pulled != .zero {
                     pulled = v.translation
                 }
@@ -685,15 +685,8 @@ struct PhotoViewer: View {
             .onEnded { v in
                 defer { sideways = nil }
                 guard scale == 1 else { return }
-                if sideways == true, let onSwipe {
-                    let far = abs(slid) > 70 || abs(v.predictedEndTranslation.width) > 220
-                    if far {
-                        let step = slid < 0 ? 1 : -1
-                        slid = 0
-                        onSwipe(step)
-                    } else {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) { slid = 0 }
-                    }
+                if sideways == true {
+                    onSlideEnd?(v.translation.width, v.predictedEndTranslation.width)
                     return
                 }
                 guard pulled != .zero else { return }
@@ -794,7 +787,10 @@ struct StripViewer: View {
     let close: () -> Void
 
     @State private var index: Int
-    @State private var forward = true
+    /// Насколько ряд снимков сдвинут пальцем (P583).
+    @State private var drag: CGFloat = 0
+    /// Промежуток между снимками, пока их листают.
+    private static let gap: CGFloat = 18
 
     init(count: Int, start: Int, url: @escaping (Int) -> URL?,
          remove: @escaping (Int) -> ((Bool) -> Void)?,
@@ -808,27 +804,63 @@ struct StripViewer: View {
         _index = State(initialValue: start)
     }
 
+    /// Снимки листаются, как в «Фото» (P583): ряд едет за пальцем, сосед
+    /// виден и въезжает, отпустили — ряд доезжает до снимка. Прежде снимок
+    /// сменялся рывком, когда палец уже отпустили. Соседи собраны заранее
+    /// и уже загружены: перелистнули — тот же вид становится открытым.
     var body: some View {
-        ZStack {
-            AttachmentViewer(url: url(index),
-                             onRemove: remove(index),
-                             onReturn: giveBack(index),
-                             close: close,
-                             onSwipe: step)
-                .id(index)
-                .transition(.asymmetric(
-                    insertion: .move(edge: forward ? .trailing : .leading),
-                    removal: .move(edge: forward ? .leading : .trailing)))
+        GeometryReader { geo in
+            let step = geo.size.width + Self.gap
+            ZStack {
+                ForEach(max(0, index - 1)...max(0, min(count - 1, index + 1)), id: \.self) { i in
+                    page(i)
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        .offset(x: CGFloat(i - index) * step + drag)
+                        .allowsHitTesting(i == index)
+                }
+            }
         }
         .presentationBackground(.clear)
     }
 
-    private func step(_ by: Int) {
+    @ViewBuilder private func page(_ i: Int) -> some View {
+        let live = i == index
+        AttachmentViewer(url: url(i),
+                         onRemove: live ? remove(i) : nil,
+                         onReturn: live ? giveBack(i) : nil,
+                         close: close,
+                         onSlide: live ? { slide($0) } : nil,
+                         onSlideEnd: live ? { end($0, $1) } : nil)
+    }
+
+    /// За краем ряда — снимков нет: ряд тянется втрое туже.
+    private func slide(_ x: CGFloat) {
+        let edge = (x > 0 && index == 0) || (x < 0 && index == count - 1)
+        drag = edge ? x / 3 : x
+    }
+
+    private func end(_ x: CGFloat, _ predicted: CGFloat) {
+        let width = UIScreen.main.bounds.width
+        let by = x < 0 ? 1 : -1
         let next = index + by
-        guard (0..<count).contains(next) else { return Feel.light() }
-        forward = by > 0
+        let far = abs(x) > width * 0.25 || abs(predicted) > width * 0.5
+        guard far, (0..<count).contains(next) else {
+            if far { Feel.light() }
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) { drag = 0 }
+            return
+        }
         Feel.tick()
-        withAnimation(.easeOut(duration: 0.22)) { index = next }
+        let step = width + Self.gap
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.95)) {
+            drag = CGFloat(-by) * step
+        } completion: {
+            var still = Transaction()
+            still.disablesAnimations = true
+            withTransaction(still) {
+                index = next
+                drag = 0
+            }
+        }
     }
 }
 

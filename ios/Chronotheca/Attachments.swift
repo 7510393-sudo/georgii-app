@@ -334,8 +334,9 @@ struct AttachmentViewer: View {
     var onRemove: ((Bool) -> Void)?
     var onReturn: (() -> Void)?
     let close: () -> Void
-    /// Листнули снимок вбок: +1 — следующий, −1 — прежний (P278).
-    var onSwipe: ((Int) -> Void)? = nil
+    /// Снимок ведут пальцем вбок и отпускают — листает `StripViewer` (P583).
+    var onSlide: ((CGFloat) -> Void)? = nil
+    var onSlideEnd: ((CGFloat, CGFloat) -> Void)? = nil
     /// Голос — в текст дневника (P378). Пусто — кнопки нет.
     var onTranscript: ((String) -> Void)? = nil
 
@@ -349,7 +350,7 @@ struct AttachmentViewer: View {
         switch url.map({ Diary.kind(of: $0.lastPathComponent) }) ?? .photo {
         case .photo:
             PhotoViewer(url: url, onRemove: onRemove, onReturn: onReturn, close: close,
-                        onSwipe: onSwipe)
+                        onSlide: onSlide, onSlideEnd: onSlideEnd)
         case .video:
             framed {
                 if let player { VideoPlayer(player: player) } else { ProgressView() }

@@ -36,6 +36,8 @@ struct ChronothecaApp: App {
     /// Сегодняшний день — на плане или на дневнике. План и дневник — одна
     /// страница (P408): на дневник её прокручивает «приземление».
     private func openToday(diary: Bool) {
+        // Без хода плашки (P583): с виджета — сразу «День».
+        if shell.screen != .today { shell.instant = true }
         store.go(to: DayStore.today())
         shell.tab = diary ? .diary : .plan
         shell.landOnDiary = diary
