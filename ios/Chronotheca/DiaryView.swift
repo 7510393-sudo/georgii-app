@@ -51,6 +51,7 @@ struct DiaryView: View {
             // Полоска одна на всю страницу (P408): снимки дневника, за ними
             // — прежние снимки полоски плана.
             photos: store.stripLinks.map(store.photoURL),
+            points: store.stripLinks.map { Diary.isPoint($0) ? Geo.point(in: $0) : nil },
             takesBack: Plan.hasPhotoRows(store.planRows),
             suggested: AnyView(SuggestedRow(model: suggest) { asset in
                 GalleryRow.take([asset], store: store, tab: .diary) { shell.say($0) }
@@ -58,6 +59,11 @@ struct DiaryView: View {
             hasSuggested: store.canEditDiary && suggest.shows,
             resolve: store.photoURL,
             onOpenPhoto: { i in
+                // Точка из ленты — карта на ней (P588).
+                let links = store.stripLinks
+                if links.indices.contains(i), Diary.isPoint(links[i]), let point = Geo.point(in: links[i]) {
+                    return shell.showPoint(point)
+                }
                 let n = store.photos.count
                 shell.openedPhoto = i < n ? .init(tab: .diary, index: i) : .init(tab: .plan, index: i - n)
             },
@@ -70,18 +76,11 @@ struct DiaryView: View {
                 shell.openedPhoto = .init(tab: .diary, index: -1,
                                           url: store.photoURL(link), link: link)
             },
-            onOpenPoint: {
-                store.noteLeaving(fromToday: true)
-                shell.showPoint($0)
-            },
-            onCaret: { store.diaryCaret = $0 },
+            onOpenPoint: { shell.showPoint($0) },
             onEditing: {
-                store.diaryTyping = $0
                 // Где пишут — там «где был» (P402, P408).
                 if $0 { shell.tab = .diary }
             },
-            placeCaret: $store.caretRequest,
-            reveal: $store.revealRequest,
             // Снимок, отпущенный над полоской, возвращается в неё (P272).
             onReturnPhoto: { link in
                 store.returnToStrip(link)
@@ -106,10 +105,7 @@ struct DiaryView: View {
                 shell.say(i < n ? store.removeAttachment(at: i, from: .diary, delete: delete)
                                 : store.removeAttachment(at: i - n, from: .plan, delete: delete))
             },
-            onAnswering: {
-                store.answerTyping = $0
-                if $0 != nil { shell.tab = .diary }
-            },
+            onAnswering: { if $0 != nil { shell.tab = .diary } },
             planTarget: store.canEditPlan ? { PlanZones.task(at: $0, tasks: store.tasks) } : nil,
             onPlanHover: { hover($0, photo: $1) },
             onToPlan: { piece, task in store.textToPlan(piece, under: task) },
@@ -160,7 +156,8 @@ extension DiaryView {
         let line = Diary.line(link)
         let overStrip = StripZones.strip.map { spot.y >= $0.minY - 8 } ?? false
         // Над планом — встанет под дело, в ряд снимков (P408, P409).
-        let overTask = overStrip || Diary.kind(of: link) != .photo || !store.canEditPlan
+        // Точка из ленты — тоже под дело (P588).
+        let overTask = overStrip || (Diary.kind(of: link) != .photo && !Diary.isPoint(link)) || !store.canEditPlan
             ? nil : PlanZones.task(at: spot, tasks: store.tasks)
         // У краёв страница едет к пальцу (P409) — но только когда палец
         // ушёл с полоски (P531): полоска сама лежит у нижнего края, и на
@@ -207,7 +204,10 @@ extension DiaryView {
             if let task = overTask, spot != .zero {
                 AskLine.carryOutAll()
                 DiaryEditor.active?.carryOut()
-                if Diary.kind(of: link) == .photo {
+                if Diary.isPoint(link) {
+                    store.stripPointToPlan(link, under: task)
+                    Feel.thud()
+                } else if Diary.kind(of: link) == .photo {
                     store.stripPhotoToPlan(link, under: task)
                     Feel.thud()
                 }
@@ -286,6 +286,8 @@ struct DiaryPage: View {
     var weather: String?
     /// Фотографии дня. Стоят над текстом, под заголовком (P200).
     var photos: [URL?] = []
+    /// Точки в ленте (P588) — по местам ряда.
+    var points: [GeoPoint?] = []
     /// Под делами плана есть снимки — полоска видна и пустой: в неё их
     /// возвращают (P358, P408).
     var takesBack = false
@@ -305,10 +307,7 @@ struct DiaryPage: View {
     /// Касание по снимку посреди текста (P216) и по точке (P213).
     var onOpenInline: ((String) -> Void)?
     var onOpenPoint: ((GeoPoint) -> Void)?
-    var onCaret: ((Int) -> Void)?
     var onEditing: ((Bool) -> Void)?
-    var placeCaret: Binding<Int?> = .constant(nil)
-    var reveal: Binding<Int?> = .constant(nil)
     var onReturnPhoto: ((String) -> Void)?
     /// Точку перенесли из текста в заголовок дня — и обратно (P358).
     var onPointToTitle: ((String) -> Void)?
@@ -397,7 +396,7 @@ struct DiaryPage: View {
         }
         // Лента превью — конец листа, едет с текстом, как в Diarium (P546).
         if (!photos.isEmpty || takesBack || hasSuggested) {
-            PhotoStrip(photos: photos, onOpen: onOpenPhoto,
+            PhotoStrip(photos: photos, points: points, onOpen: onOpenPhoto,
                        onCarry: editable ? onStripCarry : nil,
                        carried: stripCarried,
                        onRemove: editable && onRemovePhoto != nil ? { removing = $0 } : nil,
@@ -670,9 +669,9 @@ struct DiaryPage: View {
                     // место до ленты превью (P574).
                     grows: true, minHeight: size * 1.45 * 2, room: 0, resolve: resolve,
                     onOpenPhoto: onOpenInline, onReturnPhoto: onReturnPhoto,
-                    onOpenPoint: onOpenPoint, onPointToTitle: onPointToTitle, onCaret: onCaret,
+                    onOpenPoint: onOpenPoint, onPointToTitle: onPointToTitle,
                     moving: editable, onEditing: onEditing,
-                    placeCaret: placeCaret, reveal: reveal, takeStamp: takeStamp, onWrite: onWrite,
+                    takeStamp: takeStamp, onWrite: onWrite,
                     planTarget: planTarget, onPlanHover: onPlanHover, onToPlan: onToPlan,
                     onDeleteAttachment: onDeleteAttachment)
             // Вдвое меньше, чем было: пробел между заголовком и записью не

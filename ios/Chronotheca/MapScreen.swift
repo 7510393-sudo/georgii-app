@@ -560,22 +560,14 @@ struct MapScreen: View {
     }
 
     private func write(_ point: GeoPoint, to tab: Shell.Tab, here: Bool = false) {
-        // В плане — прямо в строку дела, где стоял курсор, на его место
-        // (P276). Поле того дела ещё на странице под картой.
-        if tab == .plan, store.canEditPlan, let row = store.leftRow,
-           let field = PlanTitle.last, field.parent.rowID == row, field.insert(point) {
-            if here { store.notePlace(point) }
-            store.save()
-        } else {
-            guard store.writeFromMap(point, to: tab, here: here) else {
-                return shell.say(store.closedReason)
-            }
+        // В ленту внизу страницы, как всё новое (P588).
+        guard store.writePoint(point, to: tab, here: here) else {
+            return shell.say(store.closedReason)
         }
         // В какой день — словами (P587): точка ложится в день, открытый в
         // «Дне», и человек видит, в какой.
         let day = store.isToday ? T("сегодня", "today") : Ru.shortDate(store.date)
-        shell.say(tab == .diary ? T("Точка записана в дневник — ", "Place noted in the diary — ") + day
-                                 : T("Точка записана в план — ", "Place noted in the plan — ") + day)
+        shell.say(T("Точка в ленте — ", "Place added to the strip — ") + day)
         Feel.light()
         // Записали — назад к странице дня, на ту вкладку, где точка теперь
         // видна.

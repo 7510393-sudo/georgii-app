@@ -69,20 +69,12 @@ struct DiaryEditor: UIViewRepresentable {
     /// Где на экране заголовок дня открытой страницы — туда можно бросить
     /// точку из текста (P358). Пусто — заголовка не видно.
     static var titleZone: CGRect = .null
-    /// Курсор переставлен: где он теперь, отступом в тексте записи. Туда
-    /// встанет точка с карты (P213).
-    var onCaret: ((Int) -> Void)?
     /// Снимок или точку в тексте можно взять долгим нажатием и перенести
     /// в другое место записи (P226) — без всякого режима (P362). Вид от
     /// этого не меняется: соседняя страница рисуется так же (P114).
     var moving = false
     /// Поле взяло ввод или отпустило его (P240).
     var onEditing: ((Bool) -> Void)?
-    /// Просьба поставить курсор сюда — отступом в тексте записи. Её подаёт
-    /// геоточка, вписанная посреди набора: писать дальше — за точкой (P253).
-    var placeCaret: Binding<Int?> = .constant(nil)
-    /// Доехать страницей до этого места записи (P564) — в буквах записи.
-    var reveal: Binding<Int?> = .constant(nil)
     /// Отметка времени, ждущая первой буквы новой строки (P403): `nil` —
     /// не ждёт.
     var takeStamp: (() -> String?)? = nil
@@ -193,24 +185,6 @@ struct DiaryEditor: UIViewRepresentable {
             context.coordinator.loadPhotos()
         } else {
             context.coordinator.restyle(view)
-        }
-
-        if let at = reveal.wrappedValue {
-            // Карта ещё уходит, страница могла встать наверх (P346): едем
-            // к месту, когда всё улеглось.
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { [weak coordinator = context.coordinator] in
-                coordinator?.reveal(plain: at)
-            }
-            DispatchQueue.main.async { reveal.wrappedValue = nil }
-        }
-
-        if let at = placeCaret.wrappedValue {
-            if view.isFirstResponder {
-                let spot = Self.viewOffset(plain: at, in: view.attributedText)
-                view.selectedRange = NSRange(location: spot, length: 0)
-                view.typingAttributes = Self.body(size, serif: serif)
-            }
-            DispatchQueue.main.async { placeCaret.wrappedValue = nil }
         }
 
         if startEditing.wrappedValue {
@@ -1651,16 +1625,12 @@ struct DiaryEditor: UIViewRepresentable {
             !(pressed != nil && Date().timeIntervalSince(pressedAt) < 1.5)
         }
 
-        /// Курсор переставлен — запомнить, где он в тексте записи.
+        /// Курсор переставлен: за вложением пишут обычными буквами.
         func textViewDidChangeSelection(_ view: UITextView) {
             if view.typingAttributes[DiaryEditor.lineKey] != nil
                 || view.typingAttributes[DiaryEditor.photoKey] != nil {
                 view.typingAttributes = DiaryEditor.body(parent.size, serif: parent.serif)
             }
-            guard let report = parent.onCaret else { return }
-            let at = min(view.selectedRange.location, view.textStorage.length)
-            let before = view.textStorage.attributedSubstring(from: NSRange(location: 0, length: at))
-            report((DiaryEditor.plain(before) as NSString).length)
         }
 
         // MARK: - Снимки
@@ -1754,21 +1724,6 @@ struct DiaryEditor: UIViewRepresentable {
             guard куда > страница.contentOffset.y else { return }
             страница.setContentOffset(CGPoint(x: страница.contentOffset.x, y: куда),
                                       animated: animated)
-        }
-
-        /// Страница доезжает так, чтобы место записи стояло посередине
-        /// экрана (P564).
-        func reveal(plain at: Int) {
-            guard let view, let страница = page(over: view) else { return }
-            let spot = DiaryEditor.viewOffset(plain: at, in: view.attributedText)
-            guard let position = view.position(from: view.beginningOfDocument,
-                                               offset: min(spot, view.textStorage.length))
-            else { return }
-            let место = view.convert(view.caretRect(for: position), to: страница)
-            let inset = страница.adjustedContentInset
-            let предел = max(-inset.top, страница.contentSize.height + inset.bottom - страница.bounds.height)
-            let куда = min(max(место.midY - страница.bounds.height / 2, -inset.top), предел)
-            страница.setContentOffset(CGPoint(x: страница.contentOffset.x, y: куда), animated: true)
         }
 
         /// Ближайшая прокрутка над полем — сама страница дневника.

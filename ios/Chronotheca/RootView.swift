@@ -969,11 +969,6 @@ struct RootView: View {
     /// весом — его не бросают, он доезжает сам и гасит скорость о воздух.
     /// Быстрый ход читался бы как смена экрана, а не как движение вещи.
     private func open(_ target: Shell.Screen) {
-        // Уходя на карту, запомнить, где был курсор: точка с карты ляжет
-        // туда (P240).
-        if target == .map, shell.screen != .map {
-            store.noteLeaving(fromToday: shell.screen == .today)
-        }
         if target != shell.screen { hideKeyboard() }
         shell.screen = target
     }

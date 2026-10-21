@@ -223,14 +223,24 @@ extension DayStoreTests {
         v.forget()
     }
 
-    /// «Места дня» больше нет (P294): точка «где я» ложится в текст, а
-    /// строка «место:» в файле не заводится.
+    /// «Места дня» больше нет (P294): точка «где я» ложится в ленту внизу
+    /// страницы (P588), а строка «место:» в файле не заводится.
     func testТочкаГдеЯНеЗаводитМестаДня() {
         let день = store(0)
         let дом = CLLocationCoordinate2D(latitude: 54.3211, longitude: -2.7456)
         день.writePoint(GeoPoint(title: "", at: дом), to: .diary, here: true)
         XCTAssertNil(день.place)
-        XCTAssertTrue(день.diaryText.contains("geo:54.32110,-2.74560"))
+        XCTAssertEqual(день.photos, ["geo:54.32110,-2.74560"])
+        XCTAssertFalse(день.diaryText.contains("geo:"))
+    }
+
+    /// Точка в ленте записывается в файл своей строкой и читается обратно
+    /// в ленту, а не в текст (P588).
+    func testТочкаВЛентеПереживаетЗапись() {
+        let d = Diary(text: "Утро", photos: ["[Дом](geo:54.32110,-2.74560)", "a.jpg"])
+        let back = Diary(body: d.body(order: []))
+        XCTAssertEqual(back.text, "Утро")
+        XCTAssertEqual(back.photos, ["[Дом](geo:54.32110,-2.74560)", "a.jpg"])
     }
 
     /// Точку в плане переставляют между делами; скрытые строки файла
@@ -265,21 +275,16 @@ extension DayStoreTests {
             .numberOfRanges, 2)
     }
 
-    /// Точка в план без курсора встаёт своей строкой ниже последней записи
-    /// (P285), а с курсором — в то дело, где он стоит, прямо в название (P259).
-    /// Точка в плане — своей строкой под делом, в котором пишут, а не в его
-    /// названии (P409; прежде — в название, P259).
-    func testТочкаВПланСвоейСтрокойПодДелом() {
+    /// Точка в план — в ленту плана внизу страницы (P588), а не строкой
+    /// под делом: под дело её переносят пальцем.
+    func testТочкаВПланВЛенту() {
         let день = store(0)
         день.planRows = [.task("Первое"), .task("Второе"), .verbatim("")]
-        let первое = день.planRows[0].id
         let c = CLLocationCoordinate2D(latitude: 1, longitude: 2)
         день.writePoint(GeoPoint(title: "", at: c), to: .plan)
-        XCTAssertEqual(день.planRows.map { $0.verbatim ?? $0.text },
-                       ["Первое", "Второе", "geo:1.00000,2.00000", ""])
-        день.writePoint(GeoPoint(title: "Дом", at: c), to: .plan, after: первое)
-        XCTAssertEqual(день.planRows.map { $0.verbatim ?? $0.text },
-                       ["Первое", "[Дом](geo:1.00000,2.00000)", "Второе", "geo:1.00000,2.00000", ""])
+        день.writePoint(GeoPoint(title: "Дом", at: c), to: .plan)
+        XCTAssertEqual(день.planRows.map { $0.verbatim ?? $0.text }, ["Первое", "Второе", ""])
+        XCTAssertEqual(день.planPhotos, ["geo:1.00000,2.00000", "[Дом](geo:1.00000,2.00000)"])
         XCTAssertEqual(Geo.stripped("Второе geo:1.00000,2.00000"), "Второе")
     }
 

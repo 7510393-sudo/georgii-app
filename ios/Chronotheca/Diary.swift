@@ -191,7 +191,7 @@ struct Diary: Equatable {
         while let last = lines.last {
             if last.trimmingCharacters(in: .whitespaces).isEmpty {
                 lines.removeLast()
-            } else if let link = picture(in: last) {
+            } else if let link = stripItem(in: last) {
                 photos.insert(link, at: 0)
                 lines.removeLast()
             } else {
@@ -205,7 +205,24 @@ struct Diary: Equatable {
     /// Строка-вложение для файла. Снимок — картинкой `![](…)`, остальное —
     /// ссылкой с именем файла `[имя](…)`: так их показывают редакторы
     /// разметки. Путь с пробелом берётся в угловые скобки.
+    /// Точка на карте своей строкой — `[Дом](geo:…)` или `geo:…` и больше
+    /// ничего. В ленте она хранится этой строкой (P588).
+    static func point(in line: String) -> String? {
+        let t = line.trimmingCharacters(in: .whitespaces)
+        let found = objects(in: t)
+        guard found.count == 1, found[0].point != nil else { return nil }
+        return t
+    }
+
+    /// Ссылка ленты — точка, а не файл.
+    static func isPoint(_ link: String) -> Bool { link.contains("geo:") }
+
+    /// Вложение ленты: файл — его путь, точка — её строка (P588).
+    static func stripItem(in line: String) -> String? { picture(in: line) ?? point(in: line) }
+
     static func line(_ link: String) -> String {
+        // Точка в ленте хранится своей строкой целиком (P588).
+        if isPoint(link) { return link }
         let path = link.contains(" ") ? "<\(link)>" : link
         if kind(of: link) == .photo { return "![](\(path))" }
         let name = ((link as NSString).lastPathComponent as NSString).deletingPathExtension

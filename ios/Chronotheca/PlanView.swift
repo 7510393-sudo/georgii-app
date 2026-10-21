@@ -526,10 +526,7 @@ struct PlanView: View {
         }
         .keyboardHeight($keyboard)
         // Точка в названии дела открывает карту, как точка строкой (P256).
-        .environment(\.openPoint, { point in
-            store.noteLeaving(fromToday: true)
-            shell.showPoint(point)
-        })
+        .environment(\.openPoint, { point in shell.showPoint(point) })
         .onChange(of: store.date) { _, _ in
             typingIn = nil
             armedLine = nil
@@ -590,12 +587,8 @@ struct PlanView: View {
         // Дело из серии поправили или убирают — только здесь или дальше
         // тоже (P359).
         .modifier(SeriesQuestion())
-        // Где курсор в плане — туда встанет точка с карты (P240).
-        .onChange(of: typingIn) { _, now in
-            store.planTyping = now
-            // Где пишут — там «где был» для «Открывать на» и для карты (P408).
-            if now != nil { shell.tab = .plan }
-        }
+        // Где пишут — там «где был» для «Открывать на» (P408).
+        .onChange(of: typingIn) { _, now in if now != nil { shell.tab = .plan } }
         // Прошедший день не бледнеет: он правится, как любой (P381).
     }
 
@@ -658,10 +651,7 @@ struct PlanView: View {
                               open: { url in
                                   shell.openedPhoto = .init(tab: .plan, index: 0, url: url)
                               },
-                              openPoint: {
-                                  store.noteLeaving(fromToday: true)
-                                  shell.showPoint($0)
-                              },
+                              openPoint: { shell.showPoint($0) },
                               onCarry: store.canEditPlan
                                   ? { carryLine(id, $0, at: $1) } : nil,
                               onDelete: store.canEditPlan
@@ -1564,19 +1554,10 @@ struct PlanPointLine: View {
     var glowing = false
     var onDelete: (() -> Void)?
 
-    /// Точка в плане — такой же квадрат, как снимок и как точка в дневнике
-    /// (P587): булавка и название, без названия — «Место» и сколько до
-    /// своего места. Прежде — строкой.
-    private var tile: UIImage {
-        let given = point.title.trimmingCharacters(in: .whitespaces)
-        return PointChip.square(given.isEmpty ? T("Место", "Place") : given,
-                                note: given.isEmpty ? Places.caption(for: point.at) : nil,
-                                glowing: false)
-    }
-
     var body: some View {
         HStack(spacing: 0) {
-            Image(uiImage: tile)
+            // Такой же квадрат, как снимок и точка в дневнике (P587).
+            PointSquare(point: point)
                 .frame(width: DiaryEditor.photoSize.width, height: DiaryEditor.photoSize.height)
                 .scaleEffect(armed ? 1.1 : 1, anchor: .leading)
                 .contentShape(Rectangle())

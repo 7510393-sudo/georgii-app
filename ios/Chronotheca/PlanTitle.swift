@@ -202,10 +202,6 @@ struct PlanTitle: UIViewRepresentable {
 
     // MARK: - Поведение
 
-    /// Название, которое правили последним. Туда, на место курсора,
-    /// геоточка вписывает координаты — прямо в строку дела (P255).
-    static weak var last: Coordinator?
-
     final class Coordinator: NSObject, UITextViewDelegate, NSLayoutManagerDelegate,
                              UIGestureRecognizerDelegate {
         var parent: PlanTitle
@@ -272,30 +268,6 @@ struct PlanTitle: UIViewRepresentable {
         @objc func tapped(_ g: UITapGestureRecognizer) {
             guard let point = point(at: g) else { return }
             open?(point)
-        }
-
-        func textViewDidBeginEditing(_ view: UITextView) { PlanTitle.last = self }
-
-        /// Вписать кусок на место курсора, отделив пробелами, и поставить
-        /// курсор за ним. Курсор помнится и когда клавиатуру уже убрали.
-        func insert(_ point: GeoPoint) -> Bool {
-            guard let view, view.window != nil else { return false }
-            let ns = view.text as NSString
-            var range = view.selectedRange
-            if range.location == NSNotFound || NSMaxRange(range) > ns.length {
-                range = NSRange(location: ns.length, length: 0)
-            }
-            let before = ns.substring(to: range.location)
-            let after = ns.substring(from: NSMaxRange(range))
-            let style = view.typingAttributes
-            let add = NSMutableAttributedString(
-                string: before.isEmpty || before.hasSuffix(" ") ? "" : " ", attributes: style)
-            add.append(PlanTitle.chip(point, token: Geo.pointLine(point), style: style))
-            add.append(NSAttributedString(string: after.hasPrefix(" ") ? "" : " ", attributes: style))
-            view.textStorage.replaceCharacters(in: range, with: add)
-            view.selectedRange = NSRange(location: range.location + add.length, length: 0)
-            parent.text = DiaryEditor.plain(view.attributedText)
-            return true
         }
 
         init(_ parent: PlanTitle) { self.parent = parent }

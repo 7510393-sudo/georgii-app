@@ -574,10 +574,6 @@ final class DayStore: ObservableObject {
         diaryAhead = []
         backOrder = []
         aheadOrder = []
-        diaryCaret = nil
-        caretRequest = nil
-        leftCaret = nil
-        leftRow = nil
         date = Calendar.current.startOfDay(for: newDate)
         retries = 0
         load()
@@ -778,6 +774,8 @@ final class DayStore: ObservableObject {
         guard canEdit(tab), links.indices.contains(index) else { return closedReason }
         let link = links[index]
         removePhoto(at: index, from: tab)
+        // У точки нет файла — она просто уходит со страницы (P588).
+        if Diary.isPoint(link) { return T("Точка убрана со страницы.", "The place is removed from the page.") }
         guard delete else {
             return T("Убрано со страницы. Сам файл остался в папке.", "Removed from the page. The file stays in the folder.")
         }
@@ -799,7 +797,9 @@ final class DayStore: ObservableObject {
     func settlePhotos() {
         // И в ответах «Как прошло?»: снимок встал в строку ответа (P407).
         let said = answers.values.filter { $0.contains("](") }
-        guard !photos.isEmpty, diaryText.contains("](") || !said.isEmpty else { return }
+        // Точка без названия — `geo:…` без скобок (P588).
+        guard !photos.isEmpty, diaryText.contains("](") || diaryText.contains("geo:") || !said.isEmpty
+        else { return }
         let placed = photos.filter { link in
             diaryText.contains(Diary.line(link)) || said.contains { $0.contains(Diary.line(link)) }
         }
@@ -815,100 +815,20 @@ final class DayStore: ObservableObject {
         save()
     }
 
-    /// Где стоял курсор в записи дневника — отступом от начала текста.
-    /// Туда встаёт точка с карты (P213). Пусто — курсора не было, и точка
-    /// ложится в конец записи.
-    var diaryCaret: Int?
-
-    /// Пишет ли человек сейчас в дневник и в какое дело плана. Нужно, чтобы
-    /// точка встала туда, где был курсор (P240).
-    var diaryTyping = false
-    /// В каком деле «Как прошло?» сейчас пишут (P407): «место» встаёт в
-    /// конец этого ответа, в ту же строку.
-    var answerTyping: String?
-    var planTyping: UUID?
 
     /// День дополнен версией с другого устройства (P570) — растёт, чтобы
     /// экран сказал об этом.
     @Published var syncNotice = 0
 
-    /// Просьба полю дневника поставить курсор за вписанной точкой (P253).
-    @Published var caretRequest: Int?
-    /// Просьба странице доехать до места в записи (P564): точку вписали с
-    /// карты — после возвращения её должно быть видно, а не верх страницы.
-    @Published var revealRequest: Int?
-
-    /// Где был курсор, когда ушли на карту: место в дневнике и дело в плане.
-    /// Пусто — курсора не было (P240).
-    private(set) var leftCaret: Int?
-    private(set) var leftRow: UUID?
-
-    /// Запомнить, где был курсор, перед уходом на карту. Уходят не со
-    /// страницы дня — курсора нет.
-    func noteLeaving(fromToday: Bool) {
-        leftCaret = fromToday && diaryTyping ? diaryCaret : nil
-        // В плане — дело, в котором стоит курсор: точка ляжет в его строку,
-        // на место курсора (P276). Курсора нет — строкой ниже всех (P285).
-        leftRow = fromToday ? planTyping : nil
-    }
-
-    /// Записать точку с карты — туда, где был курсор перед уходом на карту.
+    /// Записать точку — как всё новое, в ленту внизу страницы (P588): в
+    /// ленту дневника, а в день, который ещё не наступил, — в ленту плана.
+    /// Оттуда её переносят туда, где ей место. Прежде точка вставала сразу
+    /// на место курсора — в текст, в дело, в ответ (P213, P240, P276, P407).
     @discardableResult
-    func writeFromMap(_ point: GeoPoint, to tab: Shell.Tab, here: Bool = false) -> Bool {
-        guard writePoint(point, to: tab, here: here, caret: leftCaret, after: leftRow) else { return false }
-        if tab == .diary { revealRequest = diaryCaret }
-        return true
-    }
-
-    /// Записать точку своей строкой (P165, P213, P240). В дневник — туда,
-    /// где стоит курсор, а без курсора — следующей строкой в конце. В план —
-    /// после дела, в котором курсор, а без курсора — после последнего дела.
-    @discardableResult
-    func writePoint(_ point: GeoPoint, to tab: Shell.Tab, here: Bool = false,
-                    caret: Int? = nil, after row: UUID? = nil, answer: String? = nil) -> Bool {
+    func writePoint(_ point: GeoPoint, to tab: Shell.Tab, here: Bool = false) -> Bool {
         guard canEdit(tab) else { return false }
         if here { notePlace(point) }
-        let line = Geo.pointLine(point)
-        // Писали в ответ «Как прошло?» — точка в конец этого ответа (P407).
-        if tab == .diary, let task = answer {
-            answers[task] = Diary.adding(line, to: answers[task] ?? "")
-            touchDiary()
-            save()
-            return true
-        }
-        switch tab {
-        case .plan:
-            // Дело, за которым просили, могли уже удалить — тогда под последним.
-            let asked = row.flatMap { index(of: $0) == nil ? nil : $0 }
-            if let anchor = asked, index(of: anchor) != nil {
-                // Курсор стоял в деле — точка своей строкой под ним, между
-                // плашками, после снимков и точек, что уже там (P409;
-                // прежде — в название дела, P259, P276).
-                planRows.insert(.verbatim(line), at: afterBlock(of: anchor))
-            } else if asked == nil {
-                // Курсора нет — своей строкой ниже последней записи плана;
-                // в нужное дело её переносят в режиме изменений (P285).
-                var end = planRows.count
-                while end > 0, planRows[end - 1].verbatim?.trimmingCharacters(in: .whitespaces) == "" {
-                    end -= 1
-                }
-                planRows.insert(.verbatim(line), at: end)
-            } else if let anchor = asked, var i = index(of: anchor) {
-                // Точки, уже стоящие за этим делом, остаются перед новой.
-                i += 1
-                while i < planRows.count, let v = planRows[i].verbatim, Geo.point(in: v) != nil { i += 1 }
-                planRows.insert(.verbatim(line), at: i)
-            } else {
-                planRows.append(.verbatim(line))
-            }
-        case .diary:
-            let (text, at) = DayStore.insert(line, into: diaryText, at: caret)
-            diaryText = text
-            diaryCaret = at
-            if diaryTyping { caretRequest = at }
-            touchDiary()
-        }
-        save()
+        attach(Geo.pointLine(point), to: tab)
         return true
     }
 
@@ -1018,6 +938,23 @@ final class DayStore: ObservableObject {
             planPhotos.append(link)
         }
         putPlanPhoto(link, under: id)
+    }
+
+    /// Точка из ленты — своей строкой под дело (P588): после самого дела и
+    /// того, что уже стоит под ним.
+    func stripPointToPlan(_ link: String, under id: UUID) {
+        guard canEditPlan, index(of: id) != nil else { return }
+        if let k = photos.firstIndex(of: link) {
+            guard canEditDiary else { return }
+            photos.remove(at: k)
+            touchDiary()
+        } else if let k = planPhotos.firstIndex(of: link) {
+            planPhotos.remove(at: k)
+        } else {
+            return
+        }
+        planRows.insert(.verbatim(link), at: afterBlock(of: id))
+        save()
     }
 
     /// Всё, что лежит в полоске внизу страницы: снимки дневника, за ними —

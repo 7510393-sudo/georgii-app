@@ -550,10 +550,6 @@ struct AttachBar: View {
         .onChange(of: shell.keyboardAsk) { _, ask in
             guard live, let ask else { return }
             shell.keyboardAsk = nil
-            // В каком ответе «Как прошло?» писали — до того, как клавиатура
-            // уйдёт и забудет это (P407).
-            let answering = store.answerTyping
-            let row = store.planTyping
             hideKeyboard()
             switch ask {
             case .photo: open { choosing = true }
@@ -564,7 +560,7 @@ struct AttachBar: View {
                 recordAlign = 5.0 / 12.0
                 open { recording = true }
             case .files: open { browsing = true }
-            case .place: notePlaceHere(answer: answering, row: row)
+            case .place: notePlaceHere()
             case .map: openMap()
             }
         }
@@ -635,16 +631,12 @@ struct AttachBar: View {
                                      : T("Не удалось положить файлов: \(urls.count - kept)", "Files not saved: \(urls.count - kept)"))
     }
 
-    /// Вписать место, где человек сейчас, — своей строкой у курсора; в
-    /// плане — под делом, в котором пишут (P381). Место узнаётся только
-    /// по этому нажатию (A9).
-    private func notePlaceHere(answer: String? = nil, row asked: UUID? = nil) {
-        // Пишут в деле плана — место встаёт под него; иначе — в дневник
-        // (P381, P408).
-        let row = asked ?? store.planTyping
-        let tab: Shell.Tab = row != nil ? .plan : .diary
+    /// Место, где человек сейчас, — в ленту внизу страницы (P588): дневника,
+    /// а в день, который ещё не наступил, — плана. Место узнаётся только по
+    /// этому нажатию (A9).
+    private func notePlaceHere() {
+        let tab: Shell.Tab = store.canEditDiary ? .diary : .plan
         guard store.canEdit(tab) else { return shell.say(store.closedReason) }
-        let caret = store.diaryTyping ? store.diaryCaret : nil
         Feel.light()
         Locator.shared.current { location in
             DispatchQueue.main.async {
@@ -652,9 +644,9 @@ struct AttachBar: View {
                     return shell.say(T("Место не определилось — разрешите приложению знать, где вы, в Настройках iPhone.",
                                        "Could not find where you are — allow location for the app in iPhone Settings."))
                 }
-                if store.writePoint(GeoPoint(title: "", at: location.coordinate), to: tab, here: true,
-                                    caret: caret, after: row, answer: answer) {
-                    shell.say(T("Место записано", "Place noted"))
+                // В ленту внизу страницы, как всё новое (P588).
+                if store.writePoint(GeoPoint(title: "", at: location.coordinate), to: tab, here: true) {
+                    shell.say(T("Место — в ленте", "Place added to the strip"))
                 }
             }
         }
@@ -664,7 +656,6 @@ struct AttachBar: View {
     /// курсор.
     private func openMap() {
         hideKeyboard()
-        store.noteLeaving(fromToday: true)
         shell.screen = .map
     }
 
@@ -835,6 +826,8 @@ struct SideDay: View {
                   weather: weather,
                   // Одна полоска на страницу, как у открытого дня (P408).
                   photos: (photos + planPhotos).map { vault.mediaURL($0, for: date) },
+                  // Точки ленты — тем же квадратом, что на открытой странице (P588, P114).
+                  points: (photos + planPhotos).map { Diary.isPoint($0) ? Geo.point(in: $0) : nil },
                   takesBack: Plan.hasPhotoRows(rows),
                   resolve: { [vault, date] in vault.mediaURL($0, for: date) },
                   health: health)

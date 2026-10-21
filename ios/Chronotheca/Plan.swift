@@ -176,11 +176,11 @@ enum Plan {
         var rows = rows
         while let last = rows.last, blank(last) { rows.removeLast() }
         var start = rows.count
-        while start > 0, let line = rows[start - 1].verbatim, Diary.picture(in: line) != nil {
+        while start > 0, let line = rows[start - 1].verbatim, Diary.stripItem(in: line) != nil {
             start -= 1
         }
         guard start < rows.count, start == 0 || blank(rows[start - 1]) else { return (rows, []) }
-        let photos = rows[start...].compactMap { $0.verbatim.flatMap(Diary.picture(in:)) }
+        let photos = rows[start...].compactMap { $0.verbatim.flatMap(Diary.stripItem(in:)) }
         rows.removeSubrange(start...)
         while let last = rows.last, blank(last) { rows.removeLast() }
         return (rows, photos)

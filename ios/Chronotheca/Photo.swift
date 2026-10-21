@@ -211,6 +211,8 @@ struct PhotoThumb: View {
 struct PhotoStrip: View {
 
     let photos: [URL?]
+    /// Точки на карте в ленте (P588) — по местам ряда; у файла — `nil`.
+    var points: [GeoPoint?] = []
     var onOpen: ((Int) -> Void)?
     /// Своё перенесение превью (дневник, P380): долгое нажатие и ход
     /// пальца по экрану — вместо системного перетаскивания, у которого
@@ -282,7 +284,18 @@ struct PhotoStrip: View {
 
     /// Снимок — уменьшенной картинкой; голос и документ — плиткой с
     /// значком и расширением (P209).
+    private func point(_ i: Int) -> GeoPoint? { points.indices.contains(i) ? points[i] : nil }
+
     @ViewBuilder private func face(_ i: Int) -> some View {
+        if let point = point(i) {
+            // Точка — тем же квадратом, что в записи и в плане (P588).
+            PointSquare(point: point)
+        } else {
+            fileFace(i)
+        }
+    }
+
+    @ViewBuilder private func fileFace(_ i: Int) -> some View {
         switch kind(i) {
         case .photo:
             PhotoThumb(url: photos[i])
@@ -313,7 +326,8 @@ struct PhotoStrip: View {
             // оно накрывало и крестик, и тот был не виден ни VoiceOver, ни
             // проверкам.
             .accessibilityElement()
-            .accessibilityLabel(kind(i) == .photo ? T("Фотография \(i + 1)", "Photo \(i + 1)")
+            .accessibilityLabel(point(i) != nil ? T("Точка на карте", "Place on the map")
+                                : kind(i) == .photo ? T("Фотография \(i + 1)", "Photo \(i + 1)")
                                 : kind(i) == .video ? T("Видео", "Video")
                                 : kind(i) == .audio ? T("Голосовая запись", "Voice note") : T("Файл", "File"))
             .contentShape(Rectangle())
@@ -953,4 +967,19 @@ struct HoldCatcher: UIViewRepresentable {
 /// рисуется в ряду вложений; осталась только мерка.
 enum PlanPhotoLine {
     static let height: CGFloat = DiaryEditor.photoSize.height + 16
+}
+
+/// Точка на карте квадратом (P587, P588): булавка и название, без названия —
+/// «Место» и сколько до своего места. Один вид в ленте, в плане и в записи.
+struct PointSquare: View {
+    let point: GeoPoint
+
+    var body: some View {
+        let given = point.title.trimmingCharacters(in: .whitespaces)
+        Image(uiImage: PointChip.square(given.isEmpty ? T("Место", "Place") : given,
+                                        note: given.isEmpty ? Places.caption(for: point.at) : nil,
+                                        glowing: false))
+            .resizable()
+            .scaledToFit()
+    }
 }
