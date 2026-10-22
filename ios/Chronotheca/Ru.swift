@@ -92,6 +92,18 @@ enum Ru {
         return "\(c.day ?? 1) \(months[(c.month ?? 1) - 1]) ’\(String(format: "%02d", (c.year ?? 2026) % 100))"
     }
 
+    /// «13 сент.» — когда «13 сентября» не умещается (P594).
+    static func shortestDate(_ date: Date) -> String {
+        let c = Calendar.current.dateComponents([.day, .month], from: date)
+        let m = (c.month ?? 1) - 1
+        if Lang.code == "ru" {
+            let short = ["янв.", "февр.", "марта", "апр.", "мая", "июня",
+                         "июля", "авг.", "сент.", "окт.", "нояб.", "дек."]
+            return "\(c.day ?? 1) \(short[m])"
+        }
+        return pattern("dMMM", date)
+    }
+
     /// «13 сентября»
     static func shortDate(_ date: Date) -> String {
         guard own else { return pattern("dMMMM", date) }

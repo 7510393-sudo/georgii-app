@@ -342,7 +342,12 @@ struct MapScreen: View {
                 if locating {
                     oval(ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity), on: true)
                 } else {
-                    oval(MapFace(icon: "pin.fill", name: saveName, tint: Look.accent), on: true)
+                    // Не уместилось — месяц короче, потом «в 10 сент.» второй
+                    // строкой; без многоточия (P594).
+                    oval(MapFace(icon: "pin.fill", name: saveName(Ru.shortDate(store.date)),
+                                 short: saveName(Ru.shortestDate(store.date)),
+                                 shortest: saveName(Ru.shortestDate(store.date), split: false),
+                                 tint: Look.accent), on: true)
                 }
             }
             .accessibilityHint(point ? T("Запишет выбранную точку", "Saves the chosen place") : T("Запишет, где вы сейчас", "Saves where you are now"))
@@ -542,7 +547,9 @@ struct MapScreen: View {
     /// С P590 — каким днём (автор): «сохранить в сегодня», «в завтра»,
     /// «в послезавтра», дальше и в прошлом — числом и месяцем в две строки:
     /// «сохранить в 25» / «ноября». Год не пишется.
-    private var saveName: String {
+    /// `split` — «сохранить в 10 / сентября» (автор); без него —
+    /// «сохранить / в 10 сент.», когда первая строка не умещается.
+    private func saveName(_ date: String, split: Bool = true) -> String {
         let cal = Calendar.current
         let days = cal.dateComponents([.day], from: cal.startOfDay(for: DayStore.today()),
                                       to: cal.startOfDay(for: store.date)).day ?? 0
@@ -551,9 +558,8 @@ struct MapScreen: View {
         case 1: return T("сохранить\nв завтра", "save to\ntomorrow")
         case 2: return T("сохранить\nв послезавтра", "save to the\nday after")
         default:
-            let date = Ru.shortDate(store.date)
-            guard let gap = date.firstIndex(of: " ") else {
-                return T("сохранить в", "save to") + "\n" + date
+            guard split, let gap = date.firstIndex(of: " ") else {
+                return T("сохранить\nв ", "save\nto ") + date
             }
             return T("сохранить в ", "save to ") + date[..<gap] + "\n" + date[date.index(after: gap)...]
         }
@@ -1822,21 +1828,33 @@ struct PlaceCloud: View {
 struct MapFace: View {
     let icon: String
     let name: String
+    /// Короче — если `name` не умещается: «сохранить в 10 / сент.», а не
+    /// «сохранить в 10…» (P594).
+    var short: String? = nil
+    var shortest: String? = nil
     var tint: Color = Look.inkSoft
 
     var body: some View {
         VStack(spacing: 2) {
             Image(systemName: icon).font(.system(size: 16))
-            Text(name.uppercased())
-                .font(Look.sans(8.5))
-                .tracking(0.3)
-                .multilineTextAlignment(.center)
-                .lineLimit(2)
-                .minimumScaleFactor(0.8)
-                .fixedSize(horizontal: false, vertical: true)
+            ViewThatFits(in: .horizontal) {
+                label(name)
+                if let short { label(short) }
+                if let shortest { label(shortest) }
+            }
         }
         .foregroundStyle(tint)
         .padding(.horizontal, 8)
+    }
+
+    private func label(_ text: String) -> some View {
+        Text(text.uppercased())
+            .font(Look.sans(8.5))
+            .tracking(0.3)
+            .multilineTextAlignment(.center)
+            .lineLimit(2)
+            .minimumScaleFactor(0.8)
+            .fixedSize(horizontal: false, vertical: true)
     }
 }
 
