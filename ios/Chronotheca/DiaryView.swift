@@ -178,7 +178,11 @@ extension DiaryView {
             DiaryEditor.active?.holdPage(true)
             stripCarry = i
             stripSpot = spot
-            StripGhost.shared.show(store.stripLinks[i], at: spot)
+            // Отчёт «отпустили» может не дойти (P596) — тогда перенос
+            // кончает подстраховка, как если бы палец отпустили там, где он был.
+            StripGhost.shared.show(store.stripLinks[i], at: spot) { [self] in
+                carryStrip(i, .ended(.zero), StripGhost.shared.spot)
+            }
         case .moved:
             stripSpot = spot
             StripGhost.shared.spot = spot
@@ -198,6 +202,8 @@ extension DiaryView {
                 DiaryEditor.active?.carryIn(line, at: CGPoint(x: spot.x, y: spot.y))
             }
         case .ended:
+            // Перенос уже кончен (подстраховкой) — второй раз не кончать.
+            guard StripGhost.shared.link != nil else { return }
             DiaryEditor.active?.holdPage(false)
             DiaryEditor.active?.stopFollowingStrip()
             hover(nil, photo: false)
@@ -235,8 +241,9 @@ extension DiaryView {
             }
             stripCarry = nil
             stripSpot = .zero
-            StripGhost.shared.link = nil
+            StripGhost.shared.done()
         case .cancelled:
+            guard StripGhost.shared.link != nil else { return }
             DiaryEditor.active?.holdPage(false)
             DiaryEditor.active?.stopFollowingStrip()
             hover(nil, photo: false)
@@ -244,7 +251,7 @@ extension DiaryView {
             DiaryEditor.active?.carryOut()
             stripCarry = nil
             stripSpot = .zero
-            StripGhost.shared.link = nil
+            StripGhost.shared.done()
         }
     }
 
@@ -758,9 +765,41 @@ final class StripGhost: ObservableObject {
     @Published var link: String?
     @Published var spot: CGPoint = .zero
 
-    func show(_ link: String, at spot: CGPoint) {
+    /// Чем кончить перенос, если отчёт «отпустили» не дошёл (P596).
+    private var finish: (() -> Void)?
+    private var watch: Timer?
+
+    func show(_ link: String, at spot: CGPoint, finish: @escaping () -> Void) {
         self.spot = spot
         self.link = link
+        self.finish = finish
+        watch?.invalidate()
+        // И пока палец ведёт прокрутку — в любом ходе цикла.
+        let timer = Timer(timeInterval: 0.12, repeats: true) { [weak self] _ in
+            self?.check()
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        watch = timer
+    }
+
+    /// Перенос кончен — копии над пальцем нет, подстраховка не нужна.
+    func done() {
+        link = nil
+        finish = nil
+        watch?.invalidate()
+        watch = nil
+    }
+
+    /// Подстраховка (P596): жест, которым взяли превью, уже не идёт
+    /// (палец отпущен или превью в ленте перестроилось и унесло жест с
+    /// собой), а отчёта «отпустили» не было. Прежде так в записи оставалась
+    /// пунктирная рамка, а снимок — в ленте (снимок автора 22.10).
+    private func check() {
+        if let state = HoldCatcher.live?.state, state == .began || state == .changed { return }
+        let end = finish
+        finish = nil
+        end?()
+        done()
     }
 }
 
