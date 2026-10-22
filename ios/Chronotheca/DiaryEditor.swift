@@ -465,7 +465,11 @@ struct DiaryEditor: UIViewRepresentable {
         for (range, link, point, own) in found.sorted(by: { $0.0.location < $1.0.location }).reversed() {
             let attachment: NSTextAttachment
             let file = point == nil && Diary.picture(in: link).map { Diary.kind(of: $0) != .photo } == true
-            if let point, own {
+            // Место, куда ляжет несомое, — пунктирной рамкой, а не вторым
+            // таким же снимком (P593): два одинаковых снимка путали.
+            if let awaiting = DiaryEditor.awaiting, link == awaiting || Diary.picture(in: link) == awaiting {
+                attachment = AwaitingSlot()
+            } else if let point, own {
                 attachment = PointChip(tile: point, glowing: glowing)
             } else if let point {
                 attachment = PointChip(mini: point, glowing: glowing)
@@ -742,7 +746,9 @@ struct DiaryEditor: UIViewRepresentable {
         /// Взятое идёт над пальцем, а не под ним: иначе палец закрывает его
         /// целиком и тащить приходится вслепую (P349). Ложится оно тоже туда,
         /// где видно, — над пальцем.
-        private static let lift: CGFloat = 48
+        /// Насколько несомое выше пальца (P593: было 48 — палец закрывал
+        /// низ картинки). То же у несомого из ленты.
+        static let lift: CGFloat = 70
 
         /// Тонкая синяя черта там, куда ляжет взятое (P358): палец и
         /// поднятая над ним картинка не дают увидеть место точно.
@@ -1257,6 +1263,13 @@ struct DiaryEditor: UIViewRepresentable {
             // Всё считается по полю до переноса, одним шагом (P584): прежде —
             // от последнего показа к следующему, и ошибка копилась.
             guard let original = before else { return }
+            // Что несут — его будущее место рисуется рамкой (P593).
+            if let piece = carriedPiece {
+                DiaryEditor.awaiting = Diary.picture(in: piece) ?? piece.trimmingCharacters(in: .whitespaces)
+            } else if let i = taken, i < original.length {
+                let piece = DiaryEditor.plain(original.attributedSubstring(from: NSRange(location: i, length: 1)))
+                DiaryEditor.awaiting = Diary.picture(in: piece) ?? piece.trimmingCharacters(in: .whitespaces)
+            }
             let drop = paragraph(at: at)
             let next: (String, Int)?
             if let piece = carriedPiece {
@@ -1341,6 +1354,7 @@ struct DiaryEditor: UIViewRepresentable {
             previewing = false
             shownSpot = nil
             carriedPiece = nil
+            DiaryEditor.awaiting = nil
             paraTops = []
         }
 
@@ -2214,4 +2228,33 @@ final class PhotoAttachment: NSTextAttachment {
                                   width: w, height: h))
         }
     }
+}
+
+extension DiaryEditor {
+    /// Вложение, которое сейчас несут: в показе «куда ляжет» его место —
+    /// пунктирная рамка (P593). Пусто — ничего не несут.
+    static var awaiting: String?
+}
+
+/// Пунктирная рамка размером со снимок — сюда ляжет несомое (P593).
+final class AwaitingSlot: NSTextAttachment {
+    override init(data contentData: Data?, ofType uti: String?) {
+        super.init(data: contentData, ofType: uti)
+        let size = DiaryEditor.photoSize
+        image = UIGraphicsImageRenderer(size: size).image { _ in
+            let box = CGRect(origin: .zero, size: size).insetBy(dx: 1.5, dy: 1.5)
+            let shape = UIBezierPath(roundedRect: box, cornerRadius: 6)
+            UIColor(Look.glow).withAlphaComponent(0.08).setFill()
+            shape.fill()
+            shape.lineWidth = 2
+            shape.setLineDash([7, 5], count: 2, phase: 0)
+            UIColor(Look.glow).withAlphaComponent(0.85).setStroke()
+            shape.stroke()
+        }
+        bounds = CGRect(origin: CGPoint(x: 0, y: -4), size: size)
+    }
+
+    convenience init() { self.init(data: nil, ofType: nil) }
+
+    required init?(coder: NSCoder) { nil }
 }

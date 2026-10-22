@@ -779,14 +779,19 @@ struct StripGhostLayer: View {
                     .id(link)
                     .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Look.glow, lineWidth: 2.6))
                     .shadow(color: .black.opacity(0.25), radius: 8, y: 4)
-                    .position(x: ghost.spot.x - o.x, y: ghost.spot.y - o.y - 48)
+                    // Выше пальца, чтобы он не закрывал картинку (P593).
+                    .position(x: ghost.spot.x - o.x, y: ghost.spot.y - o.y - DiaryEditor.Coordinator.lift)
             }
         }
         .allowsHitTesting(false)
     }
 
     @ViewBuilder private func face(_ link: String) -> some View {
-        if Diary.kind(of: link) == .photo {
+        if Diary.isPoint(link), let point = Geo.point(in: link) {
+            // Точку несут её квадратом (P588).
+            PointSquare(point: point)
+                .frame(width: DiaryEditor.photoSize.width, height: DiaryEditor.photoSize.height)
+        } else if Diary.kind(of: link) == .photo {
             PlanPhotoThumb(url: store.photoURL(link))
         } else {
             // Голос и документ несут той же плиткой, какой они встанут
