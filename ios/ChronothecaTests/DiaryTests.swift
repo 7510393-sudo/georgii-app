@@ -293,4 +293,15 @@ final class DiaryTests: XCTestCase {
         let поле = AskLine.dressed(ответ + " geo:51.5,-0.12 и дальше", resolve: { _ in nil })
         XCTAssertEqual(DiaryEditor.plain(поле), ответ + " geo:51.5,-0.12 и дальше")
     }
+
+    /// Время встаёт с первой буквы, даже если под курсором остались пустые
+    /// строки или вложения (P595); посреди текста — нет.
+    func testКонецЗаписиСПустымиСтроками() {
+        let atEnd = DiaryEditor.Coordinator.atEnd
+        XCTAssertTrue(atEnd(NSAttributedString(string: "Утро.\n\n"), 7))
+        XCTAssertTrue(atEnd(NSAttributedString(string: "Утро.\n\n\n \n"), 7))
+        XCTAssertTrue(atEnd(NSAttributedString(string: "Утро.\n\n\u{FFFC}"), 7))
+        XCTAssertFalse(atEnd(NSAttributedString(string: "Утро.\n\nВечер"), 7))
+        XCTAssertTrue(atEnd(NSAttributedString(string: ""), 0))
+    }
 }

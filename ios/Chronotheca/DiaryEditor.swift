@@ -1756,11 +1756,27 @@ struct DiaryEditor: UIViewRepresentable {
         /// отсчитывается заново.
         private var typedLetters = false
 
+        /// Пишут в конце записи: за курсором — только пустые строки, пробелы
+        /// и вложения (P595). Прежде «в конце» значило — в самом последнем
+        /// знаке поля, а запись часто кончается пустой строкой под курсором:
+        /// тогда время не вставало с первой буквы, а набор не считался
+        /// «писали», и время появлялось позже, посреди уже написанного.
+        static func atEnd(_ storage: NSAttributedString, from location: Int) -> Bool {
+            let ns = storage.string as NSString
+            guard location <= ns.length else { return true }
+            for i in location..<ns.length {
+                let c = ns.character(at: i)
+                if c == 10 || c == 32 || c == 9 || c == 0xFFFC { continue }
+                return false
+            }
+            return true
+        }
+
         func textViewDidChange(_ view: UITextView) {
             let now = DiaryEditor.plain(view.attributedText)
             parent.text = now
             if typedLetters, view.isFirstResponder,
-               view.selectedRange.location >= view.textStorage.length {
+               Self.atEnd(view.textStorage, from: view.selectedRange.location) {
                 parent.onWrite?()
             }
             typedLetters = false
@@ -1795,9 +1811,12 @@ struct DiaryEditor: UIViewRepresentable {
             // Только с чистой строки и только буквой: пробел и продолжение
             // начатой строки отметку не зовут (P528) — в P520 пробел после
             // паузы перебрасывал текст на новый абзац с отметкой.
-            if range.length == 0, range.location == view.textStorage.length,
+            // Строка чистая — перед курсором начало записи или перевод строки;
+            // после курсора — ничего, кроме пустых строк и вложений (P595).
+            if range.length == 0, Self.atEnd(view.textStorage, from: range.location),
                let first = text.first, !first.isWhitespace, !text.contains("\u{FFFC}"),
-               view.textStorage.string.isEmpty || view.textStorage.string.hasSuffix("\n"),
+               range.location == 0
+                || (view.textStorage.string as NSString).character(at: range.location - 1) == 10,
                let stamp = parent.takeStamp?() {
                 let piece = stamp + String(first).uppercased() + String(text.dropFirst())
                 view.textStorage.replaceCharacters(
