@@ -185,20 +185,20 @@ struct Diary: Equatable {
     /// Конец записи — это полоска внизу страницы. Фотография, которую
     /// человек поставил посреди текста, остаётся в тексте на своём месте:
     /// там её и рисует поле записи (решение P203).
+    ///
+    /// Лента — вложения в самом конце **после пустой строки** (так их всегда
+    /// и пишет `body`) или вся запись, если в ней одни вложения (P591).
+    /// Вложение, поставленное последней строкой записи сразу под текстом, —
+    /// часть текста: прежде оно при каждом открытии уходило назад в ленту.
     static func split(_ text: String) -> (text: String, photos: [String]) {
+        func blank(_ s: String) -> Bool { s.trimmingCharacters(in: .whitespaces).isEmpty }
         var lines = text.components(separatedBy: "\n")
-        var photos: [String] = []
-        while let last = lines.last {
-            if last.trimmingCharacters(in: .whitespaces).isEmpty {
-                lines.removeLast()
-            } else if let link = stripItem(in: last) {
-                photos.insert(link, at: 0)
-                lines.removeLast()
-            } else {
-                break
-            }
-        }
-        guard !photos.isEmpty else { return (text, []) }
+        while let last = lines.last, blank(last) { lines.removeLast() }
+        var start = lines.count
+        while start > 0, stripItem(in: lines[start - 1]) != nil { start -= 1 }
+        guard start < lines.count, start == 0 || blank(lines[start - 1]) else { return (text, []) }
+        let photos = lines[start...].compactMap(stripItem(in:))
+        lines.removeSubrange(start...)
         return (lines.joined(separator: "\n").trimmingCharacters(in: .newlines), photos)
     }
 

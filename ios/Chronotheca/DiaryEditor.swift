@@ -1878,8 +1878,16 @@ struct DiaryEditor: UIViewRepresentable {
                 caret = at + added.length
             } else {
                 at = end
-                piece = "\n" + text
-                caret = at + 1 + added.length
+                // Пишут за вложением, стоящим последним в записи: своя строка
+                // — и, как всякая новая строка в конце, с отметкой времени
+                // (P591; прежде отметку здесь обходили).
+                var typed = text
+                if at == old.length, let first = text.first, !first.isWhitespace,
+                   let stamp = parent.takeStamp?() {
+                    typed = stamp + String(first).uppercased() + String(text.dropFirst())
+                }
+                piece = "\n" + typed
+                caret = at + 1 + (typed as NSString).length
             }
             storage.replaceCharacters(in: NSRange(location: at, length: 0),
                                       with: NSAttributedString(string: piece,
