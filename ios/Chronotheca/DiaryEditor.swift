@@ -686,8 +686,14 @@ struct DiaryEditor: UIViewRepresentable {
         func gestureRecognizer(_ g: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
             if g is UILongPressGestureRecognizer {
                 guard parent.moving, let view else { return false }
-                taken = attachment(at: touch.location(in: view), in: view)
-                return taken != nil
+                // Только кандидат (P597): касание ещё не долгое нажатие.
+                // Прежде здесь сразу ставилось `taken` — и после любого
+                // касания или прокрутки с пальцем на снимке в записи оно
+                // оставалось. Тогда перенос из ленты считал, что идёт
+                // перенос внутри записи, и не кончался: в записи оставалась
+                // пунктирная рамка, вложение — в ленте (снимки автора 22.10).
+                maybeTaken = attachment(at: touch.location(in: view), in: view)
+                return maybeTaken != nil
             }
             guard let view, parent.onOpenPhoto != nil || parent.onOpenPoint != nil else {
                 return false
@@ -704,8 +710,11 @@ struct DiaryEditor: UIViewRepresentable {
 
         // MARK: - Перенос снимка и точки по тексту (P226)
 
-        /// Место в тексте поля, где лежит взятое.
+        /// Место в тексте поля, где лежит взятое, — только пока идёт
+        /// перенос внутри записи.
         private var taken: Int?
+        /// Вложение под пальцем, пока нажатие ещё не стало долгим (P597).
+        private var maybeTaken: Int?
         /// Взятое — строкой, как в файле: его несут и в ответ «Как прошло?»
         /// (P407).
         private var takenPiece: String?
@@ -1023,6 +1032,10 @@ struct DiaryEditor: UIViewRepresentable {
         }
 
         @objc func carried(_ g: UILongPressGestureRecognizer) {
+            if g.state == .began {
+                taken = maybeTaken
+                maybeTaken = nil
+            }
             guard let view, let i = taken else { return }
             let touch = g.location(in: view)
             let at = CGPoint(x: touch.x, y: touch.y - Self.lift)
@@ -1623,11 +1636,9 @@ struct DiaryEditor: UIViewRepresentable {
             guard g.state == .ended, let got = pressed else { return }
             // Это было долгое нажатие, а не касание: точка с крестиком
             // остаётся на экране, карта не открывается (P374).
-            // Несут ли что-то сейчас — по картинке над пальцем, а не по
-            // `taken`: ту ставит уже само касание, и после короткого касания
-            // она оставалась — снимки в записи переставали открываться (P418).
+            // Несут ли что-то сейчас — по картинке над пальцем (P418).
             guard Date().timeIntervalSince(heldEnded) > 0.4, ghost == nil, cover == nil else { return }
-            taken = nil
+            maybeTaken = nil
             if let link = got.photo { parent.onOpenPhoto?(link) }
             if let point = got.point { parent.onOpenPoint?(point) }
         }

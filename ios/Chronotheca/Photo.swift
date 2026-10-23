@@ -947,10 +947,6 @@ struct HoldCatcher: UIViewRepresentable {
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
-    /// Жест, которым сейчас держат превью, — по нему подстраховка ленты
-    /// узнаёт, что палец отпущен (P596).
-    static weak var live: UILongPressGestureRecognizer?
-
     final class Coordinator: NSObject {
         var parent: HoldCatcher
         private var start: CGPoint = .zero
@@ -959,10 +955,7 @@ struct HoldCatcher: UIViewRepresentable {
 
         @objc func pressed(_ g: UILongPressGestureRecognizer) {
             let at = g.location(in: nil)
-            if g.state == .began {
-                start = at
-                HoldCatcher.live = g
-            }
+            if g.state == .began { start = at }
             parent.hold(g.state, at, CGSize(width: at.x - start.x, height: at.y - start.y))
         }
 
