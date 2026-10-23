@@ -553,6 +553,7 @@ struct SettingsSticker: View {
                 }))
             }
             .onAppear { if health { HealthDay.ask { healthIssue = !$0 } } }
+            .task(id: health) { healthToday = health ? await HealthDay.todayCheck() : nil }
         }
         // События Календаря iPhone в плане (P376).
         NoteRow(title: T("События Календаря iPhone", "iPhone Calendar events"),
@@ -755,13 +756,18 @@ struct SettingsSticker: View {
     /// (P503).
     @State private var healthIssue = false
 
+    /// Что «Здоровье» отдало за сегодня (P604) — видно, есть ли данные.
+    @State private var healthToday: String?
+
     private var healthDetail: String? {
         guard health else { return nil }
-        return healthIssue
-            ? T("У этой сборки нет права на «Здоровье» — iPhone не может спросить разрешение.",
-                "This build has no Health permission, so iPhone cannot ask for access.")
-            : T("Нет строки? Проверьте: Настройки iPhone → Здоровье → Доступ к данным и устройства → Graphomanus.",
-                "No line? Check iPhone Settings → Health → Data Access & Devices → Graphomanus.")
+        if healthIssue {
+            return T("У этой сборки нет права на «Здоровье» — iPhone не может спросить разрешение.",
+                     "This build has no Health permission, so iPhone cannot ask for access.")
+        }
+        let hint = T("Нет строки? Проверьте: Настройки iPhone → Здоровье → Доступ к данным и устройства → Graphomanus.",
+                     "No line? Check iPhone Settings → Health → Data Access & Devices → Graphomanus.")
+        return healthToday.map { $0 + "\n" + hint } ?? hint
     }
     @AppStorage(DayEvents.holidaysKey) private var calendarHolidays = false
     @AppStorage(Prefs.calendarTint) private var calendarTint = "distance"

@@ -41,6 +41,26 @@ enum HealthDay {
         }
     }
 
+    /// Последняя ошибка «Здоровья» — для строки в настройках (P604): строка
+    /// на странице не появлялась, а почему — не было видно.
+    @MainActor static var lastError: String?
+
+    private static func remember(_ error: Error?) {
+        guard let error else { return }
+        let text = error.localizedDescription
+        Task { @MainActor in lastError = text }
+    }
+
+    /// Что «Здоровье» отдаёт за сегодня — строкой для настроек (P604).
+    @MainActor
+    static func todayCheck() async -> String {
+        lastError = nil
+        cache.removeAll()
+        if let line = await summary(for: Date()) { return T("Сегодня: ", "Today: ") + line }
+        let why = lastError.map { " — " + $0 } ?? ""
+        return T("Сегодня из «Здоровья» ничего не пришло", "Nothing came from Health today") + why
+    }
+
     /// Прошедшие дни не меняются — их строка запоминается.
     @MainActor private static var cache: [String: String] = [:]
 
@@ -89,7 +109,9 @@ enum HealthDay {
         await withCheckedContinuation { done in
             let q = HKStatisticsQuery(quantityType: HKQuantityType(.stepCount),
                                       quantitySamplePredicate: HKQuery.predicateForSamples(withStart: start, end: end),
-                                      options: .cumulativeSum) { _, stats, _ in
+                                      options: .cumulativeSum) { _, stats, error in
+                // «Нет данных» — не беда: шагов могло не быть.
+                if (error as? HKError)?.code != .errorNoData { remember(error) }
                 let n = stats?.sumQuantity()?.doubleValue(for: .count())
                 done.resume(returning: n.map { Int($0.rounded()) })
             }
@@ -103,7 +125,8 @@ enum HealthDay {
         let samples: [HKCategorySample] = await withCheckedContinuation { done in
             let q = HKSampleQuery(sampleType: HKCategoryType(.sleepAnalysis),
                                   predicate: HKQuery.predicateForSamples(withStart: start, end: end),
-                                  limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, found, _ in
+                                  limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, found, error in
+                remember(error)
                 done.resume(returning: (found as? [HKCategorySample]) ?? [])
             }
             store.execute(q)
