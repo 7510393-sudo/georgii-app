@@ -240,8 +240,9 @@ struct SettingsSticker: View {
     static var width: CGFloat { min(360, UIScreen.main.bounds.width - 40) }
 
     var body: some View {
+        // Белый лист, разделы на нём — жёлтыми стикерами с тенью (P600).
         Sticker(side: .leading, title: T("Настройки", "Settings"),
-                paper: Look.sticker, edge: Look.stickerEdge, width: Self.width, close: close) {
+                paper: Look.planBg, edge: Look.rule, width: Self.width, close: close) {
           // Длинная бумажка прокручивается: разделов стало много (P249).
           ScrollView {
            // Ленивая стопка (P475): листок строился целиком — все девять
@@ -254,15 +255,17 @@ struct SettingsSticker: View {
             //
             // Язык — первым: на незнакомом языке остальное не прочитать
             // (P355). Подпись на обоих языках, чтобы её нашли с любого.
-            languagePart
-            entriesPart
-            privacyPart
-            dayPart
-            lookPart
-            attachPart
-            mapPart
-            aboutPart
-            version
+            NoteCard { languagePart }
+            NoteCard { entriesPart }
+            NoteCard { privacyPart }
+            NoteCard { dayPart }
+            NoteCard { lookPart }
+            NoteCard { attachPart }
+            NoteCard { mapPart }
+            NoteCard {
+                aboutPart
+                version
+            }
             // Низ листка уходит под нижнюю строку (P515) — последняя строка
             // («Версия») пряталась под ней и не нажималась (P585).
             Color.clear.frame(height: 72)
@@ -364,7 +367,7 @@ struct SettingsSticker: View {
             } label: {
                 Text(Lang.name + " ▾")
                     .font(Look.sans(13.5, weight: .semibold))
-                    .modifier(Tag(main: true))
+                    .modifier(Tag(look: .chosen))
             }
         }
     }
@@ -436,8 +439,14 @@ struct SettingsSticker: View {
 
     @ViewBuilder private var privacyPart: some View {
         NoteSection(title: T("Защита", "Privacy"))
-        NoteRow(title: T("Замок: Face ID или код", "Lock: Face ID or passcode")) {
-            Choice(options: onOff, selection: lockChoice)
+        // Совет — одной строчкой под замком, без новых строк (P600, по
+        // docs/50): меню и так длинное. Страница в переключателе приложений
+        // под замком и так прячется (P293).
+        NoteRow(title: T("Замок: Face ID или код", "Lock: Face ID or passcode"),
+                detail: T("Для полной защиты можно включить двухфакторную защиту Apple ID и «Расширенную защиту данных» в iCloud.",
+                          "For fuller protection you can turn on two-factor authentication for your Apple ID and Advanced Data Protection in iCloud."),
+                pinned: true) {
+            Lever(isOn: lockChoice)
         }
     }
 
@@ -455,7 +464,7 @@ struct SettingsSticker: View {
             } label: {
                 Text("\(boundary):00 ▾")
                     .font(Look.sans(13.5, weight: .semibold))
-                    .modifier(Tag())
+                    .modifier(Tag(look: .chosen))
             }
         }
         NoteRow(title: T("Открывать на", "Open on")) {
@@ -470,11 +479,11 @@ struct SettingsSticker: View {
                    selection: $sundayFirst)
         }
         NoteRow(title: T("«Итоги дня»", "“How the day went”")) {
-            Choice(options: onOff, selection: Binding(get: { !noAsk }, set: { noAsk = !$0 }))
+            Lever(isOn: Binding(get: { !noAsk }, set: { noAsk = !$0 }))
         }
         // Погоды нет — почему (P354). Текст можно выделить и прислать.
         NoteRow(title: T("Погода", "Weather")) {
-            Choice(options: onOff, selection: Binding(get: { !noWeather }, set: { on in
+            Lever(isOn: Binding(get: { !noWeather }, set: { on in
                 noWeather = !on
                 if on { store.fetchWeatherIfNeeded() }
             }))
@@ -499,7 +508,7 @@ struct SettingsSticker: View {
         if HealthDay.available {
             NoteRow(title: T("Здоровье: шаги, сон, тренировки", "Health: steps, sleep, workouts"),
                     detail: healthDetail) {
-                Choice(options: onOff, selection: Binding(get: { health }, set: { on in
+                Lever(isOn: Binding(get: { health }, set: { on in
                     health = on
                     if on { HealthDay.ask { healthIssue = !$0 } } else { healthIssue = false; HealthDay.changed() }
                 }))
@@ -524,7 +533,7 @@ struct SettingsSticker: View {
         // События Календаря iPhone в плане (P376).
         NoteRow(title: T("События Календаря iPhone", "iPhone Calendar events"),
                 detail: eventsDetail, detailColor: eventsDenied ? .orange : Look.inkSoft) {
-            Choice(options: onOff, selection: Binding(get: { calendarEvents }, set: { on in
+            Lever(isOn: Binding(get: { calendarEvents }, set: { on in
                 calendarEvents = on
                 if on, DayEvents.status == .notDetermined { DayEvents.ask { _ in } }
             }))
@@ -590,7 +599,7 @@ struct SettingsSticker: View {
             SchemeChoice(selection: $calendarTint)
         }
         NoteRow(title: T("Шелест страниц", "Page rustle")) {
-            Choice(options: onOff, selection: Binding(get: { !quiet }, set: { quiet = !$0 }))
+            Lever(isOn: Binding(get: { !quiet }, set: { quiet = !$0 }))
         }
     }
 
@@ -741,7 +750,6 @@ struct SettingsSticker: View {
     @State private var showingGoogleMaps = false
     @AppStorage(Lang.key) private var language = "en"
 
-    private var onOff: [(Bool, String)] { [(true, T("вкл", "on")), (false, T("выкл", "off"))] }
 
     /// Замок меняется, только если телефон подтвердил владельца: иначе
     /// можно запереться и не открыть (P249).

@@ -21,9 +21,30 @@ struct NoteSection: View {
             .font(Look.serif(19, weight: .semibold))
             .foregroundStyle(Look.accent)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 16)
-            .padding(.top, 20)
-            .padding(.bottom, 6)
+            .padding(.horizontal, 12)
+            .padding(.top, 10)
+            .padding(.bottom, 4)
+    }
+}
+
+/// Раздел настроек — жёлтый стикер на белом листе, с тенью (P600): строки
+/// раздела на одном стикере, между ними тонкие черты, как в меню страницы.
+/// Прежде каждая строка была отдельной белой плашкой на жёлтой записке —
+/// десятки одинаковых плашек читались как анкета.
+struct NoteCard<Content: View>: View {
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        VStack(spacing: 0) { content() }
+            .padding(.bottom, 4)
+            // Тень — у простой фигуры под стикером, а не у содержимого
+            // (P428, P488): так она не пересчитывается на каждом кадре выезда.
+            .background(RoundedRectangle(cornerRadius: 8)
+                .fill(Look.sticker)
+                .shadow(color: .black.opacity(0.16), radius: 4, y: 2))
+            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Look.stickerEdge, lineWidth: 0.8))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
     }
 }
 
@@ -51,33 +72,30 @@ struct NoteRow<Trailing: View>: View {
                     trailing().fixedSize()
                 }
             } else {
+                // Кнопки всегда у правого края, на одной вертикали (P600):
+                // не помещаются рядом с названием — уходят строкой ниже, но
+                // тоже вправо. Прежде они уходили влево, и в одном разделе
+                // кнопки стояли то справа, то слева.
                 ViewThatFits(in: .horizontal) {
                     HStack(spacing: 8) {
                         label
                         Spacer(minLength: 4)
                         trailing()
                     }
-                    VStack(alignment: .leading, spacing: 6) {
-                        label
+                    VStack(alignment: .trailing, spacing: 6) {
+                        label.frame(maxWidth: .infinity, alignment: .leading)
                         trailing()
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
                 }
             }
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        // Каждая строка — листок бумаги на записке (P381, P387): бумага
-        // страницы, тонкий край и лёгкая тень, как у листков на экране, а
-        // не гладкая плашка обычного приложения.
-        .background(Look.planBg, in: RoundedRectangle(cornerRadius: 6))
-        .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Look.stickerEdge.opacity(0.9), lineWidth: 0.8))
-        // Тень — резкой подложкой, без размытия (P488): размытая тень у каждой из
-        // десятков строк считалась заново на каждом кадре выезда листка, и
-        // он шёл рывками.
-        .background(RoundedRectangle(cornerRadius: 6).fill(Color.black.opacity(0.08)).offset(y: 1))
-        .padding(.horizontal, 10)
-        .padding(.vertical, 3)
+        .padding(.vertical, 9)
+        // Строки одного стикера-раздела разделены тонкой чертой (P600).
+        .overlay(alignment: .top) {
+            Rectangle().fill(Look.stickerEdge).frame(height: 0.8).padding(.horizontal, 12)
+        }
     }
 
     private var label: some View {
@@ -105,7 +123,7 @@ struct Choice<Value: Hashable>: View {
     var body: some View {
         // Не помещаются в строку — переходят на следующую, а не уходят за
         // край записки (P383).
-        Flow(spacing: 4) {
+        Flow(spacing: 4, trailing: true) {
             ForEach(options.indices, id: \.self) { i in
                 let (value, name) = options[i]
                 let on = value == selection
@@ -118,7 +136,7 @@ struct Choice<Value: Hashable>: View {
                         .font(Look.sans(13.5, weight: on ? .semibold : .regular))
                         .lineLimit(1)
                         .fixedSize()
-                        .modifier(Tag(main: on))
+                        .modifier(Tag(look: on ? .chosen : .plain))
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(on ? .isSelected : [])
@@ -139,7 +157,7 @@ struct SchemeChoice: View {
     }
 
     var body: some View {
-        Flow(spacing: 4) {
+        Flow(spacing: 4, trailing: true) {
             ForEach(options, id: \.0) { key, name, scheme in
                 // Прежний «weekday» читается как первая гамма.
                 let on = key == selection || (key == "distance" && selection == "weekday")
@@ -162,7 +180,7 @@ struct SchemeChoice: View {
                             .lineLimit(1)
                     }
                     .fixedSize()
-                    .modifier(Tag(main: on))
+                    .modifier(Tag(look: on ? .chosen : .plain))
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(on ? .isSelected : [])
@@ -175,17 +193,45 @@ struct SchemeChoice: View {
 struct NoteButton: View {
     let title: String
     var main = false
+    /// В рамке, как ярлычок (листок переноса дела). В настройках «Открыть ›»
+    /// — просто надпись со стрелкой, как в меню страницы (P600).
+    var framed = false
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            Text(title)
-                .font(Look.sans(13.5, weight: .semibold))
-                .lineLimit(1)
-                .fixedSize()
-                .modifier(Tag(main: main))
+            if main || framed {
+                Text(title)
+                    .font(Look.sans(13.5, weight: .semibold))
+                    .lineLimit(1)
+                    .fixedSize()
+                    .modifier(Tag(look: main ? .main : .plain))
+            } else {
+                Text(title)
+                    .font(Look.sans(14.5, weight: .semibold))
+                    .foregroundStyle(Look.accent)
+                    .lineLimit(1)
+                    .fixedSize()
+                    .padding(.vertical, 6)
+                    .contentShape(Rectangle())
+            }
         }
         .buttonStyle(.plain)
+    }
+}
+
+/// Вкл/выкл — рычажком в цветах приложения (P600), а не двумя ярлычками:
+/// они занимали полстроки, и строки не помещались.
+struct Lever: View {
+    @Binding var isOn: Bool
+
+    var body: some View {
+        Toggle("", isOn: Binding(get: { isOn }, set: { now in
+            Feel.tick()
+            isOn = now
+        }))
+        .labelsHidden()
+        .tint(Look.accent)
     }
 }
 
@@ -194,6 +240,9 @@ struct NoteButton: View {
 /// одной строкой и уходили за край записки.
 struct Flow: Layout {
     var spacing: CGFloat = 4
+    /// Ряды прижаты к правому краю (P600): в настройках варианты стоят на
+    /// одной вертикали с прочими кнопками.
+    var trailing = false
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
         let width = proposal.width ?? .infinity
@@ -206,7 +255,7 @@ struct Flow: Layout {
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
         var y = bounds.minY
         for row in arrange(subviews, width: bounds.width) {
-            var x = bounds.minX
+            var x = trailing ? bounds.maxX - row.width : bounds.minX
             for i in row.items {
                 let size = subviews[i].sizeThatFits(.unspecified)
                 subviews[i].place(at: CGPoint(x: x, y: y + (row.height - size.height) / 2),
@@ -246,17 +295,24 @@ struct Flow: Layout {
 /// колокольчик у дела в плане (P364, P374), — вместо капсул обычного
 /// приложения. Главная (или выбранный вариант) — залита синим.
 struct Tag: ViewModifier {
-    var main = false
+    /// Ярлычок бумажный; выбранный — голубой стикер (P600: прежде тёмно-синий,
+    /// как главная кнопка, и выбор путали с действием); главная кнопка —
+    /// залитая, одна на листок.
+    enum Kind { case plain, chosen, main }
+    var look: Kind = .plain
 
     func body(content: Content) -> some View {
+        let fill: Color = look == .main ? Look.accent : look == .chosen ? Look.noteChosen : Look.planBg
+        let edge: Color = look == .plain ? Look.inkFaint.opacity(0.7) : Look.accent
         content
-            .foregroundStyle(main ? Look.note : Look.accent)
+            .foregroundStyle(look == .main ? Look.note : Look.accent)
             .padding(.horizontal, 11)
             .padding(.vertical, 5)
-            .background(main ? Look.accent : Look.chrome, in: RoundedRectangle(cornerRadius: 6))
+            .background(fill, in: RoundedRectangle(cornerRadius: 6))
             .overlay(RoundedRectangle(cornerRadius: 6)
-                .strokeBorder(main ? Look.accent : Look.inkFaint, lineWidth: 1))
-            .background(RoundedRectangle(cornerRadius: 6).fill(Color.black.opacity(main ? 0.12 : 0.07)).offset(y: 1))
+                .strokeBorder(edge, lineWidth: look == .plain ? 0.8 : 1.2))
+            .background(RoundedRectangle(cornerRadius: 6)
+                .fill(Color.black.opacity(look == .plain ? 0.06 : 0.12)).offset(y: 1))
             .contentShape(RoundedRectangle(cornerRadius: 6))
     }
 }

@@ -42,7 +42,7 @@ struct MoveDaySticker: View {
                 }
                 Flow(spacing: 5) {
                     ForEach(quick, id: \.0) { item in
-                        NoteButton(title: item.0) { move(to: item.1) }
+                        NoteButton(title: item.0, framed: true) { move(to: item.1) }
                     }
                 }
                 monthHead

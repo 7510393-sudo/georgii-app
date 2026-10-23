@@ -74,10 +74,12 @@ struct Sticker<Content: View>: View {
     }
 
     private var head: some View {
+        // Название слева, крестик справа — у обоих листков одинаково (P600;
+        // прежде у настроек было зеркально).
         HStack(alignment: .top, spacing: 8) {
-            if side == .leading { closeButton }
-            if side == .trailing { label; Spacer(minLength: 0); closeButton }
-            else { Spacer(minLength: 0); label }
+            label
+            Spacer(minLength: 0)
+            closeButton
         }
         .padding(.bottom, 7)
         .overlay(alignment: .bottom) {
