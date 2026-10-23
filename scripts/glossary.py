@@ -9,7 +9,7 @@ import strings as S
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 
-names={"uk":"Українська","de":"Deutsch","fr":"Français","es":"Español","it":"Italiano","pt":"Português","nl":"Nederlands","ja":"日本語"}
+names={"uk":"Українська","de":"Deutsch","fr":"Français","es":"Español","it":"Italiano","pt":"Português","nl":"Nederlands","ja":"日本語","ka":"ქართული"}
 want=S.keys()
 order=sorted(want, key=lambda k:(k.strip(' \n·,.:“”«»…[]%@—').lower(), k))
 yml=open('ios/project.yml',encoding='utf-8').read()
