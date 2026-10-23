@@ -58,7 +58,17 @@ enum HealthDay {
         cache.removeAll()
         if let line = await summary(for: Date()) { return T("Сегодня: ", "Today: ") + line }
         let why = lastError.map { " — " + $0 } ?? ""
-        return T("Сегодня из «Здоровья» ничего не пришло", "Nothing came from Health today") + why
+        // Сразу после полуночи за сегодня может ещё ничего не быть — смотрим
+        // и неделю назад (P605): пусто и там — iPhone не отдаёт приложению
+        // ничего, то есть чтение «Здоровья» ему не разрешено.
+        let cal = Calendar.current
+        let week = cal.date(byAdding: .day, value: -7, to: cal.startOfDay(for: Date())) ?? Date()
+        if let steps = await stepsSum(week, Date()), steps > 0 {
+            return T("Сегодня из «Здоровья» ничего не пришло", "Nothing came from Health today") + why
+                + T(". За неделю шагов: \(steps) — доступ есть.", ". Steps this week: \(steps) — access works.")
+        }
+        return T("Из «Здоровья» не пришло ничего и за неделю — iPhone не даёт приложению читать шаги.",
+                 "Nothing came from Health for the whole week — iPhone does not let the app read steps.") + why
     }
 
     /// Прошедшие дни не меняются — их строка запоминается.

@@ -546,7 +546,7 @@ struct SettingsSticker: View {
         // Не вышло спросить — подсказка прямо под выключателем (P503).
         if HealthDay.available {
             NoteRow(title: T("Здоровье: шаги, сон, тренировки", "Health: steps, sleep, workouts"),
-                    detail: healthDetail) {
+                    detail: healthDetail, pinned: true) {
                 Lever(isOn: Binding(get: { health }, set: { on in
                     health = on
                     if on { HealthDay.ask { healthIssue = !$0 } } else { healthIssue = false; HealthDay.changed() }
@@ -557,7 +557,7 @@ struct SettingsSticker: View {
         }
         // События Календаря iPhone в плане (P376).
         NoteRow(title: T("События Календаря iPhone", "iPhone Calendar events"),
-                detail: eventsDetail, detailColor: eventsDenied ? .orange : Look.inkSoft) {
+                detail: eventsDetail, detailColor: eventsDenied ? .orange : Look.inkSoft, pinned: true) {
             Lever(isOn: Binding(get: { calendarEvents }, set: { on in
                 calendarEvents = on
                 if on, DayEvents.status == .notDetermined { DayEvents.ask { _ in } }
@@ -1271,8 +1271,14 @@ enum Clock {
 
     static var twelve: Bool {
         if let chosen = UserDefaults.standard.object(forKey: key) as? Bool { return chosen }
-        return (DateFormatter.dateFormat(fromTemplate: "j", options: 0, locale: .current) ?? "").contains("a")
+        return phoneTwelve
     }
+
+    /// Как в самом iPhone — считается один раз (P605): прежде выяснялось на
+    /// каждой плашке плана при каждой отрисовке, и листание страниц, где
+    /// рисуются три дня сразу, стало отзываться с задержкой.
+    private static let phoneTwelve =
+        (DateFormatter.dateFormat(fromTemplate: "j", options: 0, locale: .current) ?? "").contains("a")
 
     /// «21:30» из файла — на экран: «21:30» или «9:30 PM».
     static func show(_ hhmm: String) -> String {
