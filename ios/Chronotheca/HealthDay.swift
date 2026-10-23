@@ -41,23 +41,67 @@ enum HealthDay {
         }
     }
 
-    /// Последняя ошибка «Здоровья» — для строки в настройках (P604): строка
-    /// на странице не появлялась, а почему — не было видно.
-    @MainActor static var lastError: String?
+    /// Ответы «Здоровья» с ошибкой — для строки в настройках (P604). Пишутся
+    /// сразу, под замком (P606): прежде — отложенно, и проверка успевала
+    /// прочитать пустое раньше, чем ответ iPhone доходил до неё.
+    private static let errorsLock = NSLock()
+    private static var errors: [String] = []
 
     private static func remember(_ error: Error?) {
         guard let error else { return }
-        let text = error.localizedDescription
-        Task { @MainActor in lastError = text }
+        let e = error as NSError
+        let text = "\(e.code): \(e.localizedDescription)"
+        errorsLock.lock()
+        if !errors.contains(text) { errors.append(text) }
+        errorsLock.unlock()
+    }
+
+    private static func takeErrors() -> String? {
+        errorsLock.lock()
+        defer { errors = []; errorsLock.unlock() }
+        return errors.isEmpty ? nil : errors.joined(separator: "; ")
+    }
+
+    /// Сколько записей шагов «Здоровье» показывает приложению за месяц —
+    /// без подсчёта сумм (P606): видно, отдаёт ли оно вообще хоть что-то.
+    private static func stepSamples() async -> Int {
+        let cal = Calendar.current
+        let month = cal.date(byAdding: .day, value: -30, to: Date()) ?? Date()
+        return await withCheckedContinuation { done in
+            let q = HKSampleQuery(sampleType: HKQuantityType(.stepCount),
+                                  predicate: HKQuery.predicateForSamples(withStart: month, end: Date()),
+                                  limit: 50, sortDescriptors: nil) { _, found, error in
+                remember(error)
+                done.resume(returning: found?.count ?? 0)
+            }
+            store.execute(q)
+        }
+    }
+
+    /// Спрашивал ли iPhone разрешение (P606): «unnecessary» — уже спрашивал.
+    private static func requestStatus() async -> String {
+        await withCheckedContinuation { done in
+            store.getRequestStatusForAuthorization(toShare: [], read: types) { status, error in
+                remember(error)
+                switch status {
+                case .unnecessary: done.resume(returning: "asked")
+                case .shouldRequest: done.resume(returning: "not asked")
+                default: done.resume(returning: "unknown")
+                }
+            }
+        }
     }
 
     /// Что «Здоровье» отдаёт за сегодня — строкой для настроек (P604).
     @MainActor
     static func todayCheck() async -> String {
-        lastError = nil
+        _ = takeErrors()
         cache.removeAll()
         if let line = await summary(for: Date()) { return T("Сегодня: ", "Today: ") + line }
-        let why = lastError.map { " — " + $0 } ?? ""
+        let samples = await stepSamples()
+        let asked = await requestStatus()
+        // Служебная приписка для разбора — без перевода (P606).
+        let why = " [\(asked), \(samples)" + (takeErrors().map { "; " + $0 } ?? "") + "]"
         // Сразу после полуночи за сегодня может ещё ничего не быть — смотрим
         // и неделю назад (P605): пусто и там — iPhone не отдаёт приложению
         // ничего, то есть чтение «Здоровья» ему не разрешено.
@@ -121,7 +165,7 @@ enum HealthDay {
                                       quantitySamplePredicate: HKQuery.predicateForSamples(withStart: start, end: end),
                                       options: .cumulativeSum) { _, stats, error in
                 // «Нет данных» — не беда: шагов могло не быть.
-                if (error as? HKError)?.code != .errorNoData { remember(error) }
+                remember(error)
                 let n = stats?.sumQuantity()?.doubleValue(for: .count())
                 done.resume(returning: n.map { Int($0.rounded()) })
             }
