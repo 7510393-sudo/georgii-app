@@ -604,6 +604,31 @@ struct DiaryEditor: UIViewRepresentable {
             вести.addObserver(self, selector: #selector(keyboardGone(_:)),
                               name: UIResponder.keyboardWillHideNotification,
                               object: nil)
+            вести.addObserver(self, selector: #selector(inputChanged),
+                              name: UITextInputMode.currentInputModeDidChangeNotification,
+                              object: nil)
+        }
+
+        /// Начали диктовку — время встаёт сразу, до первого слова (P599).
+        /// Диктовка отдаёт полю фразу целиком, когда её договорили: прежде
+        /// время ждало этой фразы и появлялось, когда абзац был уже сказан
+        /// (замечание автора 23.10: «время ставится после того, как
+        /// закончил абзац»). Правило то же, что для первой буквы: чистая
+        /// строка в конце записи и пора новой отметки.
+        @objc private func inputChanged() {
+            guard let view, view.isFirstResponder, parent.editable,
+                  view.textInputMode?.primaryLanguage == "dictation",
+                  view.markedTextRange == nil, view.selectedRange.length == 0
+            else { return }
+            let at = view.selectedRange.location
+            let ns = view.textStorage.string as NSString
+            guard at <= ns.length, Self.atEnd(view.textStorage, from: at),
+                  at == 0 || ns.character(at: at - 1) == 10,
+                  let stamp = parent.takeStamp?()
+            else { return }
+            // Через ввод самого поля, а не заменой текста: диктовка держит
+            // в поле своё место, и чужая замена его ломает (P197).
+            view.insertText(stamp)
         }
 
         func textViewDidBeginEditing(_ view: UITextView) {
