@@ -160,6 +160,15 @@ struct DiaryEditor: UIViewRepresentable {
     /// Поле записи открытого дня — в него несут из полоски (P380).
     static weak var active: Coordinator?
 
+    /// Куда метит несомое (P598): картинку несут выше пальца (P593), и дело
+    /// плана и ответ «Как прошло?» ищутся под ней, а не под пальцем — так
+    /// же, как место в тексте. Прежде под делом подсвечивалось то, что под
+    /// пальцем, на ладонь ниже картинки, а у последнего дела палец был уже
+    /// над дневником — и вложение под дело не вставало.
+    static func aim(_ finger: CGPoint) -> CGPoint {
+        finger == .zero ? .zero : CGPoint(x: finger.x, y: finger.y - Coordinator.lift)
+    }
+
     func updateUIView(_ view: UITextView, context: Context) {
         context.coordinator.parent = self
         if editable && grows { DiaryEditor.active = context.coordinator }
@@ -724,7 +733,7 @@ struct DiaryEditor: UIViewRepresentable {
         private func planTask(_ g: UIGestureRecognizer) -> UUID? {
             guard let piece = takenPiece, Self.isPhotoLine(piece) || Geo.point(in: piece) != nil
             else { return nil }
-            return parent.planTarget?(g.location(in: nil))
+            return parent.planTarget?(DiaryEditor.aim(g.location(in: nil)))
         }
 
         static func isPhotoLine(_ piece: String) -> Bool {
@@ -1084,7 +1093,7 @@ struct DiaryEditor: UIViewRepresentable {
                 // Над строкой «Как прошло?» — встанет в конец ответа (P407):
                 // ответ показывает это у себя, запись остаётся как была.
                 let intoAnswer = toPlan == nil
-                    && takenPiece.map { AskLine.carry($0, at: g.location(in: nil)) } == true
+                    && takenPiece.map { AskLine.carry($0, at: DiaryEditor.aim(g.location(in: nil))) } == true
                 let away = toPlan != nil || intoAnswer || overStrip(g, in: view) || overTitle(g, in: view)
                 ghost?.alpha = away && !intoAnswer && toPlan == nil ? 0.5 : 0.9
                 if away { restore(view) } else { previewSoon(view) }
@@ -1094,7 +1103,7 @@ struct DiaryEditor: UIViewRepresentable {
                 let toPlan = planTask(g)
                 parent.onPlanHover?(nil, false)
                 let intoAnswer = toPlan == nil && takenPiece != nil
-                    && AskLine.under(g.location(in: nil)) != nil
+                    && AskLine.under(DiaryEditor.aim(g.location(in: nil))) != nil
                 let back = !intoAnswer && toPlan == nil && overStrip(g, in: view)
                 let up = !intoAnswer && toPlan == nil && overTitle(g, in: view)
                 let moved = ghost != nil
@@ -1133,7 +1142,7 @@ struct DiaryEditor: UIViewRepresentable {
                 // Отпустили над строкой «Как прошло?» — вложение уходит из
                 // записи в конец ответа, в ту же строку (P407).
                 if intoAnswer {
-                    if AskLine.carryEnd(at: g.location(in: nil)) {
+                    if AskLine.carryEnd(at: DiaryEditor.aim(g.location(in: nil))) {
                         remove(at: i, in: view)
                         Feel.light()
                     }

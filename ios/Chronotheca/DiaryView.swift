@@ -158,7 +158,7 @@ extension DiaryView {
         // Над планом — встанет под дело, в ряд снимков (P408, P409).
         // Точка из ленты — тоже под дело (P588).
         let overTask = overStrip || (Diary.kind(of: link) != .photo && !Diary.isPoint(link)) || !store.canEditPlan
-            ? nil : PlanZones.task(at: spot, tasks: store.tasks)
+            ? nil : PlanZones.task(at: DiaryEditor.aim(spot), tasks: store.tasks)
         // У краёв страница едет к пальцу (P409) — но только когда палец
         // ушёл с полоски (P531): полоска сама лежит у нижнего края, и на
         // длинной записи страница уезжала от одного долгого нажатия,
@@ -189,7 +189,7 @@ extension DiaryView {
                 DiaryEditor.active?.carryOut()
             // Над строкой «Как прошло?» — встаёт в конец ответа, в ту же
             // строку (P407).
-            } else if !overStrip, AskLine.carry(line, at: spot) {
+            } else if !overStrip, AskLine.carry(line, at: DiaryEditor.aim(spot)) {
                 DiaryEditor.active?.carryOut()
             } else if overStrip {
                 AskLine.carryOutAll()
@@ -211,7 +211,7 @@ extension DiaryView {
                     store.stripPhotoToPlan(link, under: task)
                     Feel.thud()
                 }
-            } else if !overStrip, spot != .zero, AskLine.carryEnd(at: spot) {
+            } else if !overStrip, spot != .zero, AskLine.carryEnd(at: DiaryEditor.aim(spot)) {
                 DiaryEditor.active?.carryOut()
                 if i >= store.photos.count { store.dropFromPlanStrip(link) }
                 Feel.thud()
