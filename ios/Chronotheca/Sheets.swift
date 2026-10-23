@@ -259,6 +259,7 @@ struct SettingsSticker: View {
             NoteCard { entriesPart }
             NoteCard { privacyPart }
             NoteCard { dayPart }
+            NoteCard { pagePart }
             NoteCard { lookPart }
             NoteCard { attachPart }
             NoteCard { mapPart }
@@ -455,14 +456,14 @@ struct SettingsSticker: View {
         NoteRow(title: T("Новый день начинается в", "A new day starts at")) {
             Menu {
                 ForEach(0..<7, id: \.self) { h in
-                    Button("\(h):00") {
+                    Button(Clock.hour(h)) {
                         boundary = h
                         Prefs.applyBoundary()
                         store.go(to: DayStore.today())
                     }
                 }
             } label: {
-                Text("\(boundary):00 ▾")
+                Text(Clock.hour(boundary) + " ▾")
                     .font(Look.sans(13.5, weight: .semibold))
                     .modifier(Tag(look: .chosen))
             }
@@ -478,6 +479,44 @@ struct SettingsSticker: View {
             Choice(options: [(false, T("понедельника", "Monday")), (true, T("воскресенья", "Sunday"))],
                    selection: $sundayFirst)
         }
+        // 12 или 24 часа (P602): в файлах время всегда «21:30», здесь —
+        // как его показывать и как писать отметки в дневнике.
+        NoteRow(title: T("Формат времени", "Time format")) {
+            Choice(options: [(false, "13:00"), (true, "1 PM")], selection: $clock12)
+        }
+        // Напоминание о дневнике (P444) — в любой час с шести утра до
+        // одиннадцати вечера (P602), а не только 20, 21 или 22: списком,
+        // как «Новый день начинается в».
+        NoteRow(title: T("Напоминание о дневнике", "Diary reminder"),
+                detail: evening >= 0 ? T("Короткая мысль в этот час — если в дневнике сегодня пусто.",
+                                         "A short thought at this hour — if today’s diary is empty.") : nil) {
+            Menu {
+                Button(T("выкл", "off")) { setEvening(-1) }
+                ForEach(6..<24, id: \.self) { h in
+                    Button(Clock.hour(h)) { setEvening(h) }
+                }
+            } label: {
+                Text((evening >= 0 ? Clock.hour(evening) : T("выкл", "off")) + " ▾")
+                    .font(Look.sans(13.5, weight: .semibold))
+                    .modifier(Tag(look: .chosen))
+            }
+        }
+    }
+
+    private func setEvening(_ hour: Int) {
+        evening = hour
+        if hour >= 0 {
+            Reminders.ask { _ in store.planEvening() }
+        } else {
+            store.planEvening()
+        }
+    }
+
+    /// Что показывать на странице дня (P602): итоги, погода с градусами,
+    /// «Здоровье», события Календаря. Прежде всё это стояло в «Дне», и
+    /// градусы оказывались рядом с началом недели.
+    @ViewBuilder private var pagePart: some View {
+        NoteSection(title: T("На странице", "On the page"))
         NoteRow(title: T("«Итоги дня»", "“How the day went”")) {
             Lever(isOn: Binding(get: { !noAsk }, set: { noAsk = !$0 }))
         }
@@ -514,21 +553,6 @@ struct SettingsSticker: View {
                 }))
             }
             .onAppear { if health { HealthDay.ask { healthIssue = !$0 } } }
-        }
-        // Вечером — «запишите день» (P444): в выбранный час, если день ещё
-        // не записан.
-        NoteRow(title: T("Напоминание вечером", "Evening reminder"),
-                detail: evening >= 0 ? T("Короткая мысль в этот час — если в дневнике сегодня пусто.",
-                                         "A short thought at this hour — if today’s diary is empty.") : nil) {
-            Choice(options: [(-1, T("выкл", "off")), (20, "20:00"), (21, "21:00"), (22, "22:00")],
-                   selection: Binding(get: { evening }, set: { hour in
-                evening = hour
-                if hour >= 0 {
-                    Reminders.ask { _ in store.planEvening() }
-                } else {
-                    store.planEvening()
-                }
-            }))
         }
         // События Календаря iPhone в плане (P376).
         NoteRow(title: T("События Календаря iPhone", "iPhone Calendar events"),
@@ -572,7 +596,7 @@ struct SettingsSticker: View {
     @ViewBuilder private var lookPart: some View {
         NoteSection(title: T("Вид", "Appearance"))
         NoteRow(title: T("Тема", "Theme")) {
-            Choice(options: [("system", T("как iPhone", "as iPhone")), ("light", T("светлая", "light")),
+            Choice(options: [("system", T("системная", "system")), ("light", T("светлая", "light")),
                              ("dark", T("тёмная", "dark"))], selection: $theme)
         }
         // Размер и шрифт записей (P274).
@@ -715,6 +739,7 @@ struct SettingsSticker: View {
     @AppStorage(Reminders.eveningKey) private var evening = -1
     @AppStorage(Prefs.lock) private var locked = false
     @AppStorage(Prefs.boundary) private var boundary = 0
+    @AppStorage(Clock.key) private var clock12 = Clock.twelve
     @AppStorage(Prefs.startTab) private var startTab = "plan"
     @AppStorage(Prefs.theme) private var theme = "system"
     @AppStorage(Prefs.navigator) private var navigator = "apple"
@@ -1221,6 +1246,27 @@ struct RollerSheet: View {
 }
 
 enum Clock {
+    /// 12 часов или 24 (P602). В файлах время всегда «21:30» — так его
+    /// читает любая программа; на экране — как выбрано. Не выбрано — как
+    /// в самом iPhone.
+    static let key = "prefs.clock12"
+
+    static var twelve: Bool {
+        if let chosen = UserDefaults.standard.object(forKey: key) as? Bool { return chosen }
+        return (DateFormatter.dateFormat(fromTemplate: "j", options: 0, locale: .current) ?? "").contains("a")
+    }
+
+    /// «21:30» из файла — на экран: «21:30» или «9:30 PM».
+    static func show(_ hhmm: String) -> String {
+        guard twelve, hhmm.count == 5, let h = Int(hhmm.prefix(2)) else { return hhmm }
+        return "\(h % 12 == 0 ? 12 : h % 12):\(hhmm.suffix(2)) \(h < 12 ? "AM" : "PM")"
+    }
+
+    /// Час ровно — «21:00» или «9 PM».
+    static func hour(_ h: Int) -> String {
+        twelve ? "\(h % 12 == 0 ? 12 : h % 12) \(h < 12 ? "AM" : "PM")" : "\(h):00"
+    }
+
     private static var formatter: DateFormatter {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX")

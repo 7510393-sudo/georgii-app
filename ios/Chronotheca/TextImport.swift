@@ -138,9 +138,6 @@ enum TextImport {
 /// Окно переноса из текста и Markdown.
 struct TextImportView: View {
 
-    /// Из какого приложения переносят; пусто — общий перенос текстом.
-    var app: String? = nil
-
     @EnvironmentObject private var vault: Vault
     @EnvironmentObject private var store: DayStore
 
@@ -152,11 +149,6 @@ struct TextImportView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
-                if let app {
-                    Text(T("В \(app) выгрузите записи текстом или Markdown в папку в «Файлах» и выберите её здесь.",
-                           "In \(app), export your entries as text or Markdown to a folder in Files and choose it here."))
-                        .font(Look.sans(15, weight: .semibold))
-                }
                 Text(T("Почти любой дневник умеет выгружать записи текстом или Markdown: Obsidian, Diarly, Bear, Journey, Notion, iA Writer. Выгрузите их в папку в «Файлах» и выберите её здесь.",
                        "Almost every journal can export entries as text or Markdown: Obsidian, Diarly, Bear, Journey, Notion, iA Writer. Export them to a folder in Files and choose it here."))
                 Text(T("Каждый файл станет записью своего дня. День берётся из имени файла (например, «2024-05-17.md»), иначе — из первой строки, иначе — по дате файла.",
@@ -191,7 +183,7 @@ struct TextImportView: View {
             .font(Look.sans(15))
             .padding(20)
         }
-        .navigationTitle(app ?? T("Markdown и текст", "Markdown and text"))
+        .navigationTitle(T("Markdown и текст", "Markdown and text"))
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(progress != nil)
         .fileImporter(isPresented: $choosing, allowedContentTypes: [.folder]) { picked in

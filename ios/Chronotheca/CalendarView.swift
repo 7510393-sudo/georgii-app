@@ -451,7 +451,7 @@ struct CalendarView: View {
                 } else {
                     ForEach(tasks) { task in
                         HStack(alignment: .firstTextBaseline, spacing: 8) {
-                            Text(task.time ?? "--:--")
+                            Text(task.time.map(Clock.show) ?? "--:--")
                                 .font(Look.mono(12))
                                 .foregroundStyle(Look.inkFaint)
                             Text(task.text)

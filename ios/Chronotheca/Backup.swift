@@ -581,6 +581,10 @@ struct BackupSheet: View {
     @State private var problem: String?
     @State private var stages: [Stage] = Array(repeating: .waiting, count: 5)
     @State private var running = false
+    /// Копия кончилась (P602): `true` — полная, `false` — неполная. Кнопка
+    /// говорит, что вышло, — прежде после хода внизу оставалась простыня
+    /// ступеней, а кнопка стояла как ни в чём не бывало.
+    @State private var finished: Bool?
     /// Не все файлы пришли из iCloud — ждём ответа человека.
     @State private var pending: (Backup.Session, Backup.Inventory)?
     /// С прошлой копии этих файлов в архиве не стало (P377).
@@ -660,10 +664,14 @@ struct BackupSheet: View {
                         Button {
                             copy()
                         } label: {
-                            Text(T("Скопировать сейчас", "Copy now")).frame(maxWidth: .infinity)
+                            Text(running ? T("Копирую…", "Copying…")
+                                 : finished == true ? T("✓ Скопировано", "✓ Copied")
+                                 : finished == false ? T("Скопировано не всё — ещё раз", "Not everything was copied — again")
+                                 : T("Скопировать сейчас", "Copy now"))
+                                .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.borderedProminent)
-                        .disabled(placeName == nil || running)
+                        .disabled(placeName == nil || running || finished == true)
                     }
 
                     if stages.contains(where: { $0 != .waiting }) {
@@ -697,7 +705,10 @@ struct BackupSheet: View {
         }
         .interactiveDismissDisabled(running)
         .onAppear(perform: measure)
-        .onChange(of: placeName) { _, _ in measure() }
+        .onChange(of: placeName) { _, _ in
+            finished = nil
+            measure()
+        }
         .onChange(of: running) { _, now in if !now { measure() } }
     }
 
@@ -863,6 +874,7 @@ struct BackupSheet: View {
         guard let root = vault.root else { return }
         problem = nil
         running = true
+        finished = nil
         vanished = []
         broughtBack = nil
         stages = Array(repeating: .waiting, count: 5)
@@ -999,6 +1011,7 @@ struct BackupSheet: View {
         Backup.saveList(inv, root: root)
         DispatchQueue.main.async {
             if complete { Feel.done() } else { Feel.light() }
+            finished = complete
             running = false
         }
     }

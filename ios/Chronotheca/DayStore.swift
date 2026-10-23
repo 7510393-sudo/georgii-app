@@ -614,7 +614,9 @@ final class DayStore: ObservableObject {
         f.locale = Locale(identifier: "en_US_POSIX")
         // Дописывая прошедший день, человек пишет не в тот день, о котором
         // запись: за временем встаёт и дата, когда писал (P227, P232).
-        f.dateFormat = isToday ? "HH:mm" : "HH:mm dd.MM.yy"
+        // 12 часов — «09:41 PM» (P602): две цифры часа, как и у 24-х, —
+        // по ним отметка узнаётся в тексте.
+        f.dateFormat = (Clock.twelve ? "hh:mm a" : "HH:mm") + (isToday ? "" : " dd.MM.yy")
         diaryText = (body.isEmpty ? "" : body + "\n\n") + f.string(from: Date()) + " "
         lastEdit = Date()
         save()
@@ -683,7 +685,9 @@ final class DayStore: ObservableObject {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX")
         // Дописывая прошедший день — с датой, когда писал (P227, P232).
-        f.dateFormat = isToday ? "HH:mm" : "HH:mm dd.MM.yy"
+        // 12 часов — «09:41 PM» (P602): две цифры часа, как и у 24-х, —
+        // по ним отметка узнаётся в тексте.
+        f.dateFormat = (Clock.twelve ? "hh:mm a" : "HH:mm") + (isToday ? "" : " dd.MM.yy")
         return f.string(from: Date()) + " "
     }
 

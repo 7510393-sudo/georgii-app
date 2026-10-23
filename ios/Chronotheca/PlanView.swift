@@ -277,14 +277,15 @@ struct PlanRowLine: View {
 
     private var time: some View {
         Button { onTime?() } label: {
-            Text(row.time ?? "--:--")
+            // 12 или 24 часа — как выбрано (P602); в файле — «21:30».
+            Text(row.time.map(Clock.show) ?? "--:--")
                 .font(Look.mono(17))
                 .tracking(row.time == nil ? 0.6 : 0)
                 // Время — всегда одна строка. «--:--» с разрядкой не
                 // умещалось в отведённую ширину и переносилось надвое:
                 // на странице оставался висеть один прочерк.
                 .lineLimit(1)
-                .minimumScaleFactor(0.8)
+                .minimumScaleFactor(Clock.twelve ? 0.6 : 0.8)
                 .foregroundStyle(row.time == nil || faded ? Look.inkFaint : Look.inkSoft)
                 // Время — на такой же панельке, как номер (P374), вместо
                 // прежней пунктирной черты. Ширина задана числом: по ней

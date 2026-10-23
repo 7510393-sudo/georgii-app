@@ -312,15 +312,13 @@ struct ImportSheet: View {
     @EnvironmentObject private var store: DayStore
     @Environment(\.dismiss) private var dismiss
 
-    /// Как в Diarium: самые частые дневники, по алфавиту.
-    /// Ещё семь, куда пишут дневники чаще всего (P477): Apple Notes, Bear,
-    /// Grid Diary, Momento, Notion, Obsidian, Penzu.
-    static let apps = ["Apple Journal", "Apple Notes", "Bear", "Day One", "Daybook", "Daylio", "Diarium",
-                       "Diarly", "Diaro", "Evernote", "Grid Diary", "Journey", "Memorize", "Momento",
-                       "Notion", "Obsidian", "Penzu"]
+    /// Только те, чей перенос проверен своими проверками (P602): Day One
+    /// (P378), Diarium и Journey (P444). Прежде в списке стояли ещё
+    /// четырнадцать названий, и все они вели в общий перенос текста — это
+    /// обещание, которое не для всех выполнимо. Кто выгружает текст или
+    /// Markdown — строкой выше, «Markdown и текст».
+    static let apps = ["Day One", "Diarium", "Journey"]
 
-    /// Свой перенос, а не через текст: Day One (P378), Diarium и Journey (P444).
-    static let own: Set<String> = ["Day One", "Diarium", "Journey"]
 
     var body: some View {
         NavigationStack {
@@ -332,7 +330,7 @@ struct ImportSheet: View {
                     } label: {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(T("Markdown и текст", "Markdown and text")).font(Look.sans(16))
-                            Text("Obsidian, Diarly, Bear, Journey, Notion, iA Writer…")
+                            Text("Obsidian, Bear, Notion, iA Writer…")
                                 .font(Look.sans(12.5)).foregroundStyle(Look.inkFaint)
                         }
                     }
@@ -342,10 +340,8 @@ struct ImportSheet: View {
                         NavigationLink {
                             if app == "Day One" {
                                 DayOneImportView()
-                            } else if Self.own.contains(app) {
-                                JsonImportView(app: app)
                             } else {
-                                TextImportView(app: app)
+                                JsonImportView(app: app)
                             }
                         } label: {
                             HStack {

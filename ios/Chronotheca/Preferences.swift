@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreText
 import UIKit
 import LocalAuthentication
 
@@ -75,9 +76,42 @@ enum Prefs {
         return name == "diary" ? .diary : .plan
     }
 
-    /// Шрифты записи дневника: названия для настроек.
+    /// Шрифты записи дневника: названия для настроек. К трём прежним — шесть
+    /// из тех, какими пишут дневники (P602): два книжных и четыре от руки,
+    /// все с кириллицей. Лежат в самом приложении (`Fonts/`, лицензия OFL).
     static var fonts: [(key: String, name: String)] {
-        [("georgia", "Georgia"), ("newyork", "New York"), ("system", T("Без засечек", "Sans serif"))]
+        [("georgia", "Georgia"), ("newyork", "New York"), ("system", T("Без засечек", "Sans serif")),
+         ("lora", "Lora"), ("garamond", "EB Garamond"),
+         ("caveat", "Caveat"), ("neucha", "Neucha"), ("badscript", "Bad Script"), ("marck", "Marck Script")]
+    }
+
+    /// Свои шрифты: файл в приложении и во сколько крупнее его рисовать —
+    /// рукописные при том же кегле мельче книжных.
+    private static let bundled: [String: (file: String, scale: CGFloat)] = [
+        "lora": ("Lora", 1.0), "garamond": ("EBGaramond", 1.08),
+        "caveat": ("Caveat", 1.28), "neucha": ("Neucha", 1.12),
+        "badscript": ("BadScript-Regular", 1.0), "marck": ("MarckScript-Regular", 1.18),
+    ]
+
+    /// Описания своих шрифтов — шрифт из файла берётся по ним, а не по имени
+    /// внутри файла.
+    private static let loaded: [String: CTFontDescriptor] = {
+        var out: [String: CTFontDescriptor] = [:]
+        for (key, font) in bundled {
+            guard let url = Bundle.main.url(forResource: font.file, withExtension: "ttf") else { continue }
+            CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
+            if let all = CTFontManagerCreateFontDescriptorsFromURL(url as CFURL) as? [CTFontDescriptor],
+               let first = all.first {
+                out[key] = first
+            }
+        }
+        return out
+    }()
+
+    /// Свой шрифт записи — или `nil`, если выбран встроенный в iPhone.
+    static func bundledFont(_ size: CGFloat) -> UIFont? {
+        guard let font = bundled[fontKey], let descriptor = loaded[fontKey] else { return nil }
+        return CTFontCreateWithFontDescriptor(descriptor, size * font.scale, nil) as UIFont
     }
 
     /// По умолчанию — New York (P465): засечный шрифт Apple тоньше Georgia
@@ -86,6 +120,7 @@ enum Prefs {
 
     /// Шрифт записи для полей UIKit.
     static func serifUIFont(_ size: CGFloat) -> UIFont {
+        if let own = bundledFont(size) { return own }
         switch fontKey {
         case "newyork":
             let plain = UIFont.systemFont(ofSize: size)

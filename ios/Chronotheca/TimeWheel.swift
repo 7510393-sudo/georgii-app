@@ -24,6 +24,8 @@ struct TimeWheel: UIViewRepresentable {
         picker.datePickerMode = .time
         picker.preferredDatePickerStyle = .wheels
         picker.minuteInterval = step
+        // 12 или 24 часа — как выбрано в настройках (P602).
+        picker.locale = Locale(identifier: Clock.twelve ? "en_US" : "en_GB")
         picker.addTarget(context.coordinator,
                          action: #selector(Coordinator.spun(_:)),
                          for: .valueChanged)

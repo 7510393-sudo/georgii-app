@@ -261,6 +261,8 @@ extension DayStoreTests {
     /// Дописывая вчерашний день, человек видит, когда дописал: к времени
     /// встаёт короткая дата (P227). В сегодняшнем — только время.
     func testВПрошедшийДеньОтметкаСДатой() {
+        UserDefaults.standard.set(false, forKey: Clock.key)
+        defer { UserDefaults.standard.removeObject(forKey: Clock.key) }
         let вчера = store(-1)
         XCTAssertTrue(вчера.stampIfNeeded())
         XCTAssertNotNil(вчера.diaryText.range(
@@ -352,6 +354,8 @@ extension DayStoreTests {
 
         // Пустая запись прошедшего дня: строки не прибавляется, отметка ждёт
         // первой буквы — с датой, когда писали.
+        UserDefaults.standard.set(false, forKey: Clock.key)
+        defer { UserDefaults.standard.removeObject(forKey: Clock.key) }
         let вчера = store(-2)
         XCTAssertFalse(вчера.openNewLine(always: false))
         XCTAssertEqual(вчера.diaryText, "")
@@ -370,5 +374,22 @@ extension DayStoreTests {
         XCTAssertNil(вчера.takeStamp(), "только что — отметки нет")
         вчера.noteWriting()
         XCTAssertNil(вчера.takeStamp())
+    }
+
+    /// 12 часов (P602): отметка «09:41 PM», поле узнаёт её как отметку.
+    func testОтметкаВДвенадцатиЧасах() {
+        UserDefaults.standard.set(true, forKey: Clock.key)
+        defer { UserDefaults.standard.removeObject(forKey: Clock.key) }
+        let сегодня = store(0)
+        XCTAssertTrue(сегодня.stampIfNeeded())
+        XCTAssertNotNil(сегодня.diaryText.range(
+            of: #"^\d{2}:\d{2} [AP]M $"#, options: .regularExpression))
+        let строка = "09:41 PM Вечером"
+        XCTAssertEqual(DiaryEditor.stamp.firstMatch(
+            in: строка, range: NSRange(location: 0, length: (строка as NSString).length))?
+            .range(at: 1).length, 8)
+        XCTAssertEqual(Clock.show("21:30"), "9:30 PM")
+        XCTAssertEqual(Clock.show("00:05"), "12:05 AM")
+        XCTAssertEqual(Clock.hour(12), "12 PM")
     }
 }

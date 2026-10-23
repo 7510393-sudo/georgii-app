@@ -280,10 +280,13 @@ enum Look {
     /// Засечный шрифт дневника. Literata в iOS нет, Georgia есть везде.
     /// Шрифт записи можно сменить в настройках (P274).
     static func serif(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
+        // Свои шрифты (P602) — только в самих записях (`Prefs.serifUIFont`):
+        // рукописный в заголовках и подписях мелким кеглем не прочесть.
+        // Надписи приложения при них — New York.
         switch Prefs.fontKey {
-        case "newyork": return .system(size: size, weight: weight, design: .serif)
         case "system":  return .system(size: size, weight: weight)
-        default:        return .custom("Georgia", size: size).weight(weight)
+        case "georgia": return .custom("Georgia", size: size).weight(weight)
+        default:        return .system(size: size, weight: weight, design: .serif)
         }
     }
 
