@@ -233,7 +233,9 @@ final class Vault: ObservableObject {
     /// пор, пока его не закроют. Помнится и после перезапуска: так видно,
     /// сколько идёт запуск на большом архиве.
     static let speedTestKey = "debug.speedTest"
-    static var speedTestOn: Bool { UserDefaults.standard.bool(forKey: speedTestKey) }
+    /// Вне TestFlight пробного архива нет (P603): кто включил его в
+    /// TestFlight и поставил приложение из App Store, увидит свои записи.
+    static var speedTestOn: Bool { Build.isTestFlight && UserDefaults.standard.bool(forKey: speedTestKey) }
 
     /// Пробный архив лежит внутри самого приложения, в его служебной папке:
     /// не в «Файлах», не в iCloud и не внутри своей папки «На iPhone»

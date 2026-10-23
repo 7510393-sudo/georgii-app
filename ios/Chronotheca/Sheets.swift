@@ -917,8 +917,9 @@ struct SettingsSticker: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 9)
         .contentShape(Rectangle())
-        // Скрытая «Проверка скорости» (P581): для автора, не для всех.
-        .onLongPressGesture(minimumDuration: 1.5) { showingSpeed = true }
+        // Скрытая «Проверка скорости» (P581): для автора, не для всех — и
+        // только в сборках TestFlight (P603): в App Store её нет совсем.
+        .onLongPressGesture(minimumDuration: 1.5) { if Build.isTestFlight { showingSpeed = true } }
         .sheet(isPresented: $showingSpeed) { SpeedTestSheet() }
     }
 
@@ -1011,6 +1012,17 @@ enum Build {
         let version = info?["CFBundleShortVersionString"] as? String ?? "?"
         let build = info?["CFBundleVersion"] as? String ?? "?"
         return "\(version) (\(build))"
+    }
+
+    /// Сборка из TestFlight (или симулятор проверок CI) — только в ней есть
+    /// «Проверка скорости» (P603). iPhone кладёт приложению из TestFlight
+    /// чек «sandboxReceipt», из App Store — «receipt».
+    static var isTestFlight: Bool {
+        #if targetEnvironment(simulator)
+        return true
+        #else
+        return Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
+        #endif
     }
 }
 
