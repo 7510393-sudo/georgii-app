@@ -11,7 +11,7 @@ import json, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "ios", "Chronotheca")
-LANGS = ["uk", "de", "fr", "es", "it", "pt", "nl", "ja"]
+LANGS = ["uk", "de", "fr", "es", "it", "pt", "nl", "ja", "ka"]
 
 
 def literal(s, i):
