@@ -287,10 +287,8 @@ struct RootView: View {
     private var app: some View {
         ZStack(alignment: .topTrailing) {
             VStack(spacing: 0) {
-                // Верхняя строка-ориентир (P494): те же четыре раздела, всегда
-                // на месте, клавиатура её не трогает. Всё остальное — уголки,
-                // имя дня — стоит ниже неё.
-                Color.clear.frame(height: Self.topBarHeight)
+                // Верхней строки разделов нет (P613): разделы — в нижней
+                // строке, а пока поднята клавиатура — над ней.
                 canvas
                     // Сменили размер или шрифт записи — страницы собираются
                     // заново: поля UIKit помнят свой шрифт (P274).
@@ -314,17 +312,10 @@ struct RootView: View {
             // Верхней строки больше нет: шестерёнка и три точки нарисованы
             // на уголках бумаги, торчащих сверху слева и справа, а имя дня
             // поднялось между ними (P229).
-            // Уголки торчат из-под верхней строки (P496): их верх спрятан
-            // под ней на `Corner.lift`.
-            corners.padding(.top, Self.topBarHeight - Corner.lift)
+            corners
 
-            // Верхняя строка лежит поверх уголков, но под листками: листок
-            // открыт — касание по ней его закрывает, как и по нижней.
-            topBar
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-
-            // Листки висят от нижнего края верхней строки; выезжают они из-под
-            // неё, поэтому всё, что выше, обрезано.
+            // Листки висят от верха экрана под строкой часов; выезжают они
+            // из-под неё, поэтому всё, что выше, обрезано.
             ZStack(alignment: .topTrailing) {
                 if shell.showingMenu { MenuSticker() }
                 if let m = shell.movingTask {
@@ -337,7 +328,6 @@ struct RootView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .clipped()
-            .padding(.top, Self.topBarHeight)
             // Нижняя строка — самый верхний слой, как и верхняя (P515): листок
             // заходит под неё. Пока листок открыт, поверх него лежит точная
             // копия строки на том же месте; закрыт — копии нет.
@@ -346,8 +336,8 @@ struct RootView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                     .ignoresSafeArea(.all, edges: .bottom)
             }
-            // Строки разделов над клавиатурой на карте и в поиске больше нет
-            // (P499): верхняя строка всегда на месте.
+            // Над клавиатурой разделы — частью самой клавиатуры (P613,
+            // `KeyboardBar`): у полей дня. На карте и в поиске их там нет.
             // Подсказки для первого знакомства (P427) — поверх всего, когда
             // экран спокоен.
             HintLayer(screen: shell.screen,
@@ -421,6 +411,12 @@ struct RootView: View {
         .onAppear {
             windowBottom = UIApplication.shared.connectedScenes
                 .compactMap { ($0 as? UIWindowScene)?.keyWindow }.first?.safeAreaInsets.bottom ?? 0
+        }
+        .onChange(of: shell.keyboardGo) { _, target in
+            guard let target else { return }
+            shell.keyboardGo = nil
+            hideKeyboard()
+            tapSection(target)
         }
         .onChange(of: shell.screen) { old, new in
             LagWatch.note(new)
@@ -516,6 +512,9 @@ struct RootView: View {
         .onAppear {
             // Просьбы кнопок над клавиатурой — открытой странице (P279).
             KeyboardBar.ask = { [shell] ask in shell.keyboardAsk = ask }
+            // Раздел, выбранный над клавиатурой (P613), — сюда, как и с
+            // нижней строки.
+            KeyboardBar.go = { [shell] target in shell.keyboardGo = target }
             // Опись архива нужна не только календарю и поиску: без неё
             // облачко «…помнишь?» не знает, есть ли что вспомнить, и не
             // появляется никогда. Читаем папку сразу при запуске.
@@ -537,39 +536,6 @@ struct RootView: View {
             shell.openRequestedScreen(store)
             // Первое открытие: страница сверху (P346, P607).
             shell.freshStart += 1
-        }
-    }
-
-    /// Высота верхней строки-ориентира (P494, P496): значки и названия,
-    /// на 15% мельче нижних.
-    static let topBarHeight: CGFloat = 60
-
-    private var topBar: some View {
-        HStack(spacing: 0) {
-            section("календарь", T("Календарь", "Calendar"), .calendar, small: true)
-            section("сегодня", T("День", "Day"), .today, small: true)
-            section("карта", T("Карта", "Map"), .map, small: true)
-            section("поиск", T("Поиск", "Search"), .search, small: true)
-        }
-        .padding(.vertical, 4)
-        .frame(maxWidth: .infinity)
-        .frame(height: Self.topBarHeight)
-        // По этим меткам проверки движения находят строку и её кнопки (P552).
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("topBar")
-        // Нижний край неровный — вторая половина той же рваной бумаги, что
-        // и верх нижней строки (P517): зубцы те же, выступ у одной —
-        // выемка у другой.
-        .background(alignment: .bottom) {
-            ZStack(alignment: .bottom) {
-                KraftPaper()
-                    .clipShape(TornEdgeBottom())
-                TornEdgeBottomLine()
-                    .stroke(Look.kraftEdge.opacity(0.55), lineWidth: 0.8)
-                    .frame(height: TornEdge.depth + 1)
-                    .clipped()
-            }
-            .padding(.bottom, -TornEdge.depth)
         }
     }
 
@@ -758,17 +724,15 @@ struct RootView: View {
         HStack(spacing: 0) {
             // Сегодня, календарь, карта, поиск (P239). Глобус нарисован
             // автором (P248).
-            section("календарь", T("Календарь", "Calendar"), .calendar, compact: true)
-            section("сегодня", T("День", "Day"), .today, compact: true)
-            section("карта", T("Карта", "Map"), .map, compact: true)
-            section("поиск", T("Поиск", "Search"), .search, compact: true)
+            section("календарь", T("Календарь", "Calendar"), .calendar)
+            section("сегодня", T("День", "Day"), .today)
+            section("карта", T("Карта", "Map"), .map)
+            section("поиск", T("Поиск", "Search"), .search)
         }
-        // Значки и названия — как у верхней строки, а сама полоса тоньше на
-        // 15% (P506): не высота ряда только, а вся толщина вместе с отступом
-        // над полосой «домой». Поля сверху и снизу по 2 (P510): при 4 надписи
-        // не хватало места.
-        .padding(.vertical, 2)
-        .frame(height: 55)
+        // Тоньше на пару миллиметров (P613; прежде 55 — P506): та же
+        // строка встаёт над клавиатурой и не должна занимать там много.
+        .padding(.vertical, 1)
+        .frame(height: SectionsRow.height)
         // Над полосой «домой» — её высота у самого окна, она не меняется
         // от клавиатуры (P447), меряется раскладкой (P450).
         .padding(.bottom, homeLift)
@@ -804,14 +768,6 @@ struct RootView: View {
     /// окна — мерка раскладкой иногда приходит нулём (P469).
     private var homeLift: CGFloat {
         max(0, max(homeBar, windowBottom) - 6)
-    }
-
-    private func scale(_ target: Shell.Screen) -> CGFloat {
-        switch target {
-        case .today:    return 1.10
-        case .search:   return 1.05
-        case .calendar, .map: return 1
-        }
     }
 
     /// Собрать карту заранее, но не под пальцем (P582): сборка на полсекунды
@@ -886,20 +842,10 @@ struct RootView: View {
     }
 
     private func section(_ icon: String, _ name: String, _ target: Shell.Screen,
-                         system: Bool = false, small: Bool = false,
-                         compact: Bool = false) -> some View {
+                         system: Bool = false) -> some View {
         let on = shell.screen == target
-        // Верхняя строка и нижняя — одних размеров (P500): значки и названия
-        // на 15% мельче прежней нижней (P496).
-        let k: CGFloat = (small || compact) ? 0.85 : 1
-        let act = {
-            if small {
-                // Листок открыт — касание по строке только закрывает его.
-                if shell.showingSettings { shell.tuckIn(settings: true); return }
-                if shell.showingMenu { shell.tuckIn(settings: false); return }
-            }
-            tapSection(target)
-        }
+        let k = SectionsRow.scale
+        let act = { tapSection(target) }
         // Срабатывает в миг касания (P565), а не когда палец отпустили, как
         // обычная кнопка iPhone; само касание кнопки — только если касания
         // не было (VoiceOver).
@@ -915,10 +861,10 @@ struct RootView: View {
                     }
                 }
                 // Книжка на 10%, микроскоп на 5% крупнее прочих (P227).
-                .frame(width: 35 * k * scale(target), height: 35 * k * scale(target))
+                .frame(width: 35 * k * SectionsRow.grow(target), height: 35 * k * SectionsRow.grow(target))
                 // Того же размера, что в строке разделов над клавиатурой
-                // (P425).
-                Text(name).font(Look.sans(SectionsRow.font * k, weight: on ? .medium : .regular))
+                // (P425, P613).
+                Text(name).font(Look.sans(SectionsRow.font, weight: on ? .medium : .regular))
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
                     // Не сжимать по высоте (P510): в тесной нижней полосе
@@ -939,7 +885,7 @@ struct RootView: View {
             .foregroundStyle(on ? Look.accent : Look.kraftInk)
         }
         .buttonStyle(TouchDownStyle(action: act))
-        .accessibilityIdentifier((small ? "top." : "bottom.") + "\(target)")
+        .accessibilityIdentifier("bottom.\(target)")
         // Долгого нажатия у кнопок нет (P492): действия дня — в меню на трёх
         // точках; системное меню задерживало и обычное касание.
     }
@@ -1023,7 +969,7 @@ struct RootView: View {
 /// (P229, P231, P236).
 struct Corner: View {
     static let size: CGFloat = 58
-    /// Насколько верх уголка спрятан под верхней строкой (P496).
+    /// Насколько верх уголка спрятан за верхним краем (P496).
     static let lift: CGFloat = 2
 
     let leading: Bool

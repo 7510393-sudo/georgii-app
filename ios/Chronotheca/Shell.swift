@@ -165,6 +165,8 @@ final class Shell: ObservableObject {
     /// Кнопка над клавиатурой попросила открыть фото, голос или файлы —
     /// исполняет полоска открытой страницы (P279).
     @Published var keyboardAsk: KeyboardBar.Ask?
+    /// Раздел, выбранный в строке над клавиатурой (P613).
+    @Published var keyboardGo: Screen?
     /// Просьба странице встать на план или на дневник (P424): после
     /// перелистывания и из календаря.
     @Published var landing = 0

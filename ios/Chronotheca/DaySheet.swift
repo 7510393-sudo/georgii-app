@@ -229,7 +229,7 @@ struct DaySheet<Plan: View, Diary: View>: View {
     /// (P554): место спрятанной полоски и воздух над строкой кнопок — без
     /// двух точек зазора.
     private static var tuck: CGFloat {
-        stripRoom + (KeyboardBar.accessoryHeight - KeyboardBar.attachHeight - 4) - 2
+        stripRoom + (KeyboardBar.attachRoom - KeyboardBar.attachHeight - 4) - 2
     }
 
     /// Встать на место — один раз на каждое открытие приложения: к началу

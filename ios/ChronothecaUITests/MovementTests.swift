@@ -74,10 +74,6 @@ final class MovementTests: XCTestCase {
         return check(openDay)
     }
 
-    private var topBar: XCUIElement {
-        app.descendants(matching: .any)["topBar"].firstMatch
-    }
-
     private func raiseKeyboard() -> Bool {
         let text = app.textViews["diaryText"].firstMatch
         guard text.waitForExistence(timeout: 5) else { return false }
@@ -102,7 +98,7 @@ final class MovementTests: XCTestCase {
     func testTodayReturnsFromPast() {
         launch("past")
         XCTAssertNotEqual(openDay, "today", "образец «вчера» не открылся")
-        app.buttons["top.today"].firstMatch.tap()
+        app.buttons["bottom.today"].firstMatch.tap()
         XCTAssertTrue(waitDay { $0 == "today" }, "«Сегодня» не вернуло на сегодня: \(openDay)")
         save("01-сегодня-после-вчера")
     }
@@ -113,31 +109,34 @@ final class MovementTests: XCTestCase {
         launch("past")
         let past = openDay
         XCTAssertNotEqual(past, "today", "образец «вчера» не открылся")
-        app.buttons["top.map"].firstMatch.tap()
+        app.buttons["bottom.map"].firstMatch.tap()
         XCTAssertTrue(wait(6) { openScreen == "map" }, "карта не открылась")
-        app.buttons["top.today"].firstMatch.tap()
+        app.buttons["bottom.today"].firstMatch.tap()
         XCTAssertTrue(wait(6) { openScreen == "today" }, "«Сегодня» не открылось")
         sleep(1)
         XCTAssertEqual(openDay, past, "после карты «Сегодня» не вернуло на прежний день")
-        app.buttons["top.today"].firstMatch.tap()
+        app.buttons["bottom.today"].firstMatch.tap()
         XCTAssertTrue(waitDay { $0 == "today" }, "второе нажатие не вернуло на сегодня: \(openDay)")
     }
 
-    /// Верхняя строка не сдвигается, когда поднимается клавиатура (P548),
-    /// и над клавиатурой одна строка вложений (P546, P547).
+    /// С клавиатурой разделы поднимаются над ней (P613; верхней строки нет):
+    /// над клавиатурой одна строка разделов и одна строка вложений (P546).
     func testKeyboardKeepsScreen() {
         launch("diary")
-        let before = topBar.frame
-        XCTAssertFalse(before.isEmpty, "верхняя строка не найдена")
         XCTAssertTrue(raiseKeyboard(), "клавиатура не поднялась")
         save("02-клавиатура-дневник")
-        XCTAssertEqual(topBar.frame.minY, before.minY, accuracy: 1, "верхняя строка сдвинулась с клавиатурой")
+        let keys = app.buttons.matching(identifier: "keys.today").allElementsBoundByIndex
+            .filter { $0.isHittable }
+        XCTAssertEqual(keys.count, 1, "разделов над клавиатурой: \(keys.count)")
         let keyboardRow = app.buttons.matching(identifier: "keyboard.camera").allElementsBoundByIndex
             .filter { $0.isHittable }
         XCTAssertEqual(keyboardRow.count, 1, "кнопок «камера» над клавиатурой: \(keyboardRow.count)")
         let pageRow = app.buttons.matching(identifier: "strip.camera").allElementsBoundByIndex
             .filter { $0.isHittable }
         XCTAssertEqual(pageRow.count, 0, "строка вложений страницы видна вместе с клавиатурой")
+        // Раздел над клавиатурой открывается и убирает её.
+        app.buttons["keys.map"].firstMatch.tap()
+        XCTAssertTrue(wait(6) { openScreen == "map" }, "карта не открылась из строки над клавиатурой")
     }
 
     /// Лист берут за край (P532) — и без клавиатуры в любом месте (P549).
@@ -147,7 +146,7 @@ final class MovementTests: XCTestCase {
         let edge = app.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.55))
         edge.press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.55)))
         XCTAssertTrue(waitDay { $0 != "today" }, "от края лист не перевернулся")
-        app.buttons["top.today"].firstMatch.tap()
+        app.buttons["bottom.today"].firstMatch.tap()
         XCTAssertTrue(waitDay { $0 == "today" }, "«Сегодня» после листания не вернуло")
         sleep(2)
         let middle = app.coordinate(withNormalizedOffset: CGVector(dx: 0.6, dy: 0.55))

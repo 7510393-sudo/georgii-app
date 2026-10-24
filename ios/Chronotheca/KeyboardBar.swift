@@ -16,6 +16,8 @@ enum KeyboardBar {
 
     /// Кто исполняет просьбы — оболочка приложения.
     static var ask: (Ask) -> Void = { _ in }
+    /// Кто открывает раздел, выбранный над клавиатурой (P613).
+    static var go: (Shell.Screen) -> Void = { _ in }
 
     /// Высота строки вложений над клавиатурой (P423).
     static let attachHeight: CGFloat = 36
@@ -73,19 +75,79 @@ enum KeyboardBar {
         return box
     }
 
-    /// Высота строки над клавиатурой: строка вложений и воздух над ней.
-    static let accessoryHeight: CGFloat = attachHeight + 10
+    /// Высота приставки: строка вложений с воздухом и под ней строка
+    /// разделов с рваным краем (P613).
+    static let accessoryHeight: CGFloat = attachRoom + SectionsRow.height + TornEdge.depth
+    /// Строка вложений с воздухом над и под ней.
+    static let attachRoom: CGFloat = attachHeight + 10
 }
 
 struct KeyboardBarView: View {
     @ObservedObject private var day = KeyboardBar.day
 
     var body: some View {
-        // Только строка вложений (P546): разделов над клавиатурой нет.
-        attachments
-            .frame(height: KeyboardBar.attachHeight)
-            .padding(.top, 6)
-            .padding(.bottom, 4)
+        // Нижняя строка разделов поднимается вместе с клавиатурой (P613):
+        // она — часть приставки и едет с клавиатурой сама, и когда ту
+        // смахивают пальцем. Над ней — строка вложений, как и на странице
+        // над нижней строкой.
+        VStack(spacing: 0) {
+            attachments
+                .frame(height: KeyboardBar.attachHeight)
+                .padding(.top, 6)
+                .padding(.bottom, 4)
+            sections
+        }
+    }
+
+    /// Те же четыре раздела, что внизу экрана, того же вида. Приставка есть
+    /// только у полей дня — открыт «День».
+    private var sections: some View {
+        HStack(spacing: 0) {
+            section("календарь", T("Календарь", "Calendar"), .calendar)
+            section("сегодня", T("День", "Day"), .today)
+            section("карта", T("Карта", "Map"), .map)
+            section("поиск", T("Поиск", "Search"), .search)
+        }
+        .padding(.vertical, 1)
+        .frame(height: SectionsRow.height)
+        .padding(.top, TornEdge.depth)
+        .background(alignment: .top) {
+            ZStack(alignment: .top) {
+                KraftPaper()
+                    .clipShape(TornEdge())
+                TornEdgeLine()
+                    .stroke(Look.kraftEdge.opacity(0.55), lineWidth: 0.8)
+                    .frame(height: TornEdge.depth + 1)
+                    .clipped()
+            }
+        }
+    }
+
+    private func section(_ icon: String, _ name: String, _ target: Shell.Screen) -> some View {
+        let on = target == .today
+        let side = 35 * SectionsRow.scale * SectionsRow.grow(target)
+        return Button { KeyboardBar.go(target) } label: {
+            VStack(spacing: 3) {
+                Image(icon).renderingMode(.template).resizable().scaledToFit()
+                    .frame(width: side, height: side)
+                Text(name).font(Look.sans(SectionsRow.font, weight: on ? .medium : .regular))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(on ? Look.tabLit : .clear)
+                    .overlay(RoundedRectangle(cornerRadius: 12)
+                        .strokeBorder(on ? Look.accent.opacity(0.75) : .clear, lineWidth: 1.3))
+                    .padding(.horizontal, -16)
+                    .padding(.vertical, -3))
+            .frame(maxWidth: .infinity)
+            .foregroundStyle(on ? Look.accent : Look.kraftInk)
+        }
+        .buttonStyle(.plain)
+        // Метка для проверок движения (P552, P613).
+        .accessibilityIdentifier("keys.\(target)")
     }
 
     /// Строка вложений — полупрозрачная: сквозь неё видна страница (P423).
@@ -205,10 +267,23 @@ struct TitleLine: UIViewRepresentable {
     }
 }
 
-/// Размер названий разделов в нижней строке (P425). Строки разделов над
-/// клавиатурой больше нет (P546, P551).
+/// Строка разделов — внизу экрана и над клавиатурой одна и та же (P613).
 enum SectionsRow {
-    static let font: CGFloat = 15
+    /// На пару миллиметров тоньше прежних 55 (P613).
+    static let height: CGFloat = 44
+    /// Значки — 35 × эта доля (прежде 0,85).
+    static let scale: CGFloat = 0.72
+    /// Названия (прежде 15 × 0,85).
+    static let font: CGFloat = 12.5
+
+    /// Книжка на 10%, микроскоп на 5% крупнее прочих (P227).
+    static func grow(_ target: Shell.Screen) -> CGFloat {
+        switch target {
+        case .today:    return 1.10
+        case .search:   return 1.05
+        case .calendar, .map: return 1
+        }
+    }
 }
 
 extension View {
