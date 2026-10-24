@@ -262,11 +262,12 @@ final class KeyboardCornersBand: NSObject {
     @objc private func tick() {
         guard let holder = KeyboardBar.shownHolder, let from = holder.window,
               let app = UIApplication.shared.connectedScenes
-                  .compactMap({ ($0 as? UIWindowScene)?.keyWindow }).first,
-              app !== from
+                  .compactMap({ ($0 as? UIWindowScene)?.keyWindow }).first
         else { band?.isHidden = true; return }
         let edge = from.convert(holder.convert(holder.bounds, to: from), to: app)
         let view = band ?? make(in: app)
+        // Поверх всего, что приложение положило в окно позже (листки).
+        if view.superview === app, app.subviews.last !== view { app.bringSubviewToFront(view) }
         let r = KeyboardCorners.radius
         view.frame = CGRect(x: 0, y: edge.maxY, width: app.bounds.width, height: r)
         view.isHidden = edge.maxY >= app.bounds.height - 1
