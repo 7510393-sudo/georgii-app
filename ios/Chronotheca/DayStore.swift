@@ -80,10 +80,7 @@ final class DayStore: ObservableObject {
     /// Через столько без правки дневник ставит новую отметку времени.
     static let stampGap: TimeInterval = 60 * 60
 
-    @Published var date: Date {
-        // Полоска над клавиатурой — в цвет открытого дня (P297).
-        didSet { KeyboardBar.day.date = date }
-    }
+    @Published var date: Date
     @Published var planRows: [PlanRow] = [] {
         didSet { notePlanChange(from: oldValue) }
     }
@@ -707,12 +704,26 @@ final class DayStore: ObservableObject {
     private func attach(_ link: String, to tab: Shell.Tab) {
         switch tab {
         case .diary:
-            photos.append(link)
+            // Под последним текстом записи (P615): ленты больше нет.
+            diaryText = DayStore.appending(Diary.line(link), to: diaryText)
             touchDiary()
         case .plan:
             planPhotos.append(link)
         }
         save()
+    }
+
+    /// Новое вложение — под последним текстом записи, через одну пустую
+    /// строку (P610, P611, P615). Следом за другими вложениями — в тот же
+    /// ряд, по четыре; полный ряд — новый ряд сразу под ним.
+    static func appending(_ line: String, to text: String) -> String {
+        var body = text
+        while let last = body.last, last.isWhitespace { body.removeLast() }
+        guard !body.isEmpty else { return line }
+        let lastLine = body.components(separatedBy: "\n").last ?? ""
+        let row = Diary.objects(in: lastLine).count
+        if row > 0 { return body + (row < 4 ? " " : "\n") + line }
+        return body + "\n\n" + line
     }
 
     /// Убрать вложение из файла дня; сам файл остаётся в папке. Удалить

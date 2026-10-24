@@ -50,11 +50,11 @@ final class PlaceTests: XCTestCase {
         XCTAssertEqual(Geo.point(in: "geo:59.93863,30.31413")?.title, "")
         XCTAssertNil(Geo.point(in: "[Дом](../../Фотографии/2026/x.jpg)"))
         XCTAssertNil(Geo.point(in: "Были у [Дом](geo:1,2) вечером"))
-        // Точка — не файл, но в конце записи она — лента, как снимки (P588).
+        // Точка — не файл; в конце записи она часть текста (P615).
         XCTAssertNil(Diary.picture(in: строка))
         let запись = Diary(body: "Гуляли.\n\n" + строка)
-        XCTAssertEqual(запись.photos, [строка])
-        XCTAssertEqual(запись.text, "Гуляли.")
+        XCTAssertEqual(запись.photos, [])
+        XCTAssertEqual(запись.text, "Гуляли.\n\n" + строка)
         // Посреди записи — остаётся в тексте.
         let посреди = Diary(body: "Гуляли.\n" + строка + "\nВечер.")
         XCTAssertEqual(посреди.photos, [])
@@ -63,10 +63,10 @@ final class PlaceTests: XCTestCase {
         let вКонце = Diary(body: "Гуляли.\n" + строка)
         XCTAssertEqual(вКонце.photos, [])
         XCTAssertEqual(вКонце.text, "Гуляли.\n" + строка)
-        // И за ней лента после пустой строки — лента отдельно.
+        // И снимок за ней после пустой строки — тоже текст (P615).
         let сЛентой = Diary(body: "Гуляли.\n" + строка + "\n\n![](a.jpg)")
-        XCTAssertEqual(сЛентой.photos, ["a.jpg"])
-        XCTAssertEqual(сЛентой.text, "Гуляли.\n" + строка)
+        XCTAssertEqual(сЛентой.photos, [])
+        XCTAssertEqual(сЛентой.text, "Гуляли.\n" + строка + "\n\n![](a.jpg)")
     }
 
     /// Точка с карты встаёт своей строкой — следующей за абзацем, где

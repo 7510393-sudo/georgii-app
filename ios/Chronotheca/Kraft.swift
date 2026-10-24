@@ -142,20 +142,3 @@ struct TornEdgeBottomLine: Shape {
         return p
     }
 }
-
-/// Строка вложений — нижний край листа этого дня: цвет страницы, на тон
-/// гуще, с той же бумажной фактурой (P297).
-struct DayStrip: View {
-    let date: Date
-
-    var body: some View {
-        ZStack {
-            Ru.tint(date)
-            Color.black.opacity(0.06)
-            Image(uiImage: PageTexture.grain)
-                .resizable(resizingMode: .tile)
-        }
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
-    }
-}

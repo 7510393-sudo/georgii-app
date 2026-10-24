@@ -223,24 +223,37 @@ extension DayStoreTests {
         v.forget()
     }
 
-    /// «Места дня» больше нет (P294): точка «где я» ложится в ленту внизу
-    /// страницы (P588), а строка «место:» в файле не заводится.
+    /// «Места дня» больше нет (P294): точка «где я» ложится под текст
+    /// записи (P615), а строка «место:» в файле не заводится.
     func testТочкаГдеЯНеЗаводитМестаДня() {
         let день = store(0)
         let дом = CLLocationCoordinate2D(latitude: 54.3211, longitude: -2.7456)
         день.writePoint(GeoPoint(title: "", at: дом), to: .diary, here: true)
         XCTAssertNil(день.place)
-        XCTAssertEqual(день.photos, ["geo:54.32110,-2.74560"])
-        XCTAssertFalse(день.diaryText.contains("geo:"))
+        XCTAssertTrue(день.photos.isEmpty)
+        XCTAssertEqual(день.diaryText, "geo:54.32110,-2.74560")
     }
 
-    /// Точка в ленте записывается в файл своей строкой и читается обратно
-    /// в ленту, а не в текст (P588).
+    /// Новое вложение — под последним текстом через одну пустую строку,
+    /// следом за другими — в тот же ряд, по четыре (P615).
+    func testВложениеЛожитсяПодТекст() {
+        let a = "![](a.jpg)", b = "![](b.jpg)"
+        XCTAssertEqual(DayStore.appending(a, to: ""), a)
+        XCTAssertEqual(DayStore.appending(a, to: "Утро.\n\n\n"), "Утро.\n\n" + a)
+        XCTAssertEqual(DayStore.appending(b, to: "Утро.\n\n" + a), "Утро.\n\n" + a + " " + b)
+        let четыре = [a, b, a, b].joined(separator: " ")
+        XCTAssertEqual(DayStore.appending(a, to: "Утро.\n\n" + четыре), "Утро.\n\n" + четыре + "\n" + a)
+        // Посреди текста ряд не продолжается — только последний.
+        XCTAssertEqual(DayStore.appending(b, to: a + "\nВечер."), a + "\nВечер.\n\n" + b)
+    }
+
+    /// Точка из прежней ленты записывается в файл своей строкой и читается
+    /// обратно в текст записи (P588, P615).
     func testТочкаВЛентеПереживаетЗапись() {
         let d = Diary(text: "Утро", photos: ["[Дом](geo:54.32110,-2.74560)", "a.jpg"])
         let back = Diary(body: d.body(order: []))
-        XCTAssertEqual(back.text, "Утро")
-        XCTAssertEqual(back.photos, ["[Дом](geo:54.32110,-2.74560)", "a.jpg"])
+        XCTAssertEqual(back.text, "Утро\n\n[Дом](geo:54.32110,-2.74560)\n![](a.jpg)")
+        XCTAssertTrue(back.photos.isEmpty)
     }
 
     /// Точку в плане переставляют между делами; скрытые строки файла

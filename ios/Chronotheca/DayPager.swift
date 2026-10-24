@@ -354,7 +354,7 @@ struct DayPage: View {
                      land: shell.landing, landDiary: shell.landOnDiary,
                      onDiary: { [shell] in shell.lookingAtDiary = $0 },
                      diaryMark: AnyView(cloud),
-                     strip: AnyView(AttachBar(live: live, date: date))) {
+                     strip: AnyView(AttachBar(live: live))) {
                 PlanView()
             } diary: {
                 DiaryView()
@@ -448,55 +448,14 @@ struct PageTexture: View {
     }()
 }
 
-/// Лицо кнопки в нижней полоске: значок и подпись. Общее для полоски
-/// вложений и для полоски карты — кнопки стоят на одних и тех же местах
-/// (P213).
-struct BarFace: View {
-    let icon: String
-    let name: String
-    var tint: Color = Look.inkSoft
-    /// Только значок — для тонкой полоски вложений (P289).
-    var compact = false
-    /// Пятно под значком (P425): строка вложений полупрозрачная, и черты
-    /// значка сливались с тем, что видно сквозь неё. Пятно цвета дня —
-    /// плотное посередине, к краям тает.
-    var spot: Color?
-
-    var body: some View {
-        VStack(spacing: 3) {
-            Image(systemName: icon).font(.system(size: compact ? 18 : 17))
-                .frame(height: compact ? 26 : nil)
-                .background {
-                    if let spot {
-                        RadialGradient(colors: [spot.opacity(0.95), spot.opacity(0.7), spot.opacity(0)],
-                                       center: .center, startRadius: 0, endRadius: 24)
-                            .frame(width: 52, height: 40)
-                    }
-                }
-            if !compact {
-                Text(name.uppercased()).font(Look.sans(9)).tracking(0.45)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.75)
-            }
-        }
-        .accessibilityLabel(name)
-        .frame(maxWidth: .infinity)
-        .foregroundStyle(tint)
-        .contentShape(Rectangle())
-    }
-}
-
-/// Полоска вложений. Едет вместе со страницей: вложения принадлежат дню.
-///
-/// Пока открыта клавиатура, её кнопки — в строке над клавиатурой
-/// (`KeyboardBar`), а сама полоска прячется (P546).
+/// «＋» внизу страницы (P615) и всё, что она открывает: галерея, камера,
+/// запись голоса, файлы, место. Её же просьбы исполняет и «＋» над
+/// клавиатурой (`KeyboardBar.ask`).
 struct AttachBar: View {
 
     /// Полоска открытой страницы: она исполняет просьбы кнопок над
     /// клавиатурой (P279).
     var live = false
-    /// День страницы: полоска — нижний край его листа, в его цвет (P297).
-    var date = DayStore.today()
 
     @EnvironmentObject private var shell: Shell
     @EnvironmentObject private var store: DayStore
@@ -510,40 +469,15 @@ struct AttachBar: View {
     @State private var recording = false
     @State private var browsing = false
     @State private var shooting = false
-    /// Где по ширине была нажата кнопка «аудио» — кнопка записи в панели
-    /// встаёт ровно над ней (P330).
-    @State private var recordAlign: CGFloat = 0.5
 
     var body: some View {
-        HStack(spacing: 0) {
-            // Камера — снимок прямо из приложения (P289); первой кнопкой
-            // слева, она нужнее с ходу (P301).
-            item("camera", T("камера", "camera"), ready: true) { open { shooting = true } }
-            // «Фото» сразу открывает галерею (P537); прежде — ряд снимков
-            // дня над полоской (P273), до галереи было на касание дольше.
-            item("photo", T("фото", "photo"), ready: true) { open { choosing = true } }
-            // Строка без клавиатуры — пять кнопок, «аудио» третья: центр
-            // посередине (P330, P381).
-            // Микрофон, а не волна: волна была безликой (P401).
-            item("mic", T("аудио", "audio"), ready: true) {
-                recordAlign = 0.5
-                open { recording = true }
-            }
-            item("doc", T("файлы", "files"), ready: true) { open { browsing = true } }
-            // «Место» — крайней справа (P496): касание — где вы сейчас,
-            // долгое нажатие — карта.
-            item("mappin.and.ellipse", T("место", "place"), ready: true,
-                 hold: { openMap() }) { notePlaceHere() }
+        // Одна «＋» справа над нижней строкой (P610, P615): пять кнопок
+        // строки вложений ушли в её меню.
+        HStack {
+            Spacer(minLength: 0)
+            PlusMenu(id: "strip.plus")
         }
-        // Полоска как можно тоньше: одни значки, без подписей (P289).
-        .padding(.top, 5)
-        .padding(.bottom, 4)
-        .background(DayStrip(date: date).opacity(KeyboardBar.see))
-        // Бока скруглены целиком (P425).
-        .clipShape(Capsule(style: .continuous))
-        .overlay(Capsule(style: .continuous)
-            .strokeBorder(Color.black.opacity(0.08), lineWidth: 0.6))
-        .padding(.horizontal, KeyboardBar.inset)
+        .padding(.horizontal, 12)
         // Где полоска на экране — сюда возвращают снимок из текста (P547).
         // Уходящая страница не стирает место: новая открытая уже сообщила своё.
         .reportsY { [live] y in if live, let y { KeyboardBar.pillTarget = y } }
@@ -554,10 +488,7 @@ struct AttachBar: View {
             switch ask {
             case .photo: open { choosing = true }
             case .camera: open { shooting = true }
-            // Полоска над клавиатурой — шесть кнопок, «аудио» третья: центр
-            // на 5/12 ширины (P330, P381).
             case .audio:
-                recordAlign = 5.0 / 12.0
                 open { recording = true }
             case .files: open { browsing = true }
             case .place: notePlaceHere()
@@ -575,7 +506,7 @@ struct AttachBar: View {
             .ignoresSafeArea()
         }
         .sheet(isPresented: $recording) {
-            Recorder(done: keepVoice, cancel: { recording = false }, align: recordAlign)
+            Recorder(done: keepVoice, cancel: { recording = false })
                 .presentationDetents([.height(400)])
         }
         .fullScreenCover(isPresented: $shooting) {
@@ -631,8 +562,8 @@ struct AttachBar: View {
                                      : T("Не удалось положить файлов: \(urls.count - kept)", "Files not saved: \(urls.count - kept)"))
     }
 
-    /// Место, где человек сейчас, — в ленту внизу страницы (P588): дневника,
-    /// а в день, который ещё не наступил, — плана. Место узнаётся только по
+    /// Место, где человек сейчас, — под текстом записи (P615), а в день,
+    /// который ещё не наступил, — в ленту плана (P588). Место узнаётся только по
     /// этому нажатию (A9).
     private func notePlaceHere() {
         let tab: Shell.Tab = store.canEditDiary ? .diary : .plan
@@ -644,9 +575,9 @@ struct AttachBar: View {
                     return shell.say(T("Место не определилось — разрешите приложению знать, где вы, в Настройках iPhone.",
                                        "Could not find where you are — allow location for the app in iPhone Settings."))
                 }
-                // В ленту внизу страницы, как всё новое (P588).
+                // Под последним текстом записи, как всё новое (P615).
                 if store.writePoint(GeoPoint(title: "", at: location.coordinate), to: tab, here: true) {
-                    shell.say(T("Место — в ленте", "Place added to the strip"))
+                    shell.say(T("Место добавлено", "Place added"))
                 }
             }
         }
@@ -657,31 +588,6 @@ struct AttachBar: View {
     private func openMap() {
         hideKeyboard()
         shell.screen = .map
-    }
-
-    private func item(_ icon: String, _ name: String, ready: Bool = false,
-                      hold: (() -> Void)? = nil,
-                      act: @escaping () -> Void) -> some View {
-        let face = BarFace(icon: icon, name: name, tint: ready ? Look.stripInk : Look.inkFaint,
-                           compact: true, spot: Ru.tint(date))
-        return Group {
-            if let hold {
-                // У кнопки два жеста: касание и долгое нажатие. Обычная
-                // кнопка сработала бы и после долгого — поэтому жесты свои.
-                face
-                    .onTapGesture(perform: act)
-                    .onLongPressGesture(minimumDuration: 0.5) {
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                        hold()
-                    }
-                    .accessibilityAddTraits(.isButton)
-                    .accessibilityHint(T("Долгое нажатие — вписать, где вы", "Long press to note where you are"))
-            } else {
-                Button(action: act) { face }
-            }
-        }
-        // Метка для проверок движения (P552).
-        .accessibilityIdentifier("strip." + icon)
     }
 
     /// Видео из окна галереи — копией во временный файл: система уберёт
@@ -795,7 +701,7 @@ struct SideDay: View {
                  landDiary: shell.lookingAtDiary,
                  diaryMark: AnyView(DayCloud(date: date, live: false)),
                  // Полоска вложений — конец страницы и у соседней (P502, P114).
-                 strip: AnyView(AttachBar(live: false, date: date))) {
+                 strip: AnyView(AttachBar(live: false))) {
             plan
         } diary: {
             diary

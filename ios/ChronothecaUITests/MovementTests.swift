@@ -120,7 +120,7 @@ final class MovementTests: XCTestCase {
     }
 
     /// С клавиатурой разделы поднимаются над ней (P613; верхней строки нет):
-    /// над клавиатурой одна строка разделов и одна строка вложений (P546).
+    /// над клавиатурой одна строка разделов и над ней «＋» (P615).
     func testKeyboardKeepsScreen() {
         launch("diary")
         XCTAssertTrue(raiseKeyboard(), "клавиатура не поднялась")
@@ -131,12 +131,12 @@ final class MovementTests: XCTestCase {
         let keys = app.buttons.matching(identifier: "keys.today").allElementsBoundByIndex
             .filter { $0.isHittable }
         XCTAssertEqual(keys.count, 1, "разделов над клавиатурой: \(keys.count)")
-        let keyboardRow = app.buttons.matching(identifier: "keyboard.camera").allElementsBoundByIndex
+        let keyboardPlus = app.buttons.matching(identifier: "keyboard.plus").allElementsBoundByIndex
             .filter { $0.isHittable }
-        XCTAssertEqual(keyboardRow.count, 1, "кнопок «камера» над клавиатурой: \(keyboardRow.count)")
-        let pageRow = app.buttons.matching(identifier: "strip.camera").allElementsBoundByIndex
+        XCTAssertEqual(keyboardPlus.count, 1, "«＋» над клавиатурой: \(keyboardPlus.count)")
+        let pagePlus = app.buttons.matching(identifier: "strip.plus").allElementsBoundByIndex
             .filter { $0.isHittable }
-        XCTAssertEqual(pageRow.count, 0, "строка вложений страницы видна вместе с клавиатурой")
+        XCTAssertEqual(pagePlus.count, 0, "«＋» страницы виден вместе с клавиатурой")
         // Раздел над клавиатурой открывается и убирает её.
         app.buttons["keys.map"].firstMatch.tap()
         XCTAssertTrue(wait(6) { openScreen == "map" }, "карта не открылась из строки над клавиатурой")
@@ -171,28 +171,18 @@ final class MovementTests: XCTestCase {
         save("03-листание-с-клавиатурой")
     }
 
-    /// Вложение в ленте (P561, P562): подержал — крестик, вложение не
-    /// открылось; крестик — ровно одно окно вопроса; «убрать» — оно ушло, и
-    /// второго окна нет.
-    func testRemovingFromStripAsksOnce() {
+    /// Вложения — в тексте записи, ленты нет (P615): снимок образца не
+    /// стоит в ленте, справа внизу — «＋», и её меню открывается.
+    func testPlusOpensMenu() {
         launch("diary")
-        let photo = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "Photo 1")).firstMatch
-        XCTAssertTrue(photo.waitForExistence(timeout: 5), "в ленте нет снимка")
-        for _ in 0..<4 where !photo.isHittable { app.swipeUp() }
-        photo.press(forDuration: 0.8)
-        let cross = app.buttons.matching(NSPredicate(format: "label == %@", "Remove")).firstMatch
-        XCTAssertTrue(cross.waitForExistence(timeout: 3), "после долгого нажатия нет крестика")
-        save("04-крестик-в-ленте")
-        XCTAssertEqual(openScreen, "today", "долгое нажатие что-то открыло")
-        cross.tap()
-        XCTAssertTrue(app.alerts.firstMatch.waitForExistence(timeout: 3), "крестик не спросил")
-        XCTAssertEqual(app.alerts.count, 1, "окон вопроса: \(app.alerts.count)")
-        save("05-вопрос-об-удалении")
-        app.alerts.firstMatch.buttons.matching(NSPredicate(format: "label == %@", "Remove from the page"))
-            .firstMatch.tap()
-        sleep(2)
-        XCTAssertEqual(app.alerts.count, 0, "после ответа появилось ещё одно окно")
-        XCTAssertFalse(photo.exists, "снимок остался в ленте")
+        let ribbon = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "Photo 1")).firstMatch
+        XCTAssertFalse(ribbon.waitForExistence(timeout: 3), "снимок записи стоит в ленте")
+        let plus = app.buttons["strip.plus"].firstMatch
+        XCTAssertTrue(plus.waitForExistence(timeout: 5), "нет «＋» на странице")
+        plus.tap()
+        let camera = app.buttons.matching(NSPredicate(format: "label == %@", "Camera")).firstMatch
+        XCTAssertTrue(camera.waitForExistence(timeout: 3), "меню «＋» не открылось")
+        save("04-плюс-меню")
     }
 
     /// Большой архив (P567): десять лет дней. Приложение открывается и

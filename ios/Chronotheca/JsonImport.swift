@@ -325,12 +325,11 @@ enum JsonImport {
                 })
             }
             var day = DayFile(text: was.text)
-            let (text, photos) = Diary.split(day.body)
+            let text = day.body
             var body = blocks.joined(separator: "\n\n")
             if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 body = text + "\n\n— \(app) —\n\n" + body
             }
-            if !photos.isEmpty { body += "\n\n" + photos.map(Diary.line).joined(separator: "\n") }
             day.body = body
             if day.value("date") == nil { day.set("date", stamp) }
             // Файл изменился, пока мы готовили запись, — не пишем (P182).

@@ -242,12 +242,11 @@ enum DayOneImport {
                 })
             }
             var file = DayFile(text: was.text)
-            let (text, photos) = Diary.split(file.body)
+            let text = file.body
             var body = blocks.joined(separator: "\n\n")
             if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 body = text + "\n\n— Day One —\n\n" + body
             }
-            if !photos.isEmpty { body += "\n\n" + photos.map(Diary.line).joined(separator: "\n") }
             file.body = body
             if file.value("date") == nil { file.set("date", stamp) }
             // Файл изменился, пока мы готовили запись, — не пишем (P182).
