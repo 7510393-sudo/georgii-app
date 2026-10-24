@@ -234,10 +234,6 @@ final class KeyboardCornersBand: NSObject {
     static let shared = KeyboardCornersBand()
 
     private var band: UIView?
-    /// Держать того, кто рисует картон: без него вид оставался пустым —
-    /// по замеру проверки движения уголки стояли на месте и были видимы,
-    /// но не закрашены (P614).
-    private var host: UIHostingController<AnyView>?
     private var link: CADisplayLink?
     private var observers: [NSObjectProtocol] = []
 
@@ -305,14 +301,36 @@ final class KeyboardCornersBand: NSObject {
     }
 
     private func make(in window: UIWindow) -> UIView {
-        let host = UIHostingController(rootView: AnyView(KraftPaper()
-            .clipShape(KeyboardCorners(radius: KeyboardCorners.radius))))
-        self.host = host
-        host.view.backgroundColor = .clear
-        host.view.isUserInteractionEnabled = false
-        window.addSubview(host.view)
-        band = host.view
-        return host.view
+        let view = CornersView()
+        window.addSubview(view)
+        band = view
+        return view
+    }
+}
+
+/// Картон уголков — простым видом UIKit (P614): тот же цвет и волокно, что
+/// у строки разделов, обрезанные по двум уголкам. Вид SwiftUI в окне
+/// приложения оставался пустым — по замеру стоял на месте, но не рисовался.
+private final class CornersView: UIView {
+    private let fibre = UIView()
+    private let shape = CAShapeLayer()
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        isUserInteractionEnabled = false
+        backgroundColor = UIColor(Look.kraft)
+        fibre.backgroundColor = UIColor(patternImage: KraftPaper.fibre)
+        fibre.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        addSubview(fibre)
+        layer.mask = shape
+    }
+
+    required init?(coder: NSCoder) { nil }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        fibre.frame = bounds
+        shape.path = KeyboardCorners(radius: KeyboardCorners.radius).path(in: bounds).cgPath
     }
 }
 
