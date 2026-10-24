@@ -51,6 +51,9 @@ enum KeyboardBar {
     }
     private static var holder: UIView?
 
+    /// Приставка, если она сейчас на экране — над клавиатурой поля дня.
+    static var shownHolder: UIView? { holder?.window == nil ? nil : holder }
+
     /// Одна приставка на все поля: видна она только у того, в котором пишут.
     ///
     /// Строка вложений — часть клавиатуры, как строка оформления в Diarium
@@ -120,16 +123,6 @@ struct KeyboardBarView: View {
                     .frame(height: TornEdge.depth + 1)
                     .clipped()
             }
-        }
-        // Верх клавиатуры скруглён: по краям из-под строки проглядывала
-        // страница. Картон продолжается в эти уголки — будто строка
-        // поднята, а клавиатура лежит на ней сверху (P614).
-        .overlay(alignment: .bottom) {
-            KraftPaper()
-                .clipShape(KeyboardCorners(radius: KeyboardCorners.radius))
-                .frame(height: KeyboardCorners.radius)
-                .offset(y: KeyboardCorners.radius)
-                .allowsHitTesting(false)
         }
     }
 
@@ -226,6 +219,67 @@ struct KeyboardCorners: Shape {
                  startAngle: .degrees(-90), endAngle: .degrees(0), clockwise: false)
         p.closeSubpath()
         return p
+    }
+}
+
+/// Картон в двух уголках над скруглённым верхом клавиатуры (P614): будто
+/// строка разделов поднята, а клавиатура лежит на ней сверху.
+///
+/// Нарисовать их ниже самой приставки нельзя — iPhone обрезает её по краю
+/// (так вышло в первой пробе, снимок проверки движения). Поэтому уголки
+/// лежат в окне приложения, под окном клавиатуры, и каждый кадр, пока
+/// клавиатура видна, встают под нижний край приставки — и когда клавиатуру
+/// смахивают пальцем.
+final class KeyboardCornersBand: NSObject {
+    static let shared = KeyboardCornersBand()
+
+    private var band: UIView?
+    private var link: CADisplayLink?
+    private var observers: [NSObjectProtocol] = []
+
+    func start() {
+        guard observers.isEmpty else { return }
+        let center = NotificationCenter.default
+        observers.append(center.addObserver(forName: UIResponder.keyboardWillShowNotification,
+                                            object: nil, queue: .main) { [weak self] _ in self?.follow() })
+        observers.append(center.addObserver(forName: UIResponder.keyboardDidHideNotification,
+                                            object: nil, queue: .main) { [weak self] _ in self?.stop() })
+    }
+
+    private func follow() {
+        guard link == nil else { return }
+        let made = CADisplayLink(target: self, selector: #selector(tick))
+        made.add(to: .main, forMode: .common)
+        link = made
+    }
+
+    private func stop() {
+        link?.invalidate()
+        link = nil
+        band?.isHidden = true
+    }
+
+    @objc private func tick() {
+        guard let holder = KeyboardBar.shownHolder, let from = holder.window,
+              let app = UIApplication.shared.connectedScenes
+                  .compactMap({ ($0 as? UIWindowScene)?.keyWindow }).first,
+              app !== from
+        else { band?.isHidden = true; return }
+        let edge = from.convert(holder.convert(holder.bounds, to: from), to: app)
+        let view = band ?? make(in: app)
+        let r = KeyboardCorners.radius
+        view.frame = CGRect(x: 0, y: edge.maxY, width: app.bounds.width, height: r)
+        view.isHidden = edge.maxY >= app.bounds.height - 1
+    }
+
+    private func make(in window: UIWindow) -> UIView {
+        let host = UIHostingController(rootView: KraftPaper()
+            .clipShape(KeyboardCorners(radius: KeyboardCorners.radius)))
+        host.view.backgroundColor = .clear
+        host.view.isUserInteractionEnabled = false
+        window.addSubview(host.view)
+        band = host.view
+        return host.view
     }
 }
 
