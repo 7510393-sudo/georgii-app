@@ -1,59 +1,71 @@
-    2 Thread_54451   DispatchQueue_1: com.apple.main-thread  (serial)
-    + 2 start  (in dyld) + 6992  [0x1031304e4]
-    +   2 start_sim  (in dyld_sim) + 20  [0x102fcf0e4]
-    +     2 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x104d4e318]  ChronothecaApp.swift:0
-    +       2 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x104d4e26c]  /<compiler-generated>:0
-    +         2 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
-    +           2 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
-    +             2 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
-    +               2 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
-    +                 2 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
-    +                   2 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
-    +                     2 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
-    +                       2 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
-    +                         2 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
-    +                           2 mach_msg  (in libsystem_kernel.dylib) + 20  [0x102e84ef0]
-    +                             2 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x102e8cc44]
-    +                               2 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x102e95e84]
-    +                                 2 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x102e84b70]
+    26 Thread_46415   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 26 start  (in dyld) + 6992  [0x104ebc4e4]
+    +   26 start_sim  (in dyld_sim) + 20  [0x104fff0e4]
+    +     26 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x106b96318]  ChronothecaApp.swift:0
+    +       26 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x106b9626c]  /<compiler-generated>:0
+    +         26 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           26 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             26 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               26 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 26 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   26 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     26 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       25 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    +                       ! 25 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    +                       !   25 mach_msg  (in libsystem_kernel.dylib) + 20  [0x104cf0ef0]
+    +                       !     25 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x104cf8c44]
+    +                       !       25 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x104d01e84]
+    +                       !         25 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x104cf0b70]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 2280  [0x180421df8]
+    +                         1 __CFRunLoopDoBlocks  (in CoreFoundation) + 340  [0x1804224b4]
+    +                           1 __CFRUNLOOP_IS_CALLING_OUT_TO_A_BLOCK__  (in CoreFoundation) + 20  [0x180422d28]
+    +                             1 __XCTPerformOnMainRunLoop_block_invoke  (in XCTAutomationSupport) + 392  [0x121117ca4]
+    +                               1 __56-[XCTElementSnapshotRequest loadSnapshotAndReturnError:]_block_invoke_2  (in XCTAutomationSupport) + 52  [0x1210fe7e0]
+    +                                 1 -[XCTElementSnapshotRequest(PlatformImplementation) accessibilitySnapshotOrError:]  (in XCTAutomationSupport) + 668  [0x1211009c4]
+    +                                   1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                     1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                         1 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                           1 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                             1 writev  (in libsystem_kernel.dylib) + 8  [0x104cf4600]
 
 Sort by top of stack, same collapsed (when >= 5):
-        __workq_kernreturn  (in libsystem_kernel.dylib)        5
+        __workq_kernreturn  (in libsystem_kernel.dylib)        150
+        start_wqthread  (in libsystem_pthread.dylib)        59
+        mach_msg2_trap  (in libsystem_kernel.dylib)        52
+        __semwait_signal  (in libsystem_kernel.dylib)        25
+        writev  (in libsystem_kernel.dylib)        24
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        19
+        semaphore_wait_trap  (in libsystem_kernel.dylib)        13
+        fsync  (in libsystem_kernel.dylib)        8
 
 Binary Images:
-       0x102e70000 -        0x102e73507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/77AA4492-C787-4EEE-A772-05D4B3E9ECCD/data/Containers/Bundle/Application/1E487C6E-6B79-472E-A2C3-9B8DA03174D4/Chronotheca.app/Chronotheca
-       0x102e84000 -        0x102ebeed7  libsystem_kernel.dylib (12377.161.14) <26CFE427-C180-3145-8D46-DE3129B1CD2A> /usr/lib/system/libsystem_kernel.dylib
-       0x102f04000 -        0x102f0c3d3  libsystem_platform.dylib (375.120.2) <7E129155-1748-370C-8EDC-D762067A6D9F> /usr/lib/system/libsystem_platform.dylib
-       0x102fc4000 -        0x103012e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
-       0x103080000 -        0x10308c10b  libsystem_pthread.dylib (539.100.4) <85A501D2-0B0E-3DEA-B121-B24119D80CFE> /usr/lib/system/libsystem_pthread.dylib
-       0x103110000 -        0x1031c34ff  dyld (1.0.0 - 1387) <74E52480-C2BD-3C8D-812D-95FE2B74A096> /usr/lib/dyld
-       0x103268000 -        0x1032ab65f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
-       0x1033bc000 -        0x1034552af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
-       0x103b40000 -        0x103b42dff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
-       0x103b5c000 -        0x103b6403f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
-       0x103c70000 -        0x103c70b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
-       0x103c80000 -        0x103c8b39f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
-       0x103ca4000 -        0x103ca7e5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
-       0x103cc4000 -        0x103ccd49f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
-       0x103ce8000 -        0x103ceeb7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
-       0x103d34000 -        0x103d386ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
-       0x103ee8000 -        0x103eef2df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
-       0x103f08000 -        0x103f0d407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
-       0x1041bc000 -        0x1041d527f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
-       0x10420c000 -        0x10420f1ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
-       0x1042dc000 -        0x104537bbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
-       0x104b90000 -        0x104be37bf  com.apple.dt.XCTAutomationSupport (26.5 - 24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
-       0x104c7c000 -        0x105398bc7 +Chronotheca.debug.dylib (0) <0310FA89-3EC9-32AD-BA7B-2E13979AD1F4> /Users/*/Library/Developer/CoreSimulator/Devices/77AA4492-C787-4EEE-A772-05D4B3E9ECCD/data/Containers/Bundle/Application/1E487C6E-6B79-472E-A2C3-9B8DA03174D4/Chronotheca.app/Chronotheca.debug.dylib
-       0x105e98000 -        0x105ebacff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
-       0x105f30000 -        0x105f56f5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
-       0x108dd0000 -        0x108fc3d3f  com.apple.UIKit.axbundle (1.0.0 - 1.0) <D3D808D1-AB02-3566-B2DD-1B139F8E9569> /Volumes/*/UIKit
-       0x1091e0000 -        0x10924fcbf  com.apple.UIUnderstanding (1.0 - 1) <576E64EB-8AA4-3B1E-A89D-365C4DE0C7C8> /Volumes/*/UIUnderstanding.framework/UIUnderstanding
-       0x1092bc000 -        0x1092bd63f  com.apple.AssistantServices.axbundle (1.0 - 1.0) <F94FD084-F7CD-33CC-B320-82DC11C66675> /Volumes/*/AssistantServices
-       0x1092d8000 -        0x1092dd85f  com.apple.TelephonyUIFramework.axbundle (1.0 - 1.0) <3B6B5DA7-09A6-3441-8C4B-A04351314E29> /Volumes/*/TelephonyUIFramework
-       0x1092f8000 -        0x1092f9a7f  com.apple.HelpKit.axbundle (1.0 - 1.0) <3F1536BC-DF40-3D0F-8E19-B92C404586C7> /Volumes/*/HelpKit
-       0x109310000 -        0x10934a15f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
-       0x109fbc000 -        0x109fcd8bf  com.apple.MapKitFramework.axbundle (1.0 - 1.0) <E47E82F2-C0CB-3371-85B9-B78F40DB406A> /Volumes/*/MapKitFramework
-       0x10a004000 -        0x10a005a7f  com.apple.FrontBoard.axbundle (1.0 - 1.0) <FA25F3DC-A3E7-344D-8680-FFB8D8BBA712> /Volumes/*/FrontBoard
-       0x10b00c000 -        0x10b0117df  com.apple.LinkPresentation.axbundle (1.0 - 1.0) <7BAD0605-47F6-3470-9C28-AE38795FEC45> /Volumes/*/LinkPresentation
-       0x10b028000 -        0x10b03eb3f  com.apple.ContactsUI.axbundle (1.0 - 1) <FF9385C2-6D6F-3ECD-BFB3-D7270241CA3C> /Volumes/*/ContactsUI
-       0x10b084000 -        0x10b085f7f  com.apple.RealityFoundation.axbundle (1.0 - 1.0) <6C245B7D-6C04-31D7-9CA0-27091B29C32E> /Volumes/*/RealityFoundation
+       0x104cdc000 -        0x104cdf507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/77AA4492-C787-4EEE-A772-05D4B3E9ECCD/data/Containers/Bundle/Application/0FB2EBB0-1370-48FF-8658-1A4E115EDDE8/Chronotheca.app/Chronotheca
+       0x104cf0000 -        0x104d2aed7  libsystem_kernel.dylib (12377.161.14) <26CFE427-C180-3145-8D46-DE3129B1CD2A> /usr/lib/system/libsystem_kernel.dylib
+       0x104d70000 -        0x104d783d3  libsystem_platform.dylib (375.120.2) <7E129155-1748-370C-8EDC-D762067A6D9F> /usr/lib/system/libsystem_platform.dylib
+       0x104e18000 -        0x104e2410b  libsystem_pthread.dylib (539.100.4) <85A501D2-0B0E-3DEA-B121-B24119D80CFE> /usr/lib/system/libsystem_pthread.dylib
+       0x104e80000 -        0x104e8803f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x104e9c000 -        0x104f4f4ff  dyld (1.0.0 - 1387) <74E52480-C2BD-3C8D-812D-95FE2B74A096> /usr/lib/dyld
+       0x104ff4000 -        0x105042e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x1050b0000 -        0x1050f365f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x105204000 -        0x10529d2af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x105ac8000 -        0x105acadff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x105ae4000 -        0x105ae4b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x105af4000 -        0x105aff39f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x105b18000 -        0x105b1be5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x105b38000 -        0x105b4149f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x105b60000 -        0x105b7927f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
+       0x105bb0000 -        0x105bb6b7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x105f08000 -        0x105f0b1ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
+       0x10600c000 -        0x1060106ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
+       0x106124000 -        0x10637fbbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+       0x106a8c000 -        0x106a932df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
+       0x106ac4000 -        0x1071e1157 +Chronotheca.debug.dylib (0) <DD330370-B239-33ED-9128-F2DDFA69392F> /Users/*/Library/Developer/CoreSimulator/Devices/77AA4492-C787-4EEE-A772-05D4B3E9ECCD/data/Containers/Bundle/Application/0FB2EBB0-1370-48FF-8658-1A4E115EDDE8/Chronotheca.app/Chronotheca.debug.dylib
+       0x107fc0000 -        0x107fc1a7f  com.apple.FrontBoard.axbundle (1.0 - 1.0) <FA25F3DC-A3E7-344D-8680-FFB8D8BBA712> /Volumes/*/FrontBoard
+       0x10af38000 -        0x10af3d407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
+       0x10af64000 -        0x10af6985f  com.apple.TelephonyUIFramework.axbundle (1.0 - 1.0) <3B6B5DA7-09A6-3441-8C4B-A04351314E29> /Volumes/*/TelephonyUIFramework
+       0x10af88000 -        0x10af89f7f  com.apple.RealityFoundation.axbundle (1.0 - 1.0) <6C245B7D-6C04-31D7-9CA0-27091B29C32E> /Volumes/*/RealityFoundation
+       0x10af9c000 -        0x10af9d43f  com.apple.IntentsUI.axbundle (1.0 - 1.0) <2CEAAC55-35DD-3814-93AD-6A5B4C7FA2DE> /Volumes/*/IntentsUI
+       0x10afb0000 -        0x10afb141f  com.apple.SearchFoundation.axbundle (1.0 - 1.0) <9E05692B-6173-3F48-A416-8E3DDA1F97A5> /Volumes/*/SearchFoundation
+       0x10afc4000 -        0x10afc529f  com.apple.DocumentManager.axbundle (1.0 - 1.0) <58EF3BA3-E06C-3BD1-ACBE-35B08C6967F7> /Volumes/*/DocumentManager
+       0x10afd8000 -        0x10afd9a7f  com.apple.HelpKit.axbundle (1.0 - 1.0) <3F1536BC-DF40-3D0F-8E19-B92C404586C7> /Volumes/*/HelpKit
