@@ -85,7 +85,7 @@ final class PlaceTests: XCTestCase {
     }
 
     /// Значок места лежит в шапке файла словом и читается обратно; чужое
-    /// слово — обычная точка (P234).
+    /// слово остаётся как было — файл человека не правим (P340, P609).
     func testЗначокМестаВФайле() {
         var дача = Place(name: "Дача", coordinate: CLLocationCoordinate2D(latitude: 55, longitude: 37))
         дача.mark = "личное"
@@ -93,7 +93,8 @@ final class PlaceTests: XCTestCase {
         XCTAssertTrue(файл.contains("icon: private"))
         XCTAssertEqual(Place(text: файл, file: "Дача.md")?.mark, "личное")
         let чужое = файл.replacingOccurrences(of: "icon: private", with: "icon: ракета")
-        XCTAssertEqual(Place(text: чужое, file: "Дача.md")?.mark, Glyph.standard)
+        XCTAssertEqual(Place(text: чужое, file: "Дача.md")?.mark, "ракета")
+        XCTAssertTrue(Place(text: чужое, file: "Дача.md")!.fileText.contains("icon: ракета"))
         // Файл, записанный до P353, — русскими словами — читается так же.
         let прежний = "---\nназвание: Дача\nместо: 55, 37\nзначок: личное\n---\n"
         XCTAssertEqual(Place(text: прежний, file: "Дача.md")?.mark, "личное")

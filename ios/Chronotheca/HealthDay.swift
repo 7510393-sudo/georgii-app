@@ -111,8 +111,8 @@ enum HealthDay {
             return T("Сегодня из «Здоровья» ничего не пришло", "Nothing came from Health today") + why
                 + T(". За неделю шагов: \(steps) — доступ есть.", ". Steps this week: \(steps) — access works.")
         }
-        return T("Из «Здоровья» не пришло ничего и за неделю — iPhone не даёт приложению читать шаги.",
-                 "Nothing came from Health for the whole week — iPhone does not let the app read steps.") + why
+        return T("Из «Здоровья» не пришло ничего и за неделю: iPhone или не считает шаги, или не даёт их читать.",
+                 "Nothing came from Health for the whole week: iPhone either isn’t counting steps or won’t let the app read them.") + why
     }
 
     /// Прошедшие дни не меняются — их строка запоминается.

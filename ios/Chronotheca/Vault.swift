@@ -436,19 +436,18 @@ final class Vault: ObservableObject {
         // автор. Только один раз: при повторном запуске те же имена легли
         // бы рядом с номерами.
         if Places.all(in: self).isEmpty {
-            let spots: [(String, String, String, Double, Double)] = [
-                ("Дом", "Home", "дом", 51.5465, -0.1058),
-                ("Кофе у реки", "Coffee by the river", "кафе", 51.5052, -0.0911),
-                ("Воскресные прогулки", "Sunday walks", "природа", 51.5608, -0.1630),
-                ("Родители", "Mum and Dad", "сердце", 51.4613, -0.1156),
-                ("Где мы познакомились", "Where we met", "звезда", 51.4769, -0.0005),
-                ("Идея для романа", "Idea for the novel", "вдохновение", 51.5300, -0.1276),
-                ("Ночь костров", "Bonfire night", "огонь", 51.5390, -0.1608),
+            let spots: [(String, String, Double, Double)] = [
+                ("Дом", "Home", 51.5465, -0.1058),
+                ("Кофе у реки", "Coffee by the river", 51.5052, -0.0911),
+                ("Воскресные прогулки", "Sunday walks", 51.5608, -0.1630),
+                ("Родители", "Mum and Dad", 51.4613, -0.1156),
+                ("Где мы познакомились", "Where we met", 51.4769, -0.0005),
+                ("Идея для романа", "Idea for the novel", 51.5300, -0.1276),
+                ("Ночь костров", "Bonfire night", 51.5390, -0.1608),
             ]
-            for (ru, en, mark, lat, lon) in spots {
-                var place = Place(name: T(ru, en),
+            for (ru, en, lat, lon) in spots {
+                let place = Place(name: T(ru, en),
                                   coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lon))
-                place.mark = mark
                 Places.save(place, in: self)
             }
         }

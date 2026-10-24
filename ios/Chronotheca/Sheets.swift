@@ -306,9 +306,6 @@ struct SettingsSticker: View {
         .sheet(isPresented: $showingImport, onDismiss: { archive.reload() }) {
             ImportSheet().environmentObject(vault).environmentObject(store)
         }
-        .sheet(isPresented: $showingGoogleMaps) {
-            GoogleMapsImportSheet().environmentObject(vault)
-        }
         .sheet(isPresented: $showingTrash) {
             TrashSheet(vault: vault, save: { store.save() }) {
                 store.load()
@@ -495,6 +492,9 @@ struct SettingsSticker: View {
                     .modifier(Tag(look: .chosen))
             }
         }
+        NoteRow(title: T("«Итоги дня»", "“How the day went”")) {
+            Lever(isOn: Binding(get: { !noAsk }, set: { noAsk = !$0 }))
+        }
     }
 
     private func setEvening(_ hour: Int) {
@@ -510,10 +510,9 @@ struct SettingsSticker: View {
     /// «Здоровье», события Календаря. Прежде всё это стояло в «Дне», и
     /// градусы оказывались рядом с началом недели.
     @ViewBuilder private var pagePart: some View {
-        NoteSection(title: T("На странице", "On the page"))
-        NoteRow(title: T("«Итоги дня»", "“How the day went”")) {
-            Lever(isOn: Binding(get: { !noAsk }, set: { noAsk = !$0 }))
-        }
+        // Всё, что приходит на страницу не от человека, — здесь и
+        // выключено, пока он сам не включит (P452, P609).
+        NoteSection(title: T("Дополнения", "Extras"))
         // Погоды нет — почему (P354). Текст можно выделить и прислать.
         NoteRow(title: T("Погода", "Weather")) {
             Lever(isOn: Binding(get: { !noWeather }, set: { on in
@@ -646,10 +645,6 @@ struct SettingsSticker: View {
             Choice(options: [("apple", T("Карты Apple", "Apple Maps")), ("google", "Google")],
                    selection: $navigator)
         }
-        // Разовый перенос меток из файлов Google (P512).
-        NoteRow(title: T("Перенести метки из Google Карт", "Move places from Google Maps")) {
-            NoteButton(title: T("Открыть ›", "Open ›")) { showingGoogleMaps = true }
-        }
     }
 
     @ViewBuilder private var aboutPart: some View {
@@ -758,8 +753,10 @@ struct SettingsSticker: View {
             return T("У этой сборки нет права на «Здоровье» — iPhone не может спросить разрешение.",
                      "This build has no Health permission, so iPhone cannot ask for access.")
         }
-        let hint = T("Нет строки? Проверьте: Настройки iPhone → Здоровье → Доступ к данным и устройства → Graphomanus.",
-                     "No line? Check iPhone Settings → Health → Data Access & Devices → Graphomanus.")
+        // Путь, который помог автору (24.10): шагов не было с весны — iPhone
+        // их не считал, а не прятал.
+        let hint = T("Нет строки? Шаги считает iPhone: Настройки → Конфиденциальность и безопасность → Движение и фитнес → «Отслеживание фитнеса». Доступ: «Здоровье» → ваш значок → Приложения → Graphomanus.",
+                     "No line? iPhone counts steps: Settings → Privacy & Security → Motion & Fitness → Fitness Tracking. Access: Health → your picture → Apps → Graphomanus.")
         return healthToday.map { $0 + "\n" + hint } ?? hint
     }
     @AppStorage(DayEvents.holidaysKey) private var calendarHolidays = false
@@ -771,7 +768,6 @@ struct SettingsSticker: View {
     @State private var showingPDF = false
     @State private var showingBackup = false
     @State private var showingImport = false
-    @State private var showingGoogleMaps = false
     @AppStorage(Lang.key) private var language = "en"
 
 

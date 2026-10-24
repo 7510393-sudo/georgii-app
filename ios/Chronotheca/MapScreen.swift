@@ -755,8 +755,8 @@ struct MapSearch: View {
                 Button { choose(found) } label: {
                     HStack(spacing: 10) {
                         Group {
-                            if let mark = found.mark {
-                                GlyphIcon(name: mark, size: 12)
+                            if found.mark != nil {
+                                GlyphIcon(size: 12)
                             } else {
                                 Image(systemName: "mappin")
                                     .font(.system(size: 12, weight: .semibold))
@@ -1017,9 +1017,7 @@ struct PlacesList: View {
             List(shown) { place in
                 Button { pick(place) } label: {
                     HStack(spacing: 12) {
-                        Group {
-                            GlyphIcon(name: place.mark, size: 14)
-                        }
+                        GlyphIcon(size: 14)
                         .frame(width: 26, height: 26)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(place.name).font(Look.sans(15)).foregroundStyle(Look.ink)
@@ -1158,7 +1156,7 @@ struct NativeMap: UIViewRepresentable {
             for case let mark as PlaceMark in map.annotations {
                 guard let view = map.view(for: mark) else { continue }
                 let shown = mark.place.name == Geo.text(mark.place.coordinate) ? "" : mark.place.name
-                view.image = PlaceLabel.draw(shown, mark: mark.place.mark, solid: satellite,
+                view.image = PlaceLabel.draw(shown, solid: satellite,
                                              chosen: mark.place.file != nil && selected?.file == mark.place.file)
             }
         }
@@ -1237,14 +1235,10 @@ struct NativeMap: UIViewRepresentable {
                 // Названием остались координаты — на карте их не пишем (P404).
                 let shown = mark.place.name == Geo.text(mark.place.coordinate) ? "" : mark.place.name
                 let chosen = mark.place.file != nil && parent.selected?.file == mark.place.file
-                let picture = PlaceLabel.draw(shown, mark: mark.place.mark,
-                                              solid: map.mapType != .standard, chosen: chosen)
+                let picture = PlaceLabel.draw(shown, solid: map.mapType != .standard, chosen: chosen)
                 view.image = picture
-                // Метка стоит на точке значком; у «невидимой» — плашкой
-                // посередине (P409).
-                view.centerOffset = mark.place.mark == Glyph.invisible ? .zero
-                    : CGPoint(x: 0, y: picture.size.height / 2
-                              - PlaceLabel.dot * PlaceLabel.scale(mark: mark.place.mark, chosen: chosen) / 2)
+                // Метка стоит на точке значком.
+                view.centerOffset = CGPoint(x: 0, y: picture.size.height / 2 - PlaceLabel.dot / 2)
                 view.displayPriority = .required
                 view.collisionMode = .rectangle
                 quick(view)
@@ -1527,47 +1521,26 @@ enum PlaceLabel {
 
     /// `solid` — карта со спутника (P420): пёстрый снимок сквозь
     /// прозрачную плашку мешает читать — плашка плотнее.
-    /// `chosen` — место выбрано (P428): плашка и значок непрозрачные,
-    /// значок в чёрном круге, у голых — чёрная кайма по контуру.
-    /// «Невидимый», стрелка и пиратский флаг выбором не меняются.
-    /// Выбранное место: значок в полтора раза крупнее (P439). Без контура и
-    /// чёрного круга. «Невидимый», стрелка и пиратский флаг не меняются.
-    static func scale(mark: String, chosen: Bool) -> CGFloat {
-        chosen && ![Glyph.invisible, "стрелка", "пираты"].contains(mark) ? 1.5 : 1
-    }
-
-    static func draw(_ name: String, mark: String, solid: Bool = false, chosen: Bool = false) -> UIImage {
-        let grow = scale(mark: mark, chosen: chosen)
-        let chosen = grow > 1
-        let big = dot * grow
+    /// `chosen` — место выбрано (P428): плашка непрозрачная. Стрелка
+    /// выбором не меняется.
+    static func draw(_ name: String, solid: Bool = false, chosen: Bool = false) -> UIImage {
         let font = UIFont.systemFont(ofSize: 12, weight: .semibold)
         let words: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: UIColor(Look.ink)]
-        // «Невидимый» (P409): только плашка; без названия — «Место».
-        let invisible = mark == Glyph.invisible
         let given = name.trimmingCharacters(in: .whitespaces)
-        let text = ((invisible && given.isEmpty ? T("Место", "Place") : name) as NSString)
-        let named = invisible || !given.isEmpty
+        let text = name as NSString
+        let named = !given.isEmpty
         let wide = named ? min(text.size(withAttributes: words).width, 150) : 0
         // Поля вокруг букв — 3 по бокам и 1 сверху и снизу (P474): шрифт тот же, плашка
         // теснее (было 6 и 3).
         let plate = named ? CGSize(width: wide + 6, height: font.lineHeight + 2) : .zero
-        let above: CGFloat = invisible ? 0 : big + 4
-        let size = CGSize(width: max(invisible ? 0 : big, plate.width) + 4,
-                          height: named ? above + plate.height + 3 : big + 4)
+        let above: CGFloat = dot + 4
+        let size = CGSize(width: max(dot, plate.width) + 4,
+                          height: named ? above + plate.height + 3 : dot + 4)
         return UIGraphicsImageRenderer(size: size).image { ctx in
             let mid = size.width / 2
-            if !invisible {
-                let circle = CGRect(x: mid - dot / 2, y: 1 + (big - dot) / 2, width: dot, height: dot)
-                // Тот же рисунок, увеличенный вокруг своего центра.
-                ctx.cgContext.saveGState()
-                ctx.cgContext.translateBy(x: circle.midX, y: circle.midY)
-                ctx.cgContext.scaleBy(x: grow, y: grow)
-                ctx.cgContext.translateBy(x: -circle.midX, y: -circle.midY)
-                GlyphArt.draw(mark, in: circle, ctx: ctx.cgContext)
-                ctx.cgContext.restoreGState()
-            }
+            GlyphArt.draw(in: CGRect(x: mid - dot / 2, y: 1, width: dot, height: dot))
             guard named else { return }
-            let box = CGRect(x: mid - plate.width / 2, y: invisible ? 1 : above,
+            let box = CGRect(x: mid - plate.width / 2, y: above,
                              width: plate.width, height: plate.height)
             ctx.cgContext.setShadow(offset: CGSize(width: 0, height: 1), blur: 2,
                                     color: UIColor.black.withAlphaComponent(0.12).cgColor)
@@ -1644,34 +1617,9 @@ struct PointPanel: View {
     @FocusState private var focused: Field?
     @State private var copied = false
 
-    /// Четырнадцать значков — два ряда по семь (P404).
-    private static let iconColumns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
-
     var body: some View {
         VStack(spacing: 8) {
-            // Сверху значки, ниже название, ещё ниже запись (P238).
-            // Каким значком отметить точку (P234).
-            LazyVGrid(columns: Self.iconColumns, spacing: 6) {
-                ForEach(Glyph.all.indices, id: \.self) { i in
-                    let glyph = Glyph.all[i]
-                    Button {
-                        place.mark = glyph.name
-                    } label: {
-                        // Каждый значок своего цвета, как на карте (P397);
-                        // выбранный — в синем кольце, а не на тёмном
-                        // кружке: на тёмном пропал бы чёрный человек.
-                        // Рисунок — тот же, что на карте, с подложкой или
-                        // без (P404).
-                        GlyphIcon(name: glyph.name, size: 14)
-                            .frame(width: 32, height: 32)
-                            .overlay(Circle().strokeBorder(place.mark == glyph.name ? Look.accent : .clear,
-                                                           lineWidth: 2.5))
-                    }
-                    .buttonStyle(.plain)
-                    .frame(maxWidth: .infinity)
-                    .accessibilityLabel(T("Значок: ", "Icon: ") + Glyph.shown(glyph.name))
-                }
-            }
+            // Сверху название, ниже запись (P238; значков на выбор нет — P609).
             // Поля — плотные, чтобы текст читался; прозрачна сама плашка
             // вокруг них (P340).
             // В пустом поле — «Название», а не координаты: они внизу
