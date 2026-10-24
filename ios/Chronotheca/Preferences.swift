@@ -9,8 +9,6 @@ enum Prefs {
     static let lock = "prefs.lock"
     static let theme = "prefs.theme"            // "system", "light", "dark"
     static let boundary = "prefs.boundary"      // час границы суток, 0…6
-    static let startTab = "prefs.startTab"      // "last", "plan", "diary"
-    static let lastTab = "prefs.lastTab"        // где был в прошлый раз (P402)
     static let navigator = "prefs.navigator"    // "apple", "google"
     static let quiet = "prefs.quiet"            // true — без звуков (P265)
     static let textSize = "prefs.textSize"      // −1…2, ступени размера (P274)
@@ -67,14 +65,6 @@ enum Prefs {
     /// Своя ступень записи и размер текста iPhone вместе (P465).
     static var textScale: CGFloat { textSteps[textStep].scale * Look.grow }
 
-    /// С какой вкладки открывать (P249, P402): «где был» — та, что была
-    /// открыта в прошлый раз; иначе — план или дневник.
-    static var openingTab: Shell.Tab {
-        let d = UserDefaults.standard
-        let pick = d.string(forKey: startTab) ?? "plan"
-        let name = pick == "last" ? (d.string(forKey: lastTab) ?? "plan") : pick
-        return name == "diary" ? .diary : .plan
-    }
 
     /// Шрифты записи дневника: названия для настроек. К трём прежним — шесть
     /// из тех, какими пишут дневники (P602): два книжных и четыре от руки,

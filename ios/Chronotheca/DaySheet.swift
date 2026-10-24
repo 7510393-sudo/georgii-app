@@ -18,8 +18,6 @@ struct DaySheet<Plan: View, Diary: View>: View {
     /// Приложение открыли заново или вернулись после паузы (P346):
     /// меняется — страница встаёт на своё место. У соседних не меняется.
     var home = 0
-    /// Куда встать: к концу записи дневника или к началу плана (P402).
-    var toDiary = false
     /// Дневника у этого дня ещё нет — будущий день: заголовок бледный.
     var diaryOpen = true
     /// Просьба встать на план или на дневник (P424): меняется — страница
@@ -234,19 +232,13 @@ struct DaySheet<Plan: View, Diary: View>: View {
         stripRoom + (KeyboardBar.accessoryHeight - KeyboardBar.attachHeight - 4) - 2
     }
 
-    /// Встать на место — один раз на каждое открытие приложения: открыли
-    /// «на дневнике» — к концу записи, «на плане» — к началу (P346, P402).
+    /// Встать на место — один раз на каждое открытие приложения: к началу
+    /// страницы (P346). К концу записи страница больше не едет сама (P607,
+    /// отменяет P402: правило P113 — ничто не движется помимо воли).
     private func goHome(_ proxy: ScrollViewProxy) {
         guard home > 0, home != SheetMemory.homed else { return }
         SheetMemory.homed = home
-        let diary = toDiary && diaryOpen
-        DispatchQueue.main.async {
-            if diary {
-                proxy.scrollTo(DiaryPage.end, anchor: .bottom)
-            } else {
-                proxy.scrollTo(Self.top, anchor: .top)
-            }
-        }
+        DispatchQueue.main.async { proxy.scrollTo(Self.top, anchor: .top) }
     }
 
     /// Встать на план или на дневник по просьбе (P424). Новая страница

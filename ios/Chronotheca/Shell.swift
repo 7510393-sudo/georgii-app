@@ -26,10 +26,7 @@ final class Shell: ObservableObject {
     /// поднимая прежнюю. «День» — такая же плашка, как остальные; при
     /// запуске лежит одна она.
     @Published var stack: [Screen] = [.today]
-    @Published var tab: Tab = .plan {
-        // Запомнить, где был, — для «Открывать на: где был» (P402).
-        didSet { UserDefaults.standard.set(tab == .diary ? "diary" : "plan", forKey: Prefs.lastTab) }
-    }
+    @Published var tab: Tab = .plan
 
     /// Дело, чья шторка «Подробности» открыта.
     @Published var drawer: UUID?
@@ -189,11 +186,9 @@ final class Shell: ObservableObject {
     @Published var barTop: CGFloat = 0
 
     /// Сколько раз приложение открывали заново — при запуске и после долгой
-    /// паузы. Меняется — план встаёт на самый верх, дневник прокручивается
-    /// к концу записи с пустыми строками под ней (P346).
+    /// паузы. Меняется — страница встаёт на самый верх (P346; к концу
+    /// записи она больше не едет, P607).
     @Published var freshStart = 0
-    /// Приложение открыли на дневнике — поле записи само берёт ввод (P403).
-    @Published var writeNow = 0
 
     /// Вернулись после долгой паузы: всё открытое поверх убирается, на
     /// экране «Сегодня», вкладка — та, что выбрана в настройках (P346).
@@ -216,7 +211,7 @@ final class Shell: ObservableObject {
             settingsPull = nil
             screen = .today
         }
-        tab = Prefs.openingTab
+        tab = .plan
         if !store.isToday { store.go(to: DayStore.today()) }
         freshStart += 1
     }

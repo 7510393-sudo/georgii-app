@@ -69,7 +69,6 @@ struct DiaryView: View {
             },
             // Брошенный в текст снимок отметку времени не ставит — это
             // знает само поле записи (P362).
-            onFocusText: { store.openNewLine(always: $0) },
             takeStamp: { store.takeStamp() },
             onWrite: { store.noteWriting() },
             onOpenInline: { link in
@@ -94,7 +93,6 @@ struct DiaryView: View {
             onPointFromTitle: { line in
                 store.pointFromTitle(line)
             },
-            writeNow: shell.writeNow,
             health: health,
             // Касание по строке «Здоровья» — она ложится в запись (P378).
             onHealth: store.canEditDiary ? { line in store.addHealthLine(line) } : nil,
@@ -299,9 +297,6 @@ struct DiaryPage: View {
     var onOpenPhoto: ((Int) -> Void)?
     /// Возвращает `true`, если приложение поставило отметку времени: тогда
     /// курсор переезжает за неё.
-    /// `true` в ответ — курсор переезжает в конец, в новую строку. Отдаётся,
-    /// открыто ли поле само при открытии приложения (P403).
-    var onFocusText: (Bool) -> Bool = { _ in false }
     var takeStamp: (() -> String?)? = nil
     var onWrite: (() -> Void)? = nil
     /// Касание по снимку посреди текста (P216) и по точке (P213).
@@ -312,9 +307,6 @@ struct DiaryPage: View {
     /// Точку перенесли из текста в заголовок дня — и обратно (P358).
     var onPointToTitle: ((String) -> Void)?
     var onPointFromTitle: ((String) -> Void)?
-    /// Приложение открыли на дневнике (P403): поле само берёт ввод, курсор —
-    /// в начале новой строки. У соседних страниц не меняется.
-    var writeNow = 0
     /// День из «Здоровья» (P378) — слева в верхней строке, где пусто.
     var health: String? = nil
     var onHealth: ((String) -> Void)? = nil
@@ -335,22 +327,12 @@ struct DiaryPage: View {
     /// Крестик у снимка в записи → «удалить файл» (P409).
     var onDeleteAttachment: ((String) -> Void)? = nil
 
-    /// Для какого открытия поле уже взяло ввод само (P403).
-    private static var wrote = -1
-    /// Поле берёт ввод по открытию приложения, а не по касанию.
-    @State private var writing = false
-    /// Конец записи: к нему страница едет, когда открывают на дневнике
-    /// (P346, P408).
-    static var end: String { "дневник-конец" }
 
     /// Курсор в заголовке (P425): поле теперь UIKit, со своей приставкой.
     @State private var titleFocused = false
 
     /// Дело, на которое сейчас отвечают в «Как прошло?».
     @State private var askingAt: String?
-
-    /// Поднимается ровно на один оборот — когда отметка времени поставлена.
-    @State private var caretToEnd = false
 
     /// Поднимается по «Вводу» в заголовке: ввод переходит к тексту записи.
     @State private var toText = false
@@ -440,7 +422,6 @@ struct DiaryPage: View {
                 if Prefs.askOn, !asked.isEmpty { askBlock }
                 titleField
                 textField
-                Color.clear.frame(height: 1).id(Self.end)
             }
             .padding(.horizontal, 16)
             .padding(.top, 4)
@@ -454,8 +435,6 @@ struct DiaryPage: View {
             Spacer(minLength: gapBelowText)
             footer
         }
-        .onAppear { startWriting() }
-        .onChange(of: writeNow) { _, _ in startWriting() }
     }
 
     /// Сколько места оставить под последними словами записи до ленты: пять
@@ -464,16 +443,6 @@ struct DiaryPage: View {
         let line = size * 1.45
         let empty = text.reversed().prefix { $0 == "\n" || $0 == " " }.filter { $0 == "\n" }.count
         return max(0, line * 5 - CGFloat(empty) * line)
-    }
-
-    /// Открыли приложение на дневнике — клавиатура поднята, курсор в начале
-    /// новой строки под записью: открыл — и пишешь, без касания (P403).
-    private func startWriting() {
-        guard writeNow > 0, writeNow != Self.wrote, editable else { return }
-        Self.wrote = writeNow
-        writing = true
-        // Страница успевает встать на место, потом поле берёт ввод.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { toText = true }
     }
 
     private var asked: [PlanRow] {
@@ -663,12 +632,8 @@ struct DiaryPage: View {
     /// набрать текст, и строки на повороте расходятся (P114).
     private var textField: some View {
         DiaryEditor(text: $text, size: size, serif: true, stamped: true,
-                    editable: editable, caretToEnd: $caretToEnd,
+                    editable: editable,
                     startEditing: $toText,
-                    onFocus: {
-                        if onFocusText(writing) { caretToEnd = true }
-                        writing = false
-                    },
                     // Под записью было пять пустых строк (P346), а с
                     // погодой, полоской и местом под ней до нижней строки
                     // набегало девять — автор просил четыре (P433): своих

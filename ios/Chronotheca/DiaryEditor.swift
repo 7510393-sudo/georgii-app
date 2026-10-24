@@ -23,10 +23,6 @@ struct DiaryEditor: UIViewRepresentable {
     /// рядом стоят два разных способа набрать текст, и строки на повороте
     /// расходятся (P114).
     var editable = true
-    /// Просьба поставить курсор в конец текста при ближайшем обновлении.
-    /// Её подаёт отметка времени: её ставит приложение, а писать после неё
-    /// человеку — и тянуться до конца предыдущего куска он не должен.
-    var caretToEnd: Binding<Bool> = .constant(false)
 
     /// Просьба взять ввод на себя. Её подаёт «Ввод» в заголовке дня:
     /// заголовок дописан, дальше человек пишет запись, и тянуться к ней
@@ -221,19 +217,6 @@ struct DiaryEditor: UIViewRepresentable {
             }
         }
 
-        // Курсор переставляется только по просьбе — и только туда, куда
-        // человек и так собирался писать (решение P137).
-        if caretToEnd.wrappedValue {
-            let end = NSRange(location: (view.text as NSString).length, length: 0)
-            view.selectedRange = end
-            view.typingAttributes = Self.body(size, serif: serif)
-            view.scrollRangeToVisible(end)
-            let попечитель = context.coordinator
-            DispatchQueue.main.async {
-                caretToEnd.wrappedValue = false
-                попечитель.showCaret(animated: true)
-            }
-        }
     }
 
     /// Сколько места поле просит себе.

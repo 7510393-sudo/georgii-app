@@ -349,7 +349,7 @@ struct DayPage: View {
             SideDay(date: date)
         } else if live {
             // План сверху, дневник ниже — одним листом (P408).
-            DaySheet(date: date, home: shell.freshStart, toDiary: shell.tab == .diary,
+            DaySheet(date: date, home: shell.freshStart,
                      diaryOpen: !store.isFuture,
                      land: shell.landing, landDiary: shell.landOnDiary,
                      onDiary: { [shell] in shell.lookingAtDiary = $0 },

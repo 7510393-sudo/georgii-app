@@ -341,28 +341,24 @@ extension DayStoreTests {
         XCTAssertFalse(день.moveTask(день.planRows[0].id, to: день.date))
     }
 
-    // P403: открыл — пишешь. Курсор в новой строке, время — только с
-    // первой буквой и один раз.
-    func testОткрылИПишешь() {
+    // P403, P607: время — только с первой буквой и один раз; поле его не
+    // «взводит», курсор никуда не переносит — решает час с последнего набора.
+    func testВремяСПервойБуквыОдинРаз() {
         let день = store(0)
         день.diaryText = "Утро."
         день.noteWriting()
-        // Писали только что — новая строка без отметки.
-        XCTAssertTrue(день.openNewLine(always: true))
-        XCTAssertEqual(день.diaryText, "Утро.\n")
+        // Писали только что — отметки нет.
         XCTAssertNil(день.takeStamp())
 
-        // Пустая запись прошедшего дня: строки не прибавляется, отметка ждёт
-        // первой буквы — с датой, когда писали.
+        // Пустая запись прошедшего дня: отметка с датой, когда писали.
         UserDefaults.standard.set(false, forKey: Clock.key)
         defer { UserDefaults.standard.removeObject(forKey: Clock.key) }
         let вчера = store(-2)
-        XCTAssertFalse(вчера.openNewLine(always: false))
-        XCTAssertEqual(вчера.diaryText, "")
         let отметка = вчера.takeStamp()
         XCTAssertNotNil(отметка?.range(of: #"^\d{2}:\d{2} \d{2}\.\d{2}\.\d{2} $"#,
                                        options: .regularExpression))
         XCTAssertNil(вчера.takeStamp(), "отметка — один раз")
+        XCTAssertEqual(вчера.diaryText, "", "текст поле само не меняет")
     }
 
     // P520: клавиатура уже была поднята — страница сменилась без «открытия»;

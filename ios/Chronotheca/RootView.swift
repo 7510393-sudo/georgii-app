@@ -41,15 +41,7 @@ struct RootView: View {
     /// Цветовая гамма (P498): меняется — страницы и строки собираются заново.
     @AppStorage(Prefs.calendarTint) private var palette = "distance"
     @State private var locked = UserDefaults.standard.bool(forKey: Prefs.lock)
-    /// Приложение открыли на дневнике, пока стоял замок: поле возьмёт ввод,
-    /// когда замок откроют, — не поверх него (P403).
-    @State private var waitingToWrite = false
 
-    /// Открыли на дневнике — страница у конца записи, но клавиатура сама
-    /// не поднимается (P416; прежде поле брало ввод само, P403): поднятая
-    /// клавиатура закрывала нижнюю строку разделов, и человек терялся.
-    /// Время по-прежнему ставится с первой буквой — когда он сам коснётся.
-    private func startWriting() {}
 
     private var scheme: ColorScheme? {
         theme == "light" ? .light : theme == "dark" ? .dark : nil
@@ -59,8 +51,6 @@ struct RootView: View {
         LockView.check(reason: T("Открыть записи", "Open your entries")) { ok in
             if ok {
                 locked = false
-                // Замок открыт — теперь и клавиатура (P403).
-                if waitingToWrite { waitingToWrite = false; startWriting() }
             }
         }
     }
@@ -196,11 +186,6 @@ struct RootView: View {
         }
         .onChange(of: phase) { _, now in
             if now == .background && lockOn { locked = true }
-        }
-        // Каждое открытие приложения (и возвращение после паузы, P346) на
-        // дневнике — сразу писать (P403).
-        .onChange(of: shell.freshStart) { _, _ in
-            if lockOn && locked { waitingToWrite = true } else { startWriting() }
         }
         // Записи переехали — «Вернуться к прежней папке», новая папка после
         // «Завести», «На этом iPhone», уровень поправлен при запуске. Страница
@@ -548,10 +533,9 @@ struct RootView: View {
                             "The test archive is open. To go back, long-press “Version” in Settings."), for: 5)
             }
             // С какой вкладки открывать — из настроек (P249).
-            shell.tab = Prefs.openingTab
+            shell.tab = .plan
             shell.openRequestedScreen(store)
-            // Первое открытие: план — сверху, дневник — к концу записи с
-            // пустыми строками под ней (P346).
+            // Первое открытие: страница сверху (P346, P607).
             shell.freshStart += 1
         }
     }

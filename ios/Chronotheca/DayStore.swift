@@ -633,54 +633,14 @@ final class DayStore: ObservableObject {
     /// Человек набрал текст в конце записи.
     func noteWriting() { lastEdit = Date() }
 
-    // MARK: - Открыл — пишешь (P403)
-
-    /// Отметка времени ждёт первой буквы новой строки. Сбрасывается, когда
-    /// открывают другой день.
-    private(set) var stampPending = false
-
-    /// Курсор — в начало новой пустой строки под записью; отметки времени
-    /// там ещё нет — она встанет с первой буквой (P403; прежде ставилась
-    /// сразу, как только курсор попадал в запись, P137). Пора новой
-    /// отметки (запись пуста или с правки прошёл час) — под записью пустая
-    /// строка и новая; иначе, если `always` (приложение открыли на
-    /// дневнике), — просто новая строка. `true` — курсор надо перенести в
-    /// конец.
-    func openNewLine(always: Bool) -> Bool {
-        guard canEditDiary else { return false }
-        let body = diaryText.replacingOccurrences(of: "\\s+$", with: "",
-                                                  options: .regularExpression)
-        let stale = lastEdit.map { Date().timeIntervalSince($0) > DayStore.stampGap } ?? true
-        if body.isEmpty || stale || stampPending {
-            let wanted = body.isEmpty ? "" : body + "\n\n"
-            let changed = diaryText != wanted
-            if changed { quietly(wanted) }
-            stampPending = true
-            return changed || always
-        }
-        guard always else { return false }
-        let wanted = body + "\n"
-        if diaryText != wanted { quietly(wanted) }
-        return true
-    }
-
-    /// Пустая строка под записью — не правка человека: в историю «шага
-    /// назад» она не идёт, и стрелка не загорается сама (P403).
-    private func quietly(_ text: String) {
-        quietDiary = true
-        diaryText = text
-        quietDiary = false
-    }
-
-    /// Отметка времени для первой буквы новой строки — один раз (P403).
+    /// Отметка времени для первой буквы новой строки — один раз (P403):
+    /// когда запись пуста или с последнего набора прошёл час (P520). Прежде
+    /// её ещё «взводило» открытие поля — вместе с переносом курсора в конец
+    /// (отменено P607).
     func takeStamp() -> String? {
         guard canEditDiary else { return nil }
-        // Курсор мог встать в конец записи без «открытия» (клавиатура уже
-        // была поднята, когда перешли на другой день) — тогда `stampPending`
-        // не взведён; отметку решает и сам час с последнего набора (P520).
         let stale = lastEdit.map { Date().timeIntervalSince($0) > DayStore.stampGap } ?? true
-        guard stampPending || stale else { return nil }
-        stampPending = false
+        guard stale else { return nil }
         lastEdit = Date()
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX")
@@ -1150,7 +1110,6 @@ final class DayStore: ObservableObject {
     private var retries = 0
 
     func load() {
-        stampPending = false
         // Две версии дня с разных устройств — сперва в одну (P570).
         let mergedPlan = vault.mergeConflicts(.planner, for: date)
         let mergedDiary = vault.mergeConflicts(.diary, for: date)

@@ -468,12 +468,6 @@ struct SettingsSticker: View {
                     .modifier(Tag(look: .chosen))
             }
         }
-        NoteRow(title: T("Открывать на", "Open on")) {
-            // Три варианта (P402): где был в прошлый раз, план, дневник.
-            Choice(options: [("last", T("где был", "where I left")), ("plan", T("плане", "plan")),
-                             ("diary", T("дневнике", "diary"))],
-                   selection: $startTab)
-        }
         // P290.
         NoteRow(title: T("Неделя с", "Week starts on")) {
             Choice(options: [(false, T("понедельника", "Monday")), (true, T("воскресенья", "Sunday"))],
@@ -741,7 +735,6 @@ struct SettingsSticker: View {
     @AppStorage(Prefs.lock) private var locked = false
     @AppStorage(Prefs.boundary) private var boundary = 0
     @AppStorage(Clock.key) private var clock12 = Clock.twelve
-    @AppStorage(Prefs.startTab) private var startTab = "plan"
     @AppStorage(Prefs.theme) private var theme = "system"
     @AppStorage(Prefs.navigator) private var navigator = "apple"
     @AppStorage(Prefs.quiet) private var quiet = false
