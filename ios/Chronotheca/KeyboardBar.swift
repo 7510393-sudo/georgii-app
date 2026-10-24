@@ -121,6 +121,16 @@ struct KeyboardBarView: View {
                     .clipped()
             }
         }
+        // Верх клавиатуры скруглён: по краям из-под строки проглядывала
+        // страница. Картон продолжается в эти уголки — будто строка
+        // поднята, а клавиатура лежит на ней сверху (P614).
+        .overlay(alignment: .bottom) {
+            KraftPaper()
+                .clipShape(KeyboardCorners(radius: KeyboardCorners.radius))
+                .frame(height: KeyboardCorners.radius)
+                .offset(y: KeyboardCorners.radius)
+                .allowsHitTesting(false)
+        }
     }
 
     private func section(_ icon: String, _ name: String, _ target: Shell.Screen) -> some View {
@@ -192,6 +202,30 @@ struct KeyboardBarView: View {
             .buttonStyle(.plain)
             // Метка для проверок движения (P552).
             .accessibilityIdentifier("keyboard." + icon)
+    }
+}
+
+/// Два уголка над скруглённым верхом клавиатуры: квадрат в каждом углу без
+/// четверти круга (P614). Чуть шире скругления самой клавиатуры — лишнее
+/// ложится под её полупрозрачное стекло.
+struct KeyboardCorners: Shape {
+    static let radius: CGFloat = 32
+    var radius: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        let r = min(radius, rect.height)
+        p.move(to: CGPoint(x: rect.minX, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.minX + r, y: rect.minY))
+        p.addArc(center: CGPoint(x: rect.minX + r, y: rect.minY + r), radius: r,
+                 startAngle: .degrees(-90), endAngle: .degrees(180), clockwise: true)
+        p.closeSubpath()
+        p.move(to: CGPoint(x: rect.maxX, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.maxX - r, y: rect.minY))
+        p.addArc(center: CGPoint(x: rect.maxX - r, y: rect.minY + r), radius: r,
+                 startAngle: .degrees(-90), endAngle: .degrees(0), clockwise: false)
+        p.closeSubpath()
+        return p
     }
 }
 
