@@ -234,6 +234,10 @@ final class KeyboardCornersBand: NSObject {
     static let shared = KeyboardCornersBand()
 
     private var band: UIView?
+    /// Держать того, кто рисует картон: без него вид оставался пустым —
+    /// по замеру проверки движения уголки стояли на месте и были видимы,
+    /// но не закрашены (P614).
+    private var host: UIHostingController<AnyView>?
     private var link: CADisplayLink?
     private var observers: [NSObjectProtocol] = []
 
@@ -301,8 +305,9 @@ final class KeyboardCornersBand: NSObject {
     }
 
     private func make(in window: UIWindow) -> UIView {
-        let host = UIHostingController(rootView: KraftPaper()
-            .clipShape(KeyboardCorners(radius: KeyboardCorners.radius)))
+        let host = UIHostingController(rootView: AnyView(KraftPaper()
+            .clipShape(KeyboardCorners(radius: KeyboardCorners.radius))))
+        self.host = host
         host.view.backgroundColor = .clear
         host.view.isUserInteractionEnabled = false
         window.addSubview(host.view)
