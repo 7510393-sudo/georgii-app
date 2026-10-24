@@ -260,9 +260,10 @@ final class KeyboardCornersBand: NSObject {
     }
 
     @objc private func tick() {
-        guard let holder = KeyboardBar.shownHolder, let from = holder.window,
-              let app = UIApplication.shared.connectedScenes
-                  .compactMap({ ($0 as? UIWindowScene)?.keyWindow }).first
+        let app = UIApplication.shared.connectedScenes
+            .compactMap({ ($0 as? UIWindowScene)?.keyWindow }).first
+        if Vault.isUITest { report(app) }
+        guard let holder = KeyboardBar.shownHolder, let from = holder.window, let app
         else { band?.isHidden = true; return }
         let edge = from.convert(holder.convert(holder.bounds, to: from), to: app)
         let view = band ?? make(in: app)
@@ -271,6 +272,32 @@ final class KeyboardCornersBand: NSObject {
         let r = KeyboardCorners.radius
         view.frame = CGRect(x: 0, y: edge.maxY, width: app.bounds.width, height: r)
         view.isHidden = edge.maxY >= app.bounds.height - 1
+    }
+
+    /// Для проверки движения: где приставка и уголки — невидимой строкой.
+    private var probe: UILabel?
+    private func report(_ app: UIWindow?) {
+        guard let app else { return }
+        let label = probe ?? {
+            let made = UILabel(frame: CGRect(x: 0, y: 60, width: 300, height: 4))
+            made.alpha = 0.02
+            made.accessibilityIdentifier = "cornerWhy"
+            app.addSubview(made)
+            probe = made
+            return made
+        }()
+        let holder = KeyboardBar.shownHolder
+        let from = holder?.window
+        var text = "holder=\(holder != nil) window=\(from.map { String(describing: type(of: $0)) } ?? "nil")"
+        text += " same=\(from === app)"
+        if let holder, let from {
+            let r = from.convert(holder.convert(holder.bounds, to: from), to: app)
+            text += " edge=\(Int(r.minY))-\(Int(r.maxY))"
+        }
+        if let band { text += " band=\(Int(band.frame.minY)) hidden=\(band.isHidden) on=\(band.superview === app)" }
+        else { text += " band=nil" }
+        label.text = text
+        label.accessibilityLabel = text
     }
 
     private func make(in window: UIWindow) -> UIView {

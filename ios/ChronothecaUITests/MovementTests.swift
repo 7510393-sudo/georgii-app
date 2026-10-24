@@ -125,6 +125,9 @@ final class MovementTests: XCTestCase {
         launch("diary")
         XCTAssertTrue(raiseKeyboard(), "клавиатура не поднялась")
         save("02-клавиатура-дневник")
+        // Где приставка и уголки над клавиатурой (P614).
+        let why = app.staticTexts["cornerWhy"].firstMatch
+        note("уголки", why.exists ? why.label : "нет строки")
         let keys = app.buttons.matching(identifier: "keys.today").allElementsBoundByIndex
             .filter { $0.isHittable }
         XCTAssertEqual(keys.count, 1, "разделов над клавиатурой: \(keys.count)")
