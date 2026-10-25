@@ -754,6 +754,15 @@ final class DayStore: ObservableObject {
         return trashed(link, from: tab, delete: delete)
     }
 
+    /// Крестик у снимка под делом плана (P623): он уходит из плана, файл
+    /// остаётся в папке или идёт в корзину на 30 дней. Что сказать — в ответе.
+    func removePlanRowPhoto(_ link: String, delete: Bool) -> String {
+        guard canEditPlan else { return closedReason }
+        guard takeOutPlanPhoto(link) else { return "" }
+        save()
+        return trashed(link, from: .plan, delete: delete)
+    }
+
     /// Что сказать, когда вложение ушло со страницы: файл остался в папке
     /// или ушёл в корзину на 30 дней (P371).
     private func trashed(_ link: String, from tab: Shell.Tab, delete: Bool) -> String {

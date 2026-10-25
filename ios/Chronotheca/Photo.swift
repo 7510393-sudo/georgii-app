@@ -400,14 +400,41 @@ struct PlanPhotoRow: View {
     var onCarry: ((String, Lift, CGPoint) -> Void)?
     /// Снимок, который сейчас несут, — на своём месте он бледный.
     var carried: String?
+    /// Крестик (P623): подержали снимок и не повели — у него крестик, как у
+    /// снимка в тексте; касание по крестику — вопрос об удалении.
+    var onRemove: ((String) -> Void)? = nil
+    @State private var armed: String?
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 ForEach(links, id: \.self) { link in
-                    PlanPhotoThumb(url: resolve?(link)) { open?(resolve?(link)) }
+                    PlanPhotoThumb(url: resolve?(link)) {
+                        if armed != nil { withAnimation(.easeOut(duration: 0.15)) { armed = nil } }
+                        else { open?(resolve?(link)) }
+                    }
                         .opacity(carried == link ? 0.25 : 1)
-                        .modifier(ThumbCarry(report: report(link)))
+                        .modifier(ThumbCarry(report: report(link), stayed: onRemove == nil ? nil : {
+                            withAnimation(.easeOut(duration: 0.15)) { armed = link }
+                        }))
+                        .overlay(alignment: .topTrailing) {
+                            if armed == link, let onRemove {
+                                Button {
+                                    armed = nil
+                                    onRemove(link)
+                                } label: {
+                                    Image(uiImage: DiaryEditor.Coordinator.crossImage)
+                                        .resizable()
+                                        .frame(width: 40, height: 40)
+                                        .shadow(color: .black.opacity(0.3), radius: 3, y: 1)
+                                        .frame(width: 48, height: 48)
+                                        .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+                                .transition(.scale.combined(with: .opacity))
+                                .accessibilityLabel(T("Убрать", "Remove"))
+                            }
+                        }
                 }
             }
             .padding(.horizontal, 14)
@@ -417,7 +444,10 @@ struct PlanPhotoRow: View {
     }
     private func report(_ link: String) -> ((Lift, CGPoint) -> Void)? {
         guard let onCarry else { return nil }
-        return { phase, spot in onCarry(link, phase, spot) }
+        return { phase, spot in
+            if case .began = phase { armed = nil }
+            onCarry(link, phase, spot)
+        }
     }
 }
 

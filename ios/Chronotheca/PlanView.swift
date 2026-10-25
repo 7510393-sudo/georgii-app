@@ -460,6 +460,8 @@ struct PlanView: View {
     @State private var photoBack = false
     @State private var photoSpots: [UUID: CGRect] = [:]
     @State private var photoStripTop: CGFloat = .infinity
+    /// Снимок под делом, о котором спрашивают «что сделать с файлом» (P623).
+    @State private var removingPlanPhoto: String?
     /// Снимок ведут вдоль своего же ряда — на какое место в ряду он встанет
     /// (P409): так снимки под делом меняются местами.
     @State private var photoSlot: Int?
@@ -590,6 +592,12 @@ struct PlanView: View {
         // Дело из серии поправили или убирают — только здесь или дальше
         // тоже (P359).
         .modifier(SeriesQuestion())
+        .modifier(RemoveQuestion(
+            asking: Binding(get: { removingPlanPhoto != nil }, set: { if !$0 { removingPlanPhoto = nil } }),
+            act: { delete in
+                if let link = removingPlanPhoto { shell.say(store.removePlanRowPhoto(link, delete: delete)) }
+                removingPlanPhoto = nil
+            }))
         // Где пишут — там «где был» для «Открывать на» (P408).
         .onChange(of: typingIn) { _, now in if now != nil { shell.tab = .plan } }
         // Прошедший день не бледнеет: он правится, как любой (P381).
@@ -669,7 +677,8 @@ struct PlanView: View {
                               },
                               onPhoto: store.canEditPlan
                                   ? { carryPhoto($0, from: id, $1, at: $2) } : nil,
-                              carriedPhoto: photoCarry?.from == id ? photoCarry?.link : nil)
+                              carriedPhoto: photoCarry?.from == id ? photoCarry?.link : nil,
+                              onRemovePhoto: store.canEditPlan ? { removingPlanPhoto = $0 } : nil)
                 .modifier(Zone(id: id))
                 .offset(y: lineShift(id) + eventShift(id) + photoShift(id))
                 .animation(.easeOut(duration: 0.16), value: lineShift(id) + eventShift(id) + photoShift(id))
@@ -1109,7 +1118,11 @@ struct PlanView: View {
         case .moved:
             guard photoCarry?.link == link else { return }
             photoSpot = spot
-            let back = spot.y >= photoStripTop - 8
+            // Цель — там, где картинка (она нарисована на 48 выше пальца), а
+            // не там, где палец: иначе «вниз» и «под другое дело» не
+            // совпадали с тем, что видно (P623).
+            let aim = CGPoint(x: spot.x, y: spot.y - 48)
+            let back = aim.y >= photoStripTop - 8
             // Вдоль своего ряда — переставить в ряду (P409).
             let slot = back ? nil : slotInRow(row, at: spot)
             if slot != photoSlot {
@@ -1119,7 +1132,7 @@ struct PlanView: View {
             var to: UUID?
             if !back, slot == nil {
                 let list = store.tasks
-                to = list.last { (photoSpots[$0.id]?.minY ?? .infinity) < spot.y }?.id ?? list.first?.id
+                to = list.last { (photoSpots[$0.id]?.minY ?? .infinity) < aim.y }?.id ?? list.first?.id
                 if to == owner(of: row) { to = nil }
             }
             if to != photoTo || back != photoBack {
@@ -1369,6 +1382,8 @@ struct PlanExtraLine: View {
     /// Снимок из ряда под делом несут пальцем (P377).
     var onPhoto: ((String, Lift, CGPoint) -> Void)? = nil
     var carriedPhoto: String? = nil
+    /// Крестик у снимка под делом (P623).
+    var onRemovePhoto: ((String) -> Void)? = nil
 
     var body: some View {
         if Plan.isPhotoRow(line) {
@@ -1377,7 +1392,7 @@ struct PlanExtraLine: View {
             // Ряд — целое число клеток листа (P413).
             GridSnap {
                 PlanPhotoRow(links: Diary.links(in: line), resolve: resolve, open: open,
-                             onCarry: onPhoto, carried: carriedPhoto)
+                             onCarry: onPhoto, carried: carriedPhoto, onRemove: onRemovePhoto)
             }
         } else if let point = Geo.point(in: line) {
             GridSnap {
