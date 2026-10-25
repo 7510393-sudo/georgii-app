@@ -90,11 +90,11 @@ enum Samples {
         put(vault, .diary, today, body: SamplesText.text(.todayDiary) ?? T("""
         Сегодня начинается Graphomanus. Утром — план, вечером — итоги дня: под каждым делом строка о том, что вышло.
 
-        Места. Внизу — «Карта». Подержите палец на карте — встанет точка: назовите её, выберите значок и запишите в день. Справа сверху переключатель: «Мои места» — все ваши точки, «Записи» — дни на карте с превью снимков. В записи точка ставится кнопкой «Место» в строке вложений — вот так:
+        Места. Внизу — «Карта». Подержите палец на карте — встанет точка: назовите её и запишите в день. Справа сверху переключатель: «Мои места» — все ваши точки, «Записи» — дни на карте с превью снимков. В записи точку ставит «＋»: «Где я сейчас» или «Место на карте» — вот так:
 
         [Гайд-парк](geo:51.50731,-0.16573)
 
-        Вложения. Строка внизу страницы и над клавиатурой: камера, фото, голос, файлы. Голосовую запись можно расшифровать в текст, а снимок — перенести пальцем прямо в текст или под дело.
+        Вложения. «＋» справа внизу страницы и над клавиатурой: камера, фото, голос, файл. Вложения ложатся под последним текстом записи, по четыре в ряд. Голосовую запись можно расшифровать в текст, а снимок — перенести пальцем прямо в текст или под дело.
 
         Где лежат записи. Всё — обычные файлы в вашей папке: их видно в «Файлах», они открываются любым редактором и остаются, даже если удалить приложение. Резервная копия — в настройках, одной кнопкой.
 
@@ -102,11 +102,11 @@ enum Samples {
         """, """
         Today my Graphomanus begins. In the morning, a plan; in the evening, the day's outcome: a line under each task about how it went.
 
-        Places. At the bottom — “Map”. Hold your finger on the map and a pin appears: name it, pick an icon and add it to the day. The switch at the top right: “My places” shows all your pins, “Entries” shows days on the map with photo previews. In an entry, add a place with the “Place” button in the attachments strip — like this:
+        Places. At the bottom — “Map”. Hold your finger on the map and a pin appears: name it and add it to the day. The switch at the top right: “My places” shows all your pins, “Entries” shows days on the map with photo previews. In an entry, the “＋” adds a place: “Where I am” or “Place on the map” — like this:
 
         [Hyde Park](geo:51.50731,-0.16573)
 
-        Attachments. The strip at the bottom of the page and above the keyboard: camera, photos, voice, files. A voice note can be transcribed to text, and a photo can be dragged straight into the text or under a task.
+        Attachments. The “＋” at the bottom right of the page and above the keyboard: camera, photos, voice, file. Attachments go under the last text of the entry, four in a row. A voice note can be transcribed to text, and a photo can be dragged straight into the text or under a task.
 
         Where your entries live. Everything is plain files in your folder: you can see them in Files, open them in any editor, and they stay even if you delete the app. Backup is in the settings, one button.
 

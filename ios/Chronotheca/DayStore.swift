@@ -1147,7 +1147,7 @@ final class DayStore: ObservableObject {
         // открытие дня (пустая запись до чтения файла) само вставало в
         // историю, и один шаг назад стирал всё написанное.
         quietDiary = true
-        diaryText = diary.text
+        diaryText = Diary.rows(diary.text)
         answers = diary.answers
         quietDiary = false
         photos = diary.photos

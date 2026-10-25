@@ -57,11 +57,11 @@ enum SamplesText {
         .todayDiary: """
         Heute beginnt meine Graphomanus. Morgens ein Plan, abends der Rückblick auf den Tag: unter jeder Aufgabe eine Zeile, wie es gelaufen ist.
 
-        Orte. Unten — „Karte“. Halten Sie den Finger auf die Karte, und eine Nadel erscheint: benennen Sie sie, wählen Sie ein Symbol und fügen Sie sie dem Tag hinzu. Der Schalter oben rechts: „Meine Orte“ zeigt alle Ihre Nadeln, „Einträge“ die Tage auf der Karte mit Fotovorschau. In einem Eintrag fügen Sie einen Ort mit der Taste „Ort“ in der Anhangsleiste hinzu — so:
+        Orte. Unten — „Karte“. Halten Sie den Finger auf die Karte, und eine Nadel erscheint: benennen Sie sie und fügen Sie sie dem Tag hinzu. Der Schalter oben rechts: „Meine Orte“ zeigt alle Ihre Nadeln, „Einträge“ die Tage auf der Karte mit Fotovorschau. In einem Eintrag fügt „＋“ einen Ort hinzu: „Wo ich bin“ oder „Ort auf der Karte“ — so:
 
         [Hyde Park](geo:51.50731,-0.16573)
 
-        Anhänge. Die Leiste unten auf der Seite und über der Tastatur: Kamera, Fotos, Sprache, Dateien. Eine Sprachnotiz lässt sich in Text umwandeln, und ein Foto lässt sich direkt in den Text oder unter eine Aufgabe ziehen.
+        Anhänge. „＋“ unten rechts auf der Seite und über der Tastatur: Kamera, Fotos, Stimme, Datei. Anhänge kommen unter den letzten Text des Eintrags, vier in einer Reihe. Eine Sprachnotiz lässt sich in Text umwandeln, und ein Foto lässt sich direkt in den Text oder unter eine Aufgabe ziehen.
 
         Wo Ihre Einträge liegen. Alles sind gewöhnliche Dateien in Ihrem Ordner: Sie sehen sie in „Dateien“, öffnen sie mit jedem Editor, und sie bleiben, selbst wenn Sie die App löschen. Die Sicherung ist in den Einstellungen, mit einer Taste.
 
@@ -112,11 +112,11 @@ enum SamplesText {
         .todayDiary: """
         Hoy empieza mi Graphomanus. Por la mañana, un plan; por la noche, el resumen del día: bajo cada tarea, una línea sobre cómo fue.
 
-        Lugares. Abajo — «Mapa». Mantenga el dedo sobre el mapa y aparece una chincheta: póngale nombre, elija un icono y añádala al día. El selector arriba a la derecha: «Mis lugares» muestra todas sus chinchetas, «Entradas» muestra los días en el mapa con miniaturas de fotos. En una entrada, añada un lugar con el botón «Lugar» de la barra de adjuntos — así:
+        Lugares. Abajo — «Mapa». Mantenga el dedo sobre el mapa y aparece una chincheta: póngale nombre y añádala al día. El selector arriba a la derecha: «Mis lugares» muestra todas sus chinchetas, «Entradas» muestra los días en el mapa con miniaturas de fotos. En una entrada, «＋» añade un lugar: «Dónde estoy» o «Lugar en el mapa» — así:
 
         [Hyde Park](geo:51.50731,-0.16573)
 
-        Adjuntos. La barra al pie de la página y sobre el teclado: cámara, fotos, voz, archivos. Una nota de voz puede pasarse a texto, y una foto puede arrastrarse al texto o bajo una tarea.
+        Adjuntos. «＋» abajo a la derecha de la página y sobre el teclado: cámara, fotos, voz, archivo. Los adjuntos quedan bajo el último texto de la entrada, cuatro por fila. Una nota de voz puede pasarse a texto, y una foto puede arrastrarse al texto o bajo una tarea.
 
         Dónde viven sus entradas. Todo son archivos normales en su carpeta: los ve en «Archivos», se abren con cualquier editor y se quedan aunque borre la app. La copia de seguridad está en los ajustes, con un botón.
 
@@ -167,11 +167,11 @@ enum SamplesText {
         .todayDiary: """
         Aujourd’hui commence ma Graphomanus. Le matin, un plan ; le soir, le bilan du jour : sous chaque tâche, une ligne sur la façon dont elle s’est passée.
 
-        Lieux. En bas — « Carte ». Gardez le doigt sur la carte et une épingle apparaît : nommez-la, choisissez une icône et ajoutez-la au jour. Le sélecteur en haut à droite : « Mes lieux » montre toutes vos épingles, « Notes » montre les jours sur la carte avec des aperçus de photos. Dans une note, ajoutez un lieu avec le bouton « Lieu » de la barre des pièces jointes — comme ceci :
+        Lieux. En bas — « Carte ». Gardez le doigt sur la carte et une épingle apparaît : nommez-la et ajoutez-la au jour. Le sélecteur en haut à droite : « Mes lieux » montre toutes vos épingles, « Notes » montre les jours sur la carte avec des aperçus de photos. Dans une note, « ＋ » ajoute un lieu : « Où je suis » ou « Lieu sur la carte » — comme ceci :
 
         [Hyde Park](geo:51.50731,-0.16573)
 
-        Pièces jointes. La barre en bas de la page et au-dessus du clavier : appareil photo, photos, voix, fichiers. Une note vocale peut être transcrite en texte, et une photo peut être glissée dans le texte ou sous une tâche.
+        Pièces jointes. « ＋ » en bas à droite de la page et au-dessus du clavier : appareil photo, photos, voix, fichier. Les pièces jointes se placent sous le dernier texte de la note, quatre par rang. Une note vocale peut être transcrite en texte, et une photo peut être glissée dans le texte ou sous une tâche.
 
         Où vivent vos notes. Ce sont de simples fichiers dans votre dossier : vous les voyez dans « Fichiers », ils s’ouvrent avec n’importe quel éditeur et restent même si vous supprimez l’app. La sauvegarde est dans les réglages, en un bouton.
 
@@ -222,11 +222,11 @@ enum SamplesText {
         .todayDiary: """
         Oggi comincia la mia Graphomanus. Al mattino un piano, la sera il bilancio del giorno: sotto ogni attività, una riga su com’è andata.
 
-        Luoghi. In basso — «Mappa». Tieni il dito sulla mappa e compare una puntina: dalle un nome, scegli un’icona e aggiungila al giorno. Il selettore in alto a destra: «I miei luoghi» mostra tutte le tue puntine, «Note» mostra i giorni sulla mappa con le anteprime delle foto. In una nota, aggiungi un luogo con il pulsante «Luogo» nella barra degli allegati — così:
+        Luoghi. In basso — «Mappa». Tieni il dito sulla mappa e compare una puntina: dalle un nome e aggiungila al giorno. Il selettore in alto a destra: «I miei luoghi» mostra tutte le tue puntine, «Note» mostra i giorni sulla mappa con le anteprime delle foto. In una nota, «＋» aggiunge un luogo: «Dove sono» o «Luogo sulla mappa» — così:
 
         [Hyde Park](geo:51.50731,-0.16573)
 
-        Allegati. La barra in fondo alla pagina e sopra la tastiera: fotocamera, foto, voce, file. Una nota vocale si può trascrivere in testo, e una foto si può trascinare nel testo o sotto un’attività.
+        Allegati. «＋» in basso a destra della pagina e sopra la tastiera: fotocamera, foto, voce, file. Gli allegati vanno sotto l’ultimo testo della nota, quattro per riga. Una nota vocale si può trascrivere in testo, e una foto si può trascinare nel testo o sotto un’attività.
 
         Dove stanno le tue note. Sono normali file nella tua cartella: li vedi in «File», si aprono con qualsiasi editor e restano anche se elimini l’app. Il backup è nelle impostazioni, con un pulsante.
 
@@ -277,11 +277,11 @@ enum SamplesText {
         .todayDiary: """
         Vandaag begint mijn Graphomanus. ’s Ochtends een plan, ’s avonds de terugblik op de dag: onder elke taak een regel over hoe het ging.
 
-        Plekken. Onderaan — „Kaart”. Houd je vinger op de kaart en er verschijnt een speld: geef hem een naam, kies een pictogram en voeg hem toe aan de dag. De schakelaar rechtsboven: „Mijn plekken” toont al je spelden, „Aantekeningen” toont de dagen op de kaart met fotovoorbeelden. In een aantekening voeg je een plek toe met de knop „Plek” in de bijlagenbalk — zo:
+        Plekken. Onderaan — „Kaart”. Houd je vinger op de kaart en er verschijnt een speld: geef hem een naam en voeg hem toe aan de dag. De schakelaar rechtsboven: „Mijn plekken” toont al je spelden, „Aantekeningen” toont de dagen op de kaart met fotovoorbeelden. In een aantekening voegt „＋” een plek toe: „Waar ik ben” of „Plek op de kaart” — zo:
 
         [Hyde Park](geo:51.50731,-0.16573)
 
-        Bijlagen. De balk onderaan de pagina en boven het toetsenbord: camera, foto’s, spraak, bestanden. Een spraakmemo kan worden omgezet in tekst, en een foto kun je zo in de tekst of onder een taak slepen.
+        Bijlagen. „＋” rechtsonder op de pagina en boven het toetsenbord: camera, foto’s, stem, bestand. Bijlagen komen onder de laatste tekst van de aantekening, vier op een rij. Een spraakmemo kan worden omgezet in tekst, en een foto kun je zo in de tekst of onder een taak slepen.
 
         Waar je aantekeningen staan. Alles zijn gewone bestanden in je map: je ziet ze in „Bestanden”, ze openen in elke editor en ze blijven, ook als je de app verwijdert. De back-up staat in de instellingen, met één knop.
 
@@ -332,11 +332,11 @@ enum SamplesText {
         .todayDiary: """
         Hoje começa a minha Graphomanus. De manhã, um plano; à noite, o balanço do dia: sob cada tarefa, uma linha sobre como foi.
 
-        Lugares. Embaixo — «Mapa». Mantenha o dedo no mapa e aparece um alfinete: dê-lhe um nome, escolha um ícone e adicione-o ao dia. O seletor no canto superior direito: «Meus lugares» mostra todos os seus alfinetes, «Anotações» mostra os dias no mapa com miniaturas de fotos. Numa anotação, adicione um lugar com o botão «Lugar» na barra de anexos — assim:
+        Lugares. Embaixo — «Mapa». Mantenha o dedo no mapa e aparece um alfinete: dê-lhe um nome e adicione-o ao dia. O seletor no canto superior direito: «Meus lugares» mostra todos os seus alfinetes, «Anotações» mostra os dias no mapa com miniaturas de fotos. Numa anotação, «＋» adiciona um lugar: «Onde estou» ou «Local no mapa» — assim:
 
         [Hyde Park](geo:51.50731,-0.16573)
 
-        Anexos. A barra no pé da página e acima do teclado: câmara, fotos, voz, ficheiros. Uma nota de voz pode ser transcrita em texto, e uma foto pode ser arrastada para o texto ou para baixo de uma tarefa.
+        Anexos. «＋» no canto inferior direito da página e acima do teclado: câmara, fotos, voz, arquivo. Os anexos ficam sob o último texto da anotação, quatro por fila. Uma nota de voz pode ser transcrita em texto, e uma foto pode ser arrastada para o texto ou para baixo de uma tarefa.
 
         Onde ficam as suas anotações. Tudo são ficheiros comuns na sua pasta: aparecem em «Arquivos», abrem em qualquer editor e ficam mesmo que apague a app. A cópia de segurança está nos ajustes, com um botão.
 
@@ -387,11 +387,11 @@ enum SamplesText {
         .todayDiary: """
         Сьогодні починається Graphomanus. Уранці — план, увечері — підсумки дня: під кожною справою рядок про те, що вийшло.
 
-        Місця. Унизу — «Мапа». Притримайте палець на мапі — з’явиться точка: назвіть її, виберіть значок і запишіть у день. Праворуч угорі перемикач: «Мої місця» — усі ваші точки, «Записи» — дні на мапі з прев’ю знімків. У записі точка ставиться кнопкою «Точка» в рядку вкладень — ось так:
+        Місця. Унизу — «Мапа». Притримайте палець на мапі — з’явиться точка: назвіть її і запишіть у день. Праворуч угорі перемикач: «Мої місця» — усі ваші точки, «Записи» — дні на мапі з прев’ю знімків. У записі точку ставить «＋»: «Де я зараз» або «Місце на карті» — ось так:
 
         [Гайд-парк](geo:51.50731,-0.16573)
 
-        Вкладення. Рядок унизу сторінки і над клавіатурою: камера, фото, голос, файли. Голосовий запис можна розшифрувати в текст, а знімок — перенести пальцем просто в текст або під справу.
+        Вкладення. «＋» праворуч унизу сторінки і над клавіатурою: камера, фото, голос, файл. Вкладення лягають під останнім текстом запису, по чотири в ряд. Голосовий запис можна розшифрувати в текст, а знімок — перенести пальцем просто в текст або під справу.
 
         Де лежать записи. Усе — звичайні файли у вашій теці: їх видно у «Файлах», вони відкриваються будь-яким редактором і лишаються, навіть якщо видалити застосунок. Резервна копія — в налаштуваннях, однією кнопкою.
 
@@ -442,11 +442,11 @@ enum SamplesText {
         .todayDiary: """
         დღეს იწყება Graphomanus. დილით — გეგმა, საღამოს — დღის შედეგები: ყოველი საქმის ქვეშ ერთი სტრიქონი იმაზე, რა გამოვიდა.
 
-        ადგილები. ქვემოთ — „რუკა“. დაიჭირეთ თითი რუკაზე — გაჩნდება წერტილი: დაარქვით სახელი, აირჩიეთ ნიშანი და ჩაწერეთ დღეში. ზემოთ მარჯვნივ გადამრთველია: „ჩემი ადგილები“ — ყველა თქვენი წერტილი, „ჩანაწერები“ — დღეები რუკაზე ფოტოების ესკიზებით. ჩანაწერში წერტილი ისმება ღილაკით „ადგილი“ დანართების სტრიქონში — აი ასე:
+        ადგილები. ქვემოთ — „რუკა“. დაიჭირეთ თითი რუკაზე — გაჩნდება წერტილი: დაარქვით სახელი და ჩაწერეთ დღეში. ზემოთ მარჯვნივ გადამრთველია: „ჩემი ადგილები“ — ყველა თქვენი წერტილი, „ჩანაწერები“ — დღეები რუკაზე ფოტოების ესკიზებით. ჩანაწერში წერტილს სვამს „＋“: „სად ვარ ახლა“ ან „ადგილი რუკაზე“ — აი ასე:
 
         [ჰაიდ-პარკი](geo:51.50731,-0.16573)
 
-        დანართები. სტრიქონი გვერდის ბოლოს და კლავიატურის ზემოთ: კამერა, ფოტო, ხმა, ფაილები. ხმოვანი ჩანაწერი შეიძლება ტექსტად გაიშიფროს, ფოტო კი თითით პირდაპირ ტექსტში ან საქმის ქვეშ გადაიტანოთ.
+        დანართები. „＋“ გვერდის ქვემოთ მარჯვნივ და კლავიატურის ზემოთ: კამერა, ფოტო, ხმა, ფაილი. დანართები ჩანაწერის ბოლო ტექსტის ქვეშ დგება, ოთხი ერთ რიგში. ხმოვანი ჩანაწერი შეიძლება ტექსტად გაიშიფროს, ფოტო კი თითით პირდაპირ ტექსტში ან საქმის ქვეშ გადაიტანოთ.
 
         სად ინახება ჩანაწერები. ყველაფერი ჩვეულებრივი ფაილებია თქვენს საქაღალდეში: ისინი ჩანს „ფაილებში“, იხსნება ნებისმიერი რედაქტორით და რჩება, აპის წაშლის შემთხვევაშიც კი. სარეზერვო ასლი — პარამეტრებში, ერთი ღილაკით.
 
@@ -497,11 +497,11 @@ enum SamplesText {
         .todayDiary: """
         今日から私のクロノテカが始まる。朝は予定、夜は一日のふり返り: それぞれの予定の下に、どうだったかを一行。
 
-        場所。下の「地図」。地図を長押しするとピンが立ちます: 名前をつけ、アイコンを選び、その日に加えましょう。右上の切り替え: 「自分の場所」はすべてのピン、「記録」は写真のプレビュー付きで日々を地図に表示します。記録の中では、添付バーの「場所」ボタンで場所を加えます — このように:
+        場所。下の「地図」。地図を長押しするとピンが立ちます: 名前をつけて、その日に加えましょう。右上の切り替え: 「自分の場所」はすべてのピン、「記録」は写真のプレビュー付きで日々を地図に表示します。記録の中では「＋」の「現在地」か「地図上の場所」で場所を加えます — このように:
 
         [ハイドパーク](geo:51.50731,-0.16573)
 
-        添付。ページの下とキーボードの上のバー: カメラ、写真、音声、ファイル。音声メモは文字に起こせ、写真は指で本文や予定の下へそのまま移せます。
+        添付。ページの右下とキーボードの上の「＋」: カメラ、写真、音声、ファイル。添付は記録の最後の文の下に、一列に四つずつ並びます。音声メモは文字に起こせ、写真は指で本文や予定の下へそのまま移せます。
 
         記録の保存場所。すべてあなたのフォルダの普通のファイルです: 「ファイル」で見え、どんなエディタでも開け、アプリを削除しても残ります。バックアップは設定からボタンひとつで。
 

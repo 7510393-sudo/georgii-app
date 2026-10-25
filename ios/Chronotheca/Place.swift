@@ -431,4 +431,31 @@ extension Diary {
         guard (rest as String).trimmingCharacters(in: .whitespaces).isEmpty else { return [] }
         return found
     }
+
+    /// Вложения, стоящие столбиком по одному в строке (так их клала прежняя
+    /// лента, P615), — рядами по четыре, как кладутся новые. Только на
+    /// экране: в файл ряды попадают вместе с первой правкой человека (P617).
+    static func rows(_ text: String) -> String {
+        guard text.contains("](") || text.contains("geo:") else { return text }
+        var out: [String] = []
+        var run: [String] = []
+        func flush() {
+            guard run.count > 1 else { out += run; run = []; return }
+            var row: [String] = []
+            for piece in run {
+                row.append(piece)
+                if row.count == 4 { out.append(row.joined(separator: " ")); row = [] }
+            }
+            if !row.isEmpty { out.append(row.joined(separator: " ")) }
+            run = []
+        }
+        for line in text.components(separatedBy: "\n") {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if objects(in: trimmed).count == 1 { run.append(trimmed); continue }
+            flush()
+            out.append(line)
+        }
+        flush()
+        return out.joined(separator: "\n")
+    }
 }

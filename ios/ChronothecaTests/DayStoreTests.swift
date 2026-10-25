@@ -247,6 +247,26 @@ extension DayStoreTests {
         XCTAssertEqual(DayStore.appending(b, to: a + "\nВечер."), a + "\nВечер.\n\n" + b)
     }
 
+    /// Вложения прежней ленты, стоявшие столбиком, — на экране рядами по
+    /// четыре; файл сам не переписывается (P617).
+    func testСтолбикВложенийРядами() {
+        let a = "![](a.jpg)", b = "![](b.jpg)", p = "[Дом](geo:54.32110,-2.74560)"
+        let столбик = ["Утро.", "", a, b, p, a, b, "Вечер.", a].joined(separator: "\n")
+        XCTAssertEqual(Diary.rows(столбик),
+                       ["Утро.", "", [a, b, p, a].joined(separator: " "), b, "Вечер.", a]
+                        .joined(separator: "\n"))
+        XCTAssertEqual(Diary.rows("Утро.\n\n" + a), "Утро.\n\n" + a)
+
+        let вчера = Calendar.current.date(byAdding: .day, value: -1, to: DayStore.today())!
+        let файл = столбик + "\n"
+        vault.write(файл, to: .diary, for: вчера)
+        let до = vault.reading(.diary, for: вчера).text
+        let день = DayStore(vault: vault, date: вчера)
+        XCTAssertTrue(день.diaryText.contains([a, b, p, a].joined(separator: " ")))
+        день.save()
+        XCTAssertEqual(vault.reading(.diary, for: вчера).text, до, "файл переписан без правки")
+    }
+
     /// Точка из прежней ленты записывается в файл своей строкой и читается
     /// обратно в текст записи (P588, P615).
     func testТочкаВЛентеПереживаетЗапись() {
