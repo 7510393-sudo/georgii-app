@@ -307,7 +307,7 @@ struct MapScreen: View {
     private var bar: some View {
         GeometryReader { g in
             barRow
-                .padding(.bottom, keyboard > 0
+                .padding(.bottom, ownKeyboard
                          ? max(6, g.frame(in: .global).maxY - (UIScreen.main.bounds.height - keyboard))
                          : 6)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
@@ -320,6 +320,14 @@ struct MapScreen: View {
         }
         .onChange(of: keyboard) { _, now in if now > 0 { settling = false } }
         .animation(.easeOut(duration: 0.3), value: settling)
+    }
+
+    /// Клавиатура — своя, карты: открыт раздел «Карта» и пишут название
+    /// точки или ищут (P622). Чужая — с дневника, из которого коснулись
+    /// места в записи, — кнопки не поднимает: прежде они оставались
+    /// посреди карты (снимок автора 25.10).
+    private var ownKeyboard: Bool {
+        keyboard > 0 && shell.screen == .map && (panel == .naming || searching)
     }
 
     private var barRow: some View {
