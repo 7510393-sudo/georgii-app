@@ -469,6 +469,9 @@ struct AttachBar: View {
     @State private var recording = false
     @State private var browsing = false
     @State private var shooting = false
+    /// Снимки сегодняшнего дня из галереи — листком снизу (P616).
+    @State private var dayPhotos = false
+    @StateObject private var suggest = DaySuggestions()
 
     var body: some View {
         // Одна «＋» справа над нижней строкой (P610, P615): пять кнопок
@@ -491,6 +494,15 @@ struct AttachBar: View {
             case .audio:
                 open { recording = true }
             case .files: open { browsing = true }
+            case .dayPhotos:
+                guard store.isToday else {
+                    return shell.say(T("Снимки галереи предлагаются только на сегодня.",
+                                       "Photos are suggested for today only."))
+                }
+                open {
+                    suggest.reload(today: true)
+                    dayPhotos = true
+                }
             case .place: notePlaceHere()
             case .map: openMap()
             }
@@ -520,6 +532,33 @@ struct AttachBar: View {
                 }
             }
             .ignoresSafeArea()
+        }
+        .sheet(isPresented: $dayPhotos) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(T("Снимки сегодня", "Today’s photos"))
+                    .font(Look.sans(15, weight: .semibold))
+                    .foregroundStyle(Look.ink)
+                    .padding(.horizontal, 16)
+                if suggest.shows {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        SuggestedRow(model: suggest) { asset in
+                            GalleryRow.take([asset], store: store, tab: .diary) { shell.say($0) }
+                        }
+                        .padding(.horizontal, 10)
+                    }
+                } else {
+                    Text(T("Новых снимков за сегодня в галерее нет.", "No new photos from today in Photos."))
+                        .font(Look.sans(13))
+                        .foregroundStyle(Look.inkSoft)
+                        .padding(.horizontal, 16)
+                }
+            }
+            .padding(.top, 18)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .presentationDetents([.height(200)])
+            .onReceive(NotificationCenter.default.publisher(for: DaySuggestions.changed)) { _ in
+                suggest.reload(today: true)
+            }
         }
         .sheet(isPresented: $browsing) {
             // Окно открывается там, где его оставили (P384): папку ему

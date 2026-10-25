@@ -223,8 +223,6 @@ struct PhotoStrip: View {
     /// Крестик (P432): подержали превью и не повели — у него крестик, как у
     /// точки в тексте; повели — крестик уходит, превью несут.
     var onRemove: ((Int) -> Void)? = nil
-    /// Предложенные снимки дня — за чертой в конце ряда (P538).
-    var extra: AnyView? = nil
     /// Сторона превью: над клавиатурой они мельче (P541).
     var size: CGFloat = PhotoStrip.side
     @State private var armed: Int?
@@ -249,13 +247,12 @@ struct PhotoStrip: View {
                     ForEach(0..<photos.count, id: \.self) { i in
                         cell(i)
                     }
-                    if photos.isEmpty && extra == nil {
+                    if photos.isEmpty {
                         Text(T("Сюда — вернуть снимок вниз", "Drop here to move a photo back down"))
                             .font(Look.sans(12))
                             .foregroundStyle(Look.inkFaint)
                             .frame(height: size)
                     }
-                    if let extra { extra }
                     Spacer(minLength: 0)
                 }
                 .frame(minWidth: geo.size.width, alignment: .leading)

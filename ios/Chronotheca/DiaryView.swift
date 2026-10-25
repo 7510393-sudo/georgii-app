@@ -15,7 +15,6 @@ struct DiaryView: View {
     @State private var stripSpot: CGPoint = .zero
     /// Крестик у вложения в тексте нажат — сперва вопрос (P456).
     /// Снимки сегодняшнего дня из галереи — предложением в ленте (P538).
-    @StateObject private var suggest = DaySuggestions()
 
     /// На ступень крупнее прежних 15,5 и растёт с настройкой (P274).
     static var size: CGFloat { 16.5 * Prefs.textScale }
@@ -53,10 +52,6 @@ struct DiaryView: View {
             photos: store.stripLinks.map(store.photoURL),
             points: store.stripLinks.map { Diary.isPoint($0) ? Geo.point(in: $0) : nil },
             takesBack: Plan.hasPhotoRows(store.planRows),
-            suggested: AnyView(SuggestedRow(model: suggest) { asset in
-                GalleryRow.take([asset], store: store, tab: .diary) { shell.say($0) }
-            }),
-            hasSuggested: store.canEditDiary && suggest.shows,
             resolve: store.photoURL,
             onOpenPhoto: { i in
                 // Точка из ленты — карта на ней (P588).
@@ -114,19 +109,6 @@ struct DiaryView: View {
         // поверх полосы у низа экрана, а не на странице под ней (P545,
         // `StripGhostLayer`).
         .task(id: store.date) { health = await HealthDay.summary(for: store.date) }
-        // Предложенные снимки — заново при смене дня, после взятия, при
-        // возвращении в приложение (новые снимки камерой) (P538).
-        .onAppear {
-            suggest.reload(today: store.isToday)
-        }
-        .onChange(of: store.date) { _, _ in suggest.reload(today: store.isToday) }
-        .onReceive(NotificationCenter.default.publisher(for: DaySuggestions.changed)) { _ in
-            suggest.reload(today: store.isToday)
-        }
-        .onReceive(NotificationCenter.default.publisher(
-            for: UIApplication.willEnterForegroundNotification)) { _ in
-            suggest.reload(today: store.isToday)
-        }
         .onReceive(NotificationCenter.default.publisher(for: HealthDay.note)) { _ in
             Task { health = await HealthDay.summary(for: store.date) }
         }
@@ -290,8 +272,6 @@ struct DiaryPage: View {
     /// возвращают (P358, P408).
     var takesBack = false
     /// Предложенные снимки дня в конце ленты (P538) — и есть ли они.
-    var suggested: AnyView? = nil
-    var hasSuggested = false
     /// Где лежат снимки, стоящие посреди текста (P204).
     var resolve: ((String) -> URL?)?
     var onOpenPhoto: ((Int) -> Void)?
@@ -377,12 +357,11 @@ struct DiaryPage: View {
                 .accessibilityHint(T("Касание — записать в дневник", "Tap to add to the diary"))
         }
         // Лента превью — конец листа, едет с текстом, как в Diarium (P546).
-        if (!photos.isEmpty || takesBack || hasSuggested) {
+        if !photos.isEmpty || takesBack {
             PhotoStrip(photos: photos, points: points, onOpen: onOpenPhoto,
                        onCarry: editable ? onStripCarry : nil,
                        carried: stripCarried,
-                       onRemove: editable && onRemovePhoto != nil ? { removing = $0 } : nil,
-                       extra: hasSuggested ? suggested : nil)
+                       onRemove: editable && onRemovePhoto != nil ? { removing = $0 } : nil)
                 .modifier(RemoveQuestion(
                     asking: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } }),
                     act: { delete in
