@@ -326,57 +326,62 @@ struct DiaryPage: View {
 
     /// Низ страницы: «Здоровье» строкой и полоска вложений (P406).
     @ViewBuilder private var footer: some View {
-        // Погода дня — строкой внизу страницы, над вложениями, как в
-        // Diarium (P406, P408).
-        if let weather, Prefs.weatherOn {
-            Label(Prefs.weatherText(weather), systemImage: "cloud.sun")
-                .font(Look.sans(12.5))
-                .foregroundStyle(Look.inkFaint)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.leading, 16)
-                .padding(.trailing, 16 + KeyboardBar.attachHeight)
-                .padding(.top, 6)
-        }
-        if let health {
-            Label(health, systemImage: "heart")
-                .font(Look.sans(12))
-                .foregroundStyle(Look.inkFaint)
-                .lineLimit(1)
-                .minimumScaleFactor(0.75)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.leading, 16)
-                .padding(.trailing, 16 + KeyboardBar.attachHeight)
-                .padding(.top, 6)
-                .contentShape(Rectangle())
-                .onTapGesture { onHealth?(health) }
-                .accessibilityHint(T("Касание — записать в дневник", "Tap to add to the diary"))
-        }
-        // Прежние вложения — конец листа, рядами по четыре (P546, P618).
-        if !photos.isEmpty {
-            PhotoStrip(photos: photos, points: points, onOpen: onOpenPhoto,
-                       onCarry: editable ? onStripCarry : nil,
-                       carried: stripCarried,
-                       onRemove: editable && onRemovePhoto != nil ? { removing = $0 } : nil)
-                .modifier(RemoveQuestion(
-                    asking: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } }),
-                    act: { delete in
-                        if let i = removing { onRemovePhoto?(i, delete) }
-                        removing = nil
-                    }))
-                .background(GeometryReader { geo in
-                    let frame = geo.frame(in: .global)
-                    // Полоска одна на страницу (P408): по ней узнают
-                    // «назад в полоску» и дневник, и план.
-                    Color.clear
-                        .onAppear { if editable { StripZones.strip = frame; PlanZones.strip = frame } }
-                        .onChange(of: frame) { _, now in
-                            if editable { StripZones.strip = now; PlanZones.strip = now }
-                        }
-                        // Ленты нет — нет и места, куда возвращать (P547).
-                        .onDisappear { if editable { StripZones.strip = nil; PlanZones.strip = nil } }
-                })
+        // Одной колонкой (P624): ряд, что опускается к «＋», — один на всех;
+        // прежде погода и шаги сдвигались каждая отдельно и ложились друг на друга.
+        VStack(alignment: .leading, spacing: 0) {
+            // Погода дня — строкой внизу страницы, над вложениями, как в
+            // Diarium (P406, P408).
+            if let weather, Prefs.weatherOn {
+                Label(Prefs.weatherText(weather), systemImage: "cloud.sun")
+                    .font(Look.sans(12.5))
+                    .foregroundStyle(Look.inkFaint)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.leading, 16)
+                    .padding(.trailing, 16 + KeyboardBar.attachHeight)
+                    .padding(.top, 6)
+            }
+            if let health {
+                Label(health, systemImage: "heart")
+                    .font(Look.sans(12))
+                    .foregroundStyle(Look.inkFaint)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.leading, 16)
+                    .padding(.trailing, 16 + KeyboardBar.attachHeight)
+                    .padding(.top, 6)
+                    .contentShape(Rectangle())
+                    .onTapGesture { onHealth?(health) }
+                    .accessibilityHint(T("Касание — записать в дневник", "Tap to add to the diary"))
+            }
+            // Прежние вложения — конец листа, рядами по четыре (P546, P618).
+            if !photos.isEmpty {
+                PhotoStrip(photos: photos, points: points, onOpen: onOpenPhoto,
+                           onCarry: editable ? onStripCarry : nil,
+                           carried: stripCarried,
+                           onRemove: editable && onRemovePhoto != nil ? { removing = $0 } : nil)
+                    .modifier(RemoveQuestion(
+                        asking: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } }),
+                        act: { delete in
+                            if let i = removing { onRemovePhoto?(i, delete) }
+                            removing = nil
+                        }))
+                    .background(GeometryReader { geo in
+                        let frame = geo.frame(in: .global)
+                        // Полоска одна на страницу (P408): по ней узнают
+                        // «назад в полоску» и дневник, и план.
+                        Color.clear
+                            .onAppear { if editable { StripZones.strip = frame; PlanZones.strip = frame } }
+                            .onChange(of: frame) { _, now in
+                                if editable { StripZones.strip = now; PlanZones.strip = now }
+                            }
+                            // Ленты нет — нет и места, куда возвращать (P547).
+                            .onDisappear { if editable { StripZones.strip = nil; PlanZones.strip = nil } }
+                    })
+            }
+    
         }
     }
 
