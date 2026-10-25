@@ -110,12 +110,11 @@ enum TextImport {
             let was = Vault.reading(at: url)
             if was == .away { report.skipped += entries.count; continue }
             var file = DayFile(text: was.text)
-            let (text, photos) = Diary.split(file.body)
+            let text = file.body
             var body = entries.map(\.text).joined(separator: "\n\n")
             if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 body = text + "\n\n" + T("— Импорт —", "— Imported —") + "\n\n" + body
             }
-            if !photos.isEmpty { body += "\n\n" + photos.map(Diary.line).joined(separator: "\n") }
             file.body = body
             if file.value("date") == nil { file.set("date", stamp) }
             guard Vault.reading(at: url, coordinated: false) == was else {

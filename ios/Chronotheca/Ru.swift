@@ -267,8 +267,6 @@ enum Look {
     static var kraft: Color     { Scheme.current.kraft }
     static var kraftInk: Color  { Scheme.current.kraftInk }
     static var kraftEdge: Color { Scheme.current.kraftEdge }
-    /// Чернила строки вложений: тёплые тёмные, а не серые (P297).
-    static let stripInk  = Color(light: 0x3A3530, dark: 0xD9D2C6)
     /// Бумага облачка «…а помнишь?» — белая (P298).
     /// Светлая подушка под открытым разделом в строках разделов: раздел
     /// не затеняется, а светлеет — сразу видно, где мы (P526).

@@ -19,22 +19,8 @@ enum KeyboardBar {
     /// Кто открывает раздел, выбранный над клавиатурой (P613).
     static var go: (Shell.Screen) -> Void = { _ in }
 
-    /// Высота строки вложений над клавиатурой (P423).
-    static let attachHeight: CGFloat = 36
-    /// Насколько проступает цвет дня у строки вложений: сквозь неё видно
-    /// страницу — и над клавиатурой, и внизу страницы (P424).
-    /// Плотнее прежней половины (P435): сквозь строку страница едва видна.
-    static let see: Double = 0.85
-    /// Отступ строк от краёв экрана — бока скруглены (P424).
-    static let inset: CGFloat = 6
-
-    /// Какой день открыт: полоска над клавиатурой — в его цвет, как и
-    /// полоска на странице (P297). Одна приставка на все поля, поэтому
-    /// день ей сообщают, а не передают.
-    final class Day: ObservableObject {
-        @Published var date = DayStore.today()
-    }
-    static let day = Day()
+    /// Высота строки над разделами — в ней одна «＋» справа (P423, P615).
+    static let attachHeight: CGFloat = 44
 
     /// Где по высоте экрана полоска вложений открытой страницы — её
     /// сообщает сама полоска. Снимок, отпущенный над ней, возвращается в
@@ -86,13 +72,12 @@ enum KeyboardBar {
 }
 
 struct KeyboardBarView: View {
-    @ObservedObject private var day = KeyboardBar.day
 
     var body: some View {
         // Нижняя строка разделов поднимается вместе с клавиатурой (P613):
         // она — часть приставки и едет с клавиатурой сама, и когда ту
-        // смахивают пальцем. Над ней — строка вложений, как и на странице
-        // над нижней строкой.
+        // смахивают пальцем. Над ней — «＋» справа, как и на странице
+        // над нижней строкой (P615).
         VStack(spacing: 0) {
             attachments
                 .frame(height: KeyboardBar.attachHeight)
@@ -153,48 +138,13 @@ struct KeyboardBarView: View {
         .accessibilityIdentifier("keys.\(target)")
     }
 
-    /// Строка вложений — полупрозрачная: сквозь неё видна страница (P423).
+    /// Вместо пяти кнопок — одна «＋» справа (P615), как и на странице.
     var attachments: some View {
-        HStack(spacing: 0) {
-            // Тот же порядок, что и в полоске без клавиатуры: камера
-            // слева, дальше фото, аудио, файлы — у каждой кнопки своё
-            // место, оно не должно меняться (P310).
-            key("camera", T("камера", "camera")) { KeyboardBar.ask(.camera) }
-            key("photo", T("фото", "photo")) { KeyboardBar.ask(.photo) }
-            key("mic", T("аудио", "audio")) { KeyboardBar.ask(.audio) }
-            key("doc", T("файлы", "files")) { KeyboardBar.ask(.files) }
-            // «Место» — крайней справа, рядом с файлами (P496): касание —
-            // где вы сейчас, долгое нажатие — карта.
-            BarFace(icon: "mappin.and.ellipse", name: T("место", "place"), tint: Look.stripInk,
-                    compact: true, spot: Ru.tint(day.date))
-                .onTapGesture { KeyboardBar.ask(.place) }
-                .onLongPressGesture(minimumDuration: 0.5) {
-                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                    KeyboardBar.ask(.map)
-                }
-                .accessibilityAddTraits(.isButton)
-                .accessibilityHint(T("Долгое нажатие — вписать, где вы", "Long press to note where you are"))
+        HStack {
+            Spacer(minLength: 0)
+            PlusMenu(id: "keyboard.plus")
         }
-        .padding(.top, 4)
-        .padding(.bottom, 3)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        // Полупрозрачная (P424): прежде под цветом дня лежало матовое
-        // стекло — и строка выглядела сплошной.
-        .background(DayStrip(date: day.date).opacity(KeyboardBar.see))
-        // Бока скруглены целиком (P425).
-        .clipShape(Capsule(style: .continuous))
-        .overlay(Capsule(style: .continuous)
-            .strokeBorder(Color.black.opacity(0.08), lineWidth: 0.6))
-        .padding(.horizontal, KeyboardBar.inset)
-    }
-
-    private func key(_ icon: String, _ name: String, act: @escaping () -> Void) -> some View {
-        Button(action: act) {
-            BarFace(icon: icon, name: name, tint: Look.stripInk, compact: true, spot: Ru.tint(day.date))
-        }
-            .buttonStyle(.plain)
-            // Метка для проверок движения (P552).
-            .accessibilityIdentifier("keyboard." + icon)
+        .padding(.horizontal, 12)
     }
 }
 
@@ -219,6 +169,39 @@ struct KeyboardCorners: Shape {
                  startAngle: .degrees(-90), endAngle: .degrees(0), clockwise: false)
         p.closeSubpath()
         return p
+    }
+}
+
+/// «＋» — всё, что прикладывают к дню, одной кнопкой (P610, P615): камера,
+/// фото, голос, файл, место. Просьба уходит открытой странице, как прежде
+/// у пяти кнопок строки вложений (`KeyboardBar.ask`), — и со страницы, и
+/// над клавиатурой. Новое ложится под последним текстом записи.
+struct PlusMenu: View {
+    var id: String
+
+    var body: some View {
+        Menu {
+            Button { KeyboardBar.ask(.camera) } label: { Label(T("Камера", "Camera"), systemImage: "camera") }
+            Button { KeyboardBar.ask(.photo) } label: { Label(T("Фото", "Photos"), systemImage: "photo") }
+            Button { KeyboardBar.ask(.audio) } label: { Label(T("Голос", "Voice"), systemImage: "mic") }
+            Button { KeyboardBar.ask(.files) } label: { Label(T("Файл", "File"), systemImage: "doc") }
+            Button { KeyboardBar.ask(.place) } label: {
+                Label(T("Где я сейчас", "Where I am"), systemImage: "location")
+            }
+            Button { KeyboardBar.ask(.map) } label: {
+                Label(T("Место на карте", "Place on the map"), systemImage: "map")
+            }
+        } label: {
+            Image(systemName: "plus")
+                .font(.system(size: 22, weight: .semibold))
+                .foregroundStyle(Look.kraftInk)
+                .frame(width: 44, height: 44)
+                .background(KraftPaper().clipShape(Circle()))
+                .overlay(Circle().strokeBorder(Look.kraftEdge.opacity(0.7), lineWidth: 1))
+                .shadow(color: .black.opacity(0.18), radius: 3, y: 1.5)
+        }
+        .accessibilityLabel(T("Приложить", "Attach"))
+        .accessibilityIdentifier(id)
     }
 }
 

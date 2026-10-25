@@ -24,8 +24,10 @@ struct Diary: Equatable {
     /// В файле каждая стоит своей строкой в конце записи, обычной ссылкой
     /// разметки: `![](../../Фотографии/2026/2026-09-24_08.15.30.jpg)`. Её
     /// понимает любой редактор разметки — Obsidian покажет саму фотографию.
-    /// В поле записи приложение этих строк не показывает: фотографии стоят
-    /// над текстом картинками (решение P200).
+    /// Вложения в конце записи — часть текста (P615): поле записи рисует
+    /// их на месте, ленты под записью нет. Здесь остаются только
+    /// вложения, положенные в ленту до P615 в этом же открытии дня; в файл
+    /// они ложатся так же — в конец записи после пустой строки.
     var photos: [String] = []
 
     init(answers: [String: String] = [:], text: String = "", photos: [String] = []) {
@@ -50,7 +52,7 @@ struct Diary: Equatable {
         guard i < lines.count,
               [Diary.heading, Diary.oldHeading]
                 .contains(lines[i].trimmingCharacters(in: .whitespaces)) else {
-            (text, photos) = Diary.split(body.trimmingCharacters(in: .newlines))
+            text = body.trimmingCharacters(in: .newlines)
             return
         }
 
@@ -79,8 +81,7 @@ struct Diary: Equatable {
             if !task.isEmpty { answers[task] = answer }
             lines.removeFirst()
         }
-        (text, photos) = Diary.split(
-            lines.joined(separator: "\n").trimmingCharacters(in: .newlines))
+        text = lines.joined(separator: "\n").trimmingCharacters(in: .newlines)
     }
 
     private static let pictureLine = try! NSRegularExpression(
@@ -178,28 +179,6 @@ struct Diary: Equatable {
         case "m4a", "mp3", "wav", "aac", "caf", "aiff": return .audio
         default: return .file
         }
-    }
-
-    /// Отделить фотографии, стоящие в конце записи, от текста.
-    ///
-    /// Конец записи — это полоска внизу страницы. Фотография, которую
-    /// человек поставил посреди текста, остаётся в тексте на своём месте:
-    /// там её и рисует поле записи (решение P203).
-    ///
-    /// Лента — вложения в самом конце **после пустой строки** (так их всегда
-    /// и пишет `body`) или вся запись, если в ней одни вложения (P591).
-    /// Вложение, поставленное последней строкой записи сразу под текстом, —
-    /// часть текста: прежде оно при каждом открытии уходило назад в ленту.
-    static func split(_ text: String) -> (text: String, photos: [String]) {
-        func blank(_ s: String) -> Bool { s.trimmingCharacters(in: .whitespaces).isEmpty }
-        var lines = text.components(separatedBy: "\n")
-        while let last = lines.last, blank(last) { lines.removeLast() }
-        var start = lines.count
-        while start > 0, stripItem(in: lines[start - 1]) != nil { start -= 1 }
-        guard start < lines.count, start == 0 || blank(lines[start - 1]) else { return (text, []) }
-        let photos = lines[start...].compactMap(stripItem(in:))
-        lines.removeSubrange(start...)
-        return (lines.joined(separator: "\n").trimmingCharacters(in: .newlines), photos)
     }
 
     /// Строка-вложение для файла. Снимок — картинкой `![](…)`, остальное —
