@@ -12,7 +12,7 @@ import UIKit
 /// страницы — она на своём месте в окне, ей их и показывать.
 enum KeyboardBar {
 
-    enum Ask: Equatable { case photo, camera, audio, files, place, map, dayPhotos }
+    enum Ask: Equatable { case photo, camera, audio, files, place }
 
     /// Кто исполняет просьбы — оболочка приложения.
     static var ask: (Ask) -> Void = { _ in }
@@ -183,18 +183,10 @@ struct PlusMenu: View {
         Menu {
             Button { KeyboardBar.ask(.camera) } label: { Label(T("Камера", "Camera"), systemImage: "camera") }
             Button { KeyboardBar.ask(.photo) } label: { Label(T("Фото", "Photos"), systemImage: "photo") }
-            // Снимки сегодняшнего дня из галереи (P538) — прежде лежали в
-            // конце ленты, теперь пункт «＋» (P616).
-            Button { KeyboardBar.ask(.dayPhotos) } label: {
-                Label(T("Снимки сегодня", "Today’s photos"), systemImage: "photo.on.rectangle.angled")
-            }
             Button { KeyboardBar.ask(.audio) } label: { Label(T("Голос", "Voice"), systemImage: "mic") }
             Button { KeyboardBar.ask(.files) } label: { Label(T("Файл", "File"), systemImage: "doc") }
             Button { KeyboardBar.ask(.place) } label: {
                 Label(T("Где я сейчас", "Where I am"), systemImage: "location")
-            }
-            Button { KeyboardBar.ask(.map) } label: {
-                Label(T("Место на карте", "Place on the map"), systemImage: "map")
             }
         } label: {
             Image(systemName: "plus")

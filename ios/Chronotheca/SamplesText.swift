@@ -57,7 +57,7 @@ enum SamplesText {
         .todayDiary: """
         Heute beginnt meine Graphomanus. Morgens ein Plan, abends der Rückblick auf den Tag: unter jeder Aufgabe eine Zeile, wie es gelaufen ist.
 
-        Orte. Unten — „Karte“. Halten Sie den Finger auf die Karte, und eine Nadel erscheint: benennen Sie sie und fügen Sie sie dem Tag hinzu. Der Schalter oben rechts: „Meine Orte“ zeigt alle Ihre Nadeln, „Einträge“ die Tage auf der Karte mit Fotovorschau. In einem Eintrag fügt „＋“ einen Ort hinzu: „Wo ich bin“ oder „Ort auf der Karte“ — so:
+        Orte. Unten — „Karte“. Halten Sie den Finger auf die Karte, und eine Nadel erscheint: benennen Sie sie und fügen Sie sie dem Tag hinzu. Der Schalter oben rechts: „Meine Orte“ zeigt alle Ihre Nadeln, „Einträge“ die Tage auf der Karte mit Fotovorschau. In einem Eintrag fügt „＋“ → „Wo ich bin“ einen Ort hinzu — so:
 
         [Hyde Park](geo:51.50731,-0.16573)
 
@@ -112,7 +112,7 @@ enum SamplesText {
         .todayDiary: """
         Hoy empieza mi Graphomanus. Por la mañana, un plan; por la noche, el resumen del día: bajo cada tarea, una línea sobre cómo fue.
 
-        Lugares. Abajo — «Mapa». Mantenga el dedo sobre el mapa y aparece una chincheta: póngale nombre y añádala al día. El selector arriba a la derecha: «Mis lugares» muestra todas sus chinchetas, «Entradas» muestra los días en el mapa con miniaturas de fotos. En una entrada, «＋» añade un lugar: «Dónde estoy» o «Lugar en el mapa» — así:
+        Lugares. Abajo — «Mapa». Mantenga el dedo sobre el mapa y aparece una chincheta: póngale nombre y añádala al día. El selector arriba a la derecha: «Mis lugares» muestra todas sus chinchetas, «Entradas» muestra los días en el mapa con miniaturas de fotos. En una entrada, «＋» → «Dónde estoy» añade un lugar — así:
 
         [Hyde Park](geo:51.50731,-0.16573)
 
@@ -167,7 +167,7 @@ enum SamplesText {
         .todayDiary: """
         Aujourd’hui commence ma Graphomanus. Le matin, un plan ; le soir, le bilan du jour : sous chaque tâche, une ligne sur la façon dont elle s’est passée.
 
-        Lieux. En bas — « Carte ». Gardez le doigt sur la carte et une épingle apparaît : nommez-la et ajoutez-la au jour. Le sélecteur en haut à droite : « Mes lieux » montre toutes vos épingles, « Notes » montre les jours sur la carte avec des aperçus de photos. Dans une note, « ＋ » ajoute un lieu : « Où je suis » ou « Lieu sur la carte » — comme ceci :
+        Lieux. En bas — « Carte ». Gardez le doigt sur la carte et une épingle apparaît : nommez-la et ajoutez-la au jour. Le sélecteur en haut à droite : « Mes lieux » montre toutes vos épingles, « Notes » montre les jours sur la carte avec des aperçus de photos. Dans une note, « ＋ » → « Où je suis » ajoute un lieu — comme ceci :
 
         [Hyde Park](geo:51.50731,-0.16573)
 
@@ -222,7 +222,7 @@ enum SamplesText {
         .todayDiary: """
         Oggi comincia la mia Graphomanus. Al mattino un piano, la sera il bilancio del giorno: sotto ogni attività, una riga su com’è andata.
 
-        Luoghi. In basso — «Mappa». Tieni il dito sulla mappa e compare una puntina: dalle un nome e aggiungila al giorno. Il selettore in alto a destra: «I miei luoghi» mostra tutte le tue puntine, «Note» mostra i giorni sulla mappa con le anteprime delle foto. In una nota, «＋» aggiunge un luogo: «Dove sono» o «Luogo sulla mappa» — così:
+        Luoghi. In basso — «Mappa». Tieni il dito sulla mappa e compare una puntina: dalle un nome e aggiungila al giorno. Il selettore in alto a destra: «I miei luoghi» mostra tutte le tue puntine, «Note» mostra i giorni sulla mappa con le anteprime delle foto. In una nota, «＋» → «Dove sono» aggiunge un luogo — così:
 
         [Hyde Park](geo:51.50731,-0.16573)
 
@@ -277,7 +277,7 @@ enum SamplesText {
         .todayDiary: """
         Vandaag begint mijn Graphomanus. ’s Ochtends een plan, ’s avonds de terugblik op de dag: onder elke taak een regel over hoe het ging.
 
-        Plekken. Onderaan — „Kaart”. Houd je vinger op de kaart en er verschijnt een speld: geef hem een naam en voeg hem toe aan de dag. De schakelaar rechtsboven: „Mijn plekken” toont al je spelden, „Aantekeningen” toont de dagen op de kaart met fotovoorbeelden. In een aantekening voegt „＋” een plek toe: „Waar ik ben” of „Plek op de kaart” — zo:
+        Plekken. Onderaan — „Kaart”. Houd je vinger op de kaart en er verschijnt een speld: geef hem een naam en voeg hem toe aan de dag. De schakelaar rechtsboven: „Mijn plekken” toont al je spelden, „Aantekeningen” toont de dagen op de kaart met fotovoorbeelden. In een aantekening voegt „＋” → „Waar ik ben” een plek toe — zo:
 
         [Hyde Park](geo:51.50731,-0.16573)
 
@@ -332,7 +332,7 @@ enum SamplesText {
         .todayDiary: """
         Hoje começa a minha Graphomanus. De manhã, um plano; à noite, o balanço do dia: sob cada tarefa, uma linha sobre como foi.
 
-        Lugares. Embaixo — «Mapa». Mantenha o dedo no mapa e aparece um alfinete: dê-lhe um nome e adicione-o ao dia. O seletor no canto superior direito: «Meus lugares» mostra todos os seus alfinetes, «Anotações» mostra os dias no mapa com miniaturas de fotos. Numa anotação, «＋» adiciona um lugar: «Onde estou» ou «Local no mapa» — assim:
+        Lugares. Embaixo — «Mapa». Mantenha o dedo no mapa e aparece um alfinete: dê-lhe um nome e adicione-o ao dia. O seletor no canto superior direito: «Meus lugares» mostra todos os seus alfinetes, «Anotações» mostra os dias no mapa com miniaturas de fotos. Numa anotação, «＋» → «Onde estou» adiciona um lugar — assim:
 
         [Hyde Park](geo:51.50731,-0.16573)
 
@@ -387,7 +387,7 @@ enum SamplesText {
         .todayDiary: """
         Сьогодні починається Graphomanus. Уранці — план, увечері — підсумки дня: під кожною справою рядок про те, що вийшло.
 
-        Місця. Унизу — «Мапа». Притримайте палець на мапі — з’явиться точка: назвіть її і запишіть у день. Праворуч угорі перемикач: «Мої місця» — усі ваші точки, «Записи» — дні на мапі з прев’ю знімків. У записі точку ставить «＋»: «Де я зараз» або «Місце на карті» — ось так:
+        Місця. Унизу — «Мапа». Притримайте палець на мапі — з’явиться точка: назвіть її і запишіть у день. Праворуч угорі перемикач: «Мої місця» — усі ваші точки, «Записи» — дні на мапі з прев’ю знімків. У записі точку ставить «＋» → «Де я зараз» — ось так:
 
         [Гайд-парк](geo:51.50731,-0.16573)
 
@@ -442,7 +442,7 @@ enum SamplesText {
         .todayDiary: """
         დღეს იწყება Graphomanus. დილით — გეგმა, საღამოს — დღის შედეგები: ყოველი საქმის ქვეშ ერთი სტრიქონი იმაზე, რა გამოვიდა.
 
-        ადგილები. ქვემოთ — „რუკა“. დაიჭირეთ თითი რუკაზე — გაჩნდება წერტილი: დაარქვით სახელი და ჩაწერეთ დღეში. ზემოთ მარჯვნივ გადამრთველია: „ჩემი ადგილები“ — ყველა თქვენი წერტილი, „ჩანაწერები“ — დღეები რუკაზე ფოტოების ესკიზებით. ჩანაწერში წერტილს სვამს „＋“: „სად ვარ ახლა“ ან „ადგილი რუკაზე“ — აი ასე:
+        ადგილები. ქვემოთ — „რუკა“. დაიჭირეთ თითი რუკაზე — გაჩნდება წერტილი: დაარქვით სახელი და ჩაწერეთ დღეში. ზემოთ მარჯვნივ გადამრთველია: „ჩემი ადგილები“ — ყველა თქვენი წერტილი, „ჩანაწერები“ — დღეები რუკაზე ფოტოების ესკიზებით. ჩანაწერში წერტილს სვამს „＋“ → „სად ვარ ახლა“ — აი ასე:
 
         [ჰაიდ-პარკი](geo:51.50731,-0.16573)
 
@@ -497,7 +497,7 @@ enum SamplesText {
         .todayDiary: """
         今日から私のクロノテカが始まる。朝は予定、夜は一日のふり返り: それぞれの予定の下に、どうだったかを一行。
 
-        場所。下の「地図」。地図を長押しするとピンが立ちます: 名前をつけて、その日に加えましょう。右上の切り替え: 「自分の場所」はすべてのピン、「記録」は写真のプレビュー付きで日々を地図に表示します。記録の中では「＋」の「現在地」か「地図上の場所」で場所を加えます — このように:
+        場所。下の「地図」。地図を長押しするとピンが立ちます: 名前をつけて、その日に加えましょう。右上の切り替え: 「自分の場所」はすべてのピン、「記録」は写真のプレビュー付きで日々を地図に表示します。記録の中では「＋」の「現在地」で場所を加えます — このように:
 
         [ハイドパーク](geo:51.50731,-0.16573)
 

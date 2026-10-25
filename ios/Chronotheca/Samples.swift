@@ -90,7 +90,7 @@ enum Samples {
         put(vault, .diary, today, body: SamplesText.text(.todayDiary) ?? T("""
         Сегодня начинается Graphomanus. Утром — план, вечером — итоги дня: под каждым делом строка о том, что вышло.
 
-        Места. Внизу — «Карта». Подержите палец на карте — встанет точка: назовите её и запишите в день. Справа сверху переключатель: «Мои места» — все ваши точки, «Записи» — дни на карте с превью снимков. В записи точку ставит «＋»: «Где я сейчас» или «Место на карте» — вот так:
+        Места. Внизу — «Карта». Подержите палец на карте — встанет точка: назовите её и запишите в день. Справа сверху переключатель: «Мои места» — все ваши точки, «Записи» — дни на карте с превью снимков. В записи точку ставит «＋» → «Где я сейчас» — вот так:
 
         [Гайд-парк](geo:51.50731,-0.16573)
 
@@ -102,7 +102,7 @@ enum Samples {
         """, """
         Today my Graphomanus begins. In the morning, a plan; in the evening, the day's outcome: a line under each task about how it went.
 
-        Places. At the bottom — “Map”. Hold your finger on the map and a pin appears: name it and add it to the day. The switch at the top right: “My places” shows all your pins, “Entries” shows days on the map with photo previews. In an entry, the “＋” adds a place: “Where I am” or “Place on the map” — like this:
+        Places. At the bottom — “Map”. Hold your finger on the map and a pin appears: name it and add it to the day. The switch at the top right: “My places” shows all your pins, “Entries” shows days on the map with photo previews. In an entry, “＋” → “Where I am” adds a place — like this:
 
         [Hyde Park](geo:51.50731,-0.16573)
 
