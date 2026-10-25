@@ -773,7 +773,6 @@ struct SideDay: View {
                   photos: (photos + planPhotos).map { vault.mediaURL($0, for: date) },
                   // Точки ленты — тем же квадратом, что на открытой странице (P588, P114).
                   points: (photos + planPhotos).map { Diary.isPoint($0) ? Geo.point(in: $0) : nil },
-                  takesBack: Plan.hasPhotoRows(rows),
                   resolve: { [vault, date] in vault.mediaURL($0, for: date) },
                   health: health)
         .task(id: date) { health = await HealthDay.summary(for: date) }

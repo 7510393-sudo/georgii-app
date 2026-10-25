@@ -51,7 +51,6 @@ struct DiaryView: View {
             // — прежние снимки полоски плана.
             photos: store.stripLinks.map(store.photoURL),
             points: store.stripLinks.map { Diary.isPoint($0) ? Geo.point(in: $0) : nil },
-            takesBack: Plan.hasPhotoRows(store.planRows),
             resolve: store.photoURL,
             onOpenPhoto: { i in
                 // Точка из ленты — карта на ней (P588).
@@ -268,9 +267,6 @@ struct DiaryPage: View {
     var photos: [URL?] = []
     /// Точки в ленте (P588) — по местам ряда.
     var points: [GeoPoint?] = []
-    /// Под делами плана есть снимки — полоска видна и пустой: в неё их
-    /// возвращают (P358, P408).
-    var takesBack = false
     /// Предложенные снимки дня в конце ленты (P538) — и есть ли они.
     /// Где лежат снимки, стоящие посреди текста (P204).
     var resolve: ((String) -> URL?)?
@@ -356,8 +352,8 @@ struct DiaryPage: View {
                 .onTapGesture { onHealth?(health) }
                 .accessibilityHint(T("Касание — записать в дневник", "Tap to add to the diary"))
         }
-        // Лента превью — конец листа, едет с текстом, как в Diarium (P546).
-        if !photos.isEmpty || takesBack {
+        // Прежние вложения — конец листа, рядами по четыре (P546, P618).
+        if !photos.isEmpty {
             PhotoStrip(photos: photos, points: points, onOpen: onOpenPhoto,
                        onCarry: editable ? onStripCarry : nil,
                        carried: stripCarried,

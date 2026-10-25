@@ -204,8 +204,8 @@ struct PhotoThumb: View {
     }
 }
 
-/// Лента вложений дня — конец страницы, как в Diarium (P546): снимки,
-/// видео, голос и файлы, листается вбок (P535). Превью берут долгим
+/// Прежние вложения дня — конец страницы, рядами по четыре (P546, P618):
+/// снимки, видео, голос, файлы и точки. Превью берут долгим
 /// нажатием своим жестом (P380, P541) — несут в текст, в план или на другое
 /// место в ленте; подержали и не повели — крестик (P432).
 struct PhotoStrip: View {
@@ -236,41 +236,18 @@ struct PhotoStrip: View {
     private let gap: CGFloat = DiaryEditor.photoGap
 
     var body: some View {
-        GeometryReader { geo in
-            // Все превью в ряд, ряд листается вбок (P535): прежде за
-            // четвёртым стояло «+N», и дальние снимки нельзя было взять
-            // пальцем и унести в текст. Плашки с числом в конце ряда тоже
-            // нет (P558): ряд и так листается.
-            ScrollViewReader { reader in
-            ScrollView(.horizontal, showsIndicators: false) {
+        // Рядами по четыре, как вложения в записи (P618): ленты, что
+        // листалась вбок, больше нет.
+        VStack(alignment: .leading, spacing: gap) {
+            ForEach(Array(stride(from: 0, to: photos.count, by: 4)), id: \.self) { start in
                 HStack(spacing: gap) {
-                    ForEach(0..<photos.count, id: \.self) { i in
+                    ForEach(start..<min(start + 4, photos.count), id: \.self) { i in
                         cell(i)
                     }
-                    if photos.isEmpty {
-                        Text(T("Сюда — вернуть снимок вниз", "Drop here to move a photo back down"))
-                            .font(Look.sans(12))
-                            .foregroundStyle(Look.inkFaint)
-                            .frame(height: size)
-                    }
-                    Spacer(minLength: 0)
                 }
-                .frame(minWidth: geo.size.width, alignment: .leading)
-                .contentShape(Rectangle())
-            }
-            // Пока превью несут, ряд стоит: иначе он поехал бы за пальцем.
-            .scrollDisabled(carried != nil)
-            .scrollBounceBehavior(.basedOnSize, axes: .horizontal)
-            // Новое вложение — в конце ряда, часто за краем экрана: ряд
-            // сам доезжает до него, иначе голос или файл будто не
-            // добавились (P558, замечание автора).
-            .onChange(of: photos.count) { was, now in
-                guard now > was, now > 0 else { return }
-                withAnimation(.easeOut(duration: 0.3)) { reader.scrollTo(now - 1, anchor: .trailing) }
-            }
             }
         }
-        .frame(height: size)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
     }

@@ -192,12 +192,6 @@ enum Plan {
         return !links.isEmpty && links.allSatisfy { Diary.kind(of: $0) == .photo }
     }
 
-    /// Под каким-нибудь делом стоят снимки — полоске внизу есть что
-    /// принять обратно (P362).
-    static func hasPhotoRows(_ rows: [PlanRow]) -> Bool {
-        rows.contains { row in row.verbatim.map(isPhotoRow) ?? false }
-    }
-
     /// План вместе с фотографиями в конце.
     static func body(from rows: [PlanRow], photos: [String]) -> String {
         let plan = body(from: rows)
