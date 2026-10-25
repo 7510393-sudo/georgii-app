@@ -35,6 +35,13 @@ struct KeyboardHeight: ViewModifier {
                 for: UIResponder.keyboardWillHideNotification)) { _ in
                 height = 0
             }
+            // Клавиатура уже ушла — и последнее слово за этим: поздняя смена
+            // рамки (приставка меняет высоту) могла снова поднять отступ,
+            // и кнопки карты оставались посреди экрана (P622).
+            .onReceive(NotificationCenter.default.publisher(
+                for: UIResponder.keyboardDidHideNotification)) { _ in
+                height = 0
+            }
     }
 }
 
