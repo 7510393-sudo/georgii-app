@@ -940,10 +940,6 @@ struct DiaryEditor: UIViewRepresentable {
             // Тот же вопрос и те же слова, что у превью в ленте.
             let sheet = UIAlertController(title: T("Что сделать с файлом?", "What should happen to the file?"),
                                           message: nil, preferredStyle: .alert)
-            if let giveBack = parent.onReturnPhoto {
-                sheet.addAction(UIAlertAction(title: T("Убрать в полоску внизу", "Move to the strip below"),
-                                              style: .default) { _ in giveBack(link) })
-            }
             if let delete = parent.onDeleteAttachment {
                 sheet.addAction(UIAlertAction(title: T("Удалить файл — в корзину на 30 дней",
                                                        "Delete the file — trash for 30 days"),

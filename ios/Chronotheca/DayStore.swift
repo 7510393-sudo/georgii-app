@@ -942,9 +942,16 @@ final class DayStore: ObservableObject {
     /// прежние снимки полоски плана (P408).
     var stripLinks: [String] { photos + planPhotos }
 
+    /// Снимок из-под дела — вниз: в конец записи, как всякое новое вложение
+    /// (P623). В будущем дне дневника нет — там он уходит в ленту плана.
     func returnPlanPhoto(_ link: String) {
         guard canEditPlan, !planPhotos.contains(link), takeOutPlanPhoto(link) else { return }
-        planPhotos.append(link)
+        if canEditDiary {
+            diaryText = DayStore.appending(Diary.line(link), to: diaryText)
+            touchDiary()
+        } else {
+            planPhotos.append(link)
+        }
         save()
     }
 

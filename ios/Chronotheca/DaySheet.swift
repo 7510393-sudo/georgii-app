@@ -72,6 +72,7 @@ struct DaySheet<Plan: View, Diary: View>: View {
                         VStack(alignment: .leading, spacing: 0) {
                             SheetHeading(title: T("Дневник", "Diary"), faint: !diaryOpen)
                                 .id(Self.diaryTop)
+                                .background(DiaryTopMark())
                                 // Облачко «…помнишь?» сидит над заголовком,
                                 // у правого края (P436): низом на его верху.
                                 .overlay(alignment: .topTrailing) {
@@ -378,6 +379,20 @@ private struct NoBounce: UIViewRepresentable {
                     node = here.superview
                 }
             }
+        }
+    }
+}
+
+/// Записывает, где на экране заголовок «Дневник» (P623): по нему плану видно,
+/// что снимок отпустили над дневником.
+private struct DiaryTopMark: View {
+    var body: some View {
+        GeometryReader { geo in
+            let top = geo.frame(in: .global).minY
+            Color.clear
+                .onAppear { PlanZones.diaryTop = top }
+                .onChange(of: top) { _, now in PlanZones.diaryTop = now }
+                .onDisappear { PlanZones.diaryTop = nil }
         }
     }
 }

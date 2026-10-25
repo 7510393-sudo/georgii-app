@@ -1100,7 +1100,7 @@ struct PlanView: View {
             Feel.lift()
             armedLine = nil
             photoSpots = PlanZones.rows
-            photoStripTop = PlanZones.strip?.minY ?? .infinity
+            photoStripTop = min(PlanZones.strip?.minY ?? .infinity, PlanZones.diaryTop ?? .infinity)
             photoTo = nil
             photoBack = false
             photoSlot = nil
@@ -1459,6 +1459,9 @@ enum PlanZones {
     static var events: [String: CGRect] = [:]
     /// Полоска снимков внизу — туда снимок возвращают (P377).
     static var strip: CGRect?
+    /// Верх заголовка «Дневник» на экране: снимок, отпущенный ниже, уходит в
+    /// конец записи (P623) — ленты, по которой его узнавали, больше нет.
+    static var diaryTop: CGFloat?
 }
 
 /// Записать, где строка на экране.
