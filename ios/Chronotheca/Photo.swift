@@ -712,11 +712,11 @@ struct PhotoViewer: View {
             }
             if let onReturn {
                 Button(action: onReturn) {
-                    Label(T("В полоску", "To the strip"), systemImage: "arrow.down.to.line")
+                    Label(T("В конец", "To the end"), systemImage: "arrow.down.to.line")
                         .font(.system(size: 15))
                         .modifier(OverPhoto())
                 }
-                .accessibilityLabel(T("Вернуть в полоску внизу страницы", "Move back to the strip at the bottom"))
+                .accessibilityLabel(T("Перенести в конец записи", "Move to the end of the entry"))
             }
             if let url, let image, CameraShots.taken(url) {
                 Button {

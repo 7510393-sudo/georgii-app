@@ -74,10 +74,10 @@ struct DiaryView: View {
                 // Где пишут — там «где был» (P402, P408).
                 if $0 { shell.tab = .diary }
             },
-            // Снимок, отпущенный над полоской, возвращается в неё (P272).
+            // Снимок, отпущенный внизу страницы, — в конец записи (P272, P620).
             onReturnPhoto: { link in
-                store.returnToStrip(link)
-                shell.say(T("Снимок вернулся в полоску", "Photo moved back to the strip"))
+                store.moveToEnd(link)
+                shell.say(T("Снимок — в конце записи", "Photo moved to the end of the entry"))
             },
             // Точка из текста — в заголовок и обратно (P358).
             onPointToTitle: { line in
@@ -238,9 +238,8 @@ extension DiaryView {
     /// Крестик у снимка в записи → «удалить файл» (P409): снимок уходит из
     /// записи, а файл — в корзину на 30 дней, как из полоски (P371).
     fileprivate func deleteFromText(_ link: String, delete: Bool) {
-        store.returnToStrip(link)
-        guard let k = store.photos.lastIndex(of: link) else { return }
-        shell.say(store.removeAttachment(at: k, from: .diary, delete: delete))
+        let said = store.deleteFromDiary(link, delete: delete)
+        if !said.isEmpty { shell.say(said) }
     }
 
 }

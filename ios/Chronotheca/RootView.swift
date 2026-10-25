@@ -446,12 +446,12 @@ struct RootView: View {
                                 }
                                 return nil
                             },
-                            // Снимок из записи — вернуть в ленту (P216).
+                            // Снимок из записи — в конец записи (P216, P620).
                             giveBack: { i in
                                 let one = all[i]
                                 guard store.canEditDiary, !store.stripLinks.contains(one) else { return nil }
                                 return {
-                                    store.returnToStrip(one)
+                                    store.moveToEnd(one)
                                     shell.openedPhoto = nil
                                 }
                             },
@@ -476,9 +476,9 @@ struct RootView: View {
                     shell.openedPhoto = nil
                     shell.say(store.removeAttachment(at: opened.index, from: opened.tab, delete: delete))
                 } : nil,
-                // Снимок из текста можно вернуть в полоску (P216).
+                // Снимок из текста — в конец записи (P216, P620).
                 onReturn: opened.link != nil && store.canEdit(opened.tab) ? {
-                    if let link = opened.link { store.returnToStrip(link) }
+                    if let link = opened.link { store.moveToEnd(link) }
                     shell.openedPhoto = nil
                 } : nil,
                 close: { shell.openedPhoto = nil })

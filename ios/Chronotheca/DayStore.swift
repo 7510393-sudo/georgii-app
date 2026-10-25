@@ -751,6 +751,12 @@ final class DayStore: ObservableObject {
         removePhoto(at: index, from: tab)
         // У точки нет файла — она просто уходит со страницы (P588).
         if Diary.isPoint(link) { return T("Точка убрана со страницы.", "The place is removed from the page.") }
+        return trashed(link, from: tab, delete: delete)
+    }
+
+    /// Что сказать, когда вложение ушло со страницы: файл остался в папке
+    /// или ушёл в корзину на 30 дней (P371).
+    private func trashed(_ link: String, from tab: Shell.Tab, delete: Bool) -> String {
         guard delete else {
             return T("Убрано со страницы. Сам файл остался в папке.", "Removed from the page. The file stays in the folder.")
         }
@@ -974,19 +980,36 @@ final class DayStore: ObservableObject {
         save()
     }
 
-    /// Вернуть снимок, стоящий посреди записи, в полоску внизу (P216).
-    func returnToStrip(_ link: String) {
-        guard canEditDiary else { return }
+    /// «Вниз» — в конец записи, под последний текст, туда же, куда ложится
+    /// новое вложение (P620; прежде — в полоску внизу, P216).
+    func moveToEnd(_ link: String) {
+        guard canEditDiary, cutFromDiary(link) else { return }
+        diaryText = DayStore.appending(Diary.line(link), to: diaryText)
+        touchDiary()
+        save()
+    }
+
+    /// Крестик у вложения в записи: оно уходит из текста, файл — в
+    /// корзину на 30 дней или остаётся в папке (P409, P371).
+    func deleteFromDiary(_ link: String, delete: Bool) -> String {
+        guard canEditDiary else { return closedReason }
+        guard cutFromDiary(link) else { return "" }
+        touchDiary()
+        save()
+        if Diary.isPoint(link) { return T("Точка убрана со страницы.", "The place is removed from the page.") }
+        return trashed(link, from: .diary, delete: delete)
+    }
+
+    /// Вынуть вложение из текста записи или из ответа «Как прошло?».
+    /// `false` — его там нет.
+    private func cutFromDiary(_ link: String) -> Bool {
         // Из ответа «Как прошло?» — вместе с пробелом перед ним (P407).
         if !diaryText.contains(Diary.line(link)),
            let hit = answers.first(where: { $0.value.contains(Diary.line(link)) }) {
             answers[hit.key] = hit.value.replacingOccurrences(of: " " + Diary.line(link), with: "")
                 .replacingOccurrences(of: Diary.line(link), with: "")
                 .trimmingCharacters(in: .whitespaces)
-            photos.append(link)
-            touchDiary()
-            save()
-            return
+            return true
         }
         // Снимок ищется где угодно: своей строкой, в ряду (P348) или
         // посреди фразы (P357). Уходит вместе с одним пробелом или переводом
@@ -996,7 +1019,7 @@ final class DayStore: ObservableObject {
         let whole = ns.range(of: Diary.line(link))
         guard var cut = Diary.anywhere(in: diaryText).first(where: { $0.link == link })?.range
             ?? (whole.location == NSNotFound ? nil : whole)
-        else { return }
+        else { return false }
         let before = cut.location > 0 ? ns.character(at: cut.location - 1) : 10
         let after = NSMaxRange(cut) < ns.length ? ns.character(at: NSMaxRange(cut)) : 10
         if before == 10, after == 10 {
@@ -1014,9 +1037,7 @@ final class DayStore: ObservableObject {
         }
         diaryText = ns.replacingCharacters(in: cut, with: "")
             .replacingOccurrences(of: "\n{3,}", with: "\n\n", options: .regularExpression)
-        photos.append(link)
-        touchDiary()
-        save()
+        return true
     }
 
     /// Записать погоду там, где человек сейчас. Только в сегодняшний день:

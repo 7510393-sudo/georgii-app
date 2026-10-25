@@ -337,18 +337,29 @@ extension DayStoreTests {
         XCTAssertTrue(день.planAhead.isEmpty)
     }
 
-    // P357: снимок, оказавшийся посреди фразы, возвращается в полоску, а
-    // фраза снова целая.
-    func testСнимокИзСерединыФразыВозвращаетсяВниз() {
+    // P357, P620: снимок, оказавшийся посреди фразы, уходит «вниз» — в
+    // конец записи, а фраза снова целая.
+    func testСнимокИзСерединыФразыУходитВКонец() {
         let день = store(0)
-        день.diaryText = "она воо![](../../Photos/2026/a.jpg)бще толкует!\nДальше."
-        день.returnToStrip("../../Photos/2026/a.jpg")
-        XCTAssertEqual(день.diaryText, "она вообще толкует!\nДальше.")
-        XCTAssertEqual(день.photos, ["../../Photos/2026/a.jpg"])
+        let a = "![](../../Photos/2026/a.jpg)", b = "![](../../Photos/2026/b.jpg)"
+        день.diaryText = "она воо\(a)бще толкует!\nДальше."
+        день.moveToEnd("../../Photos/2026/a.jpg")
+        XCTAssertEqual(день.diaryText, "она вообще толкует!\nДальше.\n\n" + a)
+        XCTAssertTrue(день.photos.isEmpty)
 
-        день.diaryText = "Утро.\n![](../../Photos/2026/b.jpg)\nВечер."
-        день.returnToStrip("../../Photos/2026/b.jpg")
+        день.diaryText = "Утро.\n\(b)\nВечер.\n\n" + a
+        день.moveToEnd("../../Photos/2026/b.jpg")
+        XCTAssertEqual(день.diaryText, "Утро.\nВечер.\n\n" + a + " " + b)
+    }
+
+    // P409, P620: крестик у снимка в записи — снимок уходит из текста, в
+    // ряды внизу он не попадает.
+    func testКрестикУбираетСнимокИзЗаписи() {
+        let день = store(0)
+        день.diaryText = "Утро.\n![](../../Photos/2026/a.jpg)\nВечер."
+        _ = день.deleteFromDiary("../../Photos/2026/a.jpg", delete: false)
         XCTAssertEqual(день.diaryText, "Утро.\nВечер.")
+        XCTAssertTrue(день.photos.isEmpty)
     }
 
     // P383: свайп вправо — дело уходит в план другого дня вместе со
