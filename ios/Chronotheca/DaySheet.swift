@@ -154,11 +154,11 @@ struct DaySheet<Plan: View, Diary: View>: View {
             // под строку.
             .overlay(alignment: .bottom) {
                 if let strip {
-                    // На 6 точек выше края страницы (P511): рваный край нижней
-                    // строки её не закрывает.
+                    // Выше края страницы (P511), ещё на 8 точек (P619): «＋»
+                    // сливалась с нижней строкой.
                     strip
                         .frame(height: KeyboardBar.attachHeight)
-                        .padding(.bottom, Self.stripRoom - KeyboardBar.attachHeight)
+                        .padding(.bottom, Self.stripRoom - KeyboardBar.attachHeight + 8)
                         .opacity(keyboard > 0 ? 0 : 1)
                         .allowsHitTesting(keyboard == 0)
                 }

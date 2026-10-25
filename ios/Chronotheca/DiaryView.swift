@@ -336,7 +336,8 @@ struct DiaryPage: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 16)
+                .padding(.leading, 16)
+                .padding(.trailing, 16 + KeyboardBar.attachHeight)
                 .padding(.top, 6)
         }
         if let health {
@@ -346,7 +347,8 @@ struct DiaryPage: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 16)
+                .padding(.leading, 16)
+                .padding(.trailing, 16 + KeyboardBar.attachHeight)
                 .padding(.top, 6)
                 .contentShape(Rectangle())
                 .onTapGesture { onHealth?(health) }
@@ -409,7 +411,20 @@ struct DiaryPage: View {
             // пять: прежде они прибавлялись к ним, и выходило около восьми.
             Spacer(minLength: gapBelowText)
             footer
+                // Погода и шаги — у самой нижней строки (P619): место под
+                // «＋» справа, слева оно пустое. Есть ряды прежних вложений —
+                // они во всю ширину, и низ остаётся «＋».
+                .padding(.bottom, dropsFooter ? -Self.footerDrop : 0)
         }
+    }
+
+    /// На сколько погода и шаги опускаются в место под «＋» (P619).
+    static let footerDrop: CGFloat = 34
+
+    /// Опускать есть что, и места под «＋» никто не занял: без погоды и
+    /// шагов конец записи остаётся выше «＋», как был.
+    private var dropsFooter: Bool {
+        photos.isEmpty && (health != nil || (weather != nil && Prefs.weatherOn))
     }
 
     /// Сколько места оставить под последними словами записи до ленты: пять
