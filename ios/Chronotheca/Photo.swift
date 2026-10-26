@@ -25,13 +25,9 @@ enum Photo {
         else { return nil }
         let type = (CGImageSourceGetType(source) as String?) ?? UTType.jpeg.identifier
         let isJPEG = UTType(type)?.conforms(to: .jpeg) ?? false
-        let side: CGFloat
-        switch Prefs.squeezeKey {
-        case "high":   side = 2560
-        case "medium": side = 1600
-        default:
-            return (data, UTType(type)?.preferredFilenameExtension.map(Photo.ext) ?? "jpg")
-        }
+        // Среднее сжатие, одно на всех (P633): на экране не отличить от
+        // оригинала, места в 5–6 раз меньше.
+        let side: CGFloat = 2560
         // Уменьшенный снимок — тем же форматом. Снимок iPhone — HEIC;
         // снятый «как совместимый» — JPEG; прочее (снимки экрана в PNG) —
         // HEIC, родной формат iPhone. Не вышло записать HEIC — JPEG.

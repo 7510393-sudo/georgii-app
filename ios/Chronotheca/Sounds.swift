@@ -4,15 +4,13 @@ import UIKit
 /// Звуки приложения (P265, P267). Тихие и бумажные: шелест страницы,
 /// шлепок листка, звон по окончании записи. Идут как звуки клавиатуры —
 /// переключатель «без звука» на iPhone их глушит, музыку они не
-/// прерывают. Выключаются в настройках.
+/// прерывают. Молчат, когда iPhone на беззвучном (P633); выключателя нет.
 enum Sounds {
 
     private static var cache: [String: Data] = [:]
 
     /// Плееры, которые ещё звучат: отпущенный плеер замолкает на полуслове.
     private static var playing: [AVAudioPlayer] = []
-
-    static var on: Bool { !UserDefaults.standard.bool(forKey: Prefs.quiet) }
 
     /// Шелест перевёрнутой страницы. `rate` чуть меняет высоту: в вихре
     /// листы шуршат не одинаково, а вперёд и назад звучат чуть по-разному
@@ -24,7 +22,7 @@ enum Sounds {
     }
 
     static func play(_ name: String, volume: Float = 0.45, rate: Float = 1) {
-        guard on, let data = data(name) else { return }
+        guard let data = data(name) else { return }
         let session = AVAudioSession.sharedInstance()
         if session.category != .ambient {
             try? session.setCategory(.ambient, options: [.mixWithOthers])

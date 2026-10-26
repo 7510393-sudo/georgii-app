@@ -36,7 +36,6 @@ struct RootView: View {
     @Environment(\.dynamicTypeSize) private var systemText
     @AppStorage(Prefs.lock) private var lockOn = false
     @AppStorage(Prefs.theme) private var theme = "system"
-    @AppStorage(Prefs.textSize) private var textSize = 0
     @AppStorage(Prefs.font) private var fontKey = "newyork"
     /// Цветовая гамма (P498): меняется — страницы и строки собираются заново.
     @AppStorage(Prefs.calendarTint) private var palette = "distance"
@@ -292,7 +291,7 @@ struct RootView: View {
                 canvas
                     // Сменили размер или шрифт записи — страницы собираются
                     // заново: поля UIKit помнят свой шрифт (P274).
-                    .id("\(textSize)|\(fontKey)|\(systemText)|\(palette)")
+                    .id("\(fontKey)|\(systemText)|\(palette)")
                 tabbar
             }
             // Нижний отступ (полоса «домой») — свой, постоянный, а не

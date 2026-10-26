@@ -5,18 +5,6 @@ import XCTest
 /// местах, нет перевода — английская.
 final class LangTests: XCTestCase {
 
-    private var was: Any?
-
-    override func setUp() {
-        super.setUp()
-        was = UserDefaults.standard.object(forKey: Lang.key)
-    }
-
-    override func tearDown() {
-        UserDefaults.standard.set(was, forKey: Lang.key)
-        super.tearDown()
-    }
-
     func testВставкиНаСвоихМестах() {
         let t = Strings(["Files: %@ of %@": "Dateien: %@ von %@",
                          "%@ of %@": "%2$@ / %1$@",
@@ -35,14 +23,10 @@ final class LangTests: XCTestCase {
         XCTAssertEqual(Strings(code: "de").translate("Planned 2 · done 1"), "Geplant 2 · erledigt 1")
     }
 
-    func testЯзыкВыбранныйИЯзыкТелефона() {
-        UserDefaults.standard.set("ja", forKey: Lang.key)
-        XCTAssertEqual(Lang.code, "ja")
-        XCTAssertEqual(T("Закрыть", "Close"), "閉じる")
-        UserDefaults.standard.set("ru", forKey: Lang.key)
-        XCTAssertEqual(T("Закрыть", "Close"), "Закрыть")
-        UserDefaults.standard.set("xx", forKey: Lang.key)
-        XCTAssertEqual(Lang.code, Lang.phone, "неизвестный — как у телефона")
+    func testЯзыкПриложенияЭтоЯзыкТелефона() {
+        // Своего выбора в приложении больше нет (P633): язык берётся из iPhone.
+        XCTAssertEqual(Lang.code, Lang.phone)
         XCTAssertTrue(Lang.all.contains { $0.code == Lang.phone })
+        XCTAssertEqual(Strings(code: "ja").translate("Close"), "閉じる")
     }
 }

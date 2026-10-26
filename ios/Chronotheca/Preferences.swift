@@ -9,33 +9,27 @@ enum Prefs {
     static let lock = "prefs.lock"
     static let theme = "prefs.theme"            // "system", "light", "dark"
     static let boundary = "prefs.boundary"      // час границы суток, 0…6
-    static let navigator = "prefs.navigator"    // "apple", "google"
-    static let quiet = "prefs.quiet"            // true — без звуков (P265)
-    static let textSize = "prefs.textSize"      // −1…2, ступени размера (P274)
     static let font = "prefs.font"              // "georgia", "newyork", "system"
-    // P290: погода, градусы, «Как прошло?», цвет календаря, неделя, сжатие.
+    // P290: погода, «Как прошло?», цвет календаря. Градусы, неделя, часы, сжатие,
+    // размер текста, шелест и навигатор — как в iPhone (P633).
     static let noWeather = "prefs.noWeather"    // true — погоды нет
-    static let fahrenheit = "prefs.fahrenheit"  // true — градусы Фаренгейта
     static let noAsk = "prefs.noAsk"            // true — без «Как прошло?»
+    static let ownKeyboardOnly = "prefs.ownKeyboardOnly" // true — только клавиатура iPhone (P633)
     static let calendarTint = "prefs.calendarTint" // "distance", "weekday", "none"
-    static let sundayFirst = "prefs.sundayFirst"   // true — неделя с воскресенья
-    static let squeeze = "prefs.squeeze"        // "original" — без сжатия, "high" — среднее (2560), "medium" — высокое (1600)
-    static let videoSqueeze = "prefs.videoSqueeze" // "1080" — до 1080p (по умолчанию), "original" — без сжатия
 
     static var weatherOn: Bool { !UserDefaults.standard.bool(forKey: noWeather) }
     static var askOn: Bool { !UserDefaults.standard.bool(forKey: noAsk) }
-    static var firstWeekday: Int { UserDefaults.standard.bool(forKey: sundayFirst) ? 1 : 2 }
-    /// По умолчанию — среднее сжатие (P365): на экране не отличить от
-    /// оригинала, а места в 5–6 раз меньше.
-    static var squeezeKey: String { UserDefaults.standard.string(forKey: squeeze) ?? "high" }
-    static var videoTo1080: Bool { (UserDefaults.standard.string(forKey: videoSqueeze) ?? "1080") == "1080" }
+    /// Первый день недели — как в iPhone (Основные → Язык и регион): с
+    /// воскресенья или с понедельника; календарь знает только эти два (P633).
+    static var firstWeekday: Int { Calendar.current.firstWeekday == 1 ? 1 : 2 }
 
     /// Погода для показа: в файле она всегда в °C, показывается — как
     /// выбрано.
     static func weatherText(_ written: String) -> String {
         // Слова — на языке приложения, как бы их ни записали (P412).
         let stored = WeatherNote.shown(written)
-        guard UserDefaults.standard.bool(forKey: fahrenheit) else { return stored }
+        // Градусы — как в iPhone: Фаренгейт там, где регион американский (P633).
+        guard Locale.current.measurementSystem == .us else { return stored }
         let ns = stored as NSString
         guard let re = try? NSRegularExpression(pattern: #"([+-]?\d+)°"#),
               let m = re.firstMatch(in: stored, range: NSRange(location: 0, length: ns.length)),
@@ -52,18 +46,9 @@ enum Prefs {
         return cal
     }
 
-    /// Ступени размера текста записей: мельче, обычный, крупнее, ещё крупнее.
-    static var textSteps: [(name: String, scale: CGFloat)] {
-        [(T("мельче", "smaller"), 0.92), (T("обычный", "normal"), 1),
-         (T("крупнее", "larger"), 1.1), (T("ещё крупнее", "largest"), 1.2)]
-    }
-
-    static var textStep: Int {
-        min(max(UserDefaults.standard.integer(forKey: textSize) + 1, 0), textSteps.count - 1)
-    }
-
-    /// Своя ступень записи и размер текста iPhone вместе (P465).
-    static var textScale: CGFloat { textSteps[textStep].scale * Look.grow }
+    /// Размер текста записей — размер текста iPhone (Настройки → Экран и
+    /// яркость → Размер текста), своих ступеней нет (P633).
+    static var textScale: CGFloat { Look.grow }
 
 
     /// Шрифты записи дневника: названия для настроек. К трём прежним — шесть

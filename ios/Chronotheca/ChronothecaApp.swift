@@ -1,13 +1,21 @@
 import SwiftUI
 import UserNotifications
 
+/// Чужие клавиатуры (P633): по просьбе человека приложение не пускает в свои
+/// поля клавиатуры из App Store — «полный доступ» даёт им видеть набранное.
+final class KeyboardGate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication,
+                     shouldAllowExtensionPointIdentifier id: UIApplication.ExtensionPointIdentifier) -> Bool {
+        !(id == .keyboard && UserDefaults.standard.bool(forKey: Prefs.ownKeyboardOnly))
+    }
+}
+
 @main
 struct ChronothecaApp: App {
+    @UIApplicationDelegateAdaptor(KeyboardGate.self) private var keyboardGate
     @StateObject private var vault: Vault
     @StateObject private var store: DayStore
     @StateObject private var archive: Archive
-    /// Язык приложения (P355). По умолчанию английский.
-    @AppStorage(Lang.key) private var language = "en"
     @StateObject private var shell = Shell()
     @Environment(\.scenePhase) private var phase
     /// Когда приложение ушло в фон — по этому решается, была ли пауза.
@@ -47,9 +55,7 @@ struct ChronothecaApp: App {
 
     var body: some Scene {
         WindowGroup {
-            // Сменили язык — всё рисуется заново, на новом (P355).
             RootView()
-                .id(language)
                 .environmentObject(vault)
                 .environmentObject(store)
                 .environmentObject(archive)

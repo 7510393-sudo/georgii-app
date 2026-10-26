@@ -1888,18 +1888,32 @@ enum PlaceActions {
 
     /// Открыть в Картах Apple с дорогой до точки.
     static func openInMaps(_ c: CLLocationCoordinate2D, name: String) {
-        // Куда вести — из настроек: Карты Apple или Google Карты (P220,
-        // P249). Ссылка Google открывает их приложение, а без него — сайт.
-        if UserDefaults.standard.string(forKey: Prefs.navigator) == "google",
-           let url = URL(string: String(format: "https://www.google.com/maps/dir/?api=1&destination=%.6f,%.6f",
-                                        c.latitude, c.longitude)) {
-            UIApplication.shared.open(url)
-            return
+        // Нет Google Карт — сразу Карты Apple; есть — короткий выбор (P633;
+        // прежде выбор лежал в настройках, P220, P249).
+        let appleMaps = {
+            let item = MKMapItem(placemark: MKPlacemark(coordinate: c))
+            item.name = name
+            item.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey:
+                                                MKLaunchOptionsDirectionsModeDefault])
         }
-        let item = MKMapItem(placemark: MKPlacemark(coordinate: c))
-        item.name = name
-        item.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey:
-                                            MKLaunchOptionsDirectionsModeDefault])
+        guard let probe = URL(string: "comgooglemaps://"), UIApplication.shared.canOpenURL(probe),
+              let google = URL(string: String(format: "comgooglemaps://?daddr=%.6f,%.6f&directionsmode=driving",
+                                              c.latitude, c.longitude))
+        else { return appleMaps() }
+        let sheet = UIAlertController(title: T("Построить маршрут в", "Directions in"),
+                                      message: nil, preferredStyle: .actionSheet)
+        sheet.addAction(UIAlertAction(title: T("Карты Apple", "Apple Maps"), style: .default) { _ in appleMaps() })
+        sheet.addAction(UIAlertAction(title: "Google", style: .default) { _ in UIApplication.shared.open(google) })
+        sheet.addAction(UIAlertAction(title: T("Отмена", "Cancel"), style: .cancel))
+        let scene = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first { $0.activationState == .foregroundActive }
+        guard var top = scene?.keyWindow?.rootViewController else { return appleMaps() }
+        while let shown = top.presentedViewController { top = shown }
+        sheet.popoverPresentationController?.sourceView = top.view
+        sheet.popoverPresentationController?.sourceRect = CGRect(x: top.view.bounds.midX, y: top.view.bounds.maxY - 60,
+                                                                 width: 1, height: 1)
+        top.present(sheet, animated: true)
     }
 
     /// Скопировать точку словами «59.93863, 30.31413» — их понимает любой

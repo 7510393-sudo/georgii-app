@@ -21,7 +21,6 @@ struct SettingsSticker: View {
     @EnvironmentObject private var shell: Shell
     @State private var askingRename = false
     @State private var askingTrial = false
-    @ObservedObject private var hints = Hints.shared
     /// Где начинается прокрутка листка на экране (P424). Листок выезжает
     /// сдвигом картинки, а не места, — эта точка стоит, пока он едет.
     @State private var top: CGFloat = 0
@@ -89,8 +88,6 @@ struct SettingsSticker: View {
             NoteCard { dayPart }
             NoteCard { pagePart }
             NoteCard { lookPart }
-            NoteCard { attachPart }
-            NoteCard { mapPart }
             NoteCard {
                 aboutPart
                 version
@@ -161,8 +158,11 @@ struct SettingsSticker: View {
             }
             Button(T("Отмена", "Cancel"), role: .cancel) { }
         } message: {
-            Text(T("В iCloud Drive записи будут и на iPad, и на Mac. На iPhone — «На iPhone», ", "In iCloud Drive your entries are on your iPad and Mac too. On the iPhone — “On My iPhone”, ")
-                 + T("новая папка, «Открыть»: она переживёт удаление приложения, но живёт только на этом телефоне. ", "a new folder, “Open”: it outlives deleting the app but lives only on this phone. ")
+            // Три места честно (P633, docs/50): что куда уходит и у кого копия.
+            Text(T("«На iPhone»: записи никуда не уходят, синхронизации нет. ", "On My iPhone: entries never leave the phone, no sync. ")
+                 + T("«В iCloud Drive»: записи и на iPad, и на Mac, копия лежит у Apple. ", "In iCloud Drive: entries on your iPad and Mac too, and Apple keeps a copy. ")
+                 + T("«В iCloud Drive» с «Расширенной защитой данных» (включается в Настройках iPhone): то же, но копию прочитают только ваши устройства. ", "In iCloud Drive with Advanced Data Protection (turn it on in iPhone Settings): the same, but only your own devices can read the copy. ")
+                 + T("Папка переживёт удаление приложения. ", "The folder outlives deleting the app. ")
                  + T("Записи, что уже есть, приложение предложит перенести.", "The app will offer to move the entries you already have."))
         }
         // Объём памяти считается, когда листок уже выехал (P475): ответ
@@ -173,27 +173,14 @@ struct SettingsSticker: View {
     @ViewBuilder private var languagePart: some View {
         // Заголовок — на языке приложения, как всё остальное (P380).
         NoteSection(title: T("Язык", "Language"))
-        // Десять языков (P369) — списком: кружков столько не поместить.
-        // Пока не выбран — язык телефона, если он у нас есть.
-        NoteRow(title: T("Язык приложения", "App language")) {
-            Menu {
-                ForEach(Lang.all, id: \.code) { lang in
-                    Button {
-                        Lang.set(lang.code)
-                        language = lang.code
-                        KeyboardBar.relabel()
-                    } label: {
-                        if lang.code == Lang.code {
-                            Label(lang.name, systemImage: "checkmark")
-                        } else {
-                            Text(lang.name)
-                        }
-                    }
-                }
-            } label: {
-                Text(Lang.name + " ▾")
-                    .font(Look.sans(13.5, weight: .semibold))
-                    .modifier(Tag(look: .chosen))
+        // Язык — в Настройках iPhone, как у всех приложений (P633): там
+        // у приложения с переводами стоит своя строка «Язык».
+        NoteRow(title: T("Язык приложения", "App language"),
+                detail: T("Язык приложения выбирается в Настройках iPhone: Приложения → Graphomanus → Язык.",
+                          "The app’s language is chosen in iPhone Settings: Apps → Graphomanus → Language."),
+                pinned: true) {
+            NoteButton(title: T("Настройки iPhone ›", "iPhone Settings ›")) {
+                if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
             }
         }
     }
@@ -225,6 +212,10 @@ struct SettingsSticker: View {
         // Записи за срок одной книгой (P296).
         NoteRow(title: T("PDF за выбранный срок", "PDF for a period")) {
             NoteButton(title: T("Собрать ›", "Make ›")) { showingPDF = true }
+        }
+        // Корзина дней (P295): вернуть или удалить навсегда.
+        NoteRow(title: T("Корзина", "Trash")) {
+            NoteButton(title: T("Открыть ›", "Open ›")) { showingTrash = true }
         }
         // Перенос из других дневников — бесплатно всегда (M14, P378).
         NoteRow(title: T("Переход из другого приложения", "Switch from another app")) {
@@ -274,6 +265,14 @@ struct SettingsSticker: View {
                 pinned: true) {
             Lever(isOn: lockChoice)
         }
+        // Чужая клавиатура с «полным доступом» видит всё набранное (P633, по
+        // docs/50): выключатель, как у банковских приложений.
+        NoteRow(title: T("Только клавиатура iPhone", "Only the iPhone keyboard"),
+                detail: T("Клавиатура из App Store с «полным доступом» видит всё, что вы набираете. Включено — в приложении работает только клавиатура iPhone. Может понадобиться перезапуск приложения.",
+                          "A keyboard from the App Store with “Full Access” can see everything you type. On: only the iPhone keyboard works in the app. May need an app restart."),
+                pinned: true) {
+            Lever(isOn: $ownKeyboardOnly)
+        }
     }
 
     @ViewBuilder private var dayPart: some View {
@@ -292,16 +291,6 @@ struct SettingsSticker: View {
                     .font(Look.sans(13.5, weight: .semibold))
                     .modifier(Tag(look: .chosen))
             }
-        }
-        // P290.
-        NoteRow(title: T("Неделя с", "Week starts on")) {
-            Choice(options: [(false, T("понедельника", "Monday")), (true, T("воскресенья", "Sunday"))],
-                   selection: $sundayFirst)
-        }
-        // 12 или 24 часа (P602): в файлах время всегда «21:30», здесь —
-        // как его показывать и как писать отметки в дневнике.
-        NoteRow(title: T("Формат времени", "Time format")) {
-            Choice(options: [(false, "13:00"), (true, "1 PM")], selection: $clock12)
         }
         // Напоминание о дневнике (P444) — в любой час с шести утра до
         // одиннадцати вечера (P602), а не только 20, 21 или 22: списком,
@@ -357,11 +346,6 @@ struct SettingsSticker: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 6)
-        }
-        if !noWeather {
-            NoteRow(title: T("Градусы", "Degrees")) {
-                Choice(options: [(false, "°C"), (true, "°F")], selection: $fahrenheit)
-            }
         }
         // «Здоровье» в шапке дневника (P378): включили — iPhone спросит.
         // Не вышло спросить — подсказка прямо под выключателем (P503).
@@ -421,21 +405,6 @@ struct SettingsSticker: View {
             Choice(options: [("system", T("системная", "system")), ("light", T("светлая", "light")),
                              ("dark", T("тёмная", "dark"))], selection: $theme)
         }
-        // Размер и шрифт записей (P274).
-        NoteRow(title: T("Размер текста", "Text size")) {
-            HStack(spacing: 6) {
-                NoteButton(title: "A−") { if textSize > -1 { Feel.tick(); textSize -= 1 } }
-                    .opacity(textSize > -1 ? 1 : 0.4)
-                Text(Prefs.textSteps[Prefs.textStep].name)
-                    .font(Look.sans(12.5))
-                    .foregroundStyle(Look.ink)
-                    .frame(minWidth: 62)
-                NoteButton(title: "A+") {
-                    if textSize < Prefs.textSteps.count - 2 { Feel.tick(); textSize += 1 }
-                }
-                .opacity(textSize < Prefs.textSteps.count - 2 ? 1 : 0.4)
-            }
-        }
         NoteRow(title: T("Шрифт записи", "Entry font")) {
             Choice(options: Prefs.fonts.map { ($0.key, $0.name) }, selection: $fontKey)
         }
@@ -443,35 +412,6 @@ struct SettingsSticker: View {
         // страницы, календарь и строки разделов; «без цвета» — только календарь.
         NoteRow(title: T("Цветовая гамма", "Colour scheme")) {
             SchemeChoice(selection: $calendarTint)
-        }
-        NoteRow(title: T("Шелест страниц", "Page rustle")) {
-            Lever(isOn: Binding(get: { !quiet }, set: { quiet = !$0 }))
-        }
-    }
-
-    @ViewBuilder private var attachPart: some View {
-        NoteSection(title: T("Вложения", "Attachments"))
-        // Три уровня, снимок — в формате iPhone (P365). Под строкой —
-        // сколько весит снимок: по этому и выбирают.
-        NoteRow(title: T("Сжатие снимков", "Photo compression"), detail: squeezeDetail) {
-            Choice(options: [("medium", T("высокое", "high")), ("high", T("среднее", "medium")),
-                             ("original", T("без сжатия", "none"))], selection: $squeeze)
-        }
-        NoteRow(title: T("Сжатие видео", "Video compression"), detail: videoDetail) {
-            Choice(options: [("1080", T("до 1080p", "to 1080p")), ("original", T("без сжатия", "none"))],
-                   selection: $videoSqueeze)
-        }
-        // Корзина дней (P295): вернуть или удалить навсегда.
-        NoteRow(title: T("Корзина", "Trash")) {
-            NoteButton(title: T("Открыть ›", "Open ›")) { showingTrash = true }
-        }
-    }
-
-    @ViewBuilder private var mapPart: some View {
-        NoteSection(title: T("Карта", "Map"))
-        NoteRow(title: T("Кнопка «в навигатор» открывает:", "Directions button opens:")) {
-            Choice(options: [("apple", T("Карты Apple", "Apple Maps")), ("google", "Google")],
-                   selection: $navigator)
         }
     }
 
@@ -483,24 +423,6 @@ struct SettingsSticker: View {
             // (P458): прежде настройки закрывались, и человек терялся.
             NoteButton(title: T("Открыть ›", "Open ›")) {
                 Purchase.shared.asking = true
-            }
-        }
-        // Подсказки для знакомства — заново, с первой (P427).
-        // Две кнопки (P458): включить снова — подсказки придут к месту, по
-        // одной, когда понадобятся; отключить — ни одной больше. Настройки
-        // при этом не закрываются.
-        NoteRow(title: T("Подсказки для знакомства", "Getting-started tips"),
-                detail: hints.off ? T("Сейчас отключены.", "Turned off now.")
-                                  : T("Появляются по одной, к месту.", "They appear one at a time, where needed.")) {
-            HStack(spacing: 6) {
-                NoteButton(title: T("Показать снова", "Show again")) {
-                    Hints.shared.startOver()
-                    shell.say(T("Подсказки снова включены — появятся по одной, к месту.",
-                                "Tips are on again — they will appear one at a time, where needed."))
-                }
-                NoteButton(title: T("Отключить", "Turn off")) {
-                    Hints.shared.turnOff()
-                }
             }
         }
         // Пройти первый запуск самому — в пробной папке (P452): свои записи
@@ -521,10 +443,6 @@ struct SettingsSticker: View {
                 NoteButton(title: T("Начать ›", "Start ›")) { askingTrial = true }
             }
         }
-        NoteRow(title: T("Чего ещё нет", "Not there yet")) {
-            NoteButton(title: undone ? T("Скрыть ▾", "Hide ▾") : T("Показать ›", "Show ›")) { undone.toggle() }
-        }
-        if undone { missing }
         // Погода в записях — от Погоды Apple; её условия положено
         // показывать там, где приложение показывает погоду (P208).
         NoteRow(title: T("Погода — Погода Apple", "Weather — Apple Weather")) {
@@ -553,18 +471,13 @@ struct SettingsSticker: View {
         }
     }
 
-    @State private var undone = false
     @AppStorage(Reminders.eveningKey) private var evening = -1
     @AppStorage(Prefs.lock) private var locked = false
+    @AppStorage(Prefs.ownKeyboardOnly) private var ownKeyboardOnly = false
     @AppStorage(Prefs.boundary) private var boundary = 0
-    @AppStorage(Clock.key) private var clock12 = Clock.twelve
     @AppStorage(Prefs.theme) private var theme = "system"
-    @AppStorage(Prefs.navigator) private var navigator = "apple"
-    @AppStorage(Prefs.quiet) private var quiet = false
-    @AppStorage(Prefs.textSize) private var textSize = 0
     @AppStorage(Prefs.font) private var fontKey = "newyork"
     @AppStorage(Prefs.noWeather) private var noWeather = false
-    @AppStorage(Prefs.fahrenheit) private var fahrenheit = false
     @AppStorage(Prefs.noAsk) private var noAsk = false
     @AppStorage(DayEvents.onKey) private var calendarEvents = true
     @AppStorage(HealthDay.key) private var health = false
@@ -589,14 +502,10 @@ struct SettingsSticker: View {
     }
     @AppStorage(DayEvents.holidaysKey) private var calendarHolidays = false
     @AppStorage(Prefs.calendarTint) private var calendarTint = "distance"
-    @AppStorage(Prefs.sundayFirst) private var sundayFirst = false
-    @AppStorage(Prefs.squeeze) private var squeeze = "high"
-    @AppStorage(Prefs.videoSqueeze) private var videoSqueeze = "1080"
     @State private var showingTrash = false
     @State private var showingPDF = false
     @State private var showingBackup = false
     @State private var showingImport = false
-    @AppStorage(Lang.key) private var language = "en"
 
 
     /// Замок меняется, только если телефон подтвердил владельца: иначе
@@ -610,28 +519,6 @@ struct SettingsSticker: View {
                 }
             }
         })
-    }
-
-    private var squeezeDetail: String {
-        switch squeeze {
-        case "high":
-            return T("2560 точек, снимок ~0,5–1 МБ. На экране не отличить от оригинала",
-                     "2560 px, about 0.5–1 MB a photo. Looks the same as the original on screen")
-        case "medium":
-            return T("1600 точек, снимок ~0,2–0,4 МБ. При увеличении мягче",
-                     "1600 px, about 0.2–0.4 MB a photo. Softer when zoomed in")
-        default:
-            return T("Как снял iPhone, снимок ~2–5 МБ",
-                     "As the iPhone took it, about 2–5 MB a photo")
-        }
-    }
-
-    private var videoDetail: String {
-        videoSqueeze == "1080"
-            ? T("Минута ~60 МБ. Ролики меньше 1080p — как есть",
-                "About 60 MB a minute. Smaller clips stay as they are")
-            : T("Как снял iPhone: минута 4K ~170–400 МБ",
-                "As the iPhone took it: a minute of 4K is about 170–400 MB")
     }
 
     @State private var choosingPlace = false
@@ -656,6 +543,19 @@ struct SettingsSticker: View {
                     close()
                     if let link = vault.filesLink { openURL(link) }
                 }
+            }
+            // Без связи — «Хранить загруженным» (P633, docs/50): в iCloud
+            // iPhone выгружает давно не открытые файлы, и без сети записи
+            // не открываются.
+            if vault.friendlyPath.hasPrefix("iCloud Drive") {
+                Text(T("Без связи: в «Файлах» нажмите на папку и подержите → «Хранить загруженным».",
+                       "Without a connection: in Files, press and hold the folder → “Keep Downloaded”."))
+                    .font(Look.sans(11.5))
+                    .foregroundStyle(Look.inkFaint)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 4)
             }
             if let parent = vault.nestedIn {
                 Text(T("Похоже, это папка внутри архива, а не сам архив. Прежние ", "This looks like a folder inside the archive, not the archive itself. Earlier ")
@@ -712,19 +612,6 @@ struct SettingsSticker: View {
             out += archive.fetching ? T(", скачиваются", ", downloading") : ""
         }
         return out
-    }
-
-    private var missing: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            // Вечернее напоминание есть (P444), Day One, Diarium, Journey —
-            // тоже; «Дневник» Apple своих записей наружу не отдаёт.
-            Text(T("Перенос из «Дневника» Apple", "Import from Apple Journal"))
-        }
-        .font(Look.sans(12))
-        .foregroundStyle(Look.inkFaint)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 14)
-        .padding(.bottom, 10)
     }
 
     private var version: some View {
@@ -1081,15 +968,10 @@ struct RollerSheet: View {
 }
 
 enum Clock {
-    /// 12 часов или 24 (P602). В файлах время всегда «21:30» — так его
-    /// читает любая программа; на экране — как выбрано. Не выбрано — как
-    /// в самом iPhone.
-    static let key = "prefs.clock12"
-
-    static var twelve: Bool {
-        if let chosen = UserDefaults.standard.object(forKey: key) as? Bool { return chosen }
-        return phoneTwelve
-    }
+    /// 12 часов или 24 — как в самом iPhone (P633; прежде выбирались в
+    /// настройках, P602). В файлах время всегда «21:30» — так его читает
+    /// любая программа; на экране — как у телефона.
+    static var twelve: Bool { phoneTwelve }
 
     /// Как в самом iPhone — считается один раз (P605): прежде выяснялось на
     /// каждой плашке плана при каждой отрисовке, и листание страниц, где
@@ -1340,6 +1222,10 @@ struct WelcomeView: View {
                     + "и на iPad, и на Mac; место берётся из вашего iCloud (бесплатно — 5 ГБ).",
                     "In the window choose “iCloud Drive” and tap “Open” at the top right. Your entries "
                     + "will be on your iPad and Mac too; they use your iCloud space (5 GB free)."))
+            guide(T("Копия лежит у Apple; с «Расширенной защитой данных» (Настройки iPhone → ваше имя → iCloud) "
+                    + "её прочитают только ваши устройства.",
+                    "Apple keeps a copy; with Advanced Data Protection (iPhone Settings → your name → iCloud) "
+                    + "only your own devices can read it."))
 
             Button {
                 shell.picking = true

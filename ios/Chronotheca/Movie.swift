@@ -1,13 +1,12 @@
 import AVFoundation
 
-/// Видео по настройке (P365): «до 1080p» — ролик крупнее 1920 точек по
-/// длинной стороне пережимается в 1080p (HEVC, родной формат iPhone);
-/// меньший и «без сжатия» — ложится как есть. Не вышло — тоже как есть:
+/// Видео (P365, P633): ролик крупнее 1920 точек по длинной стороне
+/// пережимается в 1080p (HEVC, родной формат iPhone); меньший — ложится
+/// как есть. Не вышло — тоже как есть:
 /// лучше большой ролик, чем никакого.
 enum Movie {
 
     static func shrunk(_ url: URL) async -> URL {
-        guard Prefs.videoTo1080 else { return url }
         let asset = AVURLAsset(url: url)
         guard let track = (try? await asset.loadTracks(withMediaType: .video))?.first,
               let size = try? await track.load(.naturalSize),
