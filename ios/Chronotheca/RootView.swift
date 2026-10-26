@@ -329,11 +329,6 @@ struct RootView: View {
             // Нижняя строка — самый верхний слой, как и верхняя (P515): листок
             // заходит под неё. Пока листок открыт, поверх него лежит точная
             // копия строки на том же месте; закрыт — копии нет.
-            if shell.showingSettings || shell.movingTask != nil {
-                tabbar
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                    .ignoresSafeArea(.all, edges: .bottom)
-            }
             // Над клавиатурой разделы — частью самой клавиатуры (P613,
             // `KeyboardBar`): у полей дня. На карте и в поиске их там нет.
             // Подсказки для первого знакомства (P427) — поверх всего, когда
@@ -579,6 +574,14 @@ struct RootView: View {
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        // Копия нижней строки — поверх листка. Лежит оверлеем, а не строкой
+        // общего стека: появлялась в тот же миг, что листок, и сдвигала всю
+        // страницу вверх на несколько строк (P636).
+        .overlay(alignment: .bottom) {
+            if shell.showingSettings || shell.movingTask != nil {
+                tabbar.ignoresSafeArea(.all, edges: .bottom)
+            }
+        }
     }
 
     /// Бумажку вытягивают за уголок: она идёт за пальцем; отпустили,
