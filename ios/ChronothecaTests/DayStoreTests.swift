@@ -294,8 +294,8 @@ extension DayStoreTests {
     /// Дописывая вчерашний день, человек видит, когда дописал: к времени
     /// встаёт короткая дата (P227). В сегодняшнем — только время.
     func testВПрошедшийДеньОтметкаСДатой() {
-        UserDefaults.standard.set(false, forKey: Clock.key)
-        defer { UserDefaults.standard.removeObject(forKey: Clock.key) }
+        Clock.forced = false
+        defer { Clock.forced = nil }
         let вчера = store(-1)
         XCTAssertTrue(вчера.stampIfNeeded())
         XCTAssertNotNil(вчера.diaryText.range(
@@ -395,8 +395,8 @@ extension DayStoreTests {
         XCTAssertNil(день.takeStamp())
 
         // Пустая запись прошедшего дня: отметка с датой, когда писали.
-        UserDefaults.standard.set(false, forKey: Clock.key)
-        defer { UserDefaults.standard.removeObject(forKey: Clock.key) }
+        Clock.forced = false
+        defer { Clock.forced = nil }
         let вчера = store(-2)
         let отметка = вчера.takeStamp()
         XCTAssertNotNil(отметка?.range(of: #"^\d{2}:\d{2} \d{2}\.\d{2}\.\d{2} $"#,
@@ -418,8 +418,8 @@ extension DayStoreTests {
 
     /// 12 часов (P602): отметка «09:41 PM», поле узнаёт её как отметку.
     func testОтметкаВДвенадцатиЧасах() {
-        UserDefaults.standard.set(true, forKey: Clock.key)
-        defer { UserDefaults.standard.removeObject(forKey: Clock.key) }
+        Clock.forced = true
+        defer { Clock.forced = nil }
         let сегодня = store(0)
         XCTAssertTrue(сегодня.stampIfNeeded())
         XCTAssertNotNil(сегодня.diaryText.range(
