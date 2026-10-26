@@ -1,41 +1,441 @@
+    339 Thread_53460   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 339 start  (in dyld) + 6992  [0x1029904e4]
+    +   339 start_sim  (in dyld_sim) + 20  [0x1028830e4]
+    +     339 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x10455a46c]  ChronothecaApp.swift:0
+    +       339 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x10455a3c0]  /<compiler-generated>:0
+    +         227 static App.main()  (in SwiftUI) + 132  [0x1d2c5f084]
+    +         ! 227 protocol witness for App.init() in conformance ChronothecaApp  (in Chronotheca.debug.dylib) + 12  [0x10455a458]  /<compiler-generated>:0
+    +         !   222 ChronothecaApp.init()  (in Chronotheca.debug.dylib) + 800  [0x104556ca4]  ChronothecaApp.swift:37
+    +         !   : 222 Vault.__allocating_init()  (in Chronotheca.debug.dylib) + 44  [0x104a81ce4]  Vault.swift:0
+    +         !   :   222 Vault.init()  (in Chronotheca.debug.dylib) + 2076  [0x104a8250c]  Vault.swift:225
+    +         !   :     222 Vault.usePreviewFolder()  (in Chronotheca.debug.dylib) + 904  [0x104a830c0]  Vault.swift:319
+    +         !   :       82 Vault.seedPreview()  (in Chronotheca.debug.dylib) + 1776  [0x104a89e7c]  Vault.swift:375
+    +         !   :       | 80 Vault.addPhoto(_:for:)  (in Chronotheca.debug.dylib) + 80  [0x104a8b324]  Vault.swift:1400
+    +         !   :       | + 80 static Photo.stored(from:)  (in Chronotheca.debug.dylib) + 1616  [0x1047d3980]  Photo.swift:38
+    +         !   :       | +   66 static Photo.shrunk(_:side:as:quality:)  (in Chronotheca.debug.dylib) + 464  [0x1047d3ffc]  Photo.swift:55
+    +         !   :       | +   ! 66 CGImageSourceCreateThumbnailAtIndex  (in ImageIO) + 764  [0x181ab4248]
+    +         !   :       | +   !   66 IIOImageSource::createThumbnailAtIndex(unsigned long, IIODictionary*, int*, unsigned int*)  (in ImageIO) + 5232  [0x181aafd64]
+    +         !   :       | +   !     65 CGImageCreateCopyWithParametersNew(CGImage*, CGColor*, CGAffineTransform, unsigned long, unsigned long, unsigned long, unsigned long, unsigned long, CGColorSpace*, unsigned int, bool, CGColorRenderingIntent, CGInterpolationQuality, bool)  (in ImageIO) + 1876  [0x181ade910]
+    +         !   :       | +   !     : 65 CGContextDrawImage  (in CoreGraphics) + 536  [0x18d3e40f4]
+    +         !   :       | +   !     :   65 CGContextDrawImageWithOptions  (in CoreGraphics) + 1088  [0x18d3e3cc8]
+    +         !   :       | +   !     :     62 ripc_DrawImage  (in CoreGraphics) + 752  [0x18d3ffd00]
+    +         !   :       | +   !     :     | 62 ripc_AcquireRIPImageData  (in CoreGraphics) + 836  [0x18d174a40]
+    +         !   :       | +   !     :     |   62 CGSImageDataLock  (in CoreGraphics) + 1164  [0x18d3d7adc]
+    +         !   :       | +   !     :     |     61 img_data_lock  (in CoreGraphics) + 7864  [0x18d3db1cc]
+    +         !   :       | +   !     :     |     + 26 img_interpolate_read  (in CoreGraphics) + 588  [0x18d3d6964]
+    +         !   :       | +   !     :     |     + ! 18 img_decode_read  (in CoreGraphics) + 1052  [0x18d3d2ed0]
+    +         !   :       | +   !     :     |     + ! : 18 get_access_session  (in CoreGraphics) + 48  [0x18d3d33f8]
+    +         !   :       | +   !     :     |     + ! :   18 CGAccessSessionCreate  (in CoreGraphics) + 120  [0x18d52a388]
+    +         !   :       | +   !     :     |     + ! :     18 CGDataProviderRetainData  (in CoreGraphics) + 72  [0x18d2d3670]
+    +         !   :       | +   !     :     |     + ! :       18 provider_for_destination_retain_data  (in CoreGraphics) + 24  [0x18d488024]
+    +         !   :       | +   !     :     |     + ! :         18 CGDataProviderRetainData  (in CoreGraphics) + 72  [0x18d2d3670]
+    +         !   :       | +   !     :     |     + ! :           18 imageProvider_retain_data  (in CoreGraphics) + 92  [0x18d541b5c]
+    +         !   :       | +   !     :     |     + ! :             18 IIOImageProviderInfo::CopyImageBlockSetWithOptions(void*, CGImageProvider*, CGRect, CGSize, __CFDictionary const*)  (in ImageIO) + 904  [0x181ad8a90]
+    +         !   :       | +   !     :     |     + ! :               18 IIOImageProviderInfo::copyImageBlockSetWithOptions(CGImageProvider*, CGRect, CGSize, __CFDictionary const*)  (in ImageIO) + 724  [0x181adb620]
+    +         !   :       | +   !     :     |     + ! :                 18 IIO_Reader::CopyImageBlockSetProc(void*, CGImageProvider*, CGRect, CGSize, __CFDictionary const*)  (in ImageIO) + 688  [0x181acad08]
+    +         !   :       | +   !     :     |     + ! :                   18 IIOReadPlugin::callDecodeImage(IIODecodeParameter*, IIOImageType, __IOSurface**, __CVBuffer**, CGImageBlockSet**)  (in ImageIO) + 956  [0x181b0d0cc]
+    +         !   :       | +   !     :     |     + ! :                     18 AppleJPEGReadPlugin::decodeImageImp(IIODecodeParameter*, IIOImageType, __IOSurface**, __CVBuffer**, CGImageBlockSet**)  (in ImageIO) + 524  [0x181bace3c]
+    +         !   :       | +   !     :     |     + ! :                       13 AppleJPEGReadPlugin::copyImageBlockSetImp(InfoRec*, CGImageProvider*, CGRect, CGSize, __CFDictionary const*)  (in ImageIO) + 3116  [0x181badb68]
+    +         !   :       | +   !     :     |     + ! :                       | 13 applejpeg_decode_image_all  (in AppleJPEG) + 692  [0x1c401c048]
+    +         !   :       | +   !     :     |     + ! :                       |   13 perform_decode  (in AppleJPEG) + 248  [0x1c401c200]
+    +         !   :       | +   !     :     |     + ! :                       |     10 aj_decode_all  (in AppleJPEG) + 296  [0x1c3ff5838]
+    +         !   :       | +   !     :     |     + ! :                       |     + 10 aj_bufferproc_crop  (in AppleJPEG) + 468  [0x1c400e348]
+    +         !   :       | +   !     :     |     + ! :                       |     +   10 aj_icol_mcurow_default  (in AppleJPEG) + 220  [0x1c400fcb4]
+    +         !   :       | +   !     :     |     + ! :                       |     +     10 aj_icol_row_444_to_rgba  (in AppleJPEG) + 144,60,...  [0x1c3ffca54,0x1c3ffca00,...]
+    +         !   :       | +   !     :     |     + ! :                       |     3 aj_decode_all  (in AppleJPEG) + 256  [0x1c3ff5810]
+    +         !   :       | +   !     :     |     + ! :                       |       3 fill_coeff_buffer  (in AppleJPEG) + 408  [0x1c3ff5e08]
+    +         !   :       | +   !     :     |     + ! :                       |         1 aj_mcu_decode  (in AppleJPEG) + 1716  [0x1c3ff4778]
+    +         !   :       | +   !     :     |     + ! :                       |         ! 1 aj_block_decode  (in AppleJPEG) + 224  [0x1c4000394]
+    +         !   :       | +   !     :     |     + ! :                       |         !   1 aj_idct_s1  (in AppleJPEG) + 476  [0x1c3ffb2a8]
+    +         !   :       | +   !     :     |     + ! :                       |         1 aj_mcu_decode  (in AppleJPEG) + 1800  [0x1c3ff47cc]
+    +         !   :       | +   !     :     |     + ! :                       |         ! 1 aj_block_decode  (in AppleJPEG) + 224  [0x1c4000394]
+    +         !   :       | +   !     :     |     + ! :                       |         !   1 aj_idct_s1_16x16_bilinear  (in AppleJPEG) + 792  [0x1c3ffb644]
+    +         !   :       | +   !     :     |     + ! :                       |         1 aj_mcu_decode  (in AppleJPEG) + 896  [0x1c3ff4444]
+    +         !   :       | +   !     :     |     + ! :                       5 AppleJPEGReadPlugin::copyImageBlockSetImp(InfoRec*, CGImageProvider*, CGRect, CGSize, __CFDictionary const*)  (in ImageIO) + 1868  [0x181bad688]
+    +         !   :       | +   !     :     |     + ! :                         5 AppleJPEGReadPlugin::createImageBlockSetWithHardwareDecode(InfoRec*, CGImageProvider*, CGSize, __CFDictionary const*, int*)  (in ImageIO) + 264  [0x181badfdc]
+    +         !   :       | +   !     :     |     + ! :                           5 AppleJPEGReadPlugin::copyIOSurfaceImp(CGImageProvider*, __CFDictionary const*, __IOSurface**, __CFDictionary const**)  (in ImageIO) + 976  [0x181bae574]
+    +         !   :       | +   !     :     |     + ! :                             5 CMPhotoDecompressionContainerCreateImageForIndex  (in CMPhoto) + 136  [0x1d820567c]
+    +         !   :       | +   !     :     |     + ! :                               5 ???  (in CMPhoto)  load address 0x1d812b000 + 0x1020a8  [0x1d822d0a8]
+    +         !   :       | +   !     :     |     + ! :                                 5 ???  (in CMPhoto)  load address 0x1d812b000 + 0x47228  [0x1d8172228]
+    +         !   :       | +   !     :     |     + ! :                                   5 ???  (in CMPhoto)  load address 0x1d812b000 + 0x110a58  [0x1d823ba58]
+    +         !   :       | +   !     :     |     + ! :                                     5 applejpeg_decode_image_all  (in AppleJPEG) + 692  [0x1c401c048]
+    +         !   :       | +   !     :     |     + ! :                                       5 perform_decode  (in AppleJPEG) + 248  [0x1c401c200]
+    +         !   :       | +   !     :     |     + ! :                                         3 aj_decode_all  (in AppleJPEG) + 256  [0x1c3ff5810]
+    +         !   :       | +   !     :     |     + ! :                                         + 3 fill_coeff_buffer  (in AppleJPEG) + 408  [0x1c3ff5e08]
+    +         !   :       | +   !     :     |     + ! :                                         +   2 aj_mcu_decode  (in AppleJPEG) + 1716  [0x1c3ff4778]
+    +         !   :       | +   !     :     |     + ! :                                         +   ! 1 aj_block_decode  (in AppleJPEG) + 224  [0x1c4000394]
+    +         !   :       | +   !     :     |     + ! :                                         +   ! : 1 aj_idct_s1  (in AppleJPEG) + 336  [0x1c3ffb21c]
+    +         !   :       | +   !     :     |     + ! :                                         +   ! 1 aj_block_decode  (in AppleJPEG) + 252  [0x1c40003b0]
+    +         !   :       | +   !     :     |     + ! :                                         +   1 aj_mcu_decode  (in AppleJPEG) + 1800  [0x1c3ff47cc]
+    +         !   :       | +   !     :     |     + ! :                                         +     1 aj_block_decode  (in AppleJPEG) + 224  [0x1c4000394]
+    +         !   :       | +   !     :     |     + ! :                                         +       1 aj_idct_s1  (in AppleJPEG) + 120  [0x1c3ffb144]
+    +         !   :       | +   !     :     |     + ! :                                         2 aj_decode_all  (in AppleJPEG) + 296  [0x1c3ff5838]
+    +         !   :       | +   !     :     |     + ! :                                           2 aj_bufferproc_crop  (in AppleJPEG) + 468  [0x1c400e348]
+    +         !   :       | +   !     :     |     + ! :                                             2 aj_icol_mcurow_semiplanar4X0  (in AppleJPEG) + 640  [0x1c4010c5c]
+    +         !   :       | +   !     :     |     + ! :                                               1 aj_icol_row_420_to_biplanar  (in AppleJPEG) + 92  [0x1c400edb8]
+    +         !   :       | +   !     :     |     + ! :                                               ! 1 _platform_memmove  (in libsystem_platform.dylib) + 224  [0x1027bb190]
+    +         !   :       | +   !     :     |     + ! :                                               1 aj_icol_row_420_to_biplanar  (in AppleJPEG) + 528  [0x1c400ef6c]
+    +         !   :       | +   !     :     |     + ! 5 img_decode_read  (in CoreGraphics) + 1348  [0x18d3d2ff8]
+    +         !   :       | +   !     :     |     + ! : 5 decode_data  (in CoreGraphics) + 10556  [0x18d18c014]
+    +         !   :       | +   !     :     |     + ! :   5 decode_byte_8bpc_3  (in CoreGraphics) + 336,316  [0x18d18c4cc,0x18d18c4b8]
+    +         !   :       | +   !     :     |     + ! 3 img_decode_read  (in CoreGraphics) + 1280  [0x18d3d2fb4]
+    +         !   :       | +   !     :     |     + !   3 get_chunks_direct  (in CoreGraphics) + 216  [0x18d52a6d0]
+    +         !   :       | +   !     :     |     + !     3 CGDataProviderDirectGetBytesAtPositionInternal  (in CoreGraphics) + 320  [0x18d2d2e1c]
+    +         !   :       | +   !     :     |     + !       2 provider_for_destination_get_bytes_at_position_inner  (in CoreGraphics) + 1692  [0x18d488708]
+    +         !   :       | +   !     :     |     + !       | 2 vImageConverterConvert  (in CoreGraphics) + 204  [0x18d382380]
+    +         !   :       | +   !     :     |     + !       |   2 vImageConverter_convert_internal  (in CoreGraphics) + 24  [0x18d3824d8]
+    +         !   :       | +   !     :     |     + !       |     2 vImageConvert_AnyToAny  (in vImage) + 1124  [0x194a04678]
+    +         !   :       | +   !     :     |     + !       |       2 vImageDebug_CheckDestBuffer  (in vImage) + 400  [0x19494b82c]
+    +         !   :       | +   !     :     |     + !       |         2 _ERROR_Buffer_Write__Too_Small_For_Arguments_To_vImage__CheckBacktrace  (in vImage) + 60  [0x19494b93c]
+    +         !   :       | +   !     :     |     + !       1 provider_for_destination_get_bytes_at_position_inner  (in CoreGraphics) + 484  [0x18d488250]
+    +         !   :       | +   !     :     |     + !         1 CGDataProviderDirectGetBytesAtPositionInternal  (in CoreGraphics) + 320  [0x18d2d2e1c]
+    +         !   :       | +   !     :     |     + !           1 imageProvider_getBytesAtPosition  (in CoreGraphics) + 652  [0x18d5419cc]
+    +         !   :       | +   !     :     |     + !             1 _platform_memmove  (in libsystem_platform.dylib) + 236  [0x1027bb19c]
+    +         !   :       | +   !     :     |     + 20 img_interpolate_read  (in CoreGraphics) + 1720  [0x18d3d6dd0]
+    +         !   :       | +   !     :     |     + ! 20 void resample_horizontal<unsigned char, int, 3, false>(resample_filter const*, unsigned int, unsigned int, int, void**, void const* const*, int*, int, void const* const*)  (in CoreGraphics) + 336,556,...  [0x18d1652d0,0x18d1653ac,...]
+    +         !   :       | +   !     :     |     + 15 void resample_vertical<int, unsigned char, 3, (AlphaStyle)0>(resample_filter const*, unsigned int, unsigned int, int, void**, void const* const*)  (in CoreGraphics) + 80,208,...  [0x18d15bdcc,0x18d15be4c,...]
+    +         !   :       | +   !     :     |     1 img_data_lock  (in CoreGraphics) + 7488  [0x18d3db054]
+    +         !   :       | +   !     :     |       1 img_interpolate_end  (in CoreGraphics) + 32  [0x18d3d707c]
+    +         !   :       | +   !     :     |         1 CGAccessSessionRelease  (in CoreGraphics) + 44  [0x18d52ab1c]
+    +         !   :       | +   !     :     |           1 CGDataProviderReleaseData  (in CoreGraphics) + 72  [0x18d2d36d4]
+    +         !   :       | +   !     :     |             1 provider_for_destination_release_data  (in CoreGraphics) + 24  [0x18d48804c]
+    +         !   :       | +   !     :     |               1 CGDataProviderReleaseData  (in CoreGraphics) + 72  [0x18d2d36d4]
+    +         !   :       | +   !     :     |                 1 imageProvider_release_data  (in CoreGraphics) + 28  [0x18d541bc4]
+    +         !   :       | +   !     :     |                   1 CGImageBlockSetRelease  (in CoreGraphics) + 100  [0x18d4c0858]
+    +         !   :       | +   !     :     |                     1 _ImageIO_Free  (in ImageIO) + 232  [0x181b976a8]
+    +         !   :       | +   !     :     |                       1 __munmap  (in libsystem_kernel.dylib) + 8  [0x10273c204]
+    +         !   :       | +   !     :     3 ripc_DrawImage  (in CoreGraphics) + 832  [0x18d3ffd50]
+    +         !   :       | +   !     :       3 RIPLayerBltImage  (in CoreGraphics) + 744  [0x18d4cd28c]
+    +         !   :       | +   !     :         3 ripl_Mark  (in CoreGraphics) + 32  [0x18d4ceda0]
+    +         !   :       | +   !     :           3 ARGB32_image  (in CoreGraphics) + 364  [0x18d55c328]
+    +         !   :       | +   !     :             3 <deduplicated_symbol>  (in CoreGraphics) + 268  [0x18d552b3c]
+    +         !   :       | +   !     :               3 CGBlt_copyBytes  (in CoreGraphics) + 492  [0x18d303624]
+    +         !   :       | +   !     :                 3 _platform_memmove  (in libsystem_platform.dylib) + 224,240,...  [0x1027bb190,0x1027bb1a0,...]
+    +         !   :       | +   !     1 CGImageCreateCopyWithParametersNew(CGImage*, CGColor*, CGAffineTransform, unsigned long, unsigned long, unsigned long, unsigned long, unsigned long, CGColorSpace*, unsigned int, bool, CGColorRenderingIntent, CGInterpolationQuality, bool)  (in ImageIO) + 1740  [0x181ade888]
+    +         !   :       | +   !       1 CGContextClearRect  (in CoreGraphics) + 80  [0x18d411204]
+    +         !   :       | +   !         1 CGContextFillRect  (in CoreGraphics) + 84  [0x18d410fdc]
+    +         !   :       | +   !           1 CGContextFillRects  (in CoreGraphics) + 116  [0x18d410f1c]
+    +         !   :       | +   !             1 ripc_DrawRects  (in CoreGraphics) + 504  [0x18d3ff7ec]
+    +         !   :       | +   !               1 ripc_Render  (in CoreGraphics) + 504  [0x18d3fdc98]
+    +         !   :       | +   !                 1 RIPLayerBltShape  (in CoreGraphics) + 1052  [0x18d4cd958]
+    +         !   :       | +   !                   1 rgba32_mark  (in CoreGraphics) + 2748  [0x18d54a7a8]
+    +         !   :       | +   !                     1 CGBlt_fillBytes  (in CoreGraphics) + 268  [0x18d40d05c]
+    +         !   :       | +   !                       1 __bzero  (in libsystem_platform.dylib) + 68  [0x1027bad94]
+    +         !   :       | +   12 static Photo.shrunk(_:side:as:quality:)  (in Chronotheca.debug.dylib) + 1844  [0x1047d4560]  Photo.swift:70
+    +         !   :       | +   ! 12 CGImageDestinationFinalize  (in ImageIO) + 192  [0x181b671e0]
+    +         !   :       | +   !   12 IIOImageDestination::finalizeDestination(unsigned long long*)  (in ImageIO) + 784  [0x181b62e60]
+    +         !   :       | +   !     12 IIO_Writer_AppleJPEG::write(void*, void*)  (in ImageIO) + 132  [0x181b78d54]
+    +         !   :       | +   !       12 AppleJPEGWritePlugin::writeAll()  (in ImageIO) + 248  [0x181b78b08]
+    +         !   :       | +   !         8 AppleJPEGWritePlugin::writeOne(IIOImagePixelDataProvider*, IIODictionary*, IIODictionary*, unsigned int)  (in ImageIO) + 1312  [0x181b7873c]
+    +         !   :       | +   !         : 8 applejpeg_encode_image_row  (in AppleJPEG) + 532  [0x1c402248c]
+    +         !   :       | +   !         :   4 aj_encode_row  (in AppleJPEG) + 180  [0x1c3fedd78]
+    +         !   :       | +   !         :   | 4 aj_encode_buffers_baseline  (in AppleJPEG) + 52  [0x1c3fed918]
+    +         !   :       | +   !         :   |   4 aj_mcu_dct  (in AppleJPEG) + 304  [0x1c40201cc]
+    +         !   :       | +   !         :   |     3 aj_block_encode_ac  (in AppleJPEG) + 200,216,...  [0x1c3ff7cbc,0x1c3ff7ccc,...]
+    +         !   :       | +   !         :   |     1 aj_block_encode  (in AppleJPEG) + 60  [0x1c3ffe904]
+    +         !   :       | +   !         :   |       1 aj_huffman_encode_val_lkup  (in AppleJPEG) + 208  [0x1c40049f8]
+    +         !   :       | +   !         :   |         1 aj_ostream_write  (in AppleJPEG) + 384  [0x1c3fff248]
+    +         !   :       | +   !         :   |           1 aj_ostream_write.cold.1  (in AppleJPEG) + 24  [0x1c4023068]
+    +         !   :       | +   !         :   |             1 iioWriteCallback(void*, int, void*)  (in ImageIO) + 44  [0x181ae44e0]
+    +         !   :       | +   !         :   |               1 IIOImageWriteSession::putBytes(void const*, unsigned long)  (in ImageIO) + 184  [0x181aee518]
+    +         !   :       | +   !         :   |                 1 -[NSConcreteMutableData appendBytes:length:]  (in Foundation) + 340  [0x18105d6f0]
+    +         !   :       | +   !         :   |                   1 _NSMutableDataGrowBytes  (in Foundation) + 332  [0x18105d2d0]
+    +         !   :       | +   !         :   |                     1 __CFSafelyReallocateImpl  (in CoreFoundation) + 32  [0x180395d24]
+    +         !   :       | +   !         :   |                       1 malloc_type_realloc  (in libsystem_malloc.dylib) + 172  [0x1801da3dc]
+    +         !   :       | +   !         :   |                         1 xzm_realloc  (in libsystem_malloc.dylib) + 856  [0x1801ea204]
+    +         !   :       | +   !         :   |                           1 _xzm_xzone_chunk_free  (in libsystem_malloc.dylib) + 332  [0x1801f2a30]
+    +         !   :       | +   !         :   |                             1 <deduplicated_symbol>  (in libsystem_malloc.dylib) + 12  [0x1801d9ea4]
+    +         !   :       | +   !         :   |                               1 madvise  (in libsystem_kernel.dylib) + 8  [0x10273b554]
+    +         !   :       | +   !         :   3 aj_encode_row  (in AppleJPEG) + 136  [0x1c3fedd4c]
+    +         !   :       | +   !         :   | 3 aj_col_trans_row  (in AppleJPEG) + 152  [0x1c401777c]
+    +         !   :       | +   !         :   |   3 aj_RGBA8888_YUV420  (in AppleJPEG) + 180,336,...  [0x1c3ff95a0,0x1c3ff963c,...]
+    +         !   :       | +   !         :   1 aj_encode_row  (in AppleJPEG) + 204  [0x1c3fedd90]
+    +         !   :       | +   !         :     1 aj_reset_row_ptrs  (in AppleJPEG) + 228  [0x1c400ba18]
+    +         !   :       | +   !         3 AppleJPEGWritePlugin::writeOne(IIOImagePixelDataProvider*, IIODictionary*, IIODictionary*, unsigned int)  (in ImageIO) + 1252  [0x181b78700]
+    +         !   :       | +   !         : 3 IIOImagePixelDataProvider::getBytesDataProvider(void*, unsigned long)  (in ImageIO) + 216  [0x181c1c0cc]
+    +         !   :       | +   !         :   3 IIOImagePixelDataProvider::convertBytesWithRange(unsigned char*, unsigned char*, CGPoint, CGPoint, unsigned long)  (in ImageIO) + 336  [0x181c1b90c]
+    +         !   :       | +   !         :     3 IIOImagePixelDataProvider::convertBytes(vImage_Buffer*, vImage_Buffer*)  (in ImageIO) + 276  [0x181c1b6c8]
+    +         !   :       | +   !         :       3 iio_vImageConvert_AnyToAny(vImageConverter*, vImage_Buffer const*, vImage_Buffer const*, void*, unsigned int)  (in ImageIO) + 288  [0x181bdbecc]
+    +         !   :       | +   !         :         2 vImageConvert_AnyToAny  (in vImage) + 2416  [0x194a04b84]
+    +         !   :       | +   !         :         | 1 AnyToAnyBlockInternal  (in vImage) + 396  [0x194a18b98]
+    +         !   :       | +   !         :         | + 1 _platform_memset  (in libsystem_platform.dylib) + 180  [0x1027bae74]
+    +         !   :       | +   !         :         | 1 AnyToAnyBlockInternal  (in vImage) + 2276  [0x194a192f0]
+    +         !   :       | +   !         :         1 vImageConvert_AnyToAny  (in vImage) + 700  [0x194a044d0]
+    +         !   :       | +   !         :           1 vImageDebug_CheckSrcBuffer  (in vImage) + 144  [0x19494b624]
+    +         !   :       | +   !         :             1 _ERROR_Buffer_Read__Too_Small_For_Arguments_To_vImage__CheckBacktrace  (in vImage) + 56  [0x19494b690]
+    +         !   :       | +   !         1 AppleJPEGWritePlugin::writeOne(IIOImagePixelDataProvider*, IIODictionary*, IIODictionary*, unsigned int)  (in ImageIO) + 1144  [0x181b78694]
+    +         !   :       | +   !           1 JPEGWritePlugin::WriteExtendedXMPData(IIOImageWriteSession*, IIODictionary*)  (in ImageIO) + 100  [0x181ae4c88]
+    +         !   :       | +   !             1 CGImageMetadataCreateFromLegacyProps  (in ImageIO) + 124  [0x181bde208]
+    +         !   :       | +   !               1 XMPMappingIteratePropertiesUsingBlock  (in ImageIO) + 232  [0x181bdc2c4]
+    +         !   :       | +   !                 1 __CGImageMetadataCreateFromLegacyProps_block_invoke  (in ImageIO) + 788  [0x181bde5b4]
+    +         !   :       | +   !                   1 CGImageMetadataCreateSimpleStringFromCFValue  (in ImageIO) + 1132  [0x181d9d774]
+    +         !   :       | +   !                     1 CFStringCreateWithFormat  (in CoreFoundation) + 44  [0x18044c514]
+    +         !   :       | +   !                       1 CFStringCreateWithFormatAndArguments  (in CoreFoundation) + 144  [0x18044c32c]
+    +         !   :       | +   !                         1 _CFStringCreateWithFormatAndArgumentsReturningMetadata  (in CoreFoundation) + 180  [0x18044c428]
+    +         !   :       | +   !                           1 __CFStringAppendFormatCore  (in CoreFoundation) + 6868  [0x18044a9f8]
+    +         !   :       | +   !                             1 _xzm_xzone_malloc_tiny  (in libsystem_malloc.dylib) + 352  [0x1801ee4b0]
+    +         !   :       | +   1 static Photo.shrunk(_:side:as:quality:)  (in Chronotheca.debug.dylib) + 1944  [0x1047d45c4]  Photo.swift:71
+    +         !   :       | +   ! 1 -[NSConcreteMutableData dealloc]  (in Foundation) + 40  [0x18105e324]
+    +         !   :       | +   !   1 xzm_segment_group_free_chunk  (in libsystem_malloc.dylib) + 388  [0x1801cdb2c]
+    +         !   :       | +   !     1 <deduplicated_symbol>  (in libsystem_malloc.dylib) + 12  [0x1801d9ea4]
+    +         !   :       | +   !       1 madvise  (in libsystem_kernel.dylib) + 8  [0x10273b554]
+    +         !   :       | +   1 static Photo.shrunk(_:side:as:quality:)  (in Chronotheca.debug.dylib) + 1960  [0x1047d45d4]  Photo.swift:71
+    +         !   :       | +     1 _CFRelease  (in CoreFoundation) + 296  [0x180424d1c]
+    +         !   :       | +       1 image_finalize  (in CoreGraphics) + 96  [0x18d265f64]
+    +         !   :       | +         1 _CFRelease  (in CoreFoundation) + 1208  [0x1804250ac]
+    +         !   :       | +           1 data_provider_retain_count  (in CoreGraphics) + 92  [0x18d2d1fb0]
+    +         !   :       | +             1 data_provider_finalize  (in CoreGraphics) + 60  [0x18d2d1ddc]
+    +         !   :       | +               1 _CFRelease  (in CoreFoundation) + 296  [0x180424d1c]
+    +         !   :       | +                 1 __CFDataDeallocate  (in CoreFoundation) + 56  [0x1803cb000]
+    +         !   :       | +                   1 vm_allocator_deallocate  (in CoreGraphics) + 60  [0x18d318514]
+    +         !   :       | +                     1 mach_vm_deallocate  (in libsystem_kernel.dylib) + 84  [0x10273a4d4]
+    +         !   :       | +                       1 _kernelrpc_mach_vm_deallocate_trap  (in libsystem_kernel.dylib) + 8  [0x1027389e4]
+    +         !   :       | 2 Vault.addPhoto(_:for:)  (in Chronotheca.debug.dylib) + 360  [0x104a8b43c]  Vault.swift:1404
+    +         !   :       |   2 Vault.addAttachment(_:to:name:for:)  (in Chronotheca.debug.dylib) + 2000  [0x104aa2180]  Vault.swift:1434
+    +         !   :       |     2 static Vault.write(data:to:)  (in Chronotheca.debug.dylib) + 796  [0x104a8ccb8]  Vault.swift:1350
+    +         !   :       |       2 -[NSFileCoordinator coordinateWritingItemAtURL:options:error:byAccessor:]  (in Foundation) + 84  [0x1811c78b4]
+    +         !   :       |         2 -[NSFileCoordinator(NSPrivate) _coordinateWritingItemAtURL:options:error:byAccessor:]  (in Foundation) + 620  [0x1811c9c8c]
+    +         !   :       |           2 -[NSFileCoordinator(NSPrivate) _withAccessArbiter:invokeAccessor:orDont:andRelinquishAccessClaim:]  (in Foundation) + 492  [0x1811c9264]
+    +         !   :       |             2 __85-[NSFileCoordinator(NSPrivate) _coordinateWritingItemAtURL:options:error:byAccessor:]_block_invoke.194  (in Foundation) + 208  [0x1811c9e88]
+    +         !   :       |               2 __73-[NSFileCoordinator coordinateWritingItemAtURL:options:error:byAccessor:]_block_invoke  (in Foundation) + 96  [0x1811c793c]
+    +         !   :       |                 2 -[NSFileCoordinator _invokeAccessor:thenCompletionHandler:]  (in Foundation) + 84  [0x1811c76ec]
+    +         !   :       |                   2 thunk for @escaping @callee_guaranteed (@in_guaranteed URL) -> ()  (in Chronotheca.debug.dylib) + 152  [0x10449b290]  /<compiler-generated>:0
+    +         !   :       |                     2 thunk for @callee_guaranteed (@in_guaranteed URL) -> ()  (in Chronotheca.debug.dylib) + 20  [0x10449b1ec]  /<compiler-generated>:0
+    +         !   :       |                       2 closure #1 in static Vault.write(data:to:)  (in Chronotheca.debug.dylib) + 116  [0x104aa0f0c]  Vault.swift:1351
+    +         !   :       |                         2 Data.write(to:options:)  (in Foundation) + 2372  [0x180aa5a28]
+    +         !   :       |                           1 closure #1 in writeToFileAux(path:buffer:options:attributes:reportProgress:)  (in Foundation) + 140  [0x180ac3c68]
+    +         !   :       |                           ! 1 _BridgedURL.path.getter  (in Foundation) + 64  [0x180e7ec7c]
+    +         !   :       |                           !   1 -[NSURL(NSURL) path]  (in Foundation) + 124  [0x18115cb98]
+    +         !   :       |                           !     1 CFURLCopyFileSystemPath  (in CoreFoundation) + 220  [0x180484aa0]
+    +         !   :       |                           !       1 CFURLCreateStringWithFileSystemPath  (in CoreFoundation) + 912  [0x180485208]
+    +         !   :       |                           !         1 URLPathToPOSIXPath  (in CoreFoundation) + 68  [0x180485778]
+    +         !   :       |                           !           1 CFURLCreateStringByReplacingPercentEscapes  (in CoreFoundation) + 1084  [0x18047c778]
+    +         !   :       |                           !             1 CFStringFind  (in CoreFoundation) + 88  [0x180456e1c]
+    +         !   :       |                           !               1 CFStringFindWithOptionsAndLocale  (in CoreFoundation) + 176  [0x180452e74]
+    +         !   :       |                           1 closure #1 in writeToFileAux(path:buffer:options:attributes:reportProgress:)  (in Foundation) + 2908  [0x180ac4738]
+    +         !   :       |                             1 closure #3 in closure #1 in writeToFileAux(path:buffer:options:attributes:reportProgress:)  (in Foundation) + 608  [0x180ac69e8]
+    +         !   :       |                               1 closure #1 in closure #3 in closure #1 in writeToFileAux(path:buffer:options:attributes:reportProgress:)  (in Foundation) + 112  [0x180ac7d84]
+    +         !   :       |                                 1 rename  (in libsystem_kernel.dylib) + 12  [0x10273c324]
+    +         !   :       |                                   1 __rename  (in libsystem_kernel.dylib) + 8  [0x10273c348]
+    +         !   :       50 Vault.seedPreview()  (in Chronotheca.debug.dylib) + 1204  [0x104a89c40]  Vault.swift:371
+    +         !   :       | 45 Vault.addPhoto(_:for:)  (in Chronotheca.debug.dylib) + 80  [0x104a8b324]  Vault.swift:1400
+    +         !   :       | + 23 static Photo.stored(from:)  (in Chronotheca.debug.dylib) + 1616  [0x1047d3980]  Photo.swift:38
+    +         !   :       | + ! 22 static Photo.shrunk(_:side:as:quality:)  (in Chronotheca.debug.dylib) + 464  [0x1047d3ffc]  Photo.swift:55
+    +         !   :       | + ! : 22 CGImageSourceCreateThumbnailAtIndex  (in ImageIO) + 764  [0x181ab4248]
+    +         !   :       | + ! :   22 IIOImageSource::createThumbnailAtIndex(unsigned long, IIODictionary*, int*, unsigned int*)  (in ImageIO) + 5232  [0x181aafd64]
+    +         !   :       | + ! :     20 CGImageCreateCopyWithParametersNew(CGImage*, CGColor*, CGAffineTransform, unsigned long, unsigned long, unsigned long, unsigned long, unsigned long, CGColorSpace*, unsigned int, bool, CGColorRenderingIntent, CGInterpolationQuality, bool)  (in ImageIO) + 1876  [0x181ade910]
+    +         !   :       | + ! :     | 20 CGContextDrawImage  (in CoreGraphics) + 536  [0x18d3e40f4]
+    +         !   :       | + ! :     |   20 CGContextDrawImageWithOptions  (in CoreGraphics) + 1088  [0x18d3e3cc8]
+    +         !   :       | + ! :     |     18 ripc_DrawImage  (in CoreGraphics) + 752  [0x18d3ffd00]
+    +         !   :       | + ! :     |     + 18 ripc_AcquireRIPImageData  (in CoreGraphics) + 836  [0x18d174a40]
+    +         !   :       | + ! :     |     +   18 CGSImageDataLock  (in CoreGraphics) + 1164  [0x18d3d7adc]
+    +         !   :       | + ! :     |     +     16 img_data_lock  (in CoreGraphics) + 7864  [0x18d3db1cc]
+    +         !   :       | + ! :     |     +     ! 10 img_interpolate_read  (in CoreGraphics) + 588  [0x18d3d6964]
+    +         !   :       | + ! :     |     +     ! : 7 img_decode_read  (in CoreGraphics) + 1052  [0x18d3d2ed0]
+    +         !   :       | + ! :     |     +     ! : | 7 get_access_session  (in CoreGraphics) + 48  [0x18d3d33f8]
+    +         !   :       | + ! :     |     +     ! : |   7 CGAccessSessionCreate  (in CoreGraphics) + 120  [0x18d52a388]
+    +         !   :       | + ! :     |     +     ! : |     7 CGDataProviderRetainData  (in CoreGraphics) + 72  [0x18d2d3670]
+    +         !   :       | + ! :     |     +     ! : |       7 provider_for_destination_retain_data  (in CoreGraphics) + 24  [0x18d488024]
+    +         !   :       | + ! :     |     +     ! : |         7 CGDataProviderRetainData  (in CoreGraphics) + 72  [0x18d2d3670]
+    +         !   :       | + ! :     |     +     ! : |           7 imageProvider_retain_data  (in CoreGraphics) + 92  [0x18d541b5c]
+    +         !   :       | + ! :     |     +     ! : |             7 IIOImageProviderInfo::CopyImageBlockSetWithOptions(void*, CGImageProvider*, CGRect, CGSize, __CFDictionary const*)  (in ImageIO) + 904  [0x181ad8a90]
+    +         !   :       | + ! :     |     +     ! : |               7 IIOImageProviderInfo::copyImageBlockSetWithOptions(CGImageProvider*, CGRect, CGSize, __CFDictionary const*)  (in ImageIO) + 724  [0x181adb620]
+    +         !   :       | + ! :     |     +     ! : |                 7 IIO_Reader::CopyImageBlockSetProc(void*, CGImageProvider*, CGRect, CGSize, __CFDictionary const*)  (in ImageIO) + 688  [0x181acad08]
+    +         !   :       | + ! :     |     +     ! : |                   7 IIOReadPlugin::callDecodeImage(IIODecodeParameter*, IIOImageType, __IOSurface**, __CVBuffer**, CGImageBlockSet**)  (in ImageIO) + 956  [0x181b0d0cc]
+    +         !   :       | + ! :     |     +     ! : |                     7 AppleJPEGReadPlugin::decodeImageImp(IIODecodeParameter*, IIOImageType, __IOSurface**, __CVBuffer**, CGImageBlockSet**)  (in ImageIO) + 524  [0x181bace3c]
+    +         !   :       | + ! :     |     +     ! : |                       6 AppleJPEGReadPlugin::copyImageBlockSetImp(InfoRec*, CGImageProvider*, CGRect, CGSize, __CFDictionary const*)  (in ImageIO) + 1868  [0x181bad688]
+    +         !   :       | + ! :     |     +     ! : |                       + 6 AppleJPEGReadPlugin::createImageBlockSetWithHardwareDecode(InfoRec*, CGImageProvider*, CGSize, __CFDictionary const*, int*)  (in ImageIO) + 264  [0x181badfdc]
+    +         !   :       | + ! :     |     +     ! : |                       +   6 AppleJPEGReadPlugin::copyIOSurfaceImp(CGImageProvider*, __CFDictionary const*, __IOSurface**, __CFDictionary const**)  (in ImageIO) + 976  [0x181bae574]
+    +         !   :       | + ! :     |     +     ! : |                       +     6 CMPhotoDecompressionContainerCreateImageForIndex  (in CMPhoto) + 136  [0x1d820567c]
+    +         !   :       | + ! :     |     +     ! : |                       +       6 ???  (in CMPhoto)  load address 0x1d812b000 + 0x1020a8  [0x1d822d0a8]
+    +         !   :       | + ! :     |     +     ! : |                       +         6 ???  (in CMPhoto)  load address 0x1d812b000 + 0x47228  [0x1d8172228]
+    +         !   :       | + ! :     |     +     ! : |                       +           4 ???  (in CMPhoto)  load address 0x1d812b000 + 0x110a58  [0x1d823ba58]
+    +         !   :       | + ! :     |     +     ! : |                       +           ! 4 applejpeg_decode_image_all  (in AppleJPEG) + 692  [0x1c401c048]
+    +         !   :       | + ! :     |     +     ! : |                       +           !   4 perform_decode  (in AppleJPEG) + 248  [0x1c401c200]
+    +         !   :       | + ! :     |     +     ! : |                       +           !     3 aj_decode_all  (in AppleJPEG) + 256  [0x1c3ff5810]
+    +         !   :       | + ! :     |     +     ! : |                       +           !     : 3 fill_coeff_buffer  (in AppleJPEG) + 408  [0x1c3ff5e08]
+    +         !   :       | + ! :     |     +     ! : |                       +           !     :   1 aj_mcu_decode  (in AppleJPEG) + 1268  [0x1c3ff45b8]
+    +         !   :       | + ! :     |     +     ! : |                       +           !     :   | 1 aj_block_decode  (in AppleJPEG) + 84  [0x1c4000308]
+    +         !   :       | + ! :     |     +     ! : |                       +           !     :   1 aj_mcu_decode  (in AppleJPEG) + 1716  [0x1c3ff4778]
+    +         !   :       | + ! :     |     +     ! : |                       +           !     :   | 1 aj_block_decode  (in AppleJPEG) + 224  [0x1c4000394]
+    +         !   :       | + ! :     |     +     ! : |                       +           !     :   |   1 aj_idct_s1  (in AppleJPEG) + 476  [0x1c3ffb2a8]
+    +         !   :       | + ! :     |     +     ! : |                       +           !     :   1 aj_mcu_decode  (in AppleJPEG) + 1800  [0x1c3ff47cc]
+    +         !   :       | + ! :     |     +     ! : |                       +           !     :     1 aj_block_decode  (in AppleJPEG) + 224  [0x1c4000394]
+    +         !   :       | + ! :     |     +     ! : |                       +           !     :       1 aj_idct_s1  (in AppleJPEG) + 196  [0x1c3ffb190]
+    +         !   :       | + ! :     |     +     ! : |                       +           !     1 aj_decode_all  (in AppleJPEG) + 296  [0x1c3ff5838]
+    +         !   :       | + ! :     |     +     ! : |                       +           !       1 aj_bufferproc_crop  (in AppleJPEG) + 468  [0x1c400e348]
+    +         !   :       | + ! :     |     +     ! : |                       +           !         1 aj_icol_mcurow_semiplanar4X0  (in AppleJPEG) + 640  [0x1c4010c5c]
+    +         !   :       | + ! :     |     +     ! : |                       +           !           1 aj_icol_row_420_to_biplanar  (in AppleJPEG) + 520  [0x1c400ef64]
+    +         !   :       | + ! :     |     +     ! : |                       +           2 ???  (in CMPhoto)  load address 0x1d812b000 + 0x1109cc  [0x1d823b9cc]
+    +         !   :       | + ! :     |     +     ! : |                       +             2 CMPhotoSurfacePoolCreatePixelBuffer  (in CMPhoto) + 32  [0x1d81dbe68]
+    +         !   :       | + ! :     |     +     ! : |                       +               2 ???  (in CMPhoto)  load address 0x1d812b000 + 0xb0de8  [0x1d81dbde8]
+    +         !   :       | + ! :     |     +     ! : |                       +                 2 CVPixelBufferCreate  (in CoreVideo) + 228  [0x197ad1670]
+    +         !   :       | + ! :     |     +     ! : |                       +                   1 CVPixelFormatDescriptionGetDescriptionWithPixelFormatType  (in CoreVideo) + 24  [0x197adf4b0]
+    +         !   :       | + ! :     |     +     ! : |                       +                   : 1 CVKTraceInit  (in CoreVideo) + 32  [0x197adb084]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :   1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :     1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :       1 fig_ktrace_initialize  (in CoreVideo) + 36  [0x197adb0b0]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :         1 _CFPreferencesCopyAppValueWithContainerAndConfiguration  (in CoreFoundation) + 108  [0x18052b3dc]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :           1 -[_CFXPreferences copyAppValueForKey:identifier:container:configurationURL:]  (in CoreFoundation) + 128  [0x1805289f8]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :             1 -[_CFXPreferences withSearchListForIdentifier:container:cloudConfigurationURL:perform:]  (in CoreFoundation) + 136  [0x18054bee4]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :               1 normalizeQuintuplet  (in CoreFoundation) + 396  [0x1804ee91c]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :                 1 __108-[_CFXPreferences(SearchListAdditions) withSearchListForIdentifier:container:cloudConfigurationURL:perform:]_block_invoke  (in CoreFoundation) + 348  [0x1804ef088]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :                   1 __76-[_CFXPreferences copyAppValueForKey:identifier:container:configurationURL:]_block_invoke  (in CoreFoundation) + 28  [0x180528a70]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :                     1 -[CFPrefsSource copyValueForKey:]  (in CoreFoundation) + 40  [0x18047a678]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :                       1 -[CFPrefsSearchListSource alreadylocked_copyValueForKey:]  (in CoreFoundation) + 144  [0x1804ec2e8]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :                         1 -[CFPrefsSearchListSource alreadylocked_getDictionary:]  (in CoreFoundation) + 384  [0x18054b7f8]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :                           1 -[CFPrefsSearchListSource alreadylocked_generationCountFromListOfSources:count:]  (in CoreFoundation) + 236  [0x18054bd14]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :                             1 -[CFPrefsSearchListSource synchronouslySendSystemMessage:andUserMessage:andDirectMessage:replyHandler:]  (in CoreFoundation) + 268  [0x18054b324]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :                               1 CFPREFERENCES_IS_WAITING_FOR_USER_CFPREFSD  (in CoreFoundation) + 92  [0x1804ed558]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :                                 1 __103-[CFPrefsSearchListSource synchronouslySendSystemMessage:andUserMessage:andDirectMessage:replyHandler:]_block_invoke  (in CoreFoundation) + 112  [0x1804ed66c]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :                                   1 -[_CFXPreferences withConnectionForRole:andUserIdentifier:performBlock:]  (in CoreFoundation) + 44  [0x18054fe64]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :                                     1 __103-[CFPrefsSearchListSource synchronouslySendSystemMessage:andUserMessage:andDirectMessage:replyHandler:]_block_invoke_2  (in CoreFoundation) + 40  [0x1804ed6bc]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :                                       1 xpc_connection_send_message_with_reply_sync  (in libxpc.dylib) + 252  [0x1800cf918]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :                                         1 dispatch_mach_send_with_result_and_wait_for_reply  (in libdispatch.dylib) + 56  [0x1801a2adc]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :                                           1 _dispatch_mach_send_and_wait_for_reply  (in libdispatch.dylib) + 564  [0x1801a2740]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :                                             1 mach_msg  (in libsystem_kernel.dylib) + 20  [0x102738ef0]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :                                               1 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x102740c44]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :                                                 1 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x102749e84]
+    +         !   :       | + ! :     |     +     ! : |                       +                   :                                                   1 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x102738b70]
+    +         !   :       | + ! :     |     +     ! : |                       +                   1 CVPixelFormatDescriptionGetDescriptionWithPixelFormatType  (in CoreVideo) + 56  [0x197adf4d0]
+    +         !   :       | + ! :     |     +     ! : |                       +                     1 pthread_once  (in libsystem_pthread.dylib) + 92  [0x1032d68d8]
+    +         !   :       | + ! :     |     +     ! : |                       +                       1 _os_once  (in libsystem_platform.dylib) + 72  [0x1027b8a48]
+    +         !   :       | + ! :     |     +     ! : |                       +                         1 _os_once_callout  (in libsystem_platform.dylib) + 28  [0x1027b8a6c]
+    +         !   :       | + ! :     |     +     ! : |                       +                           1 __pthread_once_handler  (in libsystem_pthread.dylib) + 64  [0x1032d6934]
+    +         !   :       | + ! :     |     +     ! : |                       +                             1 _pixelFormatDictionaryInit()  (in CoreVideo) + 8428  [0x197ae15f8]
+    +         !   :       | + ! :     |     +     ! : |                       +                               1 registerDescriptionWithPixelFormatTypeInPixelFormatDictionaryAndArray(__CFDictionary const*, unsigned int, __CFDictionary*, __CFArray*)  (in CoreVideo) + 224  [0x197ae1ce4]
+    +         !   :       | + ! :     |     +     ! : |                       +                                 1 CFArrayContainsValue  (in CoreFoundation) + 112  [0x180391234]
+    +         !   :       | + ! :     |     +     ! : |                       +                                   1 CFEqual  (in CoreFoundation) + 620  [0x18042597c]
+    +         !   :       | + ! :     |     +     ! : |                       +                                     1 -[__NSCFNumber isEqualToNumber:]  (in CoreFoundation) + 20  [0x1803f3c50]
+    +         !   :       | + ! :     |     +     ! : |                       +                                       1 -[__NSCFNumber compare:]  (in CoreFoundation) + 260  [0x1803f483c]
+    +         !   :       | + ! :     |     +     ! : |                       +                                         1 -[__NSCFNumber longLongValue]  (in CoreFoundation) + 44  [0x1803f435c]
+    +         !   :       | + ! :     |     +     ! : |                       +                                           1 CFNumberGetValue  (in CoreFoundation) + 44  [0x1803ee4bc]
+    +         !   :       | + ! :     |     +     ! : |                       1 AppleJPEGReadPlugin::copyImageBlockSetImp(InfoRec*, CGImageProvider*, CGRect, CGSize, __CFDictionary const*)  (in ImageIO) + 3116  [0x181badb68]
+    +         !   :       | + ! :     |     +     ! : |                         1 applejpeg_decode_image_all  (in AppleJPEG) + 692  [0x1c401c048]
+    +         !   :       | + ! :     |     +     ! : |                           1 perform_decode  (in AppleJPEG) + 248  [0x1c401c200]
+    +         !   :       | + ! :     |     +     ! : |                             1 aj_decode_all  (in AppleJPEG) + 296  [0x1c3ff5838]
+    +         !   :       | + ! :     |     +     ! : |                               1 aj_bufferproc_crop  (in AppleJPEG) + 468  [0x1c400e348]
+    +         !   :       | + ! :     |     +     ! : |                                 1 aj_icol_mcurow_default  (in AppleJPEG) + 220  [0x1c400fcb4]
+    +         !   :       | + ! :     |     +     ! : |                                   1 aj_icol_row_444_to_rgba  (in AppleJPEG) + 144  [0x1c3ffca54]
+    +         !   :       | + ! :     |     +     ! : 2 img_decode_read  (in CoreGraphics) + 1348  [0x18d3d2ff8]
+    +         !   :       | + ! :     |     +     ! : | 2 decode_data  (in CoreGraphics) + 10556  [0x18d18c014]
+    +         !   :       | + ! :     |     +     ! : |   2 decode_byte_8bpc_3  (in CoreGraphics) + 316,336  [0x18d18c4b8,0x18d18c4cc]
+    +         !   :       | + ! :     |     +     ! : 1 img_decode_read  (in CoreGraphics) + 1280  [0x18d3d2fb4]
+    +         !   :       | + ! :     |     +     ! :   1 get_chunks_direct  (in CoreGraphics) + 216  [0x18d52a6d0]
+    +         !   :       | + ! :     |     +     ! :     1 CGDataProviderDirectGetBytesAtPositionInternal  (in CoreGraphics) + 320  [0x18d2d2e1c]
+    +         !   :       | + ! :     |     +     ! :       1 provider_for_destination_get_bytes_at_position_inner  (in CoreGraphics) + 484  [0x18d488250]
+    +         !   :       | + ! :     |     +     ! :         1 CGDataProviderDirectGetBytesAtPositionInternal  (in CoreGraphics) + 320  [0x18d2d2e1c]
+    +         !   :       | + ! :     |     +     ! :           1 imageProvider_getBytesAtPosition  (in CoreGraphics) + 652  [0x18d5419cc]
+    +         !   :       | + ! :     |     +     ! :             1 _platform_memmove  (in libsystem_platform.dylib) + 228  [0x1027bb194]
+    +         !   :       | + ! :     |     +     ! 4 void resample_vertical<int, unsigned char, 3, (AlphaStyle)0>(resample_filter const*, unsigned int, unsigned int, int, void**, void const* const*)  (in CoreGraphics) + 80,288,...  [0x18d15bdcc,0x18d15be9c,...]
+    +         !   :       | + ! :     |     +     ! 2 img_interpolate_read  (in CoreGraphics) + 1720  [0x18d3d6dd0]
+    +         !   :       | + ! :     |     +     !   2 void resample_horizontal<unsigned char, int, 3, false>(resample_filter const*, unsigned int, unsigned int, int, void**, void const* const*, int*, int, void const* const*)  (in CoreGraphics) + 312,488  [0x18d1652b8,0x18d165368]
+    +         !   :       | + ! :     |     +     1 img_data_lock  (in CoreGraphics) + 4964  [0x18d3da678]
+    +         !   :       | + ! :     |     +     ! 1 img_interpolate_stage  (in CoreGraphics) + 1264  [0x18d3d5df0]
+    +         !   :       | + ! :     |     +     !   1 resample_filter  (in CoreGraphics) + 300  [0x18d34d198]
+    +         !   :       | + ! :     |     +     !     1 __sincos_stret  (in libsystem_m.dylib) + 376  [0x1cc2caab8]
+    +         !   :       | + ! :     |     +     1 img_data_lock  (in CoreGraphics) + 7488  [0x18d3db054]
+    +         !   :       | + ! :     |     +       1 img_interpolate_end  (in CoreGraphics) + 32  [0x18d3d707c]
+    +         !   :       | + ! :     |     +         1 CGAccessSessionRelease  (in CoreGraphics) + 44  [0x18d52ab1c]
+    +         !   :       | + ! :     |     +           1 CGDataProviderReleaseData  (in CoreGraphics) + 72  [0x18d2d36d4]
+    +         !   :       | + ! :     |     +             1 provider_for_destination_release_data  (in CoreGraphics) + 24  [0x18d48804c]
+    +         !   :       | + ! :     |     +               1 CGDataProviderReleaseData  (in CoreGraphics) + 72  [0x18d2d36d4]
+    +         !   :       | + ! :     |     +                 1 imageProvider_release_data  (in CoreGraphics) + 28  [0x18d541bc4]
+    +         !   :       | + ! :     |     +                   1 CGImageBlockSetRelease  (in CoreGraphics) + 100  [0x18d4c0858]
+    +         !   :       | + ! :     |     +                     1 _ImageIO_Free  (in ImageIO) + 232  [0x181b976a8]
+    +         !   :       | + ! :     |     +                       1 __munmap  (in libsystem_kernel.dylib) + 8  [0x10273c204]
+    +         !   :       | + ! :     |     1 ripc_DrawImage  (in CoreGraphics) + 832  [0x18d3ffd50]
+    +         !   :       | + ! :     |     + 1 RIPLayerBltImage  (in CoreGraphics) + 744  [0x18d4cd28c]
+    +         !   :       | + ! :     |     +   1 ripl_Mark  (in CoreGraphics) + 32  [0x18d4ceda0]
+    +         !   :       | + ! :     |     +     1 ARGB32_image  (in CoreGraphics) + 364  [0x18d55c328]
+    +         !   :       | + ! :     |     +       1 <deduplicated_symbol>  (in CoreGraphics) + 268  [0x18d552b3c]
+    +         !   :       | + ! :     |     +         1 CGBlt_copyBytes  (in CoreGraphics) + 492  [0x18d303624]
+    +         !   :       | + ! :     |     +           1 _platform_memmove  (in libsystem_platform.dylib) + 224  [0x1027bb190]
+    +         !   :       | + ! :     |     1 ripc_DrawImage  (in CoreGraphics) + 840  [0x18d3ffd58]
+    +         !   :       | + ! :     |       1 RIPImageDataRelease  (in CoreGraphics) + 28  [0x18d174ec8]
+    +         !   :       | + ! :     |         1 CGSImageDataUnlock  (in CoreGraphics) + 28  [0x18d3dc198]
+    +         !   :       | + ! :     |           1 CGSImageDataHandleRelease  (in CoreGraphics) + 52  [0x18d3ee1bc]
+    +         !   :       | + ! :     |             1 _xzm_segment_group_segment_deallocate  (in libsystem_malloc.dylib) + 60  [0x1801cec1c]
+    +         !   :       | + ! :     |               1 mvm_deallocate_plat  (in libsystem_malloc.dylib) + 56  [0x1801d9d7c]
+    +         !   :       | + ! :     |                 1 mach_vm_deallocate  (in libsystem_kernel.dylib) + 84  [0x10273a4d4]
+    +         !   :       | + ! :     |                   1 _kernelrpc_mach_vm_deallocate_trap  (in libsystem_kernel.dylib) + 8  [0x1027389e4]
+    +         !   :       | + ! :     2 CGImageCreateCopyWithParametersNew(CGImage*, CGColor*, CGAffineTransform, unsigned long, unsigned long, unsigned long, unsigned long, unsigned long, CGColorSpace*, unsigned int, bool, CGColorRenderingIntent, CGInterpolationQuality, bool)  (in ImageIO) + 1740  [0x181ade888]
+    +         !   :       | + ! :       2 CGContextClearRect  (in CoreGraphics) + 80  [0x18d411204]
+    +         !   :       | + ! :         2 CGContextFillRect  (in CoreGraphics) + 84  [0x18d410fdc]
+    +         !   :       | + ! :           2 CGContextFillRects  (in CoreGraphics) + 116  [0x18d410f1c]
+    +         !   :       | + ! :             2 ripc_DrawRects  (in CoreGraphics) + 504  [0x18d3ff7ec]
+    +         !   :       | + ! :               2 ripc_Render  (in CoreGraphics) + 504  [0x18d3fdc98]
+    +         !   :       | + ! :                 2 RIPLayerBltShape  (in CoreGraphics) + 1052  [0x18d4cd958]
+    +         !   :       | + ! :                   2 rgba32_mark  (in CoreGraphics) + 2748  [0x18d54a7a8]
+    +         !   :       | + ! :                     2 CGBlt_fillBytes  (in CoreGraphics) + 268  [0x18d40d05c]
+    +         !   :       | + ! :                       2 __bzero  (in libsystem_platform.dylib) + 68  [0x1027bad94]
+    +         !   :       | + ! 1 static Photo.shrunk(_:side:as:quality:)  (in Chronotheca.debug.dylib) + 1844  [0x1047d4560]  Photo.swift:70
+    +         !   :       | + !   1 CGImageDestinationFinalize  (in ImageIO) + 192  [0x181b671e0]
+    +         !   :       | + !     1 IIOImageDestination::finalizeDestination(unsigned long long*)  (in ImageIO) + 784  [0x181b62e60]
+    +         !   :       | + !       1 IIO_Writer_AppleJPEG::write(void*, void*)  (in ImageIO) + 132  [0x181b78d54]
+    +         !   :       | + !         1 AppleJPEGWritePlugin::writeAll()  (in ImageIO) + 248  [0x181b78b08]
+    +         !   :       | + !           1 AppleJPEGWritePlugin::writeOne(IIOImagePixelDataProvider*, IIODictionary*, IIODictionary*, unsigned int)  (in ImageIO) + 1312  [0x181b7873c]
+    +         !   :       | + !             1 applejpeg_encode_image_row  (in AppleJPEG) + 532  [0x1c402248c]
+    +         !   :       | + !               1 aj_encode_row  (in AppleJPEG) + 180  [0x1c3fedd78]
+    +         !   :       | + !                 1 aj_encode_buffers_baseline  (in AppleJPEG) + 52  [0x1c3fed918]
+    +         !   :       | + !                   1 aj_mcu_dct  (in AppleJPEG) + 304  [0x1c40201cc]
+    +         !   :       | + !                     1 aj_block_encode_ac  (in AppleJPEG) + 392  [0x1c3ff7d7c]
+    +         !   :       | + 22 static Photo.stored(from:)  (in Chronotheca.debug.dylib) + 452  [0x1047d34f4]  Photo.swift:24
+    +         !   :       | +   22 CGImageSourceGetCount  (in ImageIO) + 224  [0x181ab32b4]
+    +         !   :       | +     22 IIOImageSource::updatedCount()  (in ImageIO) + 52  [0x181aabfec]
+    +         !   :       | +       21 IIOImageSource::doBindToReader()  (in ImageIO) + 56  [0x181aab488]
+    +         !   :       | +       : 21 IIO_ReaderHandler::GetReaderHandler()  (in ImageIO) + 40  [0x181b711b0]
+    +         !   :       | +       :   21 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +         !   :       | +       :     21 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +         !   :       | +       :       21 invocation function for block in IIO_ReaderHandler::GetReaderHandler()  (in ImageIO) + 52  [0x181b711ec]
+    +         !   :       | +       :         21 IIO_ReaderHandler::IIO_ReaderHandler()  (in ImageIO) + 88  [0x181b6e998]
+    +         !   :       | +       :           20 IIO_ReaderHandler::buildPluginList()  (in ImageIO) + 196  [0x181b6eae8]
+    +         !   :       | +       :           | 20 dyld4::APIs::dlopen_from(char const*, int, void*)  (in dyld_sim) + 344  [0x10287bb1c]
+    +         !   :       | +       :           |   20 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const  (in dyld_sim) + 184  [0x102880390]
+    +         !   :       | +       :           |     17 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const::'lambda'()::operator()() const  (in dyld_sim) + 1884  [0x102881204]
+    +         !   :       | +       :           |     + 17 dyld4::RuntimeState::notifyDebuggerLoad(std::span<dyld4::Loader const*, 18446744073709551615ul> const&)  (in dyld_sim) + 408  [0x10288d7b4]
+    +         !   :       | +       :           |     +   17 dyld4::ExternallyViewableState::addImages(lsl::Allocator&, lsl::Allocator&, std::span<dyld4::ExternallyViewableState::ImageInfo, 18446744073709551615ul> const&)  (in dyld_sim) + 496  [0x102890154]
+    +         !   :       | +       :           |     +     17 dyld4::ExternallyViewableState::triggerNotifications(dyld_image_mode, unsigned int, dyld_image_info const*)  (in dyld_sim) + 532  [0x10288fea0]
+    +         !   :       | +       :           |     +       17 dyld4::ExternallyViewableState::notifyMonitorOfImageListChangesSim(bool, unsigned int, mach_header const**, char const**)  (in dyld) + 792  [0x1029aa36c]
+    +         !   :       | +       :           |     +         12 invocation function for block in dyld4::ExternallyViewableState::notifyMonitorOfImageListChangesSim(bool, unsigned int, mach_header const**, char const**)  (in dyld) + 2852  [0x1029adef0]
 
 Sort by top of stack, same collapsed (when >= 5):
-        __workq_kernreturn  (in libsystem_kernel.dylib)        2286
-        mach_msg2_trap  (in libsystem_kernel.dylib)        276
-        semaphore_timedwait_trap  (in libsystem_kernel.dylib)        226
+        __workq_kernreturn  (in libsystem_kernel.dylib)        1771
+        __ulock_wait2  (in libsystem_kernel.dylib)        424
+        mach_msg2_trap  (in libsystem_kernel.dylib)        113
+        read  (in libsystem_kernel.dylib)        79
         __getdirentries64  (in libsystem_kernel.dylib)        77
-        writev  (in libsystem_kernel.dylib)        36
-        mach_msg2_trap  (in dyld)        21
-        start_wqthread  (in libsystem_pthread.dylib)        12
-        mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim)        6
-        read  (in libsystem_kernel.dylib)        5
-        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        5
+        mach_msg2_trap  (in dyld)        41
+        void resample_horizontal<unsigned char, int, 3, false>(resample_filter const*, unsigned int, unsigned int, int, void**, void const* const*, int*, int, void const* const*)  (in CoreGraphics)        22
+        start_wqthread  (in libsystem_pthread.dylib)        21
+        void resample_vertical<int, unsigned char, 3, (AlphaStyle)0>(resample_filter const*, unsigned int, unsigned int, int, void**, void const* const*)  (in CoreGraphics)        19
+        <deduplicated_symbol>  (in dyld)        12
+        RGBA32_shade_axial_RGB  (in CoreGraphics)        11
+        aj_icol_row_444_to_rgba  (in AppleJPEG)        11
+        aj_block_encode_ac  (in AppleJPEG)        10
+        argb32_image_mark  (in CoreGraphics)        9
+        aj_block_dct  (in AppleJPEG)        8
+        _platform_memmove  (in libsystem_platform.dylib)        7
+        aj_RGBA8888_YUV420  (in AppleJPEG)        7
+        decode_byte_8bpc_3  (in CoreGraphics)        7
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        7
+        aj_idct_s1  (in AppleJPEG)        5
+        semaphore_wait_trap  (in libsystem_kernel.dylib)        5
 
 Binary Images:
-       0x102bb8000 -        0x102bbb507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/E839A11B-51B4-4AD3-ACF4-A53B95B7C957/data/Containers/Bundle/Application/F9E602B6-F32A-4ABB-A030-94AE35AEEAF4/Chronotheca.app/Chronotheca
-       0x102bcc000 -        0x102c06ed7  libsystem_kernel.dylib (12377.161.14) <26CFE427-C180-3145-8D46-DE3129B1CD2A> /usr/lib/system/libsystem_kernel.dylib
-       0x102c4c000 -        0x102c543d3  libsystem_platform.dylib (375.120.2) <7E129155-1748-370C-8EDC-D762067A6D9F> /usr/lib/system/libsystem_platform.dylib
-       0x102d0c000 -        0x102d5ae9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
-       0x102dc8000 -        0x102e0b65f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
-       0x102f60000 -        0x1030134ff  dyld (1.0.0 - 1387) <74E52480-C2BD-3C8D-812D-95FE2B74A096> /usr/lib/dyld
-       0x1030b8000 -        0x1031512af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
-       0x103770000 -        0x10377c10b  libsystem_pthread.dylib (539.100.4) <85A501D2-0B0E-3DEA-B121-B24119D80CFE> /usr/lib/system/libsystem_pthread.dylib
-       0x103884000 -        0x103886dff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
-       0x1038a0000 -        0x1038a803f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
-       0x1039b4000 -        0x1039b4b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
-       0x1039c4000 -        0x1039cf39f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
-       0x1039e8000 -        0x1039ebe5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
-       0x103a08000 -        0x103a1149f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
-       0x103a2c000 -        0x103a32b7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
-       0x103a78000 -        0x103a7c6ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
-       0x103cc0000 -        0x103cc72df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
-       0x103ce0000 -        0x103ce5407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
-       0x103f34000 -        0x103f4d27f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
-       0x103f84000 -        0x103faaf5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
-       0x103fd8000 -        0x104233bbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
-       0x1048fc000 -        0x1048ff1ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
-       0x104924000 -        0x105030b8f +Chronotheca.debug.dylib (0) <200A34CF-160A-3196-BF95-B00D1A98AF56> /Users/*/Library/Developer/CoreSimulator/Devices/E839A11B-51B4-4AD3-ACF4-A53B95B7C957/data/Containers/Bundle/Application/F9E602B6-F32A-4ABB-A030-94AE35AEEAF4/Chronotheca.app/Chronotheca.debug.dylib
-       0x105aec000 -        0x105b3f7bf  com.apple.dt.XCTAutomationSupport (26.5 - 24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
-       0x105ba0000 -        0x105bc2cff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
-       0x1089d0000 -        0x108a0a15f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
-       0x108b34000 -        0x108ba3cbf  com.apple.UIUnderstanding (1.0 - 1) <576E64EB-8AA4-3B1E-A89D-365C4DE0C7C8> /Volumes/*/UIUnderstanding.framework/UIUnderstanding
+       0x102724000 -        0x102727507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/77AA4492-C787-4EEE-A772-05D4B3E9ECCD/data/Containers/Bundle/Application/0AC567D5-8803-45B7-B1CA-E6ED6494890B/Chronotheca.app/Chronotheca
+       0x102738000 -        0x102772ed7  libsystem_kernel.dylib (12377.161.14) <26CFE427-C180-3145-8D46-DE3129B1CD2A> /usr/lib/system/libsystem_kernel.dylib
+       0x1027b8000 -        0x1027c03d3  libsystem_platform.dylib (375.120.2) <7E129155-1748-370C-8EDC-D762067A6D9F> /usr/lib/system/libsystem_platform.dylib
+       0x102878000 -        0x1028c6e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x102954000 -        0x10295c03f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x102970000 -        0x102a234ff  dyld (1.0.0 - 1387) <74E52480-C2BD-3C8D-812D-95FE2B74A096> /usr/lib/dyld
+       0x102ac8000 -        0x102b0b65f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x102c1c000 -        0x102cb52af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x1032d4000 -        0x1032e010b  libsystem_pthread.dylib (539.100.4) <85A501D2-0B0E-3DEA-B121-B24119D80CFE> /usr/lib/system/libsystem_pthread.dylib
+       0x103524000 -        0x103524b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x103578000 -        0x10358149f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x1035a0000 -        0x1035b927f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
+       0x1035f0000 -        0x1035f6b7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x103b3c000 -        0x103d97bbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+       0x104488000 -        0x104b94b8f +Chronotheca.debug.dylib (0) <B831AD53-CF7C-35F1-B422-A97E622F1DD4> /Users/*/Library/Developer/CoreSimulator/Devices/77AA4492-C787-4EEE-A772-05D4B3E9ECCD/data/Containers/Bundle/Application/0AC567D5-8803-45B7-B1CA-E6ED6494890B/Chronotheca.app/Chronotheca.debug.dylib
+       0x180038000 -        0x180074943 +libobjc.A.dylib (951.7) <727C4040-5E6D-3DAE-B22C-9A337D46C34F> /Volumes/*/libobjc.A.dylib
