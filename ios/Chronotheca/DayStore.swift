@@ -323,7 +323,7 @@ final class DayStore: ObservableObject {
             // После последнего дела и строк под ним (снимки, точки).
             at += 1
             while at < planRows.count, let line = planRows[at].verbatim,
-                  Diary.picture(in: line) != nil || Geo.point(in: line) != nil || Plan.isPhotoRow(line) {
+                  Plan.isAttachmentRow(line) {
                 at += 1
             }
             planRows.insert(row, at: at)
@@ -344,7 +344,7 @@ final class DayStore: ObservableObject {
               !Calendar.current.isDate(day, inSameDayAs: date) else { return false }
         var end = i + 1
         while end < planRows.count, let line = planRows[end].verbatim,
-              Diary.picture(in: line) != nil || Geo.point(in: line) != nil || Plan.isPhotoRow(line) {
+              Plan.isAttachmentRow(line) {
             end += 1
         }
         var block = Array(planRows[i..<end])
@@ -527,7 +527,7 @@ final class DayStore: ObservableObject {
     private func blockEnd(of i: Int) -> Int {
         var end = i + 1
         while end < planRows.count, let line = planRows[end].verbatim,
-              Diary.picture(in: line) != nil || Geo.point(in: line) != nil || Plan.isPhotoRow(line) {
+              Plan.isAttachmentRow(line) {
             end += 1
         }
         return end

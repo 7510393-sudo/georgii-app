@@ -186,6 +186,12 @@ enum Plan {
         return (rows, photos)
     }
 
+    /// Строка из одних вложений — снимки, голос, файлы, точки, сколько угодно
+    /// вперемешку. Такая строка стоит под делом и ходит вместе с ним (P629).
+    static func isAttachmentRow(_ line: String) -> Bool {
+        !Diary.objects(in: line).isEmpty
+    }
+
     /// Строка снимков под делом: один снимок или ряд (P358).
     static func isPhotoRow(_ line: String) -> Bool {
         let links = Diary.links(in: line)
