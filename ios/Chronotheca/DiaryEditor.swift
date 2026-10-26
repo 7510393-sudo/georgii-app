@@ -464,7 +464,9 @@ struct DiaryEditor: UIViewRepresentable {
             } else if let point, own {
                 attachment = PointChip(tile: point, glowing: glowing)
             } else if let point {
-                attachment = PointChip(mini: point, glowing: glowing)
+                // Все точки — квадратом, одинаково (P637): «кнопочки» с булавкой
+                // больше нет ни в тексте, ни в ответах, ни в заголовке.
+                attachment = PointChip(tile: point, glowing: glowing)
             } else if file, let inner = Diary.picture(in: link) {
                 attachment = FileChip(link: inner)
             } else {

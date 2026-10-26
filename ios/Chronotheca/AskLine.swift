@@ -137,7 +137,7 @@ struct AskLine: UIViewRepresentable {
             found.append((m.range, FileChip(link: link), DiaryEditor.lineKey, ns.substring(with: m.range)))
         }
         for (r, point) in Geo.points(inText: answer) {
-            found.append((r, PointChip(mini: point), DiaryEditor.lineKey, ns.substring(with: r)))
+            found.append((r, PointChip(tile: point), DiaryEditor.lineKey, ns.substring(with: r)))
         }
         // С конца к началу: замена не сдвигает того, что ещё впереди.
         var edge = ns.length

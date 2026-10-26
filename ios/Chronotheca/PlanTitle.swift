@@ -174,7 +174,7 @@ struct PlanTitle: UIViewRepresentable {
 
     static func chip(_ point: GeoPoint, token: String,
                      style: [NSAttributedString.Key: Any]) -> NSAttributedString {
-        let piece = NSMutableAttributedString(attachment: PointChip(mini: point))
+        let piece = NSMutableAttributedString(attachment: PointChip(tile: point))
         let whole = NSRange(location: 0, length: piece.length)
         piece.addAttributes(style, range: whole)
         piece.addAttribute(DiaryEditor.lineKey, value: token, range: whole)
