@@ -498,6 +498,15 @@ struct PlanView: View {
     /// отметилось.
     static let swipe: CGFloat = 90
 
+    /// Как расступаются строки под взятым делом: пружина без рывка (P631) —
+    /// прежнее быстрое замедление (0,16 с) дёргало места, когда палец
+    /// стоял у границы.
+    static let makeRoom = Animation.spring(response: 0.3, dampingFraction: 0.9)
+
+    /// Дело отпущено, но ещё доезжает до своего места: настоящая перестановка
+    /// в файле — когда доехало (P631).
+    @State private var pendingDrop: (() -> Void)?
+
     /// Дело, которое сейчас ведут вверх-вниз, и на сколько оно сдвинуто.
     @State private var dragged: UUID?
     @State private var dragBy = 0
@@ -707,7 +716,7 @@ struct PlanView: View {
             } else if let line = row.wrappedValue.verbatim, !eventOwnedRows.contains(id) {
                 extraLine(id: id, line: line)
                     .offset(y: lineShift(id) + eventShift(id) + photoShift(id) + blockDisplaced(id))
-                    .animation(.easeOut(duration: 0.16),
+                    .animation(Self.makeRoom,
                                value: lineShift(id) + eventShift(id) + photoShift(id) + blockDisplaced(id))
                     // Снимки под взятым делом идут за пальцем вместе с ним (P628).
                     .offset(y: blockDragged(id))
@@ -801,8 +810,7 @@ struct PlanView: View {
                     y: dragged == id
                     ? dragOffset
                     : CGFloat(displaced(id)) * dragHeight)
-            .animation(dragged == id ? nil : .easeOut(duration: 0.16),
-                       value: displaced(id))
+            .animation(dragged == id ? nil : Self.makeRoom, value: displaced(id))
             .background { underneath(id) }
             .shadow(color: .black.opacity(dragged == id ? 0.18 : 0),
                     radius: 8, y: 3)
@@ -879,6 +887,11 @@ struct PlanView: View {
                 hideKeyboard()
                 typingIn = nil
             }
+            // Прежнее дело ещё доезжало — довести, прежде чем брать новое.
+            if let settle = pendingDrop {
+                pendingDrop = nil
+                settle()
+            }
             Feel.lift()
             liftAxis = nil
             slide = 0
@@ -907,7 +920,10 @@ struct PlanView: View {
             case .vertical:
                 dragged = id
                 dragOffset = way.height
-                dragBy = dragSteps(id, way.height)
+                // Место сменилось — тихий щелчок: видно, что соседи уступили.
+                let steps = dragSteps(id, way.height)
+                if steps != dragBy { Feel.tick() }
+                dragBy = steps
             case .horizontal:
                 let was = abs(slide) >= Self.swipe
                 slide = way.width
@@ -1385,15 +1401,41 @@ struct PlanView: View {
     }
 
     /// Дело отпустили: оно встаёт туда, куда его донесли.
+    ///
+    /// Оно плавно доезжает до освобождённого места (P631) и только потом
+    /// переставляется в файле: прежде оно прыгало с того места, где его
+    /// отпустили, на новое.
     private func drop(_ id: UUID) {
         let by = dragBy
-        dragged = nil
-        dragBy = 0
-        dragOffset = 0
-        dragBlocks = [:]
-        dragHeight = PlanRowLine.height
-        guard by != 0 else { return }
-        for _ in 0..<abs(by) { store.move(id, by: by > 0 ? 1 : -1) }
+        let list = store.tasks
+        // Куда оно сядет: низом на низ блока, на место которого встаёт, или
+        // верхом на его верх.
+        var land: CGFloat = 0
+        if by != 0, let from = list.firstIndex(where: { $0.id == id }), let mine = dragBlocks[id] {
+            let to = min(max(from + by, 0), list.count - 1)
+            if let target = dragBlocks[list[to].id] {
+                land = by > 0 ? target.maxY - mine.maxY : target.minY - mine.minY
+            }
+        }
+        pendingDrop = {
+            var plain = Transaction()
+            plain.disablesAnimations = true
+            withTransaction(plain) {
+                dragged = nil
+                dragBy = 0
+                dragOffset = 0
+                dragBlocks = [:]
+                dragHeight = PlanRowLine.height
+                if by != 0 { for _ in 0..<abs(by) { store.move(id, by: by > 0 ? 1 : -1) } }
+            }
+        }
+        withAnimation(Self.makeRoom) { dragOffset = land }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) {
+            if let settle = pendingDrop {
+                pendingDrop = nil
+                settle()
+            }
+        }
     }
 
     /// «Ввод» в названии: ввод переходит к делу ниже.
