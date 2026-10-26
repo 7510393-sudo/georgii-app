@@ -516,6 +516,12 @@ final class DayStore: ObservableObject {
         save()
     }
 
+    /// Строки дела и всего, что стоит прямо под ним (P628).
+    func blockIDs(of id: UUID) -> [UUID] {
+        guard let i = index(of: id) else { return [] }
+        return planRows[i..<blockEnd(of: i)].map(\.id)
+    }
+
     /// Где кончается дело вместе с тем, что стоит прямо под ним: снимки и
     /// точки. Отметки событий Календаря и прочие строки — уже не его.
     private func blockEnd(of i: Int) -> Int {

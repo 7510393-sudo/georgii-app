@@ -501,6 +501,13 @@ struct PlanView: View {
     /// Дело, которое сейчас ведут вверх-вниз, и на сколько оно сдвинуто.
     @State private var dragged: UUID?
     @State private var dragBy = 0
+    /// Где стоят дела вместе со снимками и точками под ними — снято, когда
+    /// дело взяли (P628): по этим меркам решается, куда встанет взятое, и на
+    /// сколько расступаются соседи.
+    @State private var dragBlocks: [UUID: CGRect] = [:]
+    /// Высота взятого дела вместе с тем, что под ним: на столько
+    /// расступаются соседи.
+    @State private var dragHeight: CGFloat = PlanRowLine.height
 
     /// Сколько пальец прошёл от начала. Взятое дело идёт за пальцем
     /// вплотную, а расступаются соседи уже по целым строкам.
@@ -692,9 +699,12 @@ struct PlanView: View {
                 .zIndex(dragged == id || lifted == id ? 1 : 0)
             } else if let line = row.wrappedValue.verbatim, !eventOwnedRows.contains(id) {
                 extraLine(id: id, line: line)
-                    .offset(y: lineShift(id) + eventShift(id) + photoShift(id))
-                    .animation(.easeOut(duration: 0.16), value: lineShift(id) + eventShift(id) + photoShift(id))
-                    .zIndex(lineDrag == id ? 1 : 0)
+                    .offset(y: lineShift(id) + eventShift(id) + photoShift(id) + blockDisplaced(id))
+                    .animation(.easeOut(duration: 0.16),
+                               value: lineShift(id) + eventShift(id) + photoShift(id) + blockDisplaced(id))
+                    // Снимки под взятым делом идут за пальцем вместе с ним (P628).
+                    .offset(y: blockDragged(id))
+                    .zIndex(lineDrag == id || blockOwner(id) == dragged && dragged != nil ? 1 : 0)
             }
         }
         if ghostShown { ghost }
@@ -778,7 +788,7 @@ struct PlanView: View {
             .offset(x: up ? slide : 0,
                     y: dragged == id
                     ? dragOffset
-                    : CGFloat(displaced(id)) * PlanRowLine.height)
+                    : CGFloat(displaced(id)) * dragHeight)
             .animation(dragged == id ? nil : .easeOut(duration: 0.16),
                        value: displaced(id))
             .background { underneath(id) }
@@ -861,6 +871,16 @@ struct PlanView: View {
             liftAxis = nil
             slide = 0
             armedLine = nil
+            var blocks: [UUID: CGRect] = [:]
+            for task in store.tasks {
+                var frame = CGRect.null
+                for rowID in store.blockIDs(of: task.id) {
+                    if let f = PlanZones.rows[rowID] { frame = frame.union(f) }
+                }
+                if !frame.isNull { blocks[task.id] = frame }
+            }
+            dragBlocks = blocks
+            dragHeight = blocks[id]?.height ?? PlanRowLine.height
             withAnimation(.easeOut(duration: 0.12)) { lifted = id }
         case .moved(let way):
             guard lifted == id else { return }
@@ -875,7 +895,7 @@ struct PlanView: View {
             case .vertical:
                 dragged = id
                 dragOffset = way.height
-                dragBy = Int((way.height / PlanRowLine.height).rounded())
+                dragBy = dragSteps(id, way.height)
             case .horizontal:
                 let was = abs(slide) >= Self.swipe
                 slide = way.width
@@ -1358,6 +1378,8 @@ struct PlanView: View {
         dragged = nil
         dragBy = 0
         dragOffset = 0
+        dragBlocks = [:]
+        dragHeight = PlanRowLine.height
         guard by != 0 else { return }
         for _ in 0..<abs(by) { store.move(id, by: by > 0 ? 1 : -1) }
     }
@@ -1418,6 +1440,48 @@ struct PlanView: View {
         if to > from, mine > from, mine <= to { return -1 }
         if to < from, mine < from, mine >= to { return 1 }
         return 0
+    }
+
+    /// Какое дело взять за хозяина строки под ним — только пока дело тащат.
+    private func blockOwner(_ row: UUID) -> UUID? {
+        dragged == nil ? nil : owner(of: row)
+    }
+
+    /// Снимки и точки под взятым делом идут за пальцем (P628).
+    private func blockDragged(_ row: UUID) -> CGFloat {
+        guard let dragged, blockOwner(row) == dragged else { return 0 }
+        return dragOffset
+    }
+
+    /// Снимки и точки под делом, которое расступается, едут вместе с ним.
+    private func blockDisplaced(_ row: UUID) -> CGFloat {
+        guard let dragged, let owner = blockOwner(row), owner != dragged else { return 0 }
+        return CGFloat(displaced(owner)) * dragHeight
+    }
+
+    /// На сколько дел сдвинулось бы взятое, если отпустить: когда его
+    /// середина перешла середину соседа — вместе со снимками соседа. Меряется
+    /// по снятым меркам, а не по высоте одной строки (P628): у дел со
+    /// снимками и в две строки она другая, и место под взятым не сходилось с
+    /// тем, где его отпускали.
+    private func dragSteps(_ id: UUID, _ dy: CGFloat) -> Int {
+        let list = store.tasks
+        guard let from = list.firstIndex(where: { $0.id == id }), let mine = dragBlocks[id]
+        else { return Int((dy / PlanRowLine.height).rounded()) }
+        let centre = mine.midY + dy
+        var to = from
+        if dy > 0 {
+            for j in (from + 1)..<list.count {
+                guard let b = dragBlocks[list[j].id], centre > b.midY else { break }
+                to = j
+            }
+        } else {
+            for j in stride(from: from - 1, through: 0, by: -1) {
+                guard let b = dragBlocks[list[j].id], centre < b.midY else { break }
+                to = j
+            }
+        }
+        return to - from
     }
 
     private func number(of id: UUID) -> Int {
