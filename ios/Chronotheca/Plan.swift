@@ -193,9 +193,16 @@ enum Plan {
     }
 
     /// Строка снимков под делом: один снимок или ряд (P358).
+    /// Точка на карте — такой же предмет ряда, как снимок, и занимает одно
+    /// место (P630): прежде она стояла своей строкой во всю ширину.
     static func isPhotoRow(_ line: String) -> Bool {
-        let links = Diary.links(in: line)
-        return !links.isEmpty && links.allSatisfy { Diary.kind(of: $0) == .photo }
+        let items = Diary.objects(in: line)
+        return !items.isEmpty && items.allSatisfy { $0.point != nil || Diary.kind(of: $0.link) == .photo }
+    }
+
+    /// Предметы такого ряда по порядку: путь к снимку или строка точки.
+    static func items(in line: String) -> [String] {
+        Diary.objects(in: line).map(\.link)
     }
 
     /// План вместе с фотографиями в конце.

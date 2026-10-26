@@ -394,6 +394,8 @@ struct PlanPhotoRow: View {
     let links: [String]
     var resolve: ((String) -> URL?)?
     var open: ((URL?) -> Void)?
+    /// Касание по точке в ряду — карта (P630).
+    var openPoint: ((GeoPoint) -> Void)?
     /// Снимок несут пальцем под другое дело или назад в полоску (P377):
     /// своим жестом, а не системным перетаскиванием, — чтобы строки
     /// расступались там, куда он встанет. Ход и место пальца на экране.
@@ -409,10 +411,7 @@ struct PlanPhotoRow: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 ForEach(links, id: \.self) { link in
-                    PlanPhotoThumb(url: resolve?(link)) {
-                        if armed != nil { withAnimation(.easeOut(duration: 0.15)) { armed = nil } }
-                        else { open?(resolve?(link)) }
-                    }
+                    item(link)
                         .opacity(carried == link ? 0.25 : 1)
                         .modifier(ThumbCarry(report: report(link), stayed: onRemove == nil ? nil : {
                             withAnimation(.easeOut(duration: 0.15)) { armed = link }
@@ -442,6 +441,31 @@ struct PlanPhotoRow: View {
         .scrollDisabled(links.count < 4 || carried != nil)
         .frame(height: PlanPhotoLine.height)
     }
+    /// Снимок — картинкой, точка — квадратом; оба — на одном месте ряда.
+    @ViewBuilder private func item(_ link: String) -> some View {
+        if Diary.isPoint(link), let point = Geo.point(in: link) {
+            PointSquare(point: point)
+                .frame(width: DiaryEditor.photoSize.width, height: DiaryEditor.photoSize.height)
+                .contentShape(Rectangle())
+                .onTapGesture { tapped(link, point: point) }
+                .accessibilityAddTraits(.isButton)
+                .accessibilityLabel(T("Точка на карте: ", "Place on the map: ") + point.label)
+        } else {
+            PlanPhotoThumb(url: resolve?(link)) { tapped(link, point: nil) }
+        }
+    }
+
+    /// Касание: с крестиком — убрать крестик, без него — открыть.
+    private func tapped(_ link: String, point: GeoPoint?) {
+        if armed != nil {
+            withAnimation(.easeOut(duration: 0.15)) { armed = nil }
+        } else if let point {
+            openPoint?(point)
+        } else {
+            open?(resolve?(link))
+        }
+    }
+
     private func report(_ link: String) -> ((Lift, CGPoint) -> Void)? {
         guard let onCarry else { return nil }
         return { phase, spot in

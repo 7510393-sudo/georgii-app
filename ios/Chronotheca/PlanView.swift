@@ -619,7 +619,14 @@ struct PlanView: View {
             if let c = photoCarry, photoSpot != .zero {
                 GeometryReader { g in
                     let o = g.frame(in: .global).origin
-                    PlanPhotoThumb(url: store.photoURL(c.link))
+                    Group {
+                        if Diary.isPoint(c.link), let point = Geo.point(in: c.link) {
+                            PointSquare(point: point)
+                                .frame(width: DiaryEditor.photoSize.width, height: DiaryEditor.photoSize.height)
+                        } else {
+                            PlanPhotoThumb(url: store.photoURL(c.link))
+                        }
+                    }
                         .overlay(RoundedRectangle(cornerRadius: 4).strokeBorder(Look.glow, lineWidth: 2.6))
                         .shadow(color: .black.opacity(0.25), radius: 8, y: 4)
                         .scaleEffect(1.08)
@@ -734,7 +741,12 @@ struct PlanView: View {
                       onPhoto: store.canEditPlan
                           ? { carryPhoto($0, from: id, $1, at: $2) } : nil,
                       carriedPhoto: photoCarry?.from == id ? photoCarry?.link : nil,
-                      onRemovePhoto: store.canEditPlan ? { removingPlanPhoto = $0 } : nil)
+                      onRemovePhoto: store.canEditPlan
+                          ? { link in
+                              // У точки нет файла — вопроса «что с файлом» нет (P630).
+                              if Diary.isPoint(link) { shell.say(store.removePlanRowPhoto(link, delete: false)) }
+                              else { removingPlanPhoto = link }
+                          } : nil)
             .modifier(Zone(id: id))
     }
 
@@ -1283,7 +1295,7 @@ struct PlanView: View {
         guard let frame = photoSpots[row], frame.insetBy(dx: 0, dy: -6).contains(spot),
               let line = store.planRows.first(where: { $0.id == row })?.verbatim
         else { return nil }
-        let count = Diary.links(in: line).count
+        let count = Plan.items(in: line).count
         guard count > 1 else { return nil }
         let cell = DiaryEditor.photoSize.width + 8
         let slot = Int(((spot.x - frame.minX - 14) + cell / 2) / cell)
@@ -1557,8 +1569,9 @@ struct PlanExtraLine: View {
             // дело или назад в полоску (P358, P362).
             // Ряд — целое число клеток листа (P413).
             GridSnap {
-                PlanPhotoRow(links: Diary.links(in: line), resolve: resolve, open: open,
-                             onCarry: onPhoto, carried: carriedPhoto, onRemove: onRemovePhoto)
+                PlanPhotoRow(links: Plan.items(in: line), resolve: resolve, open: open,
+                             openPoint: tapPoint, onCarry: onPhoto, carried: carriedPhoto,
+                             onRemove: onRemovePhoto)
             }
         } else if let point = Geo.point(in: line) {
             GridSnap {

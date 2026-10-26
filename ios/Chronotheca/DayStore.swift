@@ -788,6 +788,8 @@ final class DayStore: ObservableObject {
         guard canEditPlan else { return closedReason }
         guard takeOutPlanPhoto(link) else { return "" }
         save()
+        // У точки нет файла — она просто уходит со страницы (P588).
+        if Diary.isPoint(link) { return T("Точка убрана со страницы.", "The place is removed from the page.") }
         return trashed(link, from: .plan, delete: delete)
     }
 
@@ -864,7 +866,7 @@ final class DayStore: ObservableObject {
     /// `slot` — перед каким снимком встать (по ряду до переноса).
     func reorderPlanPhoto(_ link: String, in row: UUID, to slot: Int) {
         guard canEditPlan, let r = index(of: row), let line = planRows[r].verbatim else { return }
-        var links = Diary.links(in: line)
+        var links = Plan.items(in: line)
         guard let from = links.firstIndex(of: link) else { return }
         let to = min(max(slot > from ? slot - 1 : slot, 0), links.count - 1)
         guard to != from else { return }
@@ -872,6 +874,18 @@ final class DayStore: ObservableObject {
         links.insert(link, at: to)
         planRows[r].verbatim = links.map(Diary.line).joined(separator: " ")
         save()
+    }
+
+    /// Снимок или точка — в ряд под делом, за теми, что там уже есть; нет
+    /// ряда — заводится новый (P630).
+    private func addToPhotoRow(_ line: String, under task: UUID) {
+        guard let i = index(of: task) else { return }
+        let at = i + 1
+        if at < planRows.count, let row = planRows[at].verbatim, Plan.isPhotoRow(row) {
+            planRows[at].verbatim = row.trimmingCharacters(in: .whitespaces) + " " + line
+        } else {
+            planRows.insert(.verbatim(line), at: at)
+        }
     }
 
     /// Вложение или точка из записи дневника — в план, под дело (P409).
@@ -882,16 +896,12 @@ final class DayStore: ObservableObject {
         guard canEditPlan, index(of: task) != nil else { return false }
         let line = piece.trimmingCharacters(in: .whitespaces)
         if let link = Diary.picture(in: line), Diary.kind(of: link) == .photo {
-            let at = index(of: task)! + 1
-            if at < planRows.count, let row = planRows[at].verbatim, Plan.isPhotoRow(row) {
-                planRows[at].verbatim = row.trimmingCharacters(in: .whitespaces) + " " + line
-            } else {
-                planRows.insert(.verbatim(line), at: at)
-            }
+            addToPhotoRow(line, under: task)
         } else if Geo.point(in: line) != nil {
-            // Голос и файлы план не показывает — они остаются в записи.
-            planRows.insert(.verbatim(line), at: afterBlock(of: task))
+            // Точка — в тот же ряд, одним местом (P630).
+            addToPhotoRow(line, under: task)
         } else {
+            // Голос и файлы план не показывает — они остаются в записи.
             return false
         }
         save()
@@ -1008,7 +1018,7 @@ final class DayStore: ObservableObject {
         } else {
             return
         }
-        planRows.insert(.verbatim(link), at: afterBlock(of: id))
+        addToPhotoRow(Diary.line(link), under: id)
         save()
     }
 
@@ -1037,7 +1047,7 @@ final class DayStore: ObservableObject {
         }
         for r in planRows.indices {
             guard let line = planRows[r].verbatim else { continue }
-            let links = Diary.links(in: line)
+            let links = Plan.items(in: line)
             guard links.contains(link) else { continue }
             let rest = links.filter { $0 != link }
             if rest.isEmpty {
