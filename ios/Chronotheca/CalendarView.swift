@@ -189,8 +189,8 @@ struct CalendarView: View {
     /// на июнь, человек видит, что «сейчас» — справа, и не гадает, в какую
     /// сторону возвращаться.
     ///
-    /// Короткое нажатие — шаг. Долгое — сразу на сегодняшний месяц: дорога
-    /// назад не должна быть длиннее дороги вперёд.
+    /// Нажатие — шаг. Долгого нажатия нет (P626): в сегодняшний месяц ведёт
+    /// «День» внизу.
     private func arrow(_ sign: String, lit: Bool, label: String) -> some View {
         let step = sign == "‹" ? -1 : 1
         return Text(sign)
@@ -200,16 +200,11 @@ struct CalendarView: View {
             .background(lit ? Look.accent.opacity(0.1) : .clear,
                         in: RoundedRectangle(cornerRadius: 8))
             .contentShape(Rectangle())
-            .onLongPressGesture(minimumDuration: 0.4) {
-                guard lit else { return }
-                goHome()
-            } onPressingChanged: { _ in }
             .onTapGesture {
                 shown = shift(shown, by: step)
                 selected = nil
             }
-            .accessibilityLabel(lit ? label + T(". Долгое нажатие — к сегодняшнему дню", ". Long press for today")
-                                    : label)
+            .accessibilityLabel(label)
     }
 
     /// В какой стороне сегодняшний месяц: −1 слева, +1 справа, 0 — мы на нём.

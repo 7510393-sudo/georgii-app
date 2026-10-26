@@ -248,14 +248,6 @@ struct DayPage: View {
         return arrow
             .frame(width: 44)
         .contentShape(Rectangle())
-        // Дорога домой одна, какой кнопкой её ни начинай (решение P168).
-        .onLongPressGesture(minimumDuration: 0.4) {
-            guard live, lit else { return }
-            hideKeyboard()
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-            shell.say(T("Вернулись на сегодня", "Back to today"))
-            shell.goHome = true
-        } onPressingChanged: { _ in }
         .onTapGesture {
             guard live else { return }
             hideKeyboard()
@@ -266,8 +258,7 @@ struct DayPage: View {
             // и день всегда открывался на плане.
             shell.turn(step, store)
         }
-        .accessibilityLabel(lit ? neighbour(step) + T(". Долгое нажатие — на сегодня", ". Long press for today")
-                                : neighbour(step))
+        .accessibilityLabel(neighbour(step))
     }
 
     /// В какой стороне сегодняшний день: −1 слева, +1 справа, 0 — мы на нём.

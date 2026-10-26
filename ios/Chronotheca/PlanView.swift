@@ -438,6 +438,8 @@ struct PlanView: View {
     @State private var armedLine: UUID?
     /// Дело отвели влево — сперва вопрос (P458).
     @State private var askingDelete: UUID?
+    /// Дело подержали, не сдвигая, — меню дела (P626).
+    @State private var holdMenu: UUID?
     /// Точка, которую несут пальцем (P374), откуда и куда: места — в
     /// порядке видимых строк. Строки между ними расступаются на её высоту.
     @State private var lineDrag: UUID?
@@ -558,6 +560,34 @@ struct PlanView: View {
             Button(T("Оставить", "Keep"), role: .cancel) { askingDelete = nil }
         } message: { id in
             Text(store.index(of: id).map { store.planRows[$0].text } ?? "")
+        }
+        .confirmationDialog(T("Дело", "Task"),
+                            isPresented: Binding(get: { holdMenu != nil },
+                                                 set: { if !$0 { holdMenu = nil } }),
+                            titleVisibility: .hidden, presenting: holdMenu) { id in
+            if let i = store.index(of: id) {
+                Button(store.planRows[i].done ? T("Не сделано", "Not done") : T("Сделано", "Done")) {
+                    holdMenu = nil
+                    toggle($store.planRows[i])
+                }
+                Button(T("Перенести на другой день", "Move to another day")) {
+                    holdMenu = nil
+                    Feel.paper()
+                    withAnimation(.pull) {
+                        shell.movingTask = MovingTask(id: id, title: store.planRows[i].text)
+                    }
+                }
+                Button(T("Удалить", "Delete"), role: .destructive) {
+                    holdMenu = nil
+                    let r = store.planRows[i]
+                    if r.repeats != nil || (r.text.isEmpty && r.details.isEmpty) {
+                        withAnimation(.easeOut(duration: 0.2)) { store.delete(id) }
+                        Feel.light()
+                    } else {
+                        askingDelete = id
+                    }
+                }
+            }
         }
         .confirmationDialog(T("Событие Календаря", "Calendar event"),
                             isPresented: Binding(get: { askingEvent != nil },
@@ -869,6 +899,12 @@ struct PlanView: View {
                 lifted = nil
                 slide = 0
             }
+            // Подержал на месте — меню, как в iPhone; повёл — перенос (P626).
+            if real, axis == nil {
+                Feel.light()
+                holdMenu = id
+                return
+            }
             guard real, axis == .horizontal else { return }
             if by <= -Self.swipe {
                 // Предохранитель (P458): пустое дело и дело из серии (у него
@@ -1101,7 +1137,11 @@ struct PlanView: View {
                 eventTo = nil
             }
             guard real else { return }
-            if axis == .horizontal {
+            if axis == nil {
+                // Подержал на месте — меню события (P626).
+                Feel.light()
+                askingEvent = e
+            } else if axis == .horizontal {
                 if by <= -Self.swipe {
                     askingEvent = e
                 }
