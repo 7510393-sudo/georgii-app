@@ -497,12 +497,34 @@ final class DayStore: ObservableObject {
 
     /// Переставить дело выше или ниже соседнего дела.
     func move(_ id: UUID, by step: Int) {
-        guard canEditPlan, let i = index(of: id) else { return }
-        var j = i + step
-        while j >= 0 && j < planRows.count && !planRows[j].isTask { j += step }
-        guard j >= 0, j < planRows.count else { return }
-        planRows.swapAt(i, j)
+        guard canEditPlan, let i = index(of: id), planRows[i].isTask else { return }
+        // Дело уходит вместе со снимками и точками под ним (P627): прежде
+        // менялись местами только две строки дел, а снимки оставались там,
+        // где стояли, и оказывались под чужим делом.
+        let end = blockEnd(of: i)
+        let block = Array(planRows[i..<end])
+        if step < 0 {
+            guard let p = planRows[..<i].lastIndex(where: { $0.isTask }) else { return }
+            planRows.removeSubrange(i..<end)
+            planRows.insert(contentsOf: block, at: p)
+        } else {
+            guard let n = planRows[end...].firstIndex(where: { $0.isTask }) else { return }
+            let nextEnd = blockEnd(of: n)
+            planRows.removeSubrange(i..<end)
+            planRows.insert(contentsOf: block, at: nextEnd - block.count)
+        }
         save()
+    }
+
+    /// Где кончается дело вместе с тем, что стоит прямо под ним: снимки и
+    /// точки. Отметки событий Календаря и прочие строки — уже не его.
+    private func blockEnd(of i: Int) -> Int {
+        var end = i + 1
+        while end < planRows.count, let line = planRows[end].verbatim,
+              Diary.picture(in: line) != nil || Geo.point(in: line) != nil || Plan.isPhotoRow(line) {
+            end += 1
+        }
+        return end
     }
 
     /// Переставить строку-точку или снимок между делами — на столько
