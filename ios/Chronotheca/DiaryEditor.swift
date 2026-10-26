@@ -797,6 +797,14 @@ struct DiaryEditor: UIViewRepresentable {
                 && view.textStorage.attribute(DiaryEditor.photoKey, at: i, effectiveRange: nil) == nil
         }
 
+        /// Любое вложение записи — снимок, голос, файл или точка.
+        private func takenIsAttachment(at i: Int, in view: UITextView) -> Bool {
+            i < view.textStorage.length
+                && view.textStorage.attribute(.attachment, at: i, effectiveRange: nil) != nil
+                && (view.textStorage.attribute(DiaryEditor.photoKey, at: i, effectiveRange: nil) != nil
+                    || view.textStorage.attribute(DiaryEditor.lineKey, at: i, effectiveRange: nil) != nil)
+        }
+
         private func takenIsPhoto(at i: Int, in view: UITextView) -> Bool {
             i < view.textStorage.length
                 && view.textStorage.attribute(DiaryEditor.photoKey, at: i, effectiveRange: nil) != nil
@@ -859,18 +867,20 @@ struct DiaryEditor: UIViewRepresentable {
             cross.layer.shadowOffset = CGSize(width: 0, height: 1)
             cross.isAccessibilityElement = true
             cross.accessibilityTraits = .button
+            // Подпись крестика — по виду вложения.
+            let point = Geo.point(in: line) != nil
+            let label = photo != nil ? T("Убрать снимок из текста", "Remove photo from text")
+                : point ? T("Удалить точку", "Delete place") : T("Удалить файл", "Delete file")
             if square {
                 // У снимка крестик — на верхнем правом углу, как у значка
                 // на экране «Домой».
                 cross.center = CGPoint(x: min(place.midX + picture.size.width * grow / 2, field.maxX - 10),
                                        y: place.midY - picture.size.height * grow / 2 + 4)
-                cross.accessibilityLabel = photo != nil
-                    ? T("Убрать снимок из текста", "Remove photo from text") : T("Удалить точку", "Delete place")
             } else {
                 cross.center = CGPoint(x: min(place.midX + picture.size.width * grow / 2 + 22, field.maxX - 10),
                                        y: place.midY)
-                cross.accessibilityLabel = T("Удалить точку", "Delete place")
             }
+            cross.accessibilityLabel = label
             cross.addAction(UIAction { [weak self, weak view] _ in
                 guard let self, let view else { return }
                 self.disarm()
@@ -885,9 +895,12 @@ struct DiaryEditor: UIViewRepresentable {
                 // (P409; прежде крестик молча уводил в полоску, P392).
                 if let link = photo {
                     self.askAbout(link, in: view)
-                } else {
+                } else if point {
                     // Точка — тоже после вопроса, тем же окошком (P563).
                     self.askPoint(at: i, line: line, in: view)
+                } else {
+                    // Голос и файл — тот же вопрос, что у снимка: в корзину.
+                    self.askAbout(line, in: view)
                 }
             }, for: .touchUpInside)
             cross.alpha = 0
@@ -1070,7 +1083,9 @@ struct DiaryEditor: UIViewRepresentable {
                 // уходит, точка идёт за пальцем.
                 // Снимок — так же (P392): рамка и крестик на месте; повели —
                 // крестик уходит, снимок идёт над пальцем.
-                if takenIsPoint(at: i, in: view) || takenIsPhoto(at: i, in: view) {
+                // Любое вложение — снимок, голос, файл или точка — одинаково
+                // (стадия 1): долгое нажатие — крестик, повели — перенос.
+                if takenIsAttachment(at: i, in: view) {
                     arm(i, in: view)
                 } else {
                     lift(i, g, in: view)
