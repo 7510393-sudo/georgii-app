@@ -262,6 +262,25 @@ struct MapScreen: View {
             .buttonStyle(.plain)
             .accessibilityLabel(shell.mapSatellite ? T("Показать схему", "Show the map")
                                                    : T("Показать спутник", "Show satellite"))
+
+            // Все места — кнопкой на карте (P632; прежде в меню уголка).
+            Menu {
+                Button { shell.mapShowAll += 1 } label: {
+                    Label(T("Показать все мои места", "Show all my places"), systemImage: "map")
+                }
+                Button { shell.mapList = true } label: {
+                    Label(T("Все места списком", "All places as a list"), systemImage: "list.bullet")
+                }
+            } label: {
+                Image(systemName: "list.bullet")
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(Look.accent)
+                    .frame(width: MapSide.button, height: MapSide.button)
+                    .background(Circle().fill(Look.chrome.opacity(0.82)))
+                    .overlay(Circle().strokeBorder(Look.inkFaint.opacity(0.4), lineWidth: 0.8))
+                    .shadow(color: .black.opacity(0.18), radius: 3, y: 1.5)
+            }
+            .accessibilityLabel(T("Все места", "All places"))
         }
         .padding(.trailing, 12)
         .padding(.top, MapSide.top)
@@ -1735,6 +1754,14 @@ struct PlaceCloud: View {
             HStack(alignment: .firstTextBaseline) {
                 coordinates
                 Spacer(minLength: 8)
+                // Поделиться точкой — здесь, а не в меню уголка (P632).
+                Button {
+                    MapActions.share(GeoPoint(title: place.name, at: place.coordinate))
+                } label: {
+                    Image(systemName: "square.and.arrow.up").font(.system(size: 15))
+                }
+                .accessibilityLabel(T("Поделиться точкой", "Share place"))
+                .padding(.trailing, 10)
                 Button(place.file == nil ? T("Назвать", "Name it") : T("Изменить", "Edit"), action: edit)
                     .font(Look.sans(14))
             }

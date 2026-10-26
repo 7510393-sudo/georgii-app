@@ -54,6 +54,7 @@ struct SearchView: View {
                     .foregroundStyle(Look.inkFaint)
                     .accessibilityLabel(T("Очистить", "Clear"))
             }
+            filterMenu
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 9)
@@ -63,6 +64,39 @@ struct SearchView: View {
         .padding(.trailing, Corner.size + 8)
         .padding(.top, 8)
         .padding(.bottom, 10)
+    }
+
+    /// Где и что искать — меню в самой строке поиска (P632; прежде в меню
+    /// уголка). Горит, когда ищем не по всему архиву.
+    private var filterMenu: some View {
+        Menu {
+            scopeButton(T("Искать везде", "Search everywhere"), .all)
+            scopeButton(T("Только в дневнике", "Only in the diary"), .diary)
+            scopeButton(T("Только в плане", "Only in the plan"), .plan)
+            Divider()
+            ForEach(Shell.Find.allCases, id: \.self) { kind in
+                Button {
+                    shell.find = kind
+                } label: {
+                    let title = kind == .all ? T("Искать всё", "Find everything")
+                                             : T("Только: ", "Only: ") + kind.title.lowercased()
+                    if shell.find == kind { Label(title, systemImage: "checkmark") } else { Text(title) }
+                }
+            }
+        } label: {
+            Image(systemName: "line.3.horizontal.decrease.circle")
+                .font(.system(size: 18))
+                .foregroundStyle(shell.scope != .all || shell.find != .all ? Look.accent : Look.inkFaint)
+        }
+        .accessibilityLabel(T("Что и где искать", "What and where to search"))
+    }
+
+    private func scopeButton(_ title: String, _ scope: Shell.Scope) -> some View {
+        Button {
+            shell.scope = scope
+        } label: {
+            if shell.scope == scope { Label(title, systemImage: "checkmark") } else { Text(title) }
+        }
     }
 
     /// Где ищем — видно прямо в строке поиска, а не только в меню: иначе,

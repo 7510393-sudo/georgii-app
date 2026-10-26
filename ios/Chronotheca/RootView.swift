@@ -317,7 +317,6 @@ struct RootView: View {
             // Листки висят от верха экрана под строкой часов; выезжают они
             // из-под неё, поэтому всё, что выше, обрезано.
             ZStack(alignment: .topTrailing) {
-                if shell.showingMenu { MenuSticker() }
                 if let m = shell.movingTask {
                     MoveDaySticker(task: m)
                         .transition(.move(edge: .top).combined(with: .opacity))
@@ -331,7 +330,7 @@ struct RootView: View {
             // Нижняя строка — самый верхний слой, как и верхняя (P515): листок
             // заходит под неё. Пока листок открыт, поверх него лежит точная
             // копия строки на том же месте; закрыт — копии нет.
-            if shell.showingSettings || shell.showingMenu || shell.movingTask != nil {
+            if shell.showingSettings || shell.movingTask != nil {
                 tabbar
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                     .ignoresSafeArea(.all, edges: .bottom)
@@ -341,7 +340,7 @@ struct RootView: View {
             // Подсказки для первого знакомства (P427) — поверх всего, когда
             // экран спокоен.
             HintLayer(screen: shell.screen,
-                      quiet: !shell.showingMenu && !shell.showingSettings
+                      quiet: !shell.showingSettings
                           && shell.movingTask == nil && keyboard.height == 0
                           && vault.moving == nil)
             // Для проверок движения (P552): какой день открыт — невидимой
@@ -553,11 +552,11 @@ struct RootView: View {
 
     // MARK: - Шапка
 
-    /// Шестерёнка и три точки — на уголках бумаги, торчащих сверху: левый
-    /// желтоватый, как бумажка настроек, правый голубой, как бумажка меню
-    /// (P434; прежде наоборот).
-    /// У уголков тень — они лежат поверх страницы (P229). Меню у каждого
-    /// экрана своё; кнопка не пропадает, что бы ни было открыто (P188).
+    /// Шестерёнка — на уголке бумаги, торчащем сверху слева. Уголка с тремя
+    /// точками больше нет (P632): действия дня — по касанию даты в шапке,
+    /// карты — в плашке точки и на самой карте, поиска — в строке поиска.
+    /// У уголка тень — он лежит поверх страницы (P229); кнопка не
+    /// пропадает, что бы ни было открыто (P188).
     private var corners: some View {
         HStack(alignment: .top) {
             Button {
@@ -566,7 +565,7 @@ struct RootView: View {
                 // листку настроек — убираются вниз, как при касании по
                 // точке на карте (P309).
                 hideKeyboard()
-                shell.pullOut(settings: true)
+                shell.pullOut()
             } label: {
                 Corner(leading: true, paper: Look.sticker, edge: Look.stickerEdge, icon: "gearshape",
                        tint: shell.showingSettings ? Look.accent : Look.inkSoft)
@@ -579,19 +578,6 @@ struct RootView: View {
             .accessibilityLabel(T("Настройки", "Settings"))
 
             Spacer(minLength: 0)
-
-            Button {
-                if closeDrawer() { return }
-                hideKeyboard()
-                shell.pullOut(settings: false)
-            } label: {
-                Corner(leading: false, paper: Look.sticker, edge: Look.stickerEdge, icon: "ellipsis",
-                       tint: dotsLit ? Look.accent : Look.inkSoft)
-                    .opacity(shell.showingMenu ? 0 : 1)
-            }
-            .buttonStyle(.plain)
-            .simultaneousGesture(pull(\.showingMenu, \.menuPull))
-            .accessibilityLabel(dotsLabel)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
@@ -613,32 +599,12 @@ struct RootView: View {
                 }
             }
             .onEnded { drag in
-                let settings = showing == \Shell.showingSettings
                 if drag.translation.height > 90 || drag.predictedEndTranslation.height > 220 {
-                    shell.pullOut(settings: settings)
+                    shell.pullOut()
                 } else {
-                    shell.tuckIn(settings: settings)
+                    shell.tuckIn()
                 }
             }
-    }
-
-    /// Точки горят, когда в меню включено что-то необычное: режим
-    /// изменений на странице дня или поиск не по всему архиву.
-    private var dotsLit: Bool {
-        switch shell.screen {
-        case .today:    return store.editing(shell.tab)
-        case .calendar, .map: return false
-        case .search:   return shell.scope != .all
-        }
-    }
-
-    private var dotsLabel: String {
-        switch shell.screen {
-        case .today:    return T("Меню страницы", "Page menu")
-        case .calendar: return T("Меню календаря", "Calendar menu")
-        case .map:      return T("Меню карты", "Map menu")
-        case .search:   return T("Меню поиска", "Search menu")
-        }
     }
 
     // MARK: - Экран

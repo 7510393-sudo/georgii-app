@@ -36,7 +36,7 @@ struct Sticker<Content: View>: View {
 
     /// Насколько листок ещё за краем: 1 — торчит один угол, 0 — весь виден.
     private var amount: CGFloat {
-        (side == .leading ? shell.settingsPull : shell.menuPull) ?? 0
+        shell.settingsPull ?? 0
     }
 
     private var sheet: some View {

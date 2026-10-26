@@ -66,6 +66,7 @@ struct DayPage: View {
     let date: Date
     let live: Bool
 
+    @EnvironmentObject private var vault: Vault
     @EnvironmentObject private var store: DayStore
     @EnvironmentObject private var shell: Shell
     @EnvironmentObject private var archive: Archive
@@ -168,26 +169,7 @@ struct DayPage: View {
             // стрелками (P434): шапка ниже на строку, под текст больше места.
             HStack(spacing: 0) {
                 side(-1)
-                VStack(spacing: 0) {
-                    Text(live ? store.title : DayPage.title(for: date))
-                        .font(.system(size: 21, weight: .semibold))
-                        .tracking(-0.2)
-                        .foregroundStyle(Look.ink)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
-                    // День недели — только у дней с именем («вчера»,
-                    // «завтра»…): у дальних он и так написан крупно (P425).
-                    // Сначала число, справа день недели (P467).
-                    (Text(Ru.headDate(date))
-                        .foregroundColor(Look.inkSoft)
-                     + Text(DayPage.named(date) ? ",  " + Ru.weekday(date) : "")
-                        .foregroundColor(Ru.dayColor(date))
-                        .tracking(0.4))
-                        .font(Look.sans(12.5))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.75)
-                }
-                .frame(maxWidth: .infinity)
+                titleMenu
                 side(1)
             }
             .frame(height: DayPage.headLine + 8)
@@ -202,6 +184,77 @@ struct DayPage: View {
         .background(Ru.tint(date).overlay(PageTexture(tab: .diary)))
         .contentShape(Rectangle())
         .onTapGesture { hideKeyboard() }
+    }
+
+    /// Имя дня и дата. Касание по ним на открытой странице — действия дня
+    /// (P632; прежде они были в уголке с тремя точками). Стрелка ▾ стоит и
+    /// на соседних страницах: иначе при листании строка меняла бы ширину.
+    @ViewBuilder private var titleMenu: some View {
+        if live {
+            Menu { dayActions } label: { titleBlock }
+                .buttonStyle(.plain)
+                .accessibilityHint(T("Действия дня", "Day actions"))
+        } else {
+            titleBlock
+        }
+    }
+
+    @ViewBuilder private var dayActions: some View {
+        Button { shell.showingFile = true } label: {
+            Label(T("Показать файл этого дня", "Show this day’s file"), systemImage: "doc.text")
+        }
+        Button { shell.showingWeek = true } label: {
+            Label(T("Неделя одним взглядом", "The week at a glance"), systemImage: "calendar")
+        }
+        Button {
+            // Текстом — план и запись; вложения остаются в папке (P249).
+            Share.present([store.shareText()])
+        } label: {
+            Label(T("Поделиться днём", "Share the day"), systemImage: "square.and.arrow.up")
+        }
+        // PDF одного дня — та же книга, срок в один день (P296).
+        Button {
+            let date = store.date
+            let vault = vault
+            store.save()
+            DispatchQueue.global(qos: .userInitiated).async {
+                let url = PDFBook.make(.init(from: date, to: date), vault: vault)
+                DispatchQueue.main.async {
+                    if let url { Share.present([url]) } else { shell.say(T("В этом дне пока пусто — PDF не из чего собрать.", "This day is still empty — nothing to make a PDF from.")) }
+                }
+            }
+        } label: {
+            Label(T("PDF дня", "PDF of the day"), systemImage: "doc.richtext")
+        }
+        // Корзина (P295, P300): весь день уезжает в папку «Корзина», её
+        // можно вернуть из настроек.
+        Button(role: .destructive) { shell.trashAsk = true } label: {
+            Label(T("Убрать день в корзину", "Move the day to the trash"), systemImage: "trash")
+        }
+    }
+
+    private var titleBlock: some View {
+                VStack(spacing: 0) {
+                    Text(live ? store.title : DayPage.title(for: date))
+                        .font(.system(size: 21, weight: .semibold))
+                        .tracking(-0.2)
+                        .foregroundStyle(Look.ink)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                    // День недели — только у дней с именем («вчера»,
+                    // «завтра»…): у дальних он и так написан крупно (P425).
+                    // Сначала число, справа день недели (P467).
+                    (Text(Ru.headDate(date))
+                        .foregroundColor(Look.inkSoft)
+                     + Text(DayPage.named(date) ? ",  " + Ru.weekday(date) : "")
+                        .foregroundColor(Ru.dayColor(date))
+                        .tracking(0.4)
+                     + Text(" ▾").foregroundColor(Look.inkFaint))
+                        .font(Look.sans(12.5))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+                }
+                .frame(maxWidth: .infinity)
     }
 
     /// Шаг назад и вперёд по всей странице, плану и дневнику разом (P408) —

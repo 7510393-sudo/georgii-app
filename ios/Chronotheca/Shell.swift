@@ -74,7 +74,6 @@ final class Shell: ObservableObject {
     }
     @Published var openedPhoto: OpenedPhoto?
 
-    @Published var showingMenu = false
     /// Точка, на которой открыть карту: её нажали в тексте дня (P213).
     @Published var mapFocus: GeoPoint?
     /// Точка, выбранная сейчас на карте. По ней работают «в навигатор» и
@@ -106,42 +105,37 @@ final class Shell: ObservableObject {
     /// Бумажку тянут за уголок: сколько её ещё за краем, 1 — вся, 0 — на
     /// месте. Пусто — никто не тянет (P233).
     @Published var settingsPull: CGFloat?
-    @Published var menuPull: CGFloat?
 
     /// Вытянуть листок за уголок до конца: он стоит за краем экрана так,
     /// что наружу торчит только его угол, и съезжает вниз целиком (P237).
-    func pullOut(settings: Bool) {
+    func pullOut() {
         // Толчок — сразу по нажатию, не когда бумажка уже легла на место:
         // рука должна почувствовать отклик в момент касания (P320).
         Feel.paper()
         var still = Transaction()
         still.disablesAnimations = true
         withTransaction(still) {
-            if settings { showingSettings = true; settingsPull = settingsPull ?? 1 }
-            else { showingMenu = true; menuPull = menuPull ?? 1 }
+            showingSettings = true
+            settingsPull = settingsPull ?? 1
         }
         DispatchQueue.main.async {
-            withAnimation(.pull) {
-                if settings { self.settingsPull = nil } else { self.menuPull = nil }
-            }
+            withAnimation(.pull) { self.settingsPull = nil }
         }
     }
 
     /// Задвинуть листок обратно: он уезжает вверх, пока снова не останется
     /// один уголок.
-    func tuckIn(settings: Bool) {
+    func tuckIn() {
         // Толчок — в момент нажатия, как при выезде, а не когда листок уже
         // ушёл (P515).
         Feel.paper()
-        withAnimation(.tuck) {
-            if settings { settingsPull = 1 } else { menuPull = 1 }
-        }
+        withAnimation(.tuck) { settingsPull = 1 }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             var still = Transaction()
             still.disablesAnimations = true
             withTransaction(still) {
-                if settings { self.showingSettings = false; self.settingsPull = nil }
-                else { self.showingMenu = false; self.menuPull = nil }
+                self.showingSettings = false
+                self.settingsPull = nil
             }
         }
     }
@@ -207,8 +201,6 @@ final class Shell: ObservableObject {
         var still = Transaction()
         still.disablesAnimations = true
         withTransaction(still) {
-            showingMenu = false
-            menuPull = nil
             showingSettings = false
             settingsPull = nil
             screen = .today
@@ -309,9 +301,6 @@ final class Shell: ObservableObject {
         case "diary":     tab = .diary
         case "calendar":  screen = .calendar
         case "search":    screen = .search
-        case "menu":      showingMenu = true
-        case "calendar-menu": screen = .calendar; showingMenu = true
-        case "search-menu":   screen = .search; showingMenu = true
         case "settings":  showingSettings = true
         case "map":       screen = .map
         case "remember":  tab = .diary; previewRemember += 1
