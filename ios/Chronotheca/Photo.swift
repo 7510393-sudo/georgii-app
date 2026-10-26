@@ -401,7 +401,17 @@ struct PlanPhotoRow: View {
     /// Крестик (P623): подержали снимок и не повели — у него крестик, как у
     /// снимка в тексте; касание по крестику — вопрос об удалении.
     var onRemove: ((String) -> Void)? = nil
-    @State private var armed: String?
+    /// Предмет, у которого сейчас крестик, и как его включить или убрать —
+    /// состояние у плана (P634): пустое место страницы убирает крестик, как
+    /// у точки в тексте.
+    var armedLink: String? = nil
+    var onArm: ((String?) -> Void)? = nil
+    /// Где предметы ряда в самом ряду — по ним крестик встаёт на угол.
+    @State private var frames: [String: CGRect] = [:]
+    /// Когда крестик появился: касание, которым кончилось долгое нажатие,
+    /// его не убирает (P536, P634).
+    @State private var armedAt = Date.distantPast
+    private static let space = "planPhotoRow"
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -410,32 +420,47 @@ struct PlanPhotoRow: View {
                     item(link)
                         .opacity(carried == link ? 0.25 : 1)
                         .modifier(ThumbCarry(report: report(link), stayed: onRemove == nil ? nil : {
-                            withAnimation(.easeOut(duration: 0.15)) { armed = link }
+                            armedAt = Date()
+                            withAnimation(.easeOut(duration: 0.15)) { onArm?(link) }
                         }))
-                        .overlay(alignment: .topTrailing) {
-                            if armed == link, let onRemove {
-                                Button {
-                                    armed = nil
-                                    onRemove(link)
-                                } label: {
-                                    Image(uiImage: DiaryEditor.Coordinator.crossImage)
-                                        .resizable()
-                                        .frame(width: 40, height: 40)
-                                        .shadow(color: .black.opacity(0.3), radius: 3, y: 1)
-                                        .frame(width: 48, height: 48)
-                                        .contentShape(Rectangle())
-                                }
-                                .buttonStyle(.plain)
-                                .transition(.scale.combined(with: .opacity))
-                                .accessibilityLabel(T("Убрать", "Remove"))
-                            }
-                        }
+                        .background(GeometryReader { geo in
+                            let frame = geo.frame(in: .named(Self.space))
+                            Color.clear
+                                .onAppear { frames[link] = frame }
+                                .onChange(of: frame) { _, now in frames[link] = now }
+                        })
                 }
             }
             .padding(.horizontal, 14)
         }
         .scrollDisabled(links.count < 4 || carried != nil)
         .frame(height: PlanPhotoLine.height)
+        // Касание пустого места ряда тоже убирает крестик.
+        .contentShape(Rectangle())
+        .onTapGesture { if armedLink != nil { withAnimation(.easeOut(duration: 0.15)) { onArm?(nil) } } }
+        .coordinateSpace(name: Self.space)
+        // Крестик — на верхнем правом углу предмета, снаружи, как у снимка в
+        // тексте и значка на экране «Домой» (P634); прежде он сидел внутри
+        // квадрата и обрезался рядом.
+        .overlay(alignment: .topLeading) {
+            if let link = armedLink, let f = frames[link], let onRemove {
+                Button {
+                    onArm?(nil)
+                    onRemove(link)
+                } label: {
+                    Image(uiImage: DiaryEditor.Coordinator.crossImage)
+                        .resizable()
+                        .frame(width: 40, height: 40)
+                        .shadow(color: .black.opacity(0.3), radius: 3, y: 1)
+                        .frame(width: 48, height: 48)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .position(x: f.maxX, y: f.minY + 4)
+                .transition(.scale.combined(with: .opacity))
+                .accessibilityLabel(T("Убрать", "Remove"))
+            }
+        }
     }
     /// Снимок — картинкой, точка — квадратом; оба — на одном месте ряда.
     @ViewBuilder private func item(_ link: String) -> some View {
@@ -453,8 +478,11 @@ struct PlanPhotoRow: View {
 
     /// Касание: с крестиком — убрать крестик, без него — открыть.
     private func tapped(_ link: String, point: GeoPoint?) {
-        if armed != nil {
-            withAnimation(.easeOut(duration: 0.15)) { armed = nil }
+        if armedLink != nil {
+            // Палец только что отпустили после долгого нажатия — это то же
+            // касание, оно крестик не убирает (P536, P634).
+            guard Date().timeIntervalSince(armedAt) > 0.5 else { return }
+            withAnimation(.easeOut(duration: 0.15)) { onArm?(nil) }
         } else if let point {
             openPoint?(point)
         } else {
@@ -465,7 +493,7 @@ struct PlanPhotoRow: View {
     private func report(_ link: String) -> ((Lift, CGPoint) -> Void)? {
         guard let onCarry else { return nil }
         return { phase, spot in
-            if case .began = phase { armed = nil }
+            if case .began = phase { onArm?(nil) }
             onCarry(link, phase, spot)
         }
     }

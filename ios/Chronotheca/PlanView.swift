@@ -436,6 +436,8 @@ struct PlanView: View {
     @State private var slide: CGFloat = 0
     /// Точка в плане, у которой после долгого нажатия виден крестик.
     @State private var armedLine: UUID?
+    /// У какого снимка или точки в ряду крестик, когда `armedLine` — этот ряд (P634).
+    @State private var armedPhotoLink: String?
     /// Дело отвели влево — сперва вопрос (P458).
     @State private var askingDelete: UUID?
     /// Дело подержали, не сдвигая, — меню дела (P626).
@@ -750,6 +752,10 @@ struct PlanView: View {
                       onPhoto: store.canEditPlan
                           ? { carryPhoto($0, from: id, $1, at: $2) } : nil,
                       carriedPhoto: photoCarry?.from == id ? photoCarry?.link : nil,
+                      armedPhoto: armedLine == id ? armedPhotoLink : nil,
+                      onArmPhoto: { link in
+                          if let link { armedPhotoLink = link; armedLine = id } else { armedLine = nil }
+                      },
                       onRemovePhoto: store.canEditPlan
                           ? { link in
                               // У точки нет файла — вопроса «что с файлом» нет (P630).
@@ -1602,8 +1608,11 @@ struct PlanExtraLine: View {
     /// Снимок из ряда под делом несут пальцем (P377).
     var onPhoto: ((String, Lift, CGPoint) -> Void)? = nil
     var carriedPhoto: String? = nil
-    /// Крестик у снимка под делом (P623).
+    /// Крестик у снимка под делом (P623) и у какого предмета ряда он сейчас
+    /// (P634).
     var onRemovePhoto: ((String) -> Void)? = nil
+    var armedPhoto: String? = nil
+    var onArmPhoto: ((String?) -> Void)? = nil
 
     var body: some View {
         if Plan.isPhotoRow(line) {
@@ -1613,7 +1622,7 @@ struct PlanExtraLine: View {
             GridSnap {
                 PlanPhotoRow(links: Plan.items(in: line), resolve: resolve, open: open,
                              openPoint: tapPoint, onCarry: onPhoto, carried: carriedPhoto,
-                             onRemove: onRemovePhoto)
+                             onRemove: onRemovePhoto, armedLink: armedPhoto, onArm: onArmPhoto)
             }
         } else if let point = Geo.point(in: line) {
             GridSnap {
