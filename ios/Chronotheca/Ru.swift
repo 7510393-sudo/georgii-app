@@ -161,20 +161,21 @@ struct Scheme {
     let kraftEdge: Color
 
     static let apricot = Scheme(
-        past: Color(light: 0xF1F2F5, dark: 0x181B21),
+        // Прошлое — выцветшее тёплое, как старая бумага (P635; было серо-голубое).
+        past: Color(light: 0xF2EBD9, dark: 0x221D15),
         // Бледнее на 15% (P330).
         today: Color(light: 0xF9E6D7, dark: 0x2F2620),
         kraft: Color(light: 0xCBB28C, dark: 0x3A3125),
         kraftInk: Color(light: 0x3A2818, dark: 0xE6D6BA),
         kraftEdge: Color(light: 0x96805F, dark: 0x1E1912))
     static let sage = Scheme(
-        past: Color(light: 0xF1F3F2, dark: 0x171B1A),
+        past: Color(light: 0xEEEBD8, dark: 0x1E1D15),
         today: Color(light: 0xE3EEDC, dark: 0x1F2B21),
         kraft: Color(light: 0xB7C4A2, dark: 0x2D3829),
         kraftInk: Color(light: 0x22301A, dark: 0xDCE8D0),
         kraftEdge: Color(light: 0x7F8C6A, dark: 0x172016))
     static let lavender = Scheme(
-        past: Color(light: 0xF3F2F6, dark: 0x1A1B22),
+        past: Color(light: 0xF0ECDC, dark: 0x201D16),
         today: Color(light: 0xEAE3F5, dark: 0x28232F),
         kraft: Color(light: 0xC3B8D8, dark: 0x332E40),
         kraftInk: Color(light: 0x2D2340, dark: 0xE4DCF2),
