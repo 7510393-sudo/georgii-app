@@ -752,16 +752,16 @@ struct PlanView: View {
                       onPhoto: store.canEditPlan
                           ? { carryPhoto($0, from: id, $1, at: $2) } : nil,
                       carriedPhoto: photoCarry?.from == id ? photoCarry?.link : nil,
-                      armedPhoto: armedLine == id ? armedPhotoLink : nil,
-                      onArmPhoto: { link in
-                          if let link { armedPhotoLink = link; armedLine = id } else { armedLine = nil }
-                      },
                       onRemovePhoto: store.canEditPlan
                           ? { link in
                               // У точки нет файла — вопроса «что с файлом» нет (P630).
                               if Diary.isPoint(link) { shell.say(store.removePlanRowPhoto(link, delete: false)) }
                               else { removingPlanPhoto = link }
-                          } : nil)
+                          } : nil,
+                      armedPhoto: armedLine == id ? armedPhotoLink : nil,
+                      onArmPhoto: { link in
+                          if let link { armedPhotoLink = link; armedLine = id } else { armedLine = nil }
+                      })
             .modifier(Zone(id: id))
     }
 
