@@ -1,0 +1,142 @@
+    427 Thread_46483   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 427 start  (in dyld) + 6992  [0x1013144e4]
+    +   427 start_sim  (in dyld_sim) + 20  [0x1010770e4]
+    +     427 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x102d81e68]  ChronothecaApp.swift:0
+    +       427 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x102d81dbc]  /<compiler-generated>:0
+    +         427 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           427 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             427 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               306 UIApplicationMain  (in UIKitCore) + 100  [0x186b9f8fc]
+    +               ! 306 _UIApplicationMainPreparations  (in UIKitCore) + 1204  [0x1864a9cd4]
+    +               !   306 +[UIKeyboardSceneDelegate automaticKeyboardArbiterClient]  (in UIKitCore) + 60  [0x185dd2910]
+    +               !     306 +[UIKeyboard supportsAutoFillPanel]  (in UIKitCore) + 56  [0x1862412c4]
+    +               !       306 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +               !         306 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +               !           306 __35+[UIKeyboard supportsAutoFillPanel]_block_invoke  (in UIKitCore) + 68  [0x186241310]
+    +               !             306 _os_feature_enabled_SLOWPATH  (in libsystem_featureflags.dylib) + 1088  [0x1cc2c1ed8]
+    +               !               306 _os_feature_enabled_load  (in libsystem_featureflags.dylib) + 248  [0x1cc2c2380]
+    +               !                 306 pread  (in libsystem_kernel.dylib) + 8  [0x100f2e34c]
+    +               121 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 121 -[UIApplication _run]  (in UIKitCore) + 100  [0x1864a5228]
+    +                   71 -[UIApplication(UIKitApplicationAccessibility) _accessibilityInit]  (in UIKitCore) + 112  [0x18576eee8]
+    +                   : 71 -[UIApplication(UIKitApplicationAccessibility) _updateApplicationAccessibility]  (in UIKitCore) + 76  [0x18576ecc4]
+    +                   :   71 -[UIApplication(UIKitApplicationAccessibility) _accessibilityBundlePrincipalClass]  (in UIKitCore) + 96  [0x18576eb34]
+    +                   :     71 -[NSBundle loadAndReturnError:]  (in Foundation) + 248  [0x18103c7c4]
+    +                   :       71 _CFBundleLoadExecutableAndReturnError  (in CoreFoundation) + 460  [0x1803b117c]
+    +                   :         71 _CFBundleDlfcnLoadFramework  (in CoreFoundation) + 152  [0x1803e4180]
+    +                   :           71 dyld4::APIs::dlopen_from(char const*, int, void*)  (in dyld_sim) + 344  [0x10106fb1c]
+    +                   :             67 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const  (in dyld_sim) + 184  [0x101074390]
+    +                   :             | 66 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const::'lambda'()::operator()() const  (in dyld_sim) + 1884  [0x101075204]
+    +                   :             | + 66 dyld4::RuntimeState::notifyDebuggerLoad(std::span<dyld4::Loader const*, 18446744073709551615ul> const&)  (in dyld_sim) + 408  [0x1010817b4]
+    +                   :             | +   66 dyld4::ExternallyViewableState::addImages(lsl::Allocator&, lsl::Allocator&, std::span<dyld4::ExternallyViewableState::ImageInfo, 18446744073709551615ul> const&)  (in dyld_sim) + 496  [0x101084154]
+    +                   :             | +     66 dyld4::ExternallyViewableState::triggerNotifications(dyld_image_mode, unsigned int, dyld_image_info const*)  (in dyld_sim) + 532  [0x101083ea0]
+    +                   :             | +       66 dyld4::ExternallyViewableState::notifyMonitorOfImageListChangesSim(bool, unsigned int, mach_header const**, char const**)  (in dyld) + 792  [0x10132e36c]
+    +                   :             | +         66 invocation function for block in dyld4::ExternallyViewableState::notifyMonitorOfImageListChangesSim(bool, unsigned int, mach_header const**, char const**)  (in dyld) + 2852  [0x101331ef0]
+    +                   :             | +           66 dyld4::ExternallyViewableState::triggerNotifications(dyld_image_mode, unsigned int, dyld_image_info const*)  (in dyld) + 296  [0x10132f524]
+    +                   :             | +             66 dyld4::RemoteNotificationResponder::blockOnSynchronousEvent(unsigned int)  (in dyld) + 48  [0x101375c90]
+    +                   :             | +               65 dyld4::RemoteNotificationResponder::sendMessage(int, unsigned int, mach_msg_header_t*)  (in dyld) + 244  [0x101375904]
+    +                   :             | +               ! 65 mach_msg_overwrite  (in dyld) + 244  [0x10138f18c]
+    +                   :             | +               !   65 mach_msg2_internal  (in dyld) + 76  [0x10138efe4]
+    +                   :             | +               !     65 mach_msg2_trap  (in dyld) + 8  [0x1012f572c]
+    +                   :             | +               1 dyld4::RemoteNotificationResponder::sendMessage(int, unsigned int, mach_msg_header_t*)  (in dyld) + 316  [0x10137594c]
+    +                   :             | +                 1 mach_port_destruct  (in dyld) + 48  [0x1012f5464]
+    +                   :             | +                   1 _kernelrpc_mach_port_destruct_trap  (in dyld) + 8  [0x1012f5630]
+    +                   :             | 1 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const::'lambda'()::operator()() const  (in dyld_sim) + 996  [0x101074e8c]
+    +                   :             |   1 dyld4::JustInTimeLoader::applyFixups(Diagnostics&, dyld4::RuntimeState&, dyld4::DyldCacheDataConstLazyScopedWriter&, bool, lsl::Vector<std::pair<dyld4::Loader const*, char const*>>*) const  (in dyld_sim) + 404  [0x1010864c4]
+    +                   :             |     1 dyld4::Loader::forEachBindTarget(Diagnostics&, dyld4::RuntimeState&, void (unsigned int, unsigned int, dyld4::Loader::ResolvedSymbol const&) block_pointer, bool, void (dyld4::Loader::ResolvedSymbol const&, bool&) block_pointer, void (dyld4::Loader::ResolvedSymbol const&, bool&) block_pointer) const  (in dyld_sim) + 80  [0x10108c784]
+    +                   :             |       1 dyld3::MachOAnalyzer::withVMLayout(Diagnostics&, void (mach_o::Layout const&) block_pointer) const  (in dyld_sim) + 688  [0x1010937d8]
+    +                   :             |         1 invocation function for block in dyld4::Loader::forEachBindTarget(Diagnostics&, dyld4::RuntimeState&, void (unsigned int, unsigned int, dyld4::Loader::ResolvedSymbol const&) block_pointer, bool, void (dyld4::Loader::ResolvedSymbol const&, bool&) block_pointer, void (dyld4::Loader::ResolvedSymbol const&, bool&) block_pointer) const  (in dyld_sim) + 212  [0x10108c864]
+    +                   :             |           1 mach_o::Fixups::forEachBindTarget_ChainedFixups(Diagnostics&, void (mach_o::Fixups::BindTargetInfo const&, bool&) block_pointer) const  (in dyld_sim) + 116  [0x10109b1b8]
+    +                   :             |             1 dyld3::MachOFile::forEachChainedFixupTarget(Diagnostics&, dyld_chained_fixups_header const*, linkedit_data_command const*, void (int, char const*, unsigned long long, bool, bool&) block_pointer)  (in dyld_sim) + 224  [0x101099a84]
+    +                   :             |               1 invocation function for block in mach_o::Fixups::forEachBindTarget_ChainedFixups(Diagnostics&, void (mach_o::Fixups::BindTargetInfo const&, bool&) block_pointer) const  (in dyld_sim) + 64  [0x10109b3c0]
+    +                   :             |                 1 invocation function for block in dyld4::Loader::forEachBindTarget(Diagnostics&, dyld4::RuntimeState&, void (unsigned int, unsigned int, dyld4::Loader::ResolvedSymbol const&) block_pointer, bool, void (dyld4::Loader::ResolvedSymbol const&, bool&) block_pointer, void (dyld4::Loader::ResolvedSymbol const&, bool&) block_pointer) const  (in dyld_sim) + 92  [0x10108c8ec]
+    +                   :             |                   1 dyld4::Loader::resolveSymbol(Diagnostics&, dyld4::RuntimeState&, int, char const*, bool, bool, void (unsigned int, unsigned int, dyld4::Loader::ResolvedSymbol const&) block_pointer, bool) const  (in dyld_sim) + 480  [0x10108cb30]
+    +                   :             |                     1 dyld4::Loader::hasExportedSymbol(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::ExportedSymbolMode, dyld4::Loader::ResolverMode, dyld4::Loader::ResolvedSymbol*, dyld3::Array<dyld4::Loader const*>*) const  (in dyld_sim) + 376  [0x10108d85c]
+    +                   :             |                       1 dyld3::MachOFile::trieWalk(Diagnostics&, unsigned char const*, unsigned char const*, char const*)  (in dyld_sim) + 120  [0x10109a020]
+    +                   :             4 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const  (in dyld_sim) + 1032  [0x1010746e0]
+    +                   :               4 dyld4::RuntimeState::notifyLoad(std::span<dyld4::Loader const*, 18446744073709551615ul> const&)  (in dyld_sim) + 852  [0x101081d6c]
+    +                   :                 4 map_images  (in libobjc.A.dylib) + 72  [0x1800492fc]
+    +                   :                   4 map_images_nolock  (in libobjc.A.dylib) + 3232  [0x18005c0c0]
+    +                   :                     4 __sel_registerName(char const*, bool, bool)  (in libobjc.A.dylib) + 44  [0x180059580]
+    +                   :                       4 dyld4::APIs::_dyld_get_objc_selector(char const*)  (in dyld_sim) + 52  [0x1010719b0]
+    +                   :                         3 objc::StringHashTable::tryGetIndex(char const*) const  (in dyld_sim) + 128  [0x101073ed0]
+    +                   :                         1 objc::StringHashTable::tryGetIndex(char const*) const  (in dyld_sim) + 148  [0x101073ee4]
+    +                   :                           1 strcmp  (in dyld_sim) + 4  [0x1010a2f98]
+    +                   50 -[UIApplication(UIKitApplicationAccessibility) _accessibilityInit]  (in UIKitCore) + 104  [0x18576eee0]
+    +                     50 +[UIApplication(UIKitApplicationAccessibility) _updateAccessibilitySettingsLoader]  (in UIKitCore) + 16  [0x18576ea74]
+    +                       50 +[UIApplication(UIKitApplicationAccessibility) _accessibilitySettingsBundle]  (in UIKitCore) + 80  [0x18576e988]
+    +                         41 -[NSBundle loadAndReturnError:]  (in Foundation) + 248  [0x18103c7c4]
+    +                         | 41 _CFBundleLoadExecutableAndReturnError  (in CoreFoundation) + 460  [0x1803b117c]
+    +                         |   41 _CFBundleDlfcnLoadFramework  (in CoreFoundation) + 152  [0x1803e4180]
+    +                         |     41 dyld4::APIs::dlopen_from(char const*, int, void*)  (in dyld_sim) + 344  [0x10106fb1c]
+    +                         |       40 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const  (in dyld_sim) + 184  [0x101074390]
+    +                         |       + 40 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const::'lambda'()::operator()() const  (in dyld_sim) + 1884  [0x101075204]
+    +                         |       +   40 dyld4::RuntimeState::notifyDebuggerLoad(std::span<dyld4::Loader const*, 18446744073709551615ul> const&)  (in dyld_sim) + 408  [0x1010817b4]
+    +                         |       +     40 dyld4::ExternallyViewableState::addImages(lsl::Allocator&, lsl::Allocator&, std::span<dyld4::ExternallyViewableState::ImageInfo, 18446744073709551615ul> const&)  (in dyld_sim) + 496  [0x101084154]
+    +                         |       +       40 dyld4::ExternallyViewableState::triggerNotifications(dyld_image_mode, unsigned int, dyld_image_info const*)  (in dyld_sim) + 532  [0x101083ea0]
+    +                         |       +         40 dyld4::ExternallyViewableState::notifyMonitorOfImageListChangesSim(bool, unsigned int, mach_header const**, char const**)  (in dyld) + 792  [0x10132e36c]
+    +                         |       +           40 invocation function for block in dyld4::ExternallyViewableState::notifyMonitorOfImageListChangesSim(bool, unsigned int, mach_header const**, char const**)  (in dyld) + 2852  [0x101331ef0]
+    +                         |       +             40 dyld4::ExternallyViewableState::triggerNotifications(dyld_image_mode, unsigned int, dyld_image_info const*)  (in dyld) + 296  [0x10132f524]
+    +                         |       +               40 dyld4::RemoteNotificationResponder::blockOnSynchronousEvent(unsigned int)  (in dyld) + 48  [0x101375c90]
+    +                         |       +                 40 dyld4::RemoteNotificationResponder::sendMessage(int, unsigned int, mach_msg_header_t*)  (in dyld) + 244  [0x101375904]
+    +                         |       +                   40 mach_msg_overwrite  (in dyld) + 244  [0x10138f18c]
+    +                         |       +                     40 mach_msg2_internal  (in dyld) + 76  [0x10138efe4]
+    +                         |       +                       40 mach_msg2_trap  (in dyld) + 8  [0x1012f572c]
+    +                         |       1 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const  (in dyld_sim) + 1032  [0x1010746e0]
+    +                         |         1 dyld4::RuntimeState::notifyLoad(std::span<dyld4::Loader const*, 18446744073709551615ul> const&)  (in dyld_sim) + 308  [0x101081b4c]
+    +                         |           1 dyld4::RuntimeLocks::withNotifiersReadLock(void () block_pointer)  (in dyld_sim) + 60  [0x10107d408]
+    +                         |             1 invocation function for block in dyld4::RuntimeState::notifyLoad(std::span<dyld4::Loader const*, 18446744073709551615ul> const&)  (in dyld_sim) + 36  [0x101081ef0]
+    +                         |               1 dyld4::RuntimeState::notifyLoad(std::span<dyld4::Loader const*, 18446744073709551615ul> const&)::'block-literal'::$_8::operator()() const  (in dyld_sim) + 856  [0x10108336c]
+    +                         |                 1 _xpc_dyld_image_callback  (in libxpc.dylib) + 148  [0x1800dd054]
+    +                         |                   1 getenv  (in libsystem_c.dylib) + 60  [0x18015cab0]
+    +                         |                     1 __findenv_locked  (in libsystem_c.dylib) + 44  [0x18015c968]
+    +                         9 -[NSBundle loadAndReturnError:]  (in Foundation) + 164  [0x18103c770]
+    +                           9 -[NSBundle _cfBundle]  (in Foundation) + 72  [0x18103b734]
+    +                             9 _CFBundleCreate  (in CoreFoundation) + 652  [0x1803afe88]
+    +                               9 CFBundleGetInfoDictionary  (in CoreFoundation) + 44  [0x180537d8c]
+    +                                 9 _CFBundleRefreshInfoDictionaryAlreadyLocked  (in CoreFoundation) + 148  [0x180537e6c]
+    +                                   9 _CFBundleCopyInfoDictionaryInDirectoryWithVersion  (in CoreFoundation) + 1528  [0x180537220]
+    +                                     9 _CFDataCreateFromURL  (in CoreFoundation) + 80  [0x180491428]
+    +                                       9 _CFReadBytesFromFile  (in CoreFoundation) + 360  [0x1803ddda4]
+    +                                         9 read  (in libsystem_kernel.dylib) + 8  [0x100f2d6cc]
+
+Sort by top of stack, same collapsed (when >= 5):
+        read  (in libsystem_kernel.dylib)        6402
+        __workq_kernreturn  (in libsystem_kernel.dylib)        3501
+        mach_msg2_trap  (in libsystem_kernel.dylib)        427
+        pread  (in libsystem_kernel.dylib)        306
+        __getdirentries64  (in libsystem_kernel.dylib)        277
+        mach_msg2_trap  (in dyld)        105
+        __ulock_wait2  (in libsystem_kernel.dylib)        60
+
+Binary Images:
+       0x100f18000 -        0x100f1b507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/E839A11B-51B4-4AD3-ACF4-A53B95B7C957/data/Containers/Bundle/Application/E8209685-77B9-4BDD-91AD-38BF98B27E7E/Chronotheca.app/Chronotheca
+       0x100f2c000 -        0x100f66ed7  libsystem_kernel.dylib (12377.161.14) <26CFE427-C180-3145-8D46-DE3129B1CD2A> /usr/lib/system/libsystem_kernel.dylib
+       0x100fac000 -        0x100fb43d3  libsystem_platform.dylib (375.120.2) <7E129155-1748-370C-8EDC-D762067A6D9F> /usr/lib/system/libsystem_platform.dylib
+       0x10106c000 -        0x1010bae9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x101128000 -        0x10116b65f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x10127c000 -        0x10128810b  libsystem_pthread.dylib (539.100.4) <85A501D2-0B0E-3DEA-B121-B24119D80CFE> /usr/lib/system/libsystem_pthread.dylib
+       0x1012f4000 -        0x1013a74ff  dyld (1.0.0 - 1387) <74E52480-C2BD-3C8D-812D-95FE2B74A096> /usr/lib/dyld
+       0x10144c000 -        0x1014e52af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x101be0000 -        0x101be2dff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x101bfc000 -        0x101bfcb99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x101c0c000 -        0x101c1403f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x101d20000 -        0x101d2b39f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x101d44000 -        0x101d47e5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x101d64000 -        0x101d6d49f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x101d88000 -        0x101d8eb7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x1022c0000 -        0x1022d927f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
+       0x10236c000 -        0x1025c7bbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+       0x102cb0000 -        0x1033bc9bf +Chronotheca.debug.dylib (0) <A2E6FE7B-F02D-3389-A996-1A8B06617777> /Users/*/Library/Developer/CoreSimulator/Devices/E839A11B-51B4-4AD3-ACF4-A53B95B7C957/data/Containers/Bundle/Application/E8209685-77B9-4BDD-91AD-38BF98B27E7E/Chronotheca.app/Chronotheca.debug.dylib
+       0x107bec000 -        0x107ddfd3f  com.apple.UIKit.axbundle (1.0.0 - 1.0) <D3D808D1-AB02-3566-B2DD-1B139F8E9569> /Volumes/*/UIKit
+       0x180038000 -        0x180074943 +libobjc.A.dylib (951.7) <727C4040-5E6D-3DAE-B22C-9A337D46C34F> /Volumes/*/libobjc.A.dylib
+       0x180075000 -        0x1800a01d2 +libdyld.dylib (1378) <2B7568E6-5EEE-33E0-B471-2FDAAE4FF448> /Volumes/*/libdyld.dylib
+       0x1800a1000 -        0x1800bf01f +libsystem_trace.dylib (1861.120.4) <4138F7EF-2588-38B1-9977-1502A60E2E36> /Volumes/*/libsystem_trace.dylib
+       0x1800c0000 -        0x18010481f +libxpc.dylib (3102.120.13) <FF603B08-461E-35C4-82E6-3AD8E5D12848> /Volumes/*/libxpc.dylib
+       0x180105000 -        0x180107da8 +libsystem_blocks.dylib (96) <A5FDF1FF-B793-3574-8903-D24571EACD25> /Volumes/*/libsystem_blocks.dylib
+       0x180108000 -        0x1801842b7 +libsystem_c.dylib (1752.120.2) <05F4B01B-E685-39FA-93F3-DE10CD9B511A> /Volumes/*/libsystem_c.dylib
+       0x180185000 -        0x1801ca3bf +libdispatch.dylib (1542.100.32) <42B50931-38D5-3A5D-90EF-0FD7239C408D> /Volumes/*/libdispatch.dylib
+       0x1801cb000 -        0x18021213f +libsystem_malloc.dylib (812.100.31) <F71AEB05-0D59-37BA-B0F2-457432BB09B5> /Volumes/*/libsystem_malloc.dylib
+       0x180213000 -        0x1802bd50f +libcorecrypto.dylib (1922.122.1) <730B0835-7D7B-35A3-B73E-7FC1D2C4403E> /Volumes/*/libcorecrypto.dylib
+       0x1802be000 -        0x1802d66df +libc++abi.dylib (2100.43) <CA04D801-3E4B-3A57-AEAD-0A5EB2DB0671> /Volumes/*/libc++abi.dylib
+       0x1802d7000 -        0x1802df38b +libsystem_darwin.dylib (1752.120.2) <C063C99F-5786-3246-A3D5-1FDB58B6E724> /Volumes/*/libsystem_darwin.dylib
