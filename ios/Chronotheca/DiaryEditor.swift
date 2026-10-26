@@ -80,14 +80,14 @@ struct DiaryEditor: UIViewRepresentable {
     /// Дело плана под пальцем (P409): снимок или точку из записи несут в
     /// план. `nil` — палец не над планом.
     var planTarget: ((CGPoint) -> UUID?)? = nil
-    /// Событие Календаря под пальцем: вложение из записи встаёт под него (стадия 3).
-    var planEventTarget: ((CGPoint) -> DayEvents.Mark?)? = nil
-    var onToPlanEvent: ((String, DayEvents.Mark) -> Bool)? = nil
     /// Над каким делом сейчас несут и снимок ли это: план подсвечивает
     /// дело и раздвигает строки.
     var onPlanHover: ((UUID?, Bool) -> Void)? = nil
     /// Отпустили над делом — встать под него. `true` — встало.
     var onToPlan: ((String, UUID) -> Bool)? = nil
+    /// Событие Календаря под пальцем: вложение из записи встаёт под него (стадия 3).
+    var planEventTarget: ((CGPoint) -> DayEvents.Mark?)? = nil
+    var onToPlanEvent: ((String, DayEvents.Mark) -> Bool)? = nil
     /// Крестик у снимка → «удалить файл» (P409): в корзину на 30 дней.
     var onDeleteAttachment: ((String) -> Void)? = nil
 
