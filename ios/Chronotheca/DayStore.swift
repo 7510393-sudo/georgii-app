@@ -900,8 +900,11 @@ final class DayStore: ObservableObject {
         } else if Geo.point(in: line) != nil {
             // Точка — в тот же ряд, одним местом (P630).
             addToPhotoRow(line, under: task)
+        } else if !Diary.objects(in: line).isEmpty {
+            // Голос и файл — в тот же ряд, что снимок (стадия 3): тот же
+            // квадрат, те же действия.
+            addToPhotoRow(line, under: task)
         } else {
-            // Голос и файлы план не показывает — они остаются в записи.
             return false
         }
         save()
@@ -974,6 +977,30 @@ final class DayStore: ObservableObject {
             planRows.insert(.verbatim(Diary.line(link)), at: next)
         }
         save()
+    }
+
+    /// Вложение из записи дневника — под событие Календаря (стадия 3). Как
+    /// `putPlanPhoto(_:underEvent:)`, но строка уже готова: из записи ничего
+    /// не вынимаем.
+    func textToEvent(_ piece: String, underEvent mark: DayEvents.Mark) -> Bool {
+        guard canEditPlan else { return false }
+        let line = piece.trimmingCharacters(in: .whitespaces)
+        guard !Diary.objects(in: line).isEmpty else { return false }
+        let at: Int
+        if let i = planRows.firstIndex(where: { $0.verbatim.flatMap(DayEvents.Mark.parse)?.key == mark.key }) {
+            at = i
+        } else {
+            planRows.append(.verbatim(mark.line))
+            at = planRows.count - 1
+        }
+        let next = at + 1
+        if next < planRows.count, let row = planRows[next].verbatim, Plan.isPhotoRow(row) {
+            planRows[next].verbatim = row.trimmingCharacters(in: .whitespaces) + " " + line
+        } else {
+            planRows.insert(.verbatim(line), at: next)
+        }
+        save()
+        return true
     }
 
     /// Ряд снимков, что стоит сразу под отметкой этого события.

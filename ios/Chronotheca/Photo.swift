@@ -471,6 +471,15 @@ struct PlanPhotoRow: View {
                 .onTapGesture { tapped(link, point: point) }
                 .accessibilityAddTraits(.isButton)
                 .accessibilityLabel(T("Точка на карте: ", "Place on the map: ") + point.label)
+        } else if Diary.kind(of: link) != .photo {
+            // Голос, видео и файл — квадрат того же размера, с значком
+            // (стадия 3): микрофон для голоса, листок — для файла.
+            PlanFileSquare(link: link)
+                .frame(width: DiaryEditor.photoSize.width, height: DiaryEditor.photoSize.height)
+                .contentShape(Rectangle())
+                .onTapGesture { tapped(link, point: nil) }
+                .accessibilityAddTraits(.isButton)
+                .accessibilityLabel(FileChip.name(link))
         } else {
             PlanPhotoThumb(url: resolve?(link)) { tapped(link, point: nil) }
         }
@@ -626,6 +635,40 @@ struct ThumbCarry: ViewModifier {
         } else {
             content
         }
+    }
+}
+
+/// Голос, видео или файл в ряду плана — квадрат того же размера, что у
+/// снимка: значок и название (стадия 3).
+struct PlanFileSquare: View {
+    let link: String
+
+    var body: some View {
+        let icon: String = {
+            switch Diary.kind(of: link) {
+            case .audio: return "mic"
+            case .video: return "film"
+            default: return "doc"
+            }
+        }()
+        VStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: DiaryEditor.photoSize.width * 0.26, weight: .semibold))
+                .foregroundStyle(Look.accent)
+            Text(FileChip.name(link))
+                .font(.system(size: max(11, DiaryEditor.photoSize.width * 0.125), weight: .semibold))
+                .foregroundStyle(Look.ink)
+                .lineLimit(2)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 5)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Look.planBg)
+                .overlay(RoundedRectangle(cornerRadius: 8).fill(Look.accent.opacity(0.1)))
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Look.accent.opacity(0.6), lineWidth: 1.2))
+        )
     }
 }
 

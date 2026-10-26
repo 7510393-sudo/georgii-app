@@ -1093,9 +1093,15 @@ struct PlanView: View {
         .background(GeometryReader { geo in
             let frame = geo.frame(in: .global)
             Color.clear
-                .onAppear { PlanZones.events[e.key] = frame }
+                .onAppear {
+                    PlanZones.events[e.key] = frame
+                    PlanZones.marks[e.key] = DayEvents.Mark(key: e.key, time: e.row.time, title: e.row.text)
+                }
                 .onChange(of: frame) { _, now in PlanZones.events[e.key] = now }
-                .onDisappear { PlanZones.events[e.key] = nil }
+                .onDisappear {
+                    PlanZones.events[e.key] = nil
+                    PlanZones.marks[e.key] = nil
+                }
         })
         .offset(x: up ? eventSlide : 0, y: up ? eventDrag : 0)
         .background {
@@ -1702,6 +1708,16 @@ enum PlanZones {
     }
     /// События Календаря (P376) — по их ключам.
     static var events: [String: CGRect] = [:]
+    /// Отметка каждого события на экране — чтобы вложение из записи могло
+    /// встать под него (стадия 3).
+    static var marks: [String: DayEvents.Mark] = [:]
+
+    /// Событие Календаря под пальцем, если такое есть.
+    static func event(at spot: CGPoint) -> DayEvents.Mark? {
+        guard spot != .zero else { return nil }
+        return events.first { $0.value.insetBy(dx: -8, dy: -8).contains(spot) }
+            .flatMap { marks[$0.key] }
+    }
     /// Полоска снимков внизу — туда снимок возвращают (P377).
     static var strip: CGRect?
     /// Верх заголовка «Дневник» на экране: снимок, отпущенный ниже, уходит в

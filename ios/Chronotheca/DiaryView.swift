@@ -101,6 +101,8 @@ struct DiaryView: View {
             planTarget: store.canEditPlan ? { PlanZones.task(at: $0, tasks: store.tasks) } : nil,
             onPlanHover: { hover($0, photo: $1) },
             onToPlan: { piece, task in store.textToPlan(piece, under: task) },
+            planEventTarget: store.canEditPlan ? { PlanZones.event(at: $0) } : nil,
+            onToPlanEvent: { piece, mark in store.textToEvent(piece, underEvent: mark) },
             // Вопрос уже задан у самого крестика (P556): второй такой же
             // после «Удалить файл» не нужен (P561 — автор видел два подряд).
             onDeleteAttachment: { deleteFromText($0, delete: true) })
@@ -299,6 +301,9 @@ struct DiaryPage: View {
     var planTarget: ((CGPoint) -> UUID?)? = nil
     var onPlanHover: ((UUID?, Bool) -> Void)? = nil
     var onToPlan: ((String, UUID) -> Bool)? = nil
+    /// Событие Календаря под пальцем и вложение под него (стадия 3).
+    var planEventTarget: ((CGPoint) -> DayEvents.Mark?)? = nil
+    var onToPlanEvent: ((String, DayEvents.Mark) -> Bool)? = nil
     /// Крестик у снимка в записи → «удалить файл» (P409).
     var onDeleteAttachment: ((String) -> Void)? = nil
 
@@ -641,6 +646,7 @@ struct DiaryPage: View {
                     moving: editable, onEditing: onEditing,
                     takeStamp: takeStamp, onWrite: onWrite,
                     planTarget: planTarget, onPlanHover: onPlanHover, onToPlan: onToPlan,
+                    planEventTarget: planEventTarget, onToPlanEvent: onToPlanEvent,
                     onDeleteAttachment: onDeleteAttachment)
             // Вдвое меньше, чем было: пробел между заголовком и записью не
             // должен отнимать место у страницы (P311).

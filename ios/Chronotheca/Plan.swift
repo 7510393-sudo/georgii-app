@@ -197,7 +197,8 @@ enum Plan {
     /// место (P630): прежде она стояла своей строкой во всю ширину.
     static func isPhotoRow(_ line: String) -> Bool {
         let items = Diary.objects(in: line)
-        return !items.isEmpty && items.allSatisfy { $0.point != nil || Diary.kind(of: $0.link) == .photo }
+        // Любые вложения — снимок, голос, файл, точка — в один ряд (стадия 3).
+        return !items.isEmpty
     }
 
     /// Предметы такого ряда по порядку: путь к снимку или строка точки.

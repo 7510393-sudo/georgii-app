@@ -80,6 +80,9 @@ struct DiaryEditor: UIViewRepresentable {
     /// Дело плана под пальцем (P409): снимок или точку из записи несут в
     /// план. `nil` — палец не над планом.
     var planTarget: ((CGPoint) -> UUID?)? = nil
+    /// Событие Календаря под пальцем: вложение из записи встаёт под него (стадия 3).
+    var planEventTarget: ((CGPoint) -> DayEvents.Mark?)? = nil
+    var onToPlanEvent: ((String, DayEvents.Mark) -> Bool)? = nil
     /// Над каким делом сейчас несут и снимок ли это: план подсвечивает
     /// дело и раздвигает строки.
     var onPlanHover: ((UUID?, Bool) -> Void)? = nil
@@ -741,9 +744,15 @@ struct DiaryEditor: UIViewRepresentable {
         /// Дело плана под пальцем, если взятое может туда встать: снимок
         /// или точка (P409).
         private func planTask(_ g: UIGestureRecognizer) -> UUID? {
-            guard let piece = takenPiece, Self.isPhotoLine(piece) || Geo.point(in: piece) != nil
+            guard let piece = takenPiece, !Diary.objects(in: piece).isEmpty
             else { return nil }
             return parent.planTarget?(DiaryEditor.aim(g.location(in: nil)))
+        }
+
+        /// Событие Календаря под пальцем — то же для вложения (стадия 3).
+        private func planEvent(_ g: UIGestureRecognizer) -> DayEvents.Mark? {
+            guard let piece = takenPiece, !Diary.objects(in: piece).isEmpty else { return nil }
+            return parent.planEventTarget?(DiaryEditor.aim(g.location(in: nil)))
         }
 
         static func isPhotoLine(_ piece: String) -> Bool {
@@ -1109,21 +1118,23 @@ struct DiaryEditor: UIViewRepresentable {
                 // Над делом плана — встанет под него (P409): план подсвечивает
                 // дело, запись остаётся как была.
                 let toPlan = planTask(g)
+                let overEvent = toPlan == nil && planEvent(g) != nil
                 parent.onPlanHover?(toPlan, takenPiece.map(Self.isPhotoLine) ?? false)
                 if toPlan != nil { AskLine.carryOutAll() }
                 // Над строкой «Как прошло?» — встанет в конец ответа (P407):
                 // ответ показывает это у себя, запись остаётся как была.
                 let intoAnswer = toPlan == nil
                     && takenPiece.map { AskLine.carry($0, at: DiaryEditor.aim(g.location(in: nil))) } == true
-                let away = toPlan != nil || intoAnswer || overStrip(g, in: view) || overTitle(g, in: view)
+                let away = toPlan != nil || overEvent || intoAnswer || overStrip(g, in: view) || overTitle(g, in: view)
                 ghost?.alpha = away && !intoAnswer && toPlan == nil ? 0.5 : 0.9
                 if away { restore(view) } else { previewSoon(view) }
             case .ended:
                 stopPump()
                 heldEnded = Date()
                 let toPlan = planTask(g)
+                let toEvent = toPlan == nil ? planEvent(g) : nil
                 parent.onPlanHover?(nil, false)
-                let intoAnswer = toPlan == nil && takenPiece != nil
+                let intoAnswer = toPlan == nil && toEvent == nil && takenPiece != nil
                     && AskLine.under(DiaryEditor.aim(g.location(in: nil))) != nil
                 let back = !intoAnswer && toPlan == nil && overStrip(g, in: view)
                 let up = !intoAnswer && toPlan == nil && overTitle(g, in: view)
@@ -1143,7 +1154,7 @@ struct DiaryEditor: UIViewRepresentable {
                 }
                 // Отпустили — ложится ровно под пальцем, даже если наплыв
                 // ещё не успел показать это место (P406).
-                if !back, !up, !intoAnswer, toPlan == nil { preview(at, in: view) }
+                if !back, !up, !intoAnswer, toPlan == nil, toEvent == nil { preview(at, in: view) }
                 let done = result
                 let piece = takenPiece
                 restore(view)
@@ -1155,6 +1166,15 @@ struct DiaryEditor: UIViewRepresentable {
                 if let task = toPlan, let piece {
                     AskLine.carryOutAll()
                     if parent.onToPlan?(piece, task) == true {
+                        remove(at: i, in: view)
+                        Feel.light()
+                    }
+                    return
+                }
+                // Отпустили над событием Календаря — вложение встаёт под него.
+                if let event = toEvent, let piece {
+                    AskLine.carryOutAll()
+                    if parent.onToPlanEvent?(piece, event) == true {
                         remove(at: i, in: view)
                         Feel.light()
                     }
