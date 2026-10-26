@@ -916,6 +916,43 @@ final class DayStore: ObservableObject {
         save()
     }
 
+    /// Снимок плана — под событие Календаря (P625). Событие не наше дело и в
+    /// файле не живёт, но его отметка — строка `- [ ] … (calendar #ключ)` —
+    /// уже может там стоять; нет — она заводится, и снимки ложатся сразу под
+    /// ней, в ряд с теми, что там есть.
+    func putPlanPhoto(_ link: String, underEvent mark: DayEvents.Mark) {
+        guard canEditPlan, takeOutPlanPhoto(link) else { return }
+        let at: Int
+        if let i = planRows.firstIndex(where: { $0.verbatim.flatMap(DayEvents.Mark.parse)?.key == mark.key }) {
+            at = i
+        } else {
+            planRows.append(.verbatim(mark.line))
+            at = planRows.count - 1
+        }
+        let next = at + 1
+        if next < planRows.count, let line = planRows[next].verbatim, Plan.isPhotoRow(line) {
+            planRows[next].verbatim = line.trimmingCharacters(in: .whitespaces) + " " + Diary.line(link)
+        } else {
+            planRows.insert(.verbatim(Diary.line(link)), at: next)
+        }
+        save()
+    }
+
+    /// Ряд снимков, что стоит сразу под отметкой этого события.
+    func eventPhotoRow(_ key: String) -> PlanRow? {
+        guard let i = planRows.firstIndex(where: { $0.verbatim.flatMap(DayEvents.Mark.parse)?.key == key }),
+              i + 1 < planRows.count, let line = planRows[i + 1].verbatim, Plan.isPhotoRow(line)
+        else { return nil }
+        return planRows[i + 1]
+    }
+
+    /// Ключ события, под которым стоит этот ряд снимков; `nil` — не под событием.
+    func eventOwner(of row: UUID) -> String? {
+        guard let i = index(of: row), i > 0, let line = planRows[i].verbatim, Plan.isPhotoRow(line)
+        else { return nil }
+        return planRows[i - 1].verbatim.flatMap(DayEvents.Mark.parse)?.key
+    }
+
     /// Снимок из-под дела — назад в полоску плана внизу (P358).
     /// Снимок из полоски внизу страницы — под дело плана (P408): полоска
     /// одна, в неё ложится всё новое, а под дело снимок переносят пальцем.

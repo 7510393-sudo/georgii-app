@@ -457,6 +457,9 @@ struct PlanView: View {
     @State private var photoCarry: PhotoCarry?
     @State private var photoSpot: CGPoint = .zero
     @State private var photoTo: UUID?
+    /// Снимок ложится под событие Календаря — его ключ (P625).
+    @State private var photoToEvent: String?
+    @State private var photoEventSpots: [String: CGRect] = [:]
     @State private var photoBack = false
     @State private var photoSpots: [UUID: CGRect] = [:]
     @State private var photoStripTop: CGFloat = .infinity
@@ -657,36 +660,48 @@ struct PlanView: View {
                 .offset(y: lineShift(id) + eventShift(id) + photoShift(id))
                 .animation(.easeOut(duration: 0.16), value: lineShift(id) + eventShift(id) + photoShift(id))
                 .zIndex(dragged == id || lifted == id ? 1 : 0)
-            } else if let line = row.wrappedValue.verbatim {
-                PlanExtraLine(line: line, resolve: store.photoURL,
-                              open: { url in
-                                  shell.openedPhoto = .init(tab: .plan, index: 0, url: url)
-                              },
-                              openPoint: { shell.showPoint($0) },
-                              onCarry: store.canEditPlan
-                                  ? { carryLine(id, $0, at: $1) } : nil,
-                              onDelete: store.canEditPlan
-                                  ? {
-                                      armedLine = nil
-                                      withAnimation(.easeOut(duration: 0.2)) { store.delete(id) }
-                                  } : nil,
-                              armed: armedLine == id,
-                              carried: lineDrag == id,
-                              onArm: { on in
-                                  withAnimation(.easeOut(duration: 0.15)) { armedLine = on ? id : nil }
-                              },
-                              onPhoto: store.canEditPlan
-                                  ? { carryPhoto($0, from: id, $1, at: $2) } : nil,
-                              carriedPhoto: photoCarry?.from == id ? photoCarry?.link : nil,
-                              onRemovePhoto: store.canEditPlan ? { removingPlanPhoto = $0 } : nil)
-                .modifier(Zone(id: id))
-                .offset(y: lineShift(id) + eventShift(id) + photoShift(id))
-                .animation(.easeOut(duration: 0.16), value: lineShift(id) + eventShift(id) + photoShift(id))
-                .zIndex(lineDrag == id ? 1 : 0)
+            } else if let line = row.wrappedValue.verbatim, !eventOwnedRows.contains(id) {
+                extraLine(id: id, line: line)
+                    .offset(y: lineShift(id) + eventShift(id) + photoShift(id))
+                    .animation(.easeOut(duration: 0.16), value: lineShift(id) + eventShift(id) + photoShift(id))
+                    .zIndex(lineDrag == id ? 1 : 0)
             }
         }
         if ghostShown { ghost }
         // Счёта «запланировано · сделано» больше нет (P425).
+    }
+
+    /// Строка под делом или под событием: снимки в ряд, точка, текст (P358).
+    /// Одна на всех — под делом и под событием Календаря (P625).
+    private func extraLine(id: UUID, line: String) -> some View {
+        PlanExtraLine(line: line, resolve: store.photoURL,
+                      open: { url in
+                          shell.openedPhoto = .init(tab: .plan, index: 0, url: url)
+                      },
+                      openPoint: { shell.showPoint($0) },
+                      onCarry: store.canEditPlan
+                          ? { carryLine(id, $0, at: $1) } : nil,
+                      onDelete: store.canEditPlan
+                          ? {
+                              armedLine = nil
+                              withAnimation(.easeOut(duration: 0.2)) { store.delete(id) }
+                          } : nil,
+                      armed: armedLine == id,
+                      carried: lineDrag == id,
+                      onArm: { on in
+                          withAnimation(.easeOut(duration: 0.15)) { armedLine = on ? id : nil }
+                      },
+                      onPhoto: store.canEditPlan
+                          ? { carryPhoto($0, from: id, $1, at: $2) } : nil,
+                      carriedPhoto: photoCarry?.from == id ? photoCarry?.link : nil,
+                      onRemovePhoto: store.canEditPlan ? { removingPlanPhoto = $0 } : nil)
+            .modifier(Zone(id: id))
+    }
+
+    /// Ряды снимков, что стоят под событиями Календаря, — рисуются в блоке
+    /// событий, а не среди дел (P625).
+    private var eventOwnedRows: Set<UUID> {
+        Set(shownEvents.compactMap { store.eventPhotoRow($0.key)?.id })
     }
 
     private func taskRow(_ row: Binding<PlanRow>) -> some View {
@@ -957,7 +972,16 @@ struct PlanView: View {
     @ViewBuilder private var eventBlock: some View {
         let list = shownEvents
         ForEach(Array(list.enumerated()), id: \.element.key) { i, e in
-            eventRow(e, number: i + 1)
+            // Событие и снимки под ним — одним куском (P625).
+            VStack(spacing: 0) {
+                eventRow(e, number: i + 1)
+                if let photos = store.eventPhotoRow(e.key), let line = photos.verbatim {
+                    extraLine(id: photos.id, line: line)
+                }
+            }
+            .offset(y: eventPhotoShift(after: i, in: list))
+            .animation(.easeOut(duration: 0.16), value: eventPhotoShift(after: i, in: list))
+            .zIndex(liftedEvent == e.key ? 1 : 0)
         }
     }
 
@@ -973,7 +997,7 @@ struct PlanView: View {
                         onBell: { open(e) },
                         onCheck: { checkEvent(e) },
                         onLift: { eventLift(e, $0) },
-                        lifted: up,
+                        lifted: up || photoToEvent == e.key,
                         past: store.isPast)
         }
         .background(GeometryReader { geo in
@@ -1109,6 +1133,8 @@ struct PlanView: View {
             Feel.lift()
             armedLine = nil
             photoSpots = PlanZones.rows
+            photoEventSpots = PlanZones.events
+            photoToEvent = nil
             photoStripTop = min(PlanZones.strip?.minY ?? .infinity, PlanZones.diaryTop ?? .infinity)
             photoTo = nil
             photoBack = false
@@ -1130,21 +1156,40 @@ struct PlanView: View {
                 if slot != nil { Feel.tick() }
             }
             var to: UUID?
+            var toEvent: String?
             if !back, slot == nil {
+                // Цели — и дела, и события Календаря: та, чей верх выше
+                // картинки и ближе всех к ней (P625).
                 let list = store.tasks
-                to = list.last { (photoSpots[$0.id]?.minY ?? .infinity) < aim.y }?.id ?? list.first?.id
+                let events = shownEvents
+                let task = list.last { (photoSpots[$0.id]?.minY ?? .infinity) < aim.y }
+                let event = events.last { (photoEventSpots[$0.key]?.minY ?? .infinity) < aim.y }
+                let taskTop = task.flatMap { photoSpots[$0.id]?.minY } ?? -.infinity
+                let eventTop = event.flatMap { photoEventSpots[$0.key]?.minY } ?? -.infinity
+                if let event, eventTop > taskTop {
+                    toEvent = event.key
+                } else if let task {
+                    to = task.id
+                } else if let first = events.first {
+                    toEvent = first.key
+                } else {
+                    to = list.first?.id
+                }
                 if to == owner(of: row) { to = nil }
+                if toEvent != nil, toEvent == store.eventOwner(of: row) { toEvent = nil }
             }
-            if to != photoTo || back != photoBack {
+            if to != photoTo || toEvent != photoToEvent || back != photoBack {
                 withAnimation(.easeOut(duration: 0.16)) {
                     photoTo = to
+                    photoToEvent = toEvent
                     photoBack = back
                 }
-                if to != nil || back { Feel.tick() }
+                if to != nil || toEvent != nil || back { Feel.tick() }
             }
         case .ended, .cancelled:
             guard photoCarry?.link == link else { return }
             let to = photoTo
+            let toEvent = photoToEvent
             let back = photoBack
             let slot = photoSlot
             let real: Bool
@@ -1152,6 +1197,7 @@ struct PlanView: View {
             withAnimation(.easeOut(duration: 0.2)) {
                 photoCarry = nil
                 photoTo = nil
+                photoToEvent = nil
                 photoBack = false
                 photoSlot = nil
                 photoSpot = .zero
@@ -1162,9 +1208,12 @@ struct PlanView: View {
                     store.returnPlanPhoto(link)
                 } else if let to {
                     store.putPlanPhoto(link, under: to)
+                } else if let toEvent, let e = shownEvents.first(where: { $0.key == toEvent }) {
+                    store.putPlanPhoto(link, underEvent: DayEvents.Mark(key: e.key, time: e.row.time,
+                                                                       title: e.row.text))
                 }
             }
-            if real, back || to != nil || slot != nil { Feel.thud() }
+            if real, back || to != nil || toEvent != nil || slot != nil { Feel.thud() }
         }
     }
 
@@ -1183,7 +1232,7 @@ struct PlanView: View {
 
     /// Дело, под которым стоит строка.
     private func owner(of row: UUID) -> UUID? {
-        guard let i = store.index(of: row) else { return nil }
+        guard let i = store.index(of: row), store.eventOwner(of: row) == nil else { return nil }
         return store.planRows[..<i].last { $0.isTask }?.id
     }
 
@@ -1191,6 +1240,11 @@ struct PlanView: View {
     /// открывается место под новый ряд — если ряда снимков там ещё нет.
     private func photoShift(_ id: UUID) -> CGFloat {
         // Свой снимок из-под дела — или снимок из дневника и полоски (P409).
+        // Под событием Календаря: события стоят над делами, так что место
+        // под новый ряд открывается у всех дел сразу (P625).
+        if photoCarry != nil, let key = photoToEvent, store.eventPhotoRow(key) == nil {
+            return PlanPhotoLine.height + 1
+        }
         let target = photoCarry != nil ? photoTo
             : (shell.planHover?.photo == true ? shell.planHover?.id : nil)
         guard let to = target, let t = store.index(of: to),
@@ -1199,6 +1253,14 @@ struct PlanView: View {
         if next < store.planRows.count, store.planRows[next].verbatim.map(Plan.isPhotoRow) == true {
             return 0
         }
+        return PlanPhotoLine.height + 1
+    }
+
+    /// На сколько сдвинуты события ниже того, под которое несут снимок (P625).
+    private func eventPhotoShift(after i: Int, in list: [DayEvents.Shown]) -> CGFloat {
+        guard photoCarry != nil, let key = photoToEvent,
+              let t = list.firstIndex(where: { $0.key == key }), i > t,
+              store.eventPhotoRow(key) == nil else { return 0 }
         return PlanPhotoLine.height + 1
     }
 
