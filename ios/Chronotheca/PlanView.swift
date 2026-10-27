@@ -763,7 +763,8 @@ struct PlanView: View {
                       armedPhoto: armedLine == id ? armedPhotoLink : nil,
                       onArmPhoto: { link in
                           if let link { armedPhotoLink = link; armedLine = id } else { armedLine = nil }
-                      })
+                      },
+                      photoSlot: photoCarry?.from == id ? photoSlot : nil)
             .modifier(Zone(id: id))
     }
 
@@ -1621,6 +1622,8 @@ struct PlanExtraLine: View {
     var onRemovePhoto: ((String) -> Void)? = nil
     var armedPhoto: String? = nil
     var onArmPhoto: ((String?) -> Void)? = nil
+    /// Куда в сетке встанет несомое — соседи расступаются сразу (P660).
+    var photoSlot: Int? = nil
 
     var body: some View {
         if Plan.isPhotoRow(line) {
@@ -1633,7 +1636,8 @@ struct PlanExtraLine: View {
             GridSnap(top: true) {
                 PlanPhotoRow(links: Plan.items(in: line), resolve: resolve, open: open,
                              openPoint: tapPoint, onCarry: onPhoto, carried: carriedPhoto,
-                             onRemove: onRemovePhoto, armedLink: armedPhoto, onArm: onArmPhoto)
+                             onRemove: onRemovePhoto, armedLink: armedPhoto, onArm: onArmPhoto,
+                             slot: photoSlot)
             }
         } else if let point = Geo.point(in: line) {
             GridSnap {

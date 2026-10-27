@@ -406,6 +406,9 @@ struct PlanPhotoRow: View {
     /// у точки в тексте.
     var armedLink: String? = nil
     var onArm: ((String?) -> Void)? = nil
+    /// Место в сетке, куда встанет несомое (P660): соседи расступаются
+    /// сразу, пока палец ещё держит, а не после того, как его отпустили.
+    var slot: Int? = nil
     /// Где предметы ряда в самом ряду — по ним крестик встаёт на угол.
     @State private var frames: [String: CGRect] = [:]
     /// Когда крестик появился: касание, которым кончилось долгое нажатие,
@@ -418,7 +421,7 @@ struct PlanPhotoRow: View {
         // (P654): прежде ряд листался вбок, и пятое торчило за краем
         // экрана. Края крайних — вровень с краями плашки.
         PlanPhotoGrid {
-            ForEach(links, id: \.self) { link in
+            ForEach(shown, id: \.self) { link in
                 item(link)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .opacity(carried == link ? 0.25 : 1)
@@ -435,9 +438,18 @@ struct PlanPhotoRow: View {
             }
         }
         .padding(.bottom, PlanPhotoLine.below)
-        // Касание пустого места ряда тоже убирает крестик.
+        .animation(.easeOut(duration: 0.18), value: shown)
+        // Касание пустого места ряда убирает крестик, а нет крестика —
+        // курсор из дела (P660): прежде касание сюда съедалось, и курсор
+        // оставался в плашке.
         .contentShape(Rectangle())
-        .onTapGesture { if armedLink != nil { withAnimation(.easeOut(duration: 0.15)) { onArm?(nil) } } }
+        .onTapGesture {
+            if armedLink != nil {
+                withAnimation(.easeOut(duration: 0.15)) { onArm?(nil) }
+            } else {
+                hideKeyboard()
+            }
+        }
         .coordinateSpace(name: Self.space)
         // Крестик — на верхнем правом углу предмета, снаружи, как у снимка в
         // тексте и значка на экране «Домой» (P634); прежде он сидел внутри
@@ -462,6 +474,17 @@ struct PlanPhotoRow: View {
             }
         }
     }
+    /// Порядок на экране: несомое уже стоит там, куда ляжет (P660), —
+    /// тем же правилом, что и при отпускании (`reorderPlanPhoto`).
+    private var shown: [String] {
+        guard let carried, let slot, let from = links.firstIndex(of: carried) else { return links }
+        var out = links
+        let to = min(max(slot > from ? slot - 1 : slot, 0), links.count - 1)
+        out.remove(at: from)
+        out.insert(carried, at: to)
+        return out
+    }
+
     /// Снимок — картинкой, точка — квадратом; оба — на одном месте ряда.
     @ViewBuilder private func item(_ link: String) -> some View {
         if Diary.isPoint(link), let point = Geo.point(in: link) {
