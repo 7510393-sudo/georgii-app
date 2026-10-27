@@ -1474,6 +1474,13 @@ struct DiaryEditor: UIViewRepresentable {
             page.isScrollEnabled = !hold
         }
 
+        /// Насколько страница прокручена — по ней план сдвигает запомненные
+        /// места строк, пока страница едет за пальцем (P648).
+        func pageOffset() -> CGFloat {
+            guard let view, let page = page(over: view) else { return 0 }
+            return page.contentOffset.y
+        }
+
         func stopFollowingStrip() {
             stripFollow = nil
             if taken == nil { stopPump() }

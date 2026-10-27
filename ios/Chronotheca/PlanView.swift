@@ -460,6 +460,9 @@ struct PlanView: View {
     }
     @State private var photoCarry: PhotoCarry?
     @State private var photoSpot: CGPoint = .zero
+    /// Прокрутка страницы в начале переноса (P648): страница едет за пальцем
+    /// у края, а места строк запомнены по началу.
+    @State private var photoScroll: CGFloat = 0
     @State private var photoTo: UUID?
     /// Снимок ложится под событие Календаря — его ключ (P625).
     @State private var photoToEvent: String?
@@ -1241,16 +1244,27 @@ struct PlanView: View {
             photoSlot = nil
             photoSpot = spot
             photoCarry = PhotoCarry(link: link, from: row)
+            photoScroll = DiaryEditor.active?.pageOffset() ?? 0
+            DiaryEditor.active?.holdPage(true)
         case .moved:
             guard photoCarry?.link == link else { return }
             photoSpot = spot
+            // У края экрана страница едет навстречу, как при переносе из
+            // текста и снизу страницы (замечание автора к 180, P648).
+            DiaryEditor.active?.followStrip(at: spot) { [self] in
+                carryPhoto(link, from: row, .moved(.zero), at: photoSpot)
+            }
+            // Места строк запомнены в начале переноса, а страница с тех пор
+            // могла уехать — палец переводится в те же места (P648).
+            let shift = (DiaryEditor.active?.pageOffset() ?? 0) - photoScroll
+            let here = CGPoint(x: spot.x, y: spot.y + shift)
             // Цель — там, где картинка (она нарисована на 48 выше пальца), а
             // не там, где палец: иначе «вниз» и «под другое дело» не
             // совпадали с тем, что видно (P623).
-            let aim = CGPoint(x: spot.x, y: spot.y - 48)
+            let aim = CGPoint(x: here.x, y: here.y - 48)
             let back = aim.y >= photoStripTop - 8
             // Вдоль своего ряда — переставить в ряду (P409).
-            let slot = back ? nil : slotInRow(row, at: spot)
+            let slot = back ? nil : slotInRow(row, at: here)
             if slot != photoSlot {
                 photoSlot = slot
                 if slot != nil { Feel.tick() }
@@ -1287,6 +1301,8 @@ struct PlanView: View {
                 if to != nil || toEvent != nil || back { Feel.tick() }
             }
         case .ended, .cancelled:
+            DiaryEditor.active?.holdPage(false)
+            DiaryEditor.active?.stopFollowingStrip()
             guard photoCarry?.link == link else { return }
             let to = photoTo
             let toEvent = photoToEvent
