@@ -1145,8 +1145,8 @@ struct WelcomeView: View {
                 Text(trial
                      ? T("Проба: записи лягут в отдельную пробную папку. Ваши настоящие записи останутся на месте.",
                          "A trial: entries go into a separate trial folder. Your real entries stay where they are.")
-                     : T("Записи лягут в iCloud Drive › Chronotheca. Их видно в «Файлах», они есть на iPad и Mac и остаются, даже если удалить приложение.",
-                         "Entries go to iCloud Drive › Chronotheca. You can see them in Files, they are on your iPad and Mac, and they stay even if you delete the app."))
+                     : T("Записи лягут в iCloud Drive › Graphomanus. Их видно в «Файлах», они есть на iPad и Mac и остаются, даже если удалить приложение.",
+                         "Entries go to iCloud Drive › Graphomanus. You can see them in Files, they are on your iPad and Mac, and they stay even if you delete the app."))
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)

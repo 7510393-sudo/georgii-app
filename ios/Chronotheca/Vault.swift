@@ -94,7 +94,7 @@ final class Vault: ObservableObject {
     }
 
     /// Имя папки, которую приложение заводит себе само.
-    static let folderName = "Chronotheca"
+    static let folderName = "Graphomanus"
 
     /// Видимое имя приложения (`CFBundleDisplayName` в project.yml): под ним
     /// «Файлы» показывают собственную папку приложения на телефоне (P530).
@@ -186,7 +186,9 @@ final class Vault: ObservableObject {
         // Chronotheca» (P452).
         if let r = path.range(of: "/Mobile Documents/iCloud~com~kobiashvili~diary/Documents") {
             let tail = path[r.upperBound...].split(separator: "/").map(String.init)
-            return (["iCloud Drive", Vault.folderName] + tail).joined(separator: " › ")
+            // Первая часть пути — сама папка архива, какой бы ни была: у прежних
+            // людей она «Chronotheca», у новых — «Graphomanus».
+            return (["iCloud Drive"] + tail).joined(separator: " › ")
         }
         if path.contains("/Application Support/Chronotheca trial") {
             return T("Пробная папка", "Trial folder")
@@ -1057,7 +1059,7 @@ final class Vault: ObservableObject {
         if !fm.fileExists(atPath: marker.path) {
             let json = """
             {
-              "приложение": "Chronotheca",
+              "приложение": "Graphomanus",
               "версия формата": 1,
               "заведено": "\(Vault.stamp(Date()))"
             }
@@ -1086,7 +1088,7 @@ final class Vault: ObservableObject {
     Photos, videos, audio and documents are kept as they are, in their own
     folders.
 
-    The app that wrote them is called Chronotheca. It hides nothing and owns
+    The app that wrote them is called Graphomanus. It hides nothing and owns
     nothing: delete it, and all of this stays.
 
     The folder can be moved, copied and renamed. To let the app find it
@@ -1101,7 +1103,7 @@ final class Vault: ObservableObject {
     текстовым редактором, на любом устройстве, без всякой программы.
     Фотографии, видео, аудио и документы лежат как есть, в своих папках.
 
-    Приложение, которое их писало, называется Chronotheca. Оно ничего
+    Приложение, которое их писало, называется Graphomanus. Оно ничего
     не прячет и ничем не владеет: удалите его — всё это останется.
 
     Папку можно переносить, копировать и переименовывать. Чтобы
@@ -1118,7 +1120,7 @@ final class Vault: ObservableObject {
     редактором, на любом устройстве, без всякой программы. Фотографии,
     видео, аудио и документы лежат как есть, в своих папках.
 
-    Приложение, которое их писало, называется Chronotheca. Оно ничего
+    Приложение, которое их писало, называется Graphomanus. Оно ничего
     не прячет и ничем не владеет: удалите его — всё это останется.
 
     Папку можно переносить, копировать и переименовывать. Чтобы
