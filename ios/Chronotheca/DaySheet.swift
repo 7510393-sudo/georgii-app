@@ -46,7 +46,7 @@ struct DaySheet<Plan: View, Diary: View>: View {
 
     private static var top: String { "страница-верх" }
     private static var diaryTop: String { "страница-дневник" }
-    static var space: String { "лист" }
+    static var space: String { SheetSpace.name }
     private static var window: String { "окно-листа" }
     /// Строка вложений лежит поверх низа страницы, полупрозрачная (P424):
     /// столько места под концом записи, чтобы её можно было поднять из-под
@@ -415,4 +415,10 @@ extension EnvironmentValues {
         get { self[DiaryRoomKey.self] }
         set { self[DiaryRoomKey.self] = newValue }
     }
+}
+
+/// Имя мерки листа — вне `DaySheet`, чтобы его видели и дневник, и план
+/// (P661): у `DaySheet` есть свои параметры, без них к нему не обратиться.
+enum SheetSpace {
+    static let name = "лист"
 }

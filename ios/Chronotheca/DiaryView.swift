@@ -458,7 +458,7 @@ struct DiaryPage: View {
                 .padding(.bottom, dropsFooter ? -Self.footerDrop : 0)
         }
         .background(GeometryReader { g in
-            let frame = g.frame(in: .named(DaySheet.space))
+            let frame = g.frame(in: .named(SheetSpace.name))
             Color.clear
                 .onAppear { pageFrame = frame; settlePush() }
                 .onChange(of: frame) { _, now in pageFrame = now; settlePush() }
