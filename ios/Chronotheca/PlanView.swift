@@ -1333,7 +1333,7 @@ struct PlanView: View {
         }
     }
 
-    /// Место в своём ряду снимков под пальцем: перед каким снимком встать.
+    /// Место в своей сетке вложений под пальцем: перед каким встать.
     /// `nil` — палец не над этим рядом.
     private func slotInRow(_ row: UUID, at spot: CGPoint) -> Int? {
         guard let frame = photoSpots[row], frame.insetBy(dx: 0, dy: -6).contains(spot),
@@ -1341,9 +1341,9 @@ struct PlanView: View {
         else { return nil }
         let count = Plan.items(in: line).count
         guard count > 1 else { return nil }
-        let cell = DiaryEditor.photoSize.width + 8
-        let slot = Int(((spot.x - frame.minX - 14) + cell / 2) / cell)
-        return min(max(slot, 0), count)
+        // Сетка по четыре (P654): ряд и место в ряду.
+        return PlanPhotoGrid.slot(at: CGPoint(x: spot.x - frame.minX, y: spot.y - frame.minY),
+                                  width: frame.width, count: count)
     }
 
     /// Дело, под которым стоит строка.
@@ -1634,7 +1634,6 @@ struct PlanExtraLine: View {
                 PlanPhotoRow(links: Plan.items(in: line), resolve: resolve, open: open,
                              openPoint: tapPoint, onCarry: onPhoto, carried: carriedPhoto,
                              onRemove: onRemovePhoto, armedLink: armedPhoto, onArm: onArmPhoto)
-                    .padding(.top, -8)
             }
         } else if let point = Geo.point(in: line) {
             GridSnap {

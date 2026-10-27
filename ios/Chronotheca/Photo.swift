@@ -383,7 +383,7 @@ enum PhotoDrop {
     }
 }
 
-/// Снимки под делом в плане — в ряд, а не столбиком (P358). В режиме
+/// Вложения под делом в плане — сеткой по четыре вровень с плашкой (P654). В режиме
 /// изменений каждый можно взять пальцем и унести под другое дело или
 /// назад в полоску внизу.
 struct PlanPhotoRow: View {
@@ -414,27 +414,27 @@ struct PlanPhotoRow: View {
     private static let space = "planPhotoRow"
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(links, id: \.self) { link in
-                    item(link)
-                        .opacity(carried == link ? 0.25 : 1)
-                        .modifier(ThumbCarry(report: report(link), stayed: onRemove == nil ? nil : {
-                            armedAt = Date()
-                            withAnimation(.easeOut(duration: 0.15)) { onArm?(link) }
-                        }))
-                        .background(GeometryReader { geo in
-                            let frame = geo.frame(in: .named(Self.space))
-                            Color.clear
-                                .onAppear { frames[link] = frame }
-                                .onChange(of: frame) { _, now in frames[link] = now }
-                        })
-                }
+        // Сколько угодно вложений — по четыре в ряд, дальше новый ряд
+        // (P654): прежде ряд листался вбок, и пятое торчило за краем
+        // экрана. Края крайних — вровень с краями плашки.
+        PlanPhotoGrid {
+            ForEach(links, id: \.self) { link in
+                item(link)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .opacity(carried == link ? 0.25 : 1)
+                    .modifier(ThumbCarry(report: report(link), stayed: onRemove == nil ? nil : {
+                        armedAt = Date()
+                        withAnimation(.easeOut(duration: 0.15)) { onArm?(link) }
+                    }))
+                    .background(GeometryReader { geo in
+                        let frame = geo.frame(in: .named(Self.space))
+                        Color.clear
+                            .onAppear { frames[link] = frame }
+                            .onChange(of: frame) { _, now in frames[link] = now }
+                    })
             }
-            .padding(.horizontal, 14)
         }
-        .scrollDisabled(links.count < 4 || carried != nil)
-        .frame(height: PlanPhotoLine.height)
+        .padding(.bottom, PlanPhotoLine.below)
         // Касание пустого места ряда тоже убирает крестик.
         .contentShape(Rectangle())
         .onTapGesture { if armedLink != nil { withAnimation(.easeOut(duration: 0.15)) { onArm?(nil) } } }
@@ -466,7 +466,6 @@ struct PlanPhotoRow: View {
     @ViewBuilder private func item(_ link: String) -> some View {
         if Diary.isPoint(link), let point = Geo.point(in: link) {
             PointSquare(point: point)
-                .frame(width: DiaryEditor.photoSize.width, height: DiaryEditor.photoSize.height)
                 .contentShape(Rectangle())
                 .onTapGesture { tapped(link, point: point) }
                 .accessibilityAddTraits(.isButton)
@@ -475,13 +474,12 @@ struct PlanPhotoRow: View {
             // Голос, видео и файл — квадрат того же размера, с значком
             // (стадия 3): микрофон для голоса, листок — для файла.
             PlanFileSquare(link: link)
-                .frame(width: DiaryEditor.photoSize.width, height: DiaryEditor.photoSize.height)
                 .contentShape(Rectangle())
                 .onTapGesture { tapped(link, point: nil) }
                 .accessibilityAddTraits(.isButton)
                 .accessibilityLabel(FileChip.name(link))
         } else {
-            PlanPhotoThumb(url: resolve?(link)) { tapped(link, point: nil) }
+            PlanPhotoThumb(url: resolve?(link), fill: true) { tapped(link, point: nil) }
         }
     }
 
@@ -679,9 +677,12 @@ struct PlanPhotoThumb: View {
     /// Чья картинка сейчас показана (P555): копия над пальцем — одна на все
     /// переносы, и прежде показывала снимок, который несли в прошлый раз.
     @State private var shown: URL?
+    /// Во всю клетку сетки под делом (P654), а не размером снимка в тексте.
+    var fill = false
 
-    init(url: URL?, onOpen: (() -> Void)? = nil) {
+    init(url: URL?, fill: Bool = false, onOpen: (() -> Void)? = nil) {
         self.url = url
+        self.fill = fill
         self.onOpen = onOpen
         _image = State(initialValue: url.flatMap { Photo.cache.object(forKey: PhotoAttachment.key($0)) })
     }
@@ -689,7 +690,8 @@ struct PlanPhotoThumb: View {
     var body: some View {
         Image(uiImage: image ?? PhotoAttachment.empty)
             .resizable()
-            .frame(width: DiaryEditor.photoSize.width, height: DiaryEditor.photoSize.height)
+            .frame(width: fill ? nil : DiaryEditor.photoSize.width,
+                   height: fill ? nil : DiaryEditor.photoSize.height)
             .contentShape(Rectangle())
             .onTapGesture { onOpen?() }
             .task(id: url) {
@@ -1061,7 +1063,55 @@ struct HoldCatcher: UIViewRepresentable {
 /// Высота строки снимка между делами плана (P204, P205). Сама строка
 /// рисуется в ряду вложений; осталась только мерка.
 enum PlanPhotoLine {
-    static let height: CGFloat = DiaryEditor.photoSize.height + 16
+    /// Высота одного ряда с запасом снизу — столько места открывается под
+    /// делом, куда несут первое вложение.
+    static let height: CGFloat = PlanPhotoGrid.side(in: UIScreen.main.bounds.width) + below
+    /// Запас под рядами до следующей плашки (P651: сверху ряд вплотную).
+    static let below: CGFloat = 8
+}
+
+/// Вложения под делом сеткой по четыре (P654): края крайних — вровень с
+/// краями плашки (она уже строки на `inset` с каждого бока), квадраты
+/// во всю ширину, между ними узкий зазор.
+struct PlanPhotoGrid: Layout {
+    static let columns = 4
+    static let gap: CGFloat = 3
+    /// Плашка дела уже строки на столько с каждого бока (`PlanRowLine.contour`).
+    static let inset: CGFloat = 10
+
+    static func side(in width: CGFloat) -> CGFloat {
+        floor((width - 2 * inset - CGFloat(columns - 1) * gap) / CGFloat(columns))
+    }
+
+    /// Место в сетке под точкой (в координатах самой сетки): перед каким
+    /// вложением встать.
+    static func slot(at spot: CGPoint, width: CGFloat, count: Int) -> Int {
+        let step = side(in: width) + gap
+        let col = min(max(Int(((spot.x - inset) + step / 2) / step), 0), columns)
+        let row = max(Int(spot.y / step), 0)
+        return min(row * columns + col, count)
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? UIScreen.main.bounds.width
+        let side = Self.side(in: width)
+        let rows = (subviews.count + Self.columns - 1) / Self.columns
+        guard rows > 0 else { return CGSize(width: width, height: 0) }
+        return CGSize(width: width, height: CGFloat(rows) * side + CGFloat(rows - 1) * Self.gap)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews,
+                       cache: inout ()) {
+        let side = Self.side(in: bounds.width)
+        for (i, view) in subviews.enumerated() {
+            let col = i % Self.columns
+            let row = i / Self.columns
+            view.place(at: CGPoint(x: bounds.minX + Self.inset + CGFloat(col) * (side + Self.gap),
+                                   y: bounds.minY + CGFloat(row) * (side + Self.gap)),
+                       anchor: .topLeading,
+                       proposal: ProposedViewSize(width: side, height: side))
+        }
+    }
 }
 
 /// Точка на карте квадратом (P587, P588): булавка и название, без названия —
