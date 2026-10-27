@@ -326,6 +326,15 @@ struct RootView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .clipped()
+            // Копия нижней строки — поверх листка (P645): наложением на сам
+            // слой листков, а не строкой общего стека (тогда она сдвигала
+            // страницу, P636) и не на уголке (тот лежит под листком — листок
+            // закрывал строку, замечание автора к 180).
+            .overlay(alignment: .bottom) {
+                if shell.showingSettings || shell.movingTask != nil {
+                    tabbar.ignoresSafeArea(.all, edges: .bottom)
+                }
+            }
             // Нижняя строка — самый верхний слой, как и верхняя (P515): листок
             // заходит под неё. Пока листок открыт, поверх него лежит точная
             // копия строки на том же месте; закрыт — копии нет.
@@ -574,14 +583,6 @@ struct RootView: View {
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        // Копия нижней строки — поверх листка. Лежит оверлеем, а не строкой
-        // общего стека: появлялась в тот же миг, что листок, и сдвигала всю
-        // страницу вверх на несколько строк (P636).
-        .overlay(alignment: .bottom) {
-            if shell.showingSettings || shell.movingTask != nil {
-                tabbar.ignoresSafeArea(.all, edges: .bottom)
-            }
-        }
     }
 
     /// Бумажку вытягивают за уголок: она идёт за пальцем; отпустили,
