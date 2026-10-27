@@ -90,6 +90,9 @@ struct DiaryEditor: UIViewRepresentable {
     var onToPlanEvent: ((String, DayEvents.Mark) -> Bool)? = nil
     /// Крестик у снимка → «удалить файл» (P409): в корзину на 30 дней.
     var onDeleteAttachment: ((String) -> Void)? = nil
+    /// Вложения в конце записи опущены к низу страницы на столько (P661):
+    /// отступ перед их первой строкой, только на экране — в файле его нет.
+    var push: CGFloat = 0
 
     /// Отметка времени в начале строки: «08:15 » и дальше текст.
     /// В прошедший день за временем идёт дата, когда писали:
@@ -194,6 +197,7 @@ struct DiaryEditor: UIViewRepresentable {
         } else {
             context.coordinator.restyle(view)
         }
+        if !context.coordinator.previewing { context.coordinator.applyPush(view) }
 
         if startEditing.wrappedValue {
             // Сбрасываем просьбу сразу. Фокус берём не здесь же, а на
@@ -2007,6 +2011,45 @@ struct DiaryEditor: UIViewRepresentable {
         /// Краска кладётся на тот же текст, а не заменяет его новым: замена
         /// выдёргивала у диктовки её временный знак, и в записи оставалось
         /// «OBJ» (решение P197). Заодно курсор и выделение не трогаются.
+        /// Отступ перед вложениями в конце записи (P661): вложения стоят
+        /// у низа страницы, над погодой, а текст, растя, выталкивает их вниз.
+        /// Конец записи — строки только из вложений (пустые между ними
+        /// не в счёт); отступ — перед первой из них.
+        func applyPush(_ view: UITextView) {
+            guard parent.push > 0.5 else { return }
+            let storage = view.textStorage
+            let ns = storage.string as NSString
+            var end = ns.length
+            var first: NSRange?
+            while end > 0 {
+                let line = ns.lineRange(for: NSRange(location: end - 1, length: 0))
+                var only = true
+                var any = false
+                for i in line.location..<NSMaxRange(line) {
+                    let c = ns.character(at: i)
+                    if c == 10 || c == 32 || c == 0xA0 { continue }
+                    if storage.attribute(.attachment, at: i, effectiveRange: nil) != nil {
+                        any = true
+                    } else {
+                        only = false
+                        break
+                    }
+                }
+                if !only { break }
+                if any { first = line }
+                end = line.location
+            }
+            guard let first else { return }
+            let current = storage.attribute(.paragraphStyle, at: first.location,
+                                            effectiveRange: nil) as? NSParagraphStyle
+            if abs((current?.paragraphSpacingBefore ?? 0) - parent.push) < 0.5 { return }
+            let style = (current?.mutableCopy() as? NSMutableParagraphStyle) ?? NSMutableParagraphStyle()
+            style.paragraphSpacingBefore = parent.push
+            storage.beginEditing()
+            storage.addAttribute(.paragraphStyle, value: style, range: first)
+            storage.endEditing()
+        }
+
         func restyle(_ view: UITextView) {
             let text = view.text ?? ""
             let ns = text as NSString

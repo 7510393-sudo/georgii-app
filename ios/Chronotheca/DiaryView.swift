@@ -335,6 +335,13 @@ struct DiaryPage: View {
     /// Точка заголовка, у которой сейчас крестик (P362).
     @State private var armedPoint: String?
 
+    /// Вложения в конце записи — у низа страницы (P661): на столько они
+    /// опущены, и мерки, по которым это считается.
+    @Environment(\.diaryRoom) private var diaryRoom
+    @State private var push: CGFloat = 0
+    @State private var pageFrame: CGRect = .zero
+    @State private var spacerHeight: CGFloat = 0
+
     private let size = DiaryView.size
 
     var body: some View {
@@ -410,7 +417,12 @@ struct DiaryPage: View {
             // пять: прежде они прибавлялись к ним, и выходило около восьми.
             // Есть вложения — под текстом не меньше одной пустой строки до них
             // (P649); нет — прежние пять строк для письма (P592).
-            Spacer(minLength: photos.isEmpty ? gapBelowText : size * 1.45)
+            Spacer(minLength: spacerMin)
+                .background(GeometryReader { g in
+                    Color.clear
+                        .onAppear { spacerHeight = g.size.height; settlePush() }
+                        .onChange(of: g.size.height) { _, h in spacerHeight = h; settlePush() }
+                })
             // Вложения без дела — у низа страницы, над погодой и шагами, рядами
             // по четыре (P649, сборка C): текст растёт — пустое место над ними
             // сокращается, а сами они стоят; когда до них остаётся одна
@@ -445,6 +457,50 @@ struct DiaryPage: View {
                 // они во всю ширину, и низ остаётся «＋».
                 .padding(.bottom, dropsFooter ? -Self.footerDrop : 0)
         }
+        .background(GeometryReader { g in
+            let frame = g.frame(in: .named(DaySheet.space))
+            Color.clear
+                .onAppear { pageFrame = frame; settlePush() }
+                .onChange(of: frame) { _, now in pageFrame = now; settlePush() }
+        })
+        .onChange(of: trailing) { _, _ in settlePush() }
+    }
+
+    /// Запись кончается вложениями, а ряда прежних вложений внизу нет —
+    /// тогда её вложения опускаются к низу страницы (P661).
+    private var trailing: Bool {
+        guard photos.isEmpty, diaryRoom > 0 else { return false }
+        var any = false
+        for line in text.components(separatedBy: "\n").reversed() {
+            let bare = line.trimmingCharacters(in: .whitespaces)
+            if bare.isEmpty { continue }
+            if Diary.picture(in: line) != nil || !Diary.objects(in: line).isEmpty {
+                any = true
+            } else {
+                break
+            }
+        }
+        return any
+    }
+
+    /// Пустое место над погодой: под опущенными вложениями — полстроки,
+    /// иначе прежние правила (P592, P649).
+    private var spacerMin: CGFloat {
+        if trailing { return size * 0.7 }
+        return photos.isEmpty ? gapBelowText : size * 1.45
+    }
+
+    /// Сколько опустить вложения: всё свободное место страницы над погодой
+    /// (P661). Мерка без самого отступа — так текст, растя, сокращает его,
+    /// а когда места нет, вложения уходят вниз вместе с текстом.
+    private func settlePush() {
+        guard trailing else {
+            if push != 0 { push = 0 }
+            return
+        }
+        let natural = pageFrame.height - max(0, spacerHeight - spacerMin) - push
+        let want = max(0, (diaryRoom - pageFrame.minY - natural).rounded())
+        if abs(want - push) > 1 { push = want }
     }
 
     /// На сколько погода и шаги опускаются в место под «＋» (P619).
@@ -667,7 +723,7 @@ struct DiaryPage: View {
                     takeStamp: takeStamp, onWrite: onWrite,
                     planTarget: planTarget, onPlanHover: onPlanHover, onToPlan: onToPlan,
                     planEventTarget: planEventTarget, onToPlanEvent: onToPlanEvent,
-                    onDeleteAttachment: onDeleteAttachment)
+                    onDeleteAttachment: onDeleteAttachment, push: push)
             // Пробела между заголовком и записью нет (P649; прежде 8 точек,
             // P311): с отступом внутри самого поля выходила пустая строка.
             // Свой отступ поля сверху (8) тоже снят (P660): от заголовка до

@@ -98,6 +98,9 @@ struct DaySheet<Plan: View, Diary: View>: View {
                         // строкой, её почти не было видно (снимки автора).
                         .frame(maxHeight: .infinity, alignment: .top)
                     }
+                    // Докуда может дойти дневник на коротком листе (P661):
+                    // по этой мерке вложения в конце записи опускаются к низу.
+                    .environment(\.diaryRoom, outer.size.height - Self.stripRoom)
                     // Место под строкой вложений — всегда, и с клавиатурой
                     // (P432): прежде оно пропадало, пока клавиатура открыта,
                     // и возвращалось скачком, когда она уходила, — низ
@@ -398,5 +401,18 @@ private struct DiaryTopMark: View {
                 .onChange(of: top) { _, now in PlanZones.diaryTop = now }
                 .onDisappear { PlanZones.diaryTop = nil }
         }
+    }
+}
+
+/// Докуда (в мерке листа) может дойти дневник, пока лист не длиннее окна
+/// (P661). Ноль — мерки нет, вложения в конце записи стоят под текстом.
+private struct DiaryRoomKey: EnvironmentKey {
+    static let defaultValue: CGFloat = 0
+}
+
+extension EnvironmentValues {
+    var diaryRoom: CGFloat {
+        get { self[DiaryRoomKey.self] }
+        set { self[DiaryRoomKey.self] = newValue }
     }
 }
