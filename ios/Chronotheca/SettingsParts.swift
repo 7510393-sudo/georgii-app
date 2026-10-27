@@ -148,6 +148,9 @@ struct Choice<Value: Hashable>: View {
 /// Выбор цветовой гаммы (P498): кнопки — словами, без образцов (P647).
 struct SchemeChoice: View {
     @Binding var selection: String
+    /// Какие варианты показать: «без цвета» стоит в строке с названием, три
+    /// гаммы — строкой ниже (P650).
+    var keys: [String]? = nil
 
     private var options: [(String, String)] {
         [("distance", T("Абрикос", "Apricot")),
@@ -158,7 +161,7 @@ struct SchemeChoice: View {
 
     var body: some View {
         Flow(spacing: 4, trailing: true) {
-            ForEach(options, id: \.0) { key, name in
+            ForEach(options.filter { keys?.contains($0.0) ?? true }, id: \.0) { key, name in
                 // Прежний «weekday» читается как первая гамма.
                 let on = key == selection || (key == "distance" && selection == "weekday")
                 Button {

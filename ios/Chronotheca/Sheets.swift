@@ -408,11 +408,18 @@ struct SettingsSticker: View {
         NoteRow(title: T("Шрифт записи", "Entry font")) {
             Choice(options: Prefs.fonts.map { ($0.key, $0.name) }, selection: $fontKey)
         }
-        // Три гаммы с образцами цветов и «без цвета» (P498). Гамма красит
-        // страницы, календарь и строки разделов; «без цвета» — только календарь.
+        // Три гаммы и «без цвета» (P498). Гамма красит страницы, календарь и
+        // строки разделов; «без цвета» — только календарь. «Без цвета» — в
+        // строке с названием, три гаммы — строкой ниже справа: две строки
+        // вместо трёх (P650).
         NoteRow(title: T("Цветовая гамма", "Colour scheme")) {
-            SchemeChoice(selection: $calendarTint)
+            SchemeChoice(selection: $calendarTint, keys: ["none"])
         }
+        SchemeChoice(selection: $calendarTint, keys: ["distance", "sage", "lavender"])
+            .frame(maxWidth: .infinity, alignment: .trailing)
+            .padding(.horizontal, 12)
+            .padding(.top, -3)
+            .padding(.bottom, 9)
     }
 
     @ViewBuilder private var aboutPart: some View {
