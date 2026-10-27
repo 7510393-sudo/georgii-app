@@ -129,49 +129,6 @@ extension Animation {
     static let tuck = Animation.easeIn(duration: 0.28)
 }
 
-/// Строка бумажки.
-struct StickerItem: View {
-
-    let title: String
-    var note = "→"
-    /// Пояснение мелко под названием — например, сколько весит снимок.
-    var detail: String? = nil
-    var active = false
-    var edge: Color = Look.stickerEdge
-    let act: () -> Void
-
-    var body: some View {
-        Button(action: act) {
-            HStack(spacing: 10) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(Look.sans(15, weight: active ? .medium : .regular))
-                        .foregroundStyle(active ? Look.accent : Look.ink)
-                        .multilineTextAlignment(.leading)
-                    if let detail {
-                        Text(detail)
-                            .font(Look.sans(11.5))
-                            .foregroundStyle(Look.inkFaint)
-                            .multilineTextAlignment(.leading)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                Spacer(minLength: 0)
-                Text(note)
-                    .font(Look.sans(12.5))
-                    .foregroundStyle(Look.inkFaint)
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 9)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .overlay(alignment: .top) {
-            Rectangle().fill(edge).frame(height: 1)
-        }
-    }
-}
-
 /// Обводка бумажки: низ и внутренний бок. Сверху и со своего края она
 /// приклеена — там обводки нет.
 struct StickerBorder: Shape {

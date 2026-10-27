@@ -110,35 +110,3 @@ struct TornEdgeLine: Shape {
         return p
     }
 }
-
-/// Нижний край верхней строки — вторая половина той же рваной бумаги
-/// (P517). Зубцы те же, что у верхнего края нижней строки, и в том же
-/// направлении: где у верхней половины выступ вниз, у нижней — выемка, и
-/// два куска сложились бы по линии разрыва.
-struct TornEdgeBottom: Shape {
-    func path(in rect: CGRect) -> Path {
-        var p = Path()
-        p.move(to: CGPoint(x: rect.minX, y: rect.minY))
-        let drop = rect.height - TornEdge.depth
-        for point in TornEdge.teeth(in: rect) {
-            p.addLine(to: CGPoint(x: point.x, y: point.y + drop))
-        }
-        p.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
-        p.closeSubpath()
-        return p
-    }
-}
-
-/// Только рваная черта нижнего края верхней строки.
-struct TornEdgeBottomLine: Shape {
-    func path(in rect: CGRect) -> Path {
-        var p = Path()
-        let drop = rect.height - TornEdge.depth
-        let teeth = TornEdge.teeth(in: rect)
-        if let first = teeth.first {
-            p.move(to: CGPoint(x: first.x, y: first.y + drop))
-            for point in teeth.dropFirst() { p.addLine(to: CGPoint(x: point.x, y: point.y + drop)) }
-        }
-        return p
-    }
-}

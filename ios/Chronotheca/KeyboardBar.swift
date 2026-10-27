@@ -29,12 +29,6 @@ enum KeyboardBar {
 
     private static var host: UIHostingController<KeyboardBarView>?
 
-    /// Сменили язык — приставка одна на всё время работы и сама не
-    /// перерисовывается: в 106-й над клавиатурой оставались русские
-    /// названия разделов при английском приложении (P463).
-    static func relabel() {
-        host?.rootView = KeyboardBarView()
-    }
     private static var holder: UIView?
 
     /// Приставка, если она сейчас на экране — над клавиатурой поля дня.

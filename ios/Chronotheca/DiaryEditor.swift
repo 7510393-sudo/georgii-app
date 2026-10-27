@@ -814,11 +814,6 @@ struct DiaryEditor: UIViewRepresentable {
                     || view.textStorage.attribute(DiaryEditor.lineKey, at: i, effectiveRange: nil) != nil)
         }
 
-        private func takenIsPhoto(at i: Int, in view: UITextView) -> Bool {
-            i < view.textStorage.length
-                && view.textStorage.attribute(DiaryEditor.photoKey, at: i, effectiveRange: nil) != nil
-        }
-
         // MARK: - Крестик у точки (P362) и у снимка (P392)
 
         /// Покрывало поверх окна: на нём точка крупнее и крестик. Касание
@@ -2032,17 +2027,6 @@ struct DiaryEditor: UIViewRepresentable {
 /// Точка в тексте записи: кнопочка с названием и координатами, бледная,
 /// как отметка времени (P213).
 final class PointChip: NSTextAttachment {
-
-    /// Точка в тексте — значок шириной в знак-два, прямо в строке (P259).
-    /// Название и координаты — на карте, куда ведёт касание.
-    init(mini point: GeoPoint, glowing: Bool = false) {
-        super.init(data: nil, ofType: nil)
-        let picture = PointChip.mark(glowing: glowing, title: point.title)
-        image = picture
-        let pad: CGFloat = glowing ? 3 : 0
-        bounds = CGRect(origin: CGPoint(x: 0, y: -5 - pad), size: picture.size)
-        accessibilityLabel = T("Точка на карте: ", "Place on the map: ") + point.label
-    }
 
     /// Точка своей строкой — квадрат размером со снимок (P559): булавка
     /// и подпись — название, а без него — «Место» и, если рядом своё место,

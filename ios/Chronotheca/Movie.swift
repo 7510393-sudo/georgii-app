@@ -31,11 +31,4 @@ enum Movie {
         return out
     }
 
-    /// То же для мест, где ждать нельзя: ответ — на главной очереди.
-    static func shrink(_ url: URL, done: @escaping (URL) -> Void) {
-        Task {
-            let result = await shrunk(url)
-            DispatchQueue.main.async { done(result) }
-        }
-    }
 }

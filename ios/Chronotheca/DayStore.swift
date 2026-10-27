@@ -46,8 +46,6 @@ final class DayStore: ObservableObject {
     /// там, где он и правда что-то открывает: в прошедшем плане.
     @Published var editingTabs: Set<Shell.Tab> = []
 
-    func editing(_ tab: Shell.Tab) -> Bool { editingTabs.contains(tab) }
-
     func setEditing(_ tab: Shell.Tab, _ on: Bool) {
         if on, tab == .plan, isPast { editingTabs.insert(tab) } else if !on { editingTabs.remove(tab) }
     }
@@ -850,16 +848,6 @@ final class DayStore: ObservableObject {
         if here { notePlace(point) }
         attach(Geo.pointLine(point), to: tab)
         return true
-    }
-
-    /// Куда встаёт строка под делом: после самого дела и его снимков и
-    /// точек — перед следующим делом (P409).
-    func afterBlock(of task: UUID) -> Int {
-        guard var i = index(of: task) else { return planRows.count }
-        i += 1
-        while i < planRows.count, !planRows[i].isTask,
-              let v = planRows[i].verbatim, !v.trimmingCharacters(in: .whitespaces).isEmpty { i += 1 }
-        return i
     }
 
     /// Снимок в ряду под делом — на другое место в том же ряду (P409).
