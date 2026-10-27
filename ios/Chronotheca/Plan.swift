@@ -31,6 +31,17 @@ struct PlanRow: Identifiable, Equatable {
 
     var isTask: Bool { verbatim == nil }
 
+    /// Название дела целиком: строки после «Ввода» — продолжение названия
+    /// (P652). В файле они лежат строками с отступом под делом — так же, как
+    /// прежние подробности, — поэтому файл читается любым редактором.
+    var fullTitle: String { ([text] + details).joined(separator: "\n") }
+
+    mutating func setFullTitle(_ title: String) {
+        let parts = title.components(separatedBy: "\n")
+        text = parts.first ?? ""
+        details = Array(parts.dropFirst())
+    }
+
     static func task(time: String? = nil, bell: String? = nil, _ text: String) -> PlanRow {
         PlanRow(verbatim: nil, done: false, time: time, bell: bell, text: text, details: [])
     }
@@ -229,7 +240,9 @@ enum Plan {
             if let bell = row.bell { out += " (remind \(bell))" }
             if let r = row.repeats { out += " (every \(r.every.rawValue) #\(r.series))" }
             out += "\n"
-            for detail in row.details {
+            // Пустая строка продолжения не пишется: строка из одних пробелов
+            // при чтении стала бы чужой строкой файла (P652).
+            for detail in row.details where !detail.trimmingCharacters(in: .whitespaces).isEmpty {
                 out += indent + detail + "\n"
             }
         }

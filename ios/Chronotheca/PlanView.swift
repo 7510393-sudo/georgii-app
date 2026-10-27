@@ -39,7 +39,6 @@ struct PlanRowLine: View {
     /// Правка названия кончилась.
     var onDone: () -> Void = {}
     /// «Ввод» в названии: ввод переходит к делу ниже.
-    var onNext: () -> Void = {}
 
     /// Долгое нажатие на дело — на текст или на номер — поднимает его, и
     /// дальше его ведут пальцем (P362). Отклик — сразу, как нажатие стало
@@ -102,17 +101,6 @@ struct PlanRowLine: View {
                                         vertical: .firstTextBaseline)) {
                 title
                 head
-            }
-            // Шторки «Подробности» больше нет (P408): записанное в ней
-            // прежде видно бледными строками под делом и лежит в файле, как
-            // лежало.
-            ForEach(Array(row.details.enumerated()), id: \.offset) { _, line in
-                Text(line)
-                    .font(Look.sans(13))
-                    // Подробности — запись человека, а не подсказка (P465).
-                    .foregroundStyle(Look.inkSoft)
-                    .lineLimit(2)
-                    .padding(.leading, Self.wrap)
             }
         }
         // Корешка «Детали» справа нет — название идёт до контура (P408).
@@ -351,7 +339,9 @@ struct PlanRowLine: View {
     /// соседняя лишь не правится. Строчка письма задана числом, одним и тем
     /// же, что бы ни было внутри (решение P171).
     private var title: some View {
-        PlanTitle(text: text ?? .constant(row.text),
+        // Строки подробностей — продолжение названия тем же шрифтом (P652;
+        // прежде — бледными строками под делом, P408).
+        PlanTitle(text: text ?? .constant(row.fullTitle),
                   rowID: text == nil ? nil : row.id,
                   indent: Self.indent,
                   wrap: Self.wrap,
@@ -359,7 +349,6 @@ struct PlanRowLine: View {
                   editable: text != nil && typing,
                   typing: typing,
                   onDone: onDone,
-                  onNext: onNext,
                   onLift: onLift)
             .opacity(dim)
             .alignmentGuide(.firstTextBaseline) { _ in PlanTitle.baseline }
@@ -552,6 +541,16 @@ struct PlanView: View {
                         withAnimation(.easeOut(duration: 0.15)) { armedLine = nil }
                     }
             }
+            // Касание по свободному месту вне плашек убирает курсор (P652):
+            // плашки ловят касание сами, сюда доходит только мимо них.
+            .background(
+                Color.clear
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        guard typingIn != nil else { return }
+                        hideKeyboard()
+                        typingIn = nil
+                    })
             .onChange(of: typingIn) { _, id in show(id, proxy) }
             .onChange(of: keyboard) { _, _ in show(typingIn, proxy) }
         }
@@ -785,7 +784,9 @@ struct PlanView: View {
             row: row.wrappedValue,
             faded: false,
             bellColor: Look.accent,
-            text: row.text,
+            // Название с продолжением после «Ввода» (P652).
+            text: Binding(get: { row.wrappedValue.fullTitle },
+                          set: { row.wrappedValue.setFullTitle($0) }),
             typing: typingIn == id,
             onTime: { openRoller(id, .time) },
             onBell: { openRoller(id, .bell) },
@@ -798,7 +799,6 @@ struct PlanView: View {
                 store.save()
                 store.checkSeries(id)
             },
-            onNext: { next(after: id) },
             onLift: { lift(row, $0) },
             // Поднятое дело обведено синим — тем же, что и всё, что можно
             // взять пальцем (P203, P362); и дело, под которое ляжет
@@ -1467,20 +1467,6 @@ struct PlanView: View {
     }
 
     /// «Ввод» в названии: ввод переходит к делу ниже.
-    ///
-    /// Клавиша «Ввод» уводит на строку ниже, к следующему делу. У
-    /// последнего дела правка кончается: новое дело заводится только
-    /// плюсом. Дело, которое завелось само от «Ввода», — это движение
-    /// помимо воли человека (решение P193, уточняет P180).
-    private func next(after id: UUID) {
-        let дела = store.tasks
-        guard let i = дела.firstIndex(where: { $0.id == id }) else { return }
-        if i + 1 < дела.count {
-            typingIn = дела[i + 1].id
-            return
-        }
-        typingIn = nil
-    }
 
     private func openRoller(_ id: UUID, _ kind: Shell.Roller.Kind) {
         guard store.canEditPlan else { return shell.say(store.closedReason) }

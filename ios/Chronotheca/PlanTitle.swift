@@ -39,8 +39,6 @@ struct PlanTitle: UIViewRepresentable {
     /// Правка кончилась: клавиатура ушла.
     var onDone: () -> Void = {}
 
-    /// Нажат «Ввод»: ввод переходит к делу ниже.
-    var onNext: () -> Void = {}
     /// Долгое нажатие на текст, пока его не правят, и ход пальца после
     /// него (P361, P362): дело поднимается в тот же миг, как нажатие стало
     /// долгим, и идёт за пальцем.
@@ -169,7 +167,26 @@ struct PlanTitle: UIViewRepresentable {
             let token = (shown as NSString).substring(with: range)
             out.replaceCharacters(in: range, with: Self.chip(point, token: token, style: style))
         }
+        indentContinuation(out)
         return out
+    }
+
+    /// Строки после «Ввода» — новые абзацы: они идут из-под времени, как
+    /// перенесённые, а не с отступом первой строки (P652).
+    func continuationStyle() -> NSParagraphStyle {
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.firstLineHeadIndent = wrap
+        paragraph.headIndent = wrap
+        paragraph.lineSpacing = 0
+        return paragraph
+    }
+
+    func indentContinuation(_ text: NSMutableAttributedString) {
+        let ns = text.string as NSString
+        let first = ns.range(of: "\n")
+        guard first.location != NSNotFound, NSMaxRange(first) < ns.length else { return }
+        text.addAttribute(.paragraphStyle, value: continuationStyle(),
+                          range: NSRange(location: NSMaxRange(first), length: ns.length - NSMaxRange(first)))
     }
 
     static func chip(_ point: GeoPoint, token: String,
@@ -294,33 +311,25 @@ struct PlanTitle: UIViewRepresentable {
 
         func textViewDidChange(_ view: UITextView) {
             parent.text = DiaryEditor.plain(view.attributedText)
+            // Продолжение после «Ввода» — из-под времени, и то, что сейчас
+            // наберут на новой строке, тоже (P652).
+            parent.indentContinuation(view.textStorage)
+            let first = (view.text as NSString).range(of: "\n")
+            var typing = view.typingAttributes
+            if first.location != NSNotFound, view.selectedRange.location > first.location {
+                typing[.paragraphStyle] = parent.continuationStyle()
+            } else {
+                typing[.paragraphStyle] = parent.style[.paragraphStyle]
+            }
+            view.typingAttributes = typing
         }
 
         func textViewDidEndEditing(_ view: UITextView) { parent.onDone() }
 
-        /// В названии не бывает перевода строки.
-        ///
-        /// В файле дело занимает ровно строку: перевод разорвал бы его
-        /// надвое, и хвост осел бы отдельной непонятой строкой вместе с
-        /// напоминанием. Но клавиша «Ввод» и не должна ничего рвать — она
-        /// уводит на строку ниже, к следующему делу (P180). Вставленный из
-        /// буфера перевод строки становится пробелом (решение P172).
-        func textView(_ view: UITextView, shouldChangeTextIn range: NSRange,
-                      replacementText text: String) -> Bool {
-            guard text.contains(where: \.isNewline) else { return true }
-            if text.allSatisfy(\.isNewline) {
-                parent.onNext()
-                return false
-            }
-            let одной = String(text.map { $0.isNewline ? " " : $0 })
-            if let target = Range(range, in: view.text) {
-                view.text.replaceSubrange(target, with: одной)
-                view.selectedRange = NSRange(location: range.location
-                                             + (одной as NSString).length, length: 0)
-                parent.text = view.text
-            }
-            return false
-        }
+        // «Ввод» переводит строку внутри дела (P652; прежде уводил к делу
+        // ниже — P172, P180, P193). Продолжение лежит в файле строками с
+        // отступом под делом, дело остаётся одним делом. Своей обработки
+        // ввода у поля больше нет.
     }
 }
 
