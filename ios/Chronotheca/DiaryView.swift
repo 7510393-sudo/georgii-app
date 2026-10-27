@@ -361,31 +361,6 @@ struct DiaryPage: View {
                     .onTapGesture { onHealth?(health) }
                     .accessibilityHint(T("Касание — записать в дневник", "Tap to add to the diary"))
             }
-            // Прежние вложения — конец листа, рядами по четыре (P546, P618).
-            if !photos.isEmpty {
-                PhotoStrip(photos: photos, points: points, onOpen: onOpenPhoto,
-                           onCarry: editable ? onStripCarry : nil,
-                           carried: stripCarried,
-                           onRemove: editable && onRemovePhoto != nil ? { removing = $0 } : nil)
-                    .modifier(RemoveQuestion(
-                        asking: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } }),
-                        act: { delete in
-                            if let i = removing { onRemovePhoto?(i, delete) }
-                            removing = nil
-                        }))
-                    .background(GeometryReader { geo in
-                        let frame = geo.frame(in: .global)
-                        // Полоска одна на страницу (P408): по ней узнают
-                        // «назад в полоску» и дневник, и план.
-                        Color.clear
-                            .onAppear { if editable { StripZones.strip = frame; PlanZones.strip = frame } }
-                            .onChange(of: frame) { _, now in
-                                if editable { StripZones.strip = now; PlanZones.strip = now }
-                            }
-                            // Ленты нет — нет и места, куда возвращать (P547).
-                            .onDisappear { if editable { StripZones.strip = nil; PlanZones.strip = nil } }
-                    })
-            }
     
         }
     }
@@ -418,6 +393,32 @@ struct DiaryPage: View {
             // под словами остаются (P592). Пустые строки, что уже стоят в
             // конце записи (новая строка под отметку времени), входят в эти
             // пять: прежде они прибавлялись к ним, и выходило около восьми.
+            // Вложения без дела — в конце страницы, под текстом дневника, рядами
+            // по четыре (решение автора: полосы внизу под погодой больше нет).
+            if !photos.isEmpty {
+                PhotoStrip(photos: photos, points: points, onOpen: onOpenPhoto,
+                           onCarry: editable ? onStripCarry : nil,
+                           carried: stripCarried,
+                           onRemove: editable && onRemovePhoto != nil ? { removing = $0 } : nil)
+                    .modifier(RemoveQuestion(
+                        asking: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } }),
+                        act: { delete in
+                            if let i = removing { onRemovePhoto?(i, delete) }
+                            removing = nil
+                        }))
+                    .background(GeometryReader { geo in
+                        let frame = geo.frame(in: .global)
+                        // Полоска одна на страницу (P408): по ней узнают
+                        // «назад в полоску» и дневник, и план.
+                        Color.clear
+                            .onAppear { if editable { StripZones.strip = frame; PlanZones.strip = frame } }
+                            .onChange(of: frame) { _, now in
+                                if editable { StripZones.strip = now; PlanZones.strip = now }
+                            }
+                            // Ленты нет — нет и места, куда возвращать (P547).
+                            .onDisappear { if editable { StripZones.strip = nil; PlanZones.strip = nil } }
+                    })
+            }
             Spacer(minLength: gapBelowText)
             footer
                 // Погода и шаги — у самой нижней строки (P619): место под
