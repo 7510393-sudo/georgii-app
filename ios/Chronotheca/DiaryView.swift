@@ -136,9 +136,13 @@ extension DiaryView {
         let link = links[i]
         let line = Diary.line(link)
         let overStrip = StripZones.strip.map { spot.y >= $0.minY - 8 } ?? false
-        // Над планом — встанет под дело, в ряд снимков (P408, P409).
-        // Точка из ленты — тоже под дело (P588).
-        let overTask = overStrip || (Diary.kind(of: link) != .photo && !Diary.isPoint(link)) || !store.canEditPlan
+        // Над событием Календаря — встанет под него; иначе над планом — под
+        // дело, в ряд (P408, P409, P588). Любое вложение: снимок, точка,
+        // голос, файл (P647). Событие — первым: дела и события стоят
+        // вперемешку, и ближнее дело выше пальца перехватывало перенос.
+        let overEvent = overStrip || !store.canEditPlan
+            ? nil : PlanZones.event(at: DiaryEditor.aim(spot))
+        let overTask = overStrip || overEvent != nil || !store.canEditPlan
             ? nil : PlanZones.task(at: DiaryEditor.aim(spot), tasks: store.tasks)
         // У краёв страница едет к пальцу (P409) — но только когда палец
         // ушёл с полоски (P531): полоска сама лежит у нижнего края, и на
@@ -165,7 +169,7 @@ extension DiaryView {
             StripGhost.shared.spot = spot
             follow()
             hover(overTask, photo: true)
-            if overTask != nil {
+            if overTask != nil || overEvent != nil {
                 AskLine.carryOutAll()
                 DiaryEditor.active?.carryOut()
             // Над строкой «Как прошло?» — встаёт в конец ответа, в ту же
@@ -187,11 +191,15 @@ extension DiaryView {
                 DiaryEditor.active?.carryOut()
                 if Diary.isPoint(link) {
                     store.stripPointToPlan(link, under: task)
-                    Feel.thud()
-                } else if Diary.kind(of: link) == .photo {
+                } else {
                     store.stripPhotoToPlan(link, under: task)
-                    Feel.thud()
                 }
+                Feel.thud()
+            } else if let mark = overEvent, spot != .zero {
+                AskLine.carryOutAll()
+                DiaryEditor.active?.carryOut()
+                store.stripToEvent(link, underEvent: mark)
+                Feel.thud()
             } else if !overStrip, spot != .zero, AskLine.carryEnd(at: DiaryEditor.aim(spot)) {
                 DiaryEditor.active?.carryOut()
                 if i >= store.photos.count { store.dropFromPlanStrip(link) }

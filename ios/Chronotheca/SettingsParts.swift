@@ -145,20 +145,20 @@ struct Choice<Value: Hashable>: View {
     }
 }
 
-/// Выбор цветовой гаммы: у каждой — образцы цветов (P498).
+/// Выбор цветовой гаммы (P498): кнопки — словами, без образцов (P647).
 struct SchemeChoice: View {
     @Binding var selection: String
 
-    private var options: [(String, String, Scheme?)] {
-        [("distance", T("Абрикос", "Apricot"), Scheme.apricot),
-         ("sage", T("Шалфей", "Sage"), Scheme.sage),
-         ("lavender", T("Лаванда", "Lavender"), Scheme.lavender),
-         ("none", T("без цвета", "none"), nil)]
+    private var options: [(String, String)] {
+        [("distance", T("Абрикос", "Apricot")),
+         ("sage", T("Шалфей", "Sage")),
+         ("lavender", T("Лаванда", "Lavender")),
+         ("none", T("без цвета", "none"))]
     }
 
     var body: some View {
         Flow(spacing: 4, trailing: true) {
-            ForEach(options, id: \.0) { key, name, scheme in
+            ForEach(options, id: \.0) { key, name in
                 // Прежний «weekday» читается как первая гамма.
                 let on = key == selection || (key == "distance" && selection == "weekday")
                 Button {
@@ -166,21 +166,13 @@ struct SchemeChoice: View {
                     Feel.tick()
                     selection = key
                 } label: {
-                    HStack(spacing: 6) {
-                        if let scheme {
-                            HStack(spacing: -4) {
-                                ForEach(Array([scheme.past, scheme.today, scheme.kraft, scheme.kraftInk].enumerated()), id: \.offset) { _, c in
-                                    Circle().fill(c).frame(width: 14, height: 14)
-                                        .overlay(Circle().strokeBorder(Look.inkSoft.opacity(0.45), lineWidth: 0.8))
-                                }
-                            }
-                        }
-                        Text(name)
-                            .font(Look.sans(13.5, weight: on ? .semibold : .regular))
-                            .lineLimit(1)
-                    }
-                    .fixedSize()
-                    .modifier(Tag(look: on ? .chosen : .plain))
+                    // Кнопка — размером со слово (замечание автора к 182):
+                    // с кружками-образцами четыре кнопки вставали в три строки.
+                    Text(name)
+                        .font(Look.sans(13.5, weight: on ? .semibold : .regular))
+                        .lineLimit(1)
+                        .fixedSize()
+                        .modifier(Tag(look: on ? .chosen : .plain))
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(on ? .isSelected : [])

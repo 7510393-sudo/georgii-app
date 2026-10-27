@@ -1115,8 +1115,11 @@ struct DiaryEditor: UIViewRepresentable {
                 // значит вернуть его вниз; над заголовком — то же для точки.
                 // Над делом плана — встанет под него (P409): план подсвечивает
                 // дело, запись остаётся как была.
-                let toPlan = planTask(g)
-                let overEvent = toPlan == nil && planEvent(g) != nil
+                // Сначала событие Календаря, если палец прямо над ним: дела и
+                // события стоят в плане вперемешку, и ближнее дело выше пальца
+                // перехватывало перенос (замечание автора к 182, P647).
+                let overEvent = planEvent(g) != nil
+                let toPlan = overEvent ? nil : planTask(g)
                 parent.onPlanHover?(toPlan, takenPiece.map(Self.isPhotoLine) ?? false)
                 if toPlan != nil { AskLine.carryOutAll() }
                 // Над строкой «Как прошло?» — встанет в конец ответа (P407):
@@ -1129,8 +1132,8 @@ struct DiaryEditor: UIViewRepresentable {
             case .ended:
                 stopPump()
                 heldEnded = Date()
-                let toPlan = planTask(g)
-                let toEvent = toPlan == nil ? planEvent(g) : nil
+                let toEvent = planEvent(g)
+                let toPlan = toEvent == nil ? planTask(g) : nil
                 parent.onPlanHover?(nil, false)
                 let intoAnswer = toPlan == nil && toEvent == nil && takenPiece != nil
                     && AskLine.under(DiaryEditor.aim(g.location(in: nil))) != nil

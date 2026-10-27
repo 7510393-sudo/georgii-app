@@ -1020,6 +1020,18 @@ final class DayStore: ObservableObject {
         putPlanPhoto(link, under: id)
     }
 
+    /// Вложение снизу страницы — под событие Календаря (P647), как под дело.
+    func stripToEvent(_ link: String, underEvent mark: DayEvents.Mark) {
+        guard canEditPlan else { return }
+        if let k = photos.firstIndex(of: link) {
+            guard canEditDiary else { return }
+            photos.remove(at: k)
+            touchDiary()
+            planPhotos.append(link)
+        }
+        putPlanPhoto(link, underEvent: mark)
+    }
+
     /// Точка из ленты — своей строкой под дело (P588): после самого дела и
     /// того, что уже стоит под ним.
     func stripPointToPlan(_ link: String, under id: UUID) {
