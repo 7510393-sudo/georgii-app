@@ -1,41 +1,130 @@
+    5 Thread_67817   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 5 start  (in dyld) + 6992  [0x1025204e4]
+    +   5 start_sim  (in dyld_sim) + 20  [0x1024270e4]
+    +     5 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x1040f5e1c]  ChronothecaApp.swift:0
+    +       5 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1040f5d70]  /<compiler-generated>:0
+    +         5 static App.main()  (in SwiftUI) + 132  [0x1d2c5f084]
+    +           5 protocol witness for App.init() in conformance ChronothecaApp  (in Chronotheca.debug.dylib) + 12  [0x1040f5e08]  /<compiler-generated>:0
+    +             5 ChronothecaApp.init()  (in Chronotheca.debug.dylib) + 800  [0x1040f2654]  ChronothecaApp.swift:37
+    +               5 Vault.__allocating_init()  (in Chronotheca.debug.dylib) + 44  [0x104626164]  Vault.swift:0
+    +                 5 Vault.init()  (in Chronotheca.debug.dylib) + 2076  [0x10462698c]  Vault.swift:227
+    +                   5 Vault.usePreviewFolder()  (in Chronotheca.debug.dylib) + 904  [0x104627540]  Vault.swift:321
+    +                     5 Vault.seedPreview()  (in Chronotheca.debug.dylib) + 1188  [0x10462e0b0]  Vault.swift:373
+    +                       5 static Photo.sample()  (in Chronotheca.debug.dylib) + 444  [0x104375184]  Photo.swift:129
+    +                         5 _UIImageJPEGRepresentation  (in UIKitCore) + 80  [0x185818d10]
+    +                           3 _UIImageDataRepresentation  (in UIKitCore) + 448  [0x185818b6c]
+    +                           ! 3 CGImageDestinationFinalize  (in ImageIO) + 192  [0x181b671e0]
+    +                           !   3 IIOImageDestination::finalizeDestination(unsigned long long*)  (in ImageIO) + 784  [0x181b62e60]
+    +                           !     3 IIO_Writer_AppleJPEG::write(void*, void*)  (in ImageIO) + 132  [0x181b78d54]
+    +                           !       2 AppleJPEGWritePlugin::writeAll()  (in ImageIO) + 248  [0x181b78b08]
+    +                           !       : 2 AppleJPEGWritePlugin::writeOne(IIOImagePixelDataProvider*, IIODictionary*, IIODictionary*, unsigned int)  (in ImageIO) + 1252  [0x181b78700]
+    +                           !       :   2 IIOImagePixelDataProvider::getBytesDataProvider(void*, unsigned long)  (in ImageIO) + 216  [0x181c1c0cc]
+    +                           !       :     2 IIOImagePixelDataProvider::convertBytesWithRange(unsigned char*, unsigned char*, CGPoint, CGPoint, unsigned long)  (in ImageIO) + 336  [0x181c1b90c]
+    +                           !       :       2 IIOImagePixelDataProvider::convertBytes(vImage_Buffer*, vImage_Buffer*)  (in ImageIO) + 276  [0x181c1b6c8]
+    +                           !       :         2 iio_vImageConvert_AnyToAny(vImageConverter*, vImage_Buffer const*, vImage_Buffer const*, void*, unsigned int)  (in ImageIO) + 288  [0x181bdbecc]
+    +                           !       :           1 vImageConvert_AnyToAny  (in vImage) + 700  [0x194a044d0]
+    +                           !       :           | 1 vImageDebug_CheckSrcBuffer  (in vImage) + 144  [0x19494b624]
+    +                           !       :           |   1 _ERROR_Buffer_Read__Too_Small_For_Arguments_To_vImage__CheckBacktrace  (in vImage) + 56  [0x19494b690]
+    +                           !       :           1 vImageConvert_AnyToAny  (in vImage) + 2416  [0x194a04b84]
+    +                           !       :             1 AnyToAnyBlockInternal  (in vImage) + 2060  [0x194a19218]
+    +                           !       :               1 vImageFlatten_RGBA8888  (in vImage) + 428  [0x19489612c]
+    +                           !       :                 1 vFlatten_RGBA8888_GV_vec  (in vImage) + 0  [0x194aae2d4]
+    +                           !       1 AppleJPEGWritePlugin::writeAll()  (in ImageIO) + 84  [0x181b78a64]
+    +                           !         1 IIO_HardwareEncoderDefaultValue  (in ImageIO) + 40  [0x181b557f8]
+    +                           !           1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +                           !             1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                           !               1 __IIO_HardwareEncoderDefaultValue_block_invoke  (in ImageIO) + 104  [0x181b55868]
+    +                           !                 1 _CFPreferencesCopyValueWithContainer  (in CoreFoundation) + 116  [0x18052bc24]
+    +                           !                   1 -[_CFXPreferences copyValueForKey:identifier:user:host:container:]  (in CoreFoundation) + 184  [0x1805288e0]
+    +                           !                     1 -[_CFXPreferences withSourceForIdentifier:user:byHost:container:cloud:perform:]  (in CoreFoundation) + 796  [0x18047b0d8]
+    +                           !                       1 __66-[_CFXPreferences copyValueForKey:identifier:user:host:container:]_block_invoke  (in CoreFoundation) + 28  [0x180528960]
+    +                           !                         1 -[CFPrefsPlistSource copyValueForKey:]  (in CoreFoundation) + 56  [0x18053a1f0]
+    +                           !                           1 _copyValueForKey  (in CoreFoundation) + 240  [0x180539f68]
+    +                           !                             1 -[CFPrefsPlistSource alreadylocked_requestNewData]  (in CoreFoundation) + 320  [0x18053c880]
+    +                           !                               1 -[_CFXPreferences withConnectionForRole:andUserIdentifier:performBlock:]  (in CoreFoundation) + 44  [0x18054fe64]
+    +                           !                                 1 __50-[CFPrefsPlistSource alreadylocked_requestNewData]_block_invoke  (in CoreFoundation) + 116  [0x18053c958]
+    +                           !                                   1 -[CFPrefsPlistSource sendRequestNewDataMessage:toConnection:retryCount:error:]  (in CoreFoundation) + 428  [0x18053cb38]
+    +                           !                                     1 CFPREFERENCES_IS_WAITING_FOR_USER_CFPREFSD  (in CoreFoundation) + 92  [0x1804ed558]
+    +                           !                                       1 __78-[CFPrefsPlistSource sendRequestNewDataMessage:toConnection:retryCount:error:]_block_invoke  (in CoreFoundation) + 28  [0x18053e6ec]
+    +                           !                                         1 xpc_connection_send_message_with_reply_sync  (in libxpc.dylib) + 252  [0x1800cf918]
+    +                           !                                           1 dispatch_mach_send_with_result_and_wait_for_reply  (in libdispatch.dylib) + 56  [0x1801a2adc]
+    +                           !                                             1 _dispatch_mach_send_and_wait_for_reply  (in libdispatch.dylib) + 564  [0x1801a2740]
+    +                           !                                               1 mach_msg  (in libsystem_kernel.dylib) + 20  [0x1022dcef0]
+    +                           !                                                 1 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x1022e4c44]
+    +                           !                                                   1 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x1022ede84]
+    +                           !                                                     1 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x1022dcb70]
+    +                           1 _UIImageDataRepresentation  (in UIKitCore) + 136  [0x185818a34]
+    +                           ! 1 CGImageDestinationCreateWithData  (in ImageIO) + 368  [0x181b65074]
+    +                           !   1 IIO_WriterHandler::GetWriterHandler()  (in ImageIO) + 40  [0x181b129a0]
+    +                           !     1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +                           !       1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                           !         1 invocation function for block in IIO_WriterHandler::GetWriterHandler()  (in ImageIO) + 52  [0x181b129dc]
+    +                           !           1 IIO_WriterHandler::IIO_WriterHandler()  (in ImageIO) + 68  [0x181b125fc]
+    +                           !             1 IIO_WriterHandler::buildWriterList()  (in ImageIO) + 268  [0x181b1277c]
+    +                           !               1 CreateWriter_AVCI()  (in ImageIO) + 20  [0x181b0734c]
+    +                           !                 1 IIODetermineHEIFSupport()  (in ImageIO) + 12  [0x181bfca40]
+    +                           !                   1 IIO_LoadCMPhotoSymbols  (in ImageIO) + 32  [0x181bec0b4]
+    +                           !                     1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +                           !                       1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                           !                         1 IIOLoadCMPhotoSymbols()  (in ImageIO) + 4256  [0x181bed160]
+    +                           !                           1 dyld4::APIs::dlsym(void*, char const*)  (in dyld_sim) + 188  [0x1024201f4]
+    +                           !                             1 strcmp  (in dyld_sim) + 0  [0x102452f94]
+    +                           1 _UIImageDataRepresentation  (in UIKitCore) + 436  [0x185818b60]
+    +                             1 -[_UIImageContent addContentToDestination:properties:]  (in UIKitCore) + 76  [0x185d706d4]
+    +                               1 CGImageDestinationAddImage  (in ImageIO) + 1584  [0x181b65d34]
+    +                                 1 IIOImageDestination::addImage(CGImage*, IIODictionary*, bool)  (in ImageIO) + 108  [0x181b60410]
+    +                                   1 IIOImageDestination::addImageInternal(CGImage*, IIODictionary*, bool)  (in ImageIO) + 2020  [0x181b5f6d8]
+    +                                     1 IIOImageDestination::createPixelDataProviderConforming(CGImage*, long, bool, CGColor*, CGImagePluginWriteModes, IIODictionary*)  (in ImageIO) + 3024  [0x181d97a6c]
+    +                                       1 CGImagePixelDataProviderCreate  (in ImageIO) + 196  [0x181c1ccf8]
+    +                                         1 IIOImagePixelDataProvider::setup(CGImage*, vImage_CGImageFormat*, CGColor*)  (in ImageIO) + 336  [0x181c1af0c]
+    +                                           1 IIO_ConvertCGColorToColorComponents  (in ImageIO) + 100  [0x181be4b98]
+    +                                             1 CGColorTransformConvertColorComponents  (in CoreGraphics) + 528  [0x18d49e54c]
+    +                                               1 CGColorTransformCacheGetConversionType  (in CoreGraphics) + 212  [0x18d48a3a4]
+    +                                                 1 CGCMSConverterCreate  (in CoreGraphics) + 388  [0x18d1d73a8]
+    +                                                   1 CGColorSyncTransformCacheGetRetained  (in CoreGraphics) + 700  [0x18d3e2af0]
+    +                                                     1 ColorSyncTransformCreate  (in ColorSync) + 2080  [0x1cd1d7654]
+    +                                                       1 AppleCMMInitializeTransform  (in ColorSync) + 1548  [0x1cd217060]
+    +                                                         1 ConversionManager::MakeConversionSequence(CMMProfileInfoContainer*, CMMColorConversionInfo*, __CFDictionary const*)  (in ColorSync) + 6544  [0x1cd20966c]
+    +                                                           1 ConversionManager::AddGrayConv(CMMProfile*, bool, __CFDictionary const*)  (in ColorSync) + 580  [0x1cd20d444]
+    +                                                             1 CMMMatrix::MakeMatrixConv(CMMMemMgr&, CMMConvNode*)  (in ColorSync) + 0  [0x1cd1e8a2c]
 
 Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        15
 
 Binary Images:
-       0x100ab0000 -        0x100ab3507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/77AA4492-C787-4EEE-A772-05D4B3E9ECCD/data/Containers/Bundle/Application/133917A1-A990-4A45-B196-9D7C620E5B9C/Chronotheca.app/Chronotheca
-       0x100ac4000 -        0x100afeed7  libsystem_kernel.dylib (12377.161.14) <26CFE427-C180-3145-8D46-DE3129B1CD2A> /usr/lib/system/libsystem_kernel.dylib
-       0x100b44000 -        0x100b4c3d3  libsystem_platform.dylib (375.120.2) <7E129155-1748-370C-8EDC-D762067A6D9F> /usr/lib/system/libsystem_platform.dylib
-       0x100c04000 -        0x100c52e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
-       0x100cc0000 -        0x100ccc10b  libsystem_pthread.dylib (539.100.4) <85A501D2-0B0E-3DEA-B121-B24119D80CFE> /usr/lib/system/libsystem_pthread.dylib
-       0x100dd8000 -        0x100de149f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
-       0x100dfc000 -        0x100eaf4ff  dyld (1.0.0 - 1387) <74E52480-C2BD-3C8D-812D-95FE2B74A096> /usr/lib/dyld
-       0x100f54000 -        0x100f9765f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
-       0x1010a8000 -        0x1011412af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
-       0x10179c000 -        0x1017a403f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
-       0x1018b0000 -        0x1018b0b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
-       0x1018c0000 -        0x1018cb39f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
-       0x1018e4000 -        0x1018e6dff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
-       0x1018fc000 -        0x101902b7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
-       0x10191c000 -        0x1019232df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
-       0x101948000 -        0x10196127f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
-       0x101c0c000 -        0x101c0fe5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
-       0x101c24000 -        0x101c29407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
-       0x101e28000 -        0x101e4ef5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
-       0x101e98000 -        0x101e9b1ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
-       0x101f58000 -        0x101f7acff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
-       0x101fb0000 -        0x101fb46ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
-       0x101fc8000 -        0x102223bbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
-       0x102844000 -        0x1028977bf  com.apple.dt.XCTAutomationSupport (26.5 - 24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
-       0x10291c000 -        0x10302fb27 +Chronotheca.debug.dylib (0) <D56B6FCD-2899-309A-8F3D-455CC64FE836> /Users/*/Library/Developer/CoreSimulator/Devices/77AA4492-C787-4EEE-A772-05D4B3E9ECCD/data/Containers/Bundle/Application/133917A1-A990-4A45-B196-9D7C620E5B9C/Chronotheca.app/Chronotheca.debug.dylib
-       0x103aec000 -        0x103b2615f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
-       0x106bcc000 -        0x106bcebdf  com.apple.GeoServices.axbundle (1.0 - 1.0) <69D2FB7A-6D7C-3EDE-9495-629B7904ED32> /Volumes/*/GeoServices
-       0x107000000 -        0x10706fcbf  com.apple.UIUnderstanding (1.0 - 1) <576E64EB-8AA4-3B1E-A89D-365C4DE0C7C8> /Volumes/*/UIUnderstanding.framework/UIUnderstanding
-       0x107684000 -        0x10768629f  com.apple.PrintKitUI.axbundle (1.0 - 1.0) <731C330D-EA63-31B4-8E19-E64B817F475F> /Volumes/*/PrintKitUI
-       0x1076a8000 -        0x1076a995f  com.apple.StoreKitFramework.axbundle (1.0 - 1.0) <0758FA74-F009-31A0-97B6-1D42DC629C90> /Volumes/*/StoreKitFramework
-       0x1076bc000 -        0x1076bd35f  com.apple.iTunesStoreFramework.axbundle (1.0 - 1.0) <A993165B-1F1F-3D06-8A5E-CB11AD040BF5> /Volumes/*/iTunesStoreFramework
-       0x1076d0000 -        0x1076d1fbf  com.apple.HealthKit.axbundle (1.0 - 1.0) <D120DD13-A08A-31D6-B4C2-1167BFA397BD> /Volumes/*/HealthKit
-       0x1076e8000 -        0x1076ed7df  com.apple.LinkPresentation.axbundle (1.0 - 1.0) <7BAD0605-47F6-3470-9C28-AE38795FEC45> /Volumes/*/LinkPresentation
-       0x107710000 -        0x1077218bf  com.apple.MapKitFramework.axbundle (1.0 - 1.0) <E47E82F2-C0CB-3371-85B9-B78F40DB406A> /Volumes/*/MapKitFramework
-       0x107758000 -        0x10775987f  com.apple.AuthenticationServices.axbundle (1.0 - 1.0) <2E82650D-74C4-3A44-859A-77412F601ADF> /Volumes/*/AuthenticationServices
-       0x1077ac000 -        0x1077b185f  com.apple.TelephonyUIFramework.axbundle (1.0 - 1.0) <3B6B5DA7-09A6-3441-8C4B-A04351314E29> /Volumes/*/TelephonyUIFramework
-       0x1077ec000 -        0x1079dfd3f  com.apple.UIKit.axbundle (1.0.0 - 1.0) <D3D808D1-AB02-3566-B2DD-1B139F8E9569> /Volumes/*/UIKit
+       0x1022c8000 -        0x1022cb507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/E839A11B-51B4-4AD3-ACF4-A53B95B7C957/data/Containers/Bundle/Application/69603333-F085-4605-9212-3B901DE2AFBB/Chronotheca.app/Chronotheca
+       0x1022dc000 -        0x102316ed7  libsystem_kernel.dylib (12377.161.14) <26CFE427-C180-3145-8D46-DE3129B1CD2A> /usr/lib/system/libsystem_kernel.dylib
+       0x10235c000 -        0x1023643d3  libsystem_platform.dylib (375.120.2) <7E129155-1748-370C-8EDC-D762067A6D9F> /usr/lib/system/libsystem_platform.dylib
+       0x10241c000 -        0x10246ae9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x102500000 -        0x1025b34ff  dyld (1.0.0 - 1387) <74E52480-C2BD-3C8D-812D-95FE2B74A096> /usr/lib/dyld
+       0x102658000 -        0x10269b65f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x1027ac000 -        0x1028452af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x102e64000 -        0x102e7010b  libsystem_pthread.dylib (539.100.4) <85A501D2-0B0E-3DEA-B121-B24119D80CFE> /usr/lib/system/libsystem_pthread.dylib
+       0x102fb4000 -        0x102fbc03f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x1036cc000 -        0x103927bbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+       0x104024000 -        0x104739257 +Chronotheca.debug.dylib (0) <3426E6C6-BD64-35E1-9A89-68430381ACB0> /Users/*/Library/Developer/CoreSimulator/Devices/E839A11B-51B4-4AD3-ACF4-A53B95B7C957/data/Containers/Bundle/Application/69603333-F085-4605-9212-3B901DE2AFBB/Chronotheca.app/Chronotheca.debug.dylib
+       0x180038000 -        0x180074943 +libobjc.A.dylib (951.7) <727C4040-5E6D-3DAE-B22C-9A337D46C34F> /Volumes/*/libobjc.A.dylib
+       0x180075000 -        0x1800a01d2 +libdyld.dylib (1378) <2B7568E6-5EEE-33E0-B471-2FDAAE4FF448> /Volumes/*/libdyld.dylib
+       0x1800a1000 -        0x1800bf01f +libsystem_trace.dylib (1861.120.4) <4138F7EF-2588-38B1-9977-1502A60E2E36> /Volumes/*/libsystem_trace.dylib
+       0x1800c0000 -        0x18010481f +libxpc.dylib (3102.120.13) <FF603B08-461E-35C4-82E6-3AD8E5D12848> /Volumes/*/libxpc.dylib
+       0x180105000 -        0x180107da8 +libsystem_blocks.dylib (96) <A5FDF1FF-B793-3574-8903-D24571EACD25> /Volumes/*/libsystem_blocks.dylib
+       0x180108000 -        0x1801842b7 +libsystem_c.dylib (1752.120.2) <05F4B01B-E685-39FA-93F3-DE10CD9B511A> /Volumes/*/libsystem_c.dylib
+       0x180185000 -        0x1801ca3bf +libdispatch.dylib (1542.100.32) <42B50931-38D5-3A5D-90EF-0FD7239C408D> /Volumes/*/libdispatch.dylib
+       0x1801cb000 -        0x18021213f +libsystem_malloc.dylib (812.100.31) <F71AEB05-0D59-37BA-B0F2-457432BB09B5> /Volumes/*/libsystem_malloc.dylib
+       0x180213000 -        0x1802bd50f +libcorecrypto.dylib (1922.122.1) <730B0835-7D7B-35A3-B73E-7FC1D2C4403E> /Volumes/*/libcorecrypto.dylib
+       0x1802be000 -        0x1802d66df +libc++abi.dylib (2100.43) <CA04D801-3E4B-3A57-AEAD-0A5EB2DB0671> /Volumes/*/libc++abi.dylib
+       0x1802d7000 -        0x1802df38b +libsystem_darwin.dylib (1752.120.2) <C063C99F-5786-3246-A3D5-1FDB58B6E724> /Volumes/*/libsystem_darwin.dylib
+       0x1802e0000 -        0x18036909f +libc++.1.dylib (2100.43) <FD646C4C-99C5-3828-8199-3A66A48FF1A1> /Volumes/*/libc++.1.dylib
+       0x18036a000 -        0x18038e713 +libsystem_info.dylib (600) <29821F88-C763-338E-A4CC-4FB7C6FB5D35> /Volumes/*/libsystem_info.dylib
+       0x18038f000 -        0x1807c04ff  com.apple.CoreFoundation (6.9 - 5026.5.4) <E74D7B62-0AAC-3013-A55B-F15135D4BD2E> /Volumes/*/CoreFoundation.framework/CoreFoundation
+       0x1807c1000 -        0x18083f74f  com.apple.SystemConfiguration (1.21 - 1.21) <374CDDD1-FAE2-39A7-B824-6F019733EB4F> /Volumes/*/SystemConfiguration.framework/SystemConfiguration
+       0x180840000 -        0x1815f8ddf  com.apple.Foundation (6.9 - 5026.5.4) <2CC9FCE0-08F9-3A0D-8A2F-6DB229462DE5> /Volumes/*/Foundation.framework/Foundation
+       0x1815f9000 -        0x1816264bb +libCRFSuite.dylib (55) <FE8035C1-8537-39AE-A899-1E34ECBA2DCB> /Volumes/*/libCRFSuite.dylib
+       0x181627000 -        0x1818626df  com.apple.CoreServices (839 - 839) <27D2320D-91DF-3974-A815-FBEE4375327A> /Volumes/*/CoreServices.framework/CoreServices
+       0x181863000 -        0x1819cac4f +libSparse.dylib (184.80.2) <31390263-73E7-304B-B2E7-E86F3889F9C7> /Volumes/*/Accelerate.framework/Frameworks/vecLib.framework/libSparse.dylib
+       0x1819cb000 -        0x181ea971f  com.apple.ImageIO (3.3.0 - 2784.5.4) <3F851F82-F2EF-3EB4-8AB8-5556EA0E05E9> /Volumes/*/ImageIO.framework/ImageIO
+       0x181eaa000 -        0x181ead09f  com.apple.ConstantClasses (1.0 - 1) <60CE0423-E7B4-3646-A945-6DFB11D6EA8C> /Volumes/*/ConstantClasses.framework/ConstantClasses
+       0x181eae000 -        0x18209ae1f  com.apple.CoreText (877.4.0.7 - 877.4.0.7) <384D2572-6E61-33B4-8CBC-FFFCB002A1D2> /Volumes/*/CoreText.framework/CoreText
+       0x18209b000 -        0x1822650ff  com.apple.Security (10.0 - 61901.120.67) <0AF8A4FB-209E-31F7-BA57-F4084C1D23AF> /Volumes/*/Security.framework/Security
+       0x182266000 -        0x182307b9f  com.apple.framework.IOKit (2.0.2 - 100231.120.3) <21AB2359-DEEC-3444-94FE-B7257E43BE34> /Volumes/*/IOKit.framework/Versions/A/IOKit
+       0x182308000 -        0x18234c3bf +libMobileGestalt.dylib (1484.120.3) <06EA7BBC-E1AB-355C-A64D-5BEBF4B405E2> /Volumes/*/libMobileGestalt.dylib
