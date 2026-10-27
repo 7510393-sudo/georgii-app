@@ -401,8 +401,13 @@ struct DiaryPage: View {
             // под словами остаются (P592). Пустые строки, что уже стоят в
             // конце записи (новая строка под отметку времени), входят в эти
             // пять: прежде они прибавлялись к ним, и выходило около восьми.
-            // Вложения без дела — в конце страницы, под текстом дневника, рядами
-            // по четыре (решение автора: полосы внизу под погодой больше нет).
+            // Есть вложения — под текстом не меньше одной пустой строки до них
+            // (P649); нет — прежние пять строк для письма (P592).
+            Spacer(minLength: photos.isEmpty ? gapBelowText : size * 1.45)
+            // Вложения без дела — у низа страницы, над погодой и шагами, рядами
+            // по четыре (P649, сборка C): текст растёт — пустое место над ними
+            // сокращается, а сами они стоят; когда до них остаётся одна
+            // строка, текст выталкивает их вниз. Полосы под погодой нет (P640).
             if !photos.isEmpty {
                 PhotoStrip(photos: photos, points: points, onOpen: onOpenPhoto,
                            onCarry: editable ? onStripCarry : nil,
@@ -427,7 +432,6 @@ struct DiaryPage: View {
                             .onDisappear { if editable { StripZones.strip = nil; PlanZones.strip = nil } }
                     })
             }
-            Spacer(minLength: gapBelowText)
             footer
                 // Погода и шаги — у самой нижней строки (P619): место под
                 // «＋» справа, слева оно пустое. Есть ряды прежних вложений —
@@ -657,9 +661,8 @@ struct DiaryPage: View {
                     planTarget: planTarget, onPlanHover: onPlanHover, onToPlan: onToPlan,
                     planEventTarget: planEventTarget, onToPlanEvent: onToPlanEvent,
                     onDeleteAttachment: onDeleteAttachment)
-            // Вдвое меньше, чем было: пробел между заголовком и записью не
-            // должен отнимать место у страницы (P311).
-            .padding(.top, 8)
+            // Пробела между заголовком и записью нет (P649; прежде 8 точек,
+            // P311): с отступом внутри самого поля выходила пустая строка.
     }
 }
 
