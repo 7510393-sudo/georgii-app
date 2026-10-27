@@ -1068,7 +1068,10 @@ struct DiaryEditor: UIViewRepresentable {
                 taken = maybeTaken
                 maybeTaken = nil
             }
-            guard let view, let i = taken else { return }
+            // Индекс взятого мог устареть, пока палец ведут: текст в это время
+            // могли поменять. Выход за конец текста здесь — вылет (сбой 27.10,
+            // SIGABRT в `NSTextStorage attribute:atIndex:`), поэтому проверяем.
+            guard let view, let i = taken, i < view.textStorage.length else { return }
             let touch = g.location(in: view)
             let at = CGPoint(x: touch.x, y: touch.y - Self.lift)
             quietUntil = Date().addingTimeInterval(1.5)
