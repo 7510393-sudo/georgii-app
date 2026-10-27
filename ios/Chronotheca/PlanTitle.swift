@@ -109,6 +109,7 @@ struct PlanTitle: UIViewRepresentable {
         context.coordinator.parent = self
         context.coordinator.open = context.environment.openPoint
         (view as? TitleView)?.indent = indent
+        (view as? TitleView)?.wrap = wrap
         view.isEditable = editable
         view.isSelectable = editable
         apply(to: view, context.coordinator)
@@ -342,10 +343,22 @@ struct PlanTitle: UIViewRepresentable {
 /// (решение P193).
 final class TitleView: UITextView {
     var indent: CGFloat = 0
+    /// Откуда идут строки после «Ввода» (P652).
+    var wrap: CGFloat = 0
 
     override func caretRect(for position: UITextPosition) -> CGRect {
         var r = super.caretRect(for: position)
-        if text.isEmpty, r.minX < indent { r.origin.x = indent }
+        if text.isEmpty, r.minX < indent { r.origin.x = indent; return r }
+        // Пустая строка после «Ввода»: в ней ещё нет буквы с отступом
+        // продолжения, и курсор вставал по первой строке — посередине
+        // плашки, за временем и колокольчиком (P657). Ставим туда, где
+        // начнётся текст.
+        let ns = text as NSString
+        let at = offset(from: beginningOfDocument, to: position)
+        if at > 0, at <= ns.length, ns.character(at: at - 1) == 10,
+           at == ns.length || ns.character(at: at) == 10 {
+            r.origin.x = textContainerInset.left + textContainer.lineFragmentPadding + wrap
+        }
         return r
     }
 }
