@@ -161,11 +161,9 @@ struct AskLine: UIViewRepresentable {
 
     /// Строка ответа под пальцем (в окне).
     static func under(_ global: CGPoint) -> Coordinator? {
-        lines.allObjects.first { line in
-            guard line.parent.editable, line.parent.resolve != nil,
-                  let view = line.view, let window = view.window else { return false }
-            return view.convert(view.bounds, to: window).insetBy(dx: -4, dy: -8).contains(global)
-        }
+        // «Итоги дня» вложений не принимают (решение автора, P643): перенос
+        // сюда отключён, строки ответа остаются только для текста.
+        nil
     }
 
     /// Несут вложение: строка под пальцем показывает его у себя в конце,
