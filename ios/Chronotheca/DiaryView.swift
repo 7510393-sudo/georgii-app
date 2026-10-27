@@ -101,7 +101,11 @@ struct DiaryView: View {
             planTarget: store.canEditPlan ? { PlanZones.task(at: $0, tasks: store.tasks) } : nil,
             onPlanHover: { hover($0, photo: $1) },
             onToPlan: { piece, task in store.textToPlan(piece, under: task) },
-            planEventTarget: store.canEditPlan ? { PlanZones.event(at: $0) } : nil,
+            planEventTarget: store.canEditPlan ? { spot in
+                let mark = PlanZones.event(at: spot, tasks: store.tasks)
+                if shell.eventHover != mark?.key { shell.eventHover = mark?.key }
+                return mark
+            } : nil,
             onToPlanEvent: { piece, mark in store.textToEvent(piece, underEvent: mark) },
             // Вопрос уже задан у самого крестика (P556): второй такой же
             // после «Удалить файл» не нужен (P561 — автор видел два подряд).
@@ -141,7 +145,7 @@ extension DiaryView {
         // голос, файл (P647). Событие — первым: дела и события стоят
         // вперемешку, и ближнее дело выше пальца перехватывало перенос.
         let overEvent = overStrip || !store.canEditPlan
-            ? nil : PlanZones.event(at: DiaryEditor.aim(spot))
+            ? nil : PlanZones.event(at: DiaryEditor.aim(spot), tasks: store.tasks)
         let overTask = overStrip || overEvent != nil || !store.canEditPlan
             ? nil : PlanZones.task(at: DiaryEditor.aim(spot), tasks: store.tasks)
         // У краёв страница едет к пальцу (P409) — но только когда палец
@@ -169,6 +173,7 @@ extension DiaryView {
             StripGhost.shared.spot = spot
             follow()
             hover(overTask, photo: true)
+            if shell.eventHover != overEvent?.key { shell.eventHover = overEvent?.key }
             if overTask != nil || overEvent != nil {
                 AskLine.carryOutAll()
                 DiaryEditor.active?.carryOut()
@@ -186,6 +191,7 @@ extension DiaryView {
             DiaryEditor.active?.holdPage(false)
             DiaryEditor.active?.stopFollowingStrip()
             hover(nil, photo: false)
+            shell.eventHover = nil
             if let task = overTask, spot != .zero {
                 AskLine.carryOutAll()
                 DiaryEditor.active?.carryOut()
@@ -229,6 +235,7 @@ extension DiaryView {
             DiaryEditor.active?.holdPage(false)
             DiaryEditor.active?.stopFollowingStrip()
             hover(nil, photo: false)
+            shell.eventHover = nil
             AskLine.carryOutAll()
             DiaryEditor.active?.carryOut()
             stripCarry = nil

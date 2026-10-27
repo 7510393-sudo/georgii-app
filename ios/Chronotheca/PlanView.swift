@@ -1090,7 +1090,7 @@ struct PlanView: View {
                         onBell: { open(e) },
                         onCheck: { checkEvent(e) },
                         onLift: { eventLift(e, $0) },
-                        lifted: up || photoToEvent == e.key,
+                        lifted: up || photoToEvent == e.key || shell.eventHover == e.key,
                         past: store.isPast)
         }
         .background(GeometryReader { geo in
@@ -1641,10 +1641,14 @@ struct PlanExtraLine: View {
             // Снимки под делом — в ряд; каждый несут пальцем под другое
             // дело или назад в полоску (P358, P362).
             // Ряд — целое число клеток листа (P413).
-            GridSnap {
+            // Вплотную к плашке своего дела или события, запас — снизу, до
+            // следующего (P651, вариант автора «А»): плашка и её вложения —
+            // одно целое.
+            GridSnap(top: true) {
                 PlanPhotoRow(links: Plan.items(in: line), resolve: resolve, open: open,
                              openPoint: tapPoint, onCarry: onPhoto, carried: carriedPhoto,
                              onRemove: onRemovePhoto, armedLink: armedPhoto, onArm: onArmPhoto)
+                    .padding(.top, -8)
             }
         } else if let point = Geo.point(in: line) {
             GridSnap {
@@ -1728,11 +1732,23 @@ enum PlanZones {
     /// встать под него (стадия 3).
     static var marks: [String: DayEvents.Mark] = [:]
 
-    /// Событие Календаря под пальцем, если такое есть.
-    static func event(at spot: CGPoint) -> DayEvents.Mark? {
+    /// Событие Календаря, под которое встанет принесённое, — по тому же
+    /// правилу, что перенос из самого плана (P625): из дел и событий цель —
+    /// та плашка, чей верх выше картинки и ближе всех к ней. Прежде событие
+    /// засчитывалось, только если картинка стояла прямо на его плашке, — а её
+    /// опускают чуть ниже, туда, где лягут вложения, и перенос уходил к делу
+    /// выше (P651). `nil` — ближе дело или палец не над планом.
+    static func event(at spot: CGPoint, tasks: [PlanRow]) -> DayEvents.Mark? {
         guard spot != .zero else { return nil }
-        return events.first { $0.value.insetBy(dx: -8, dy: -8).contains(spot) }
-            .flatMap { marks[$0.key] }
+        let frames = Array(rows.values) + Array(events.values)
+        guard let top = frames.map(\.minY).min() else { return nil }
+        let bottom = frames.map(\.maxY).max() ?? top
+        guard spot.y >= top - 8, spot.y <= bottom + 24 else { return nil }
+        guard let event = events.filter({ $0.value.minY < spot.y })
+            .max(by: { $0.value.minY < $1.value.minY }) else { return nil }
+        let taskTop = tasks.compactMap { rows[$0.id]?.minY }.filter { $0 < spot.y }.max() ?? -.infinity
+        guard event.value.minY > taskTop else { return nil }
+        return marks[event.key]
     }
     /// Полоска снимков внизу — туда снимок возвращают (P377).
     static var strip: CGRect?

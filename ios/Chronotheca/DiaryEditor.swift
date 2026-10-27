@@ -1133,6 +1133,8 @@ struct DiaryEditor: UIViewRepresentable {
                 stopPump()
                 heldEnded = Date()
                 let toEvent = planEvent(g)
+                // Подсветка события гаснет: спрашиваем «пустое место» (P651).
+                _ = parent.planEventTarget?(.zero)
                 let toPlan = toEvent == nil ? planTask(g) : nil
                 parent.onPlanHover?(nil, false)
                 let intoAnswer = toPlan == nil && toEvent == nil && takenPiece != nil
@@ -1221,6 +1223,7 @@ struct DiaryEditor: UIViewRepresentable {
                 stopPump()
                 AskLine.carryOutAll()
                 parent.onPlanHover?(nil, false)
+                _ = parent.planEventTarget?(.zero)
                 takenPiece = nil
                 heldEnded = Date()
                 ghost?.removeFromSuperview()

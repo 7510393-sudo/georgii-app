@@ -316,6 +316,9 @@ struct SheetHeading: View {
 /// и так промежутки между плашками ложатся ровно на её линии.
 struct GridSnap: Layout {
     static let cell: CGFloat = PageTexture.cell
+    /// Прижать к верху своих клеток, а не ставить посередине: ряд вложений
+    /// стоит вплотную к плашке своего дела, запас — снизу (P651).
+    var top = false
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
         guard let child = subviews.first else { return .zero }
@@ -327,7 +330,8 @@ struct GridSnap: Layout {
                        cache: inout ()) {
         guard let child = subviews.first else { return }
         let size = child.sizeThatFits(ProposedViewSize(width: bounds.width, height: nil))
-        child.place(at: CGPoint(x: bounds.minX, y: bounds.midY), anchor: .leading,
+        child.place(at: CGPoint(x: bounds.minX, y: top ? bounds.minY : bounds.midY),
+                    anchor: top ? .topLeading : .leading,
                     proposal: ProposedViewSize(width: bounds.width, height: size.height))
     }
 

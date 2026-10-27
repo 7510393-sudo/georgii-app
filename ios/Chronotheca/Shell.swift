@@ -37,6 +37,9 @@ final class Shell: ObservableObject {
         let photo: Bool
     }
     @Published var planHover: PlanHover?
+    /// Событие Календаря, над которым несут вложение из записи или снизу
+    /// страницы, — оно подсвечивается, как дело (P651).
+    @Published var eventHover: String?
 
     /// Снимки для сборки: облачко «…помнишь?» не показывается (P408).
     @Published var hideCloud = false
