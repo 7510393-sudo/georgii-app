@@ -988,9 +988,12 @@ struct DiaryEditor: UIViewRepresentable {
         /// Палец со взятым снимком ниже страницы — над полоской превью:
         /// отпустить здесь значит вернуть снимок вниз (P272, P349).
         private func overStrip(_ g: UIGestureRecognizer, in view: UITextView) -> Bool {
+            // Пока несут, в поле показан текст с вложением на новом месте, и
+            // прежнее место взятого может оказаться за концом текста — тогда
+            // чтение по нему роняло приложение (сбой 27.10, P646). Снимок ли
+            // это — по строке взятого, а не по полю.
             guard let window = view.window, let page = page(over: view),
-                  view.textStorage.attribute(DiaryEditor.photoKey, at: taken ?? 0,
-                                             effectiveRange: nil) != nil
+                  let piece = takenPiece, Self.isPhotoLine(piece)
             else { return false }
             // Считается сам палец, а не поднятая над ним картинка: её край
             // уже над полоской, когда палец ещё на странице.
@@ -1068,10 +1071,7 @@ struct DiaryEditor: UIViewRepresentable {
                 taken = maybeTaken
                 maybeTaken = nil
             }
-            // Индекс взятого мог устареть, пока палец ведут: текст в это время
-            // могли поменять. Выход за конец текста здесь — вылет (сбой 27.10,
-            // SIGABRT в `NSTextStorage attribute:atIndex:`), поэтому проверяем.
-            guard let view, let i = taken, i < view.textStorage.length else { return }
+            guard let view, let i = taken else { return }
             let touch = g.location(in: view)
             let at = CGPoint(x: touch.x, y: touch.y - Self.lift)
             quietUntil = Date().addingTimeInterval(1.5)
