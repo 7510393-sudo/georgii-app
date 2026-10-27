@@ -315,20 +315,26 @@ struct RootView: View {
 
             // Листки висят от верха экрана под строкой часов; выезжают они
             // из-под неё, поэтому всё, что выше, обрезано.
-            ZStack(alignment: .topTrailing) {
-                if let m = shell.movingTask {
-                    MoveDaySticker(task: m)
-                        .transition(.move(edge: .top).combined(with: .opacity))
+            // Листок лежит наложением на пустое место во весь экран (P658):
+            // выше места он раздвигал весь экран, и тот вставал посередине —
+            // страница дёргалась вверх при открытии и ещё раз, когда листок
+            // вставал, а шапка «Настройки» заезжала под часы (запись автора
+            // к 186; P655 этого не исправил). Наложение размер экрана не
+            // меняет; лишнее уходит вниз, под нижнюю строку.
+            Color.clear
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .overlay(alignment: .topTrailing) {
+                    ZStack(alignment: .topTrailing) {
+                        if let m = shell.movingTask {
+                            MoveDaySticker(task: m)
+                                .transition(.move(edge: .top).combined(with: .opacity))
+                        }
+                        if shell.showingSettings {
+                            SettingsSticker().frame(maxWidth: .infinity, alignment: .topLeading)
+                        }
+                    }
                 }
-                if shell.showingSettings {
-                    SettingsSticker().frame(maxWidth: .infinity, alignment: .topLeading)
-                }
-            }
-            // Листок — от верха (P655): выше места он вставал посередине и
-            // шапка «Настройки» заезжала под часы (снимок автора к 185);
-            // лишнее уходит вниз, под нижнюю строку.
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .clipped()
+                .clipped()
             // Копия нижней строки — поверх листка (P645): наложением на сам
             // слой листков, а не строкой общего стека (тогда она сдвигала
             // страницу, P636) и не на уголке (тот лежит под листком — листок
