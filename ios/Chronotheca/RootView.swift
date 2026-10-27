@@ -324,7 +324,10 @@ struct RootView: View {
                     SettingsSticker().frame(maxWidth: .infinity, alignment: .topLeading)
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // Листок — от верха (P655): выше места он вставал посередине и
+            // шапка «Настройки» заезжала под часы (снимок автора к 185);
+            // лишнее уходит вниз, под нижнюю строку.
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .clipped()
             // Копия нижней строки — поверх листка (P645): наложением на сам
             // слой листков, а не строкой общего стека (тогда она сдвигала
