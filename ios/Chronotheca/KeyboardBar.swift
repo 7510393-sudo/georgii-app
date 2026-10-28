@@ -359,14 +359,47 @@ struct TitleLine: UIViewRepresentable {
 
     final class Coordinator: NSObject, UITextFieldDelegate {
         var parent: TitleLine
-        init(_ parent: TitleLine) { self.parent = parent }
+        weak var field: UITextField?
+
+        init(_ parent: TitleLine) {
+            self.parent = parent
+            super.init()
+            NotificationCenter.default.addObserver(
+                self, selector: #selector(keyboardMoved(_:)),
+                name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
+        }
 
         @objc func changed(_ field: UITextField) {
             parent.text = field.text ?? ""
         }
 
         func textFieldDidBeginEditing(_ field: UITextField) {
+            self.field = field
             if !parent.focused { parent.focused = true }
+        }
+
+        /// Заголовок, который пишут, не прячется под клавиатурой и строкой
+        /// над ней (P671): прежде страница поднималась, только когда «Ввод»
+        /// уводил в запись. Страница подъезжает ровно настолько, насколько
+        /// заголовок зашёл под клавиатуру, — как у записи (P175).
+        @objc private func keyboardMoved(_ note: Notification) {
+            guard let field, field.isFirstResponder, let window = field.window,
+                  let frame = note.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
+            else { return }
+            let top = window.convert(frame, from: nil).minY
+            DispatchQueue.main.async {
+                let строка = field.convert(field.bounds, to: window)
+                let ниже = строка.maxY + 16 - top
+                guard ниже > 0 else { return }
+                var выше = field.superview
+                while let здесь = выше, !(здесь is UIScrollView) { выше = здесь.superview }
+                guard let страница = выше as? UIScrollView else { return }
+                let предел = max(0, страница.contentSize.height + страница.adjustedContentInset.bottom
+                                 - страница.bounds.height)
+                let куда = min(страница.contentOffset.y + ниже, предел)
+                guard куда > страница.contentOffset.y else { return }
+                страница.setContentOffset(CGPoint(x: страница.contentOffset.x, y: куда), animated: true)
+            }
         }
 
         func textFieldDidEndEditing(_ field: UITextField) {

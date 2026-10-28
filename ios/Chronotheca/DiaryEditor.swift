@@ -98,7 +98,10 @@ struct DiaryEditor: UIViewRepresentable {
         pattern: #"^(\d{2}:\d{2}(?: [AP]M)?(?: \d{2}\.\d{2}\.\d{2})?)[  ]"#)
 
     func makeUIView(context: Context) -> UITextView {
-        let view = UITextView()
+        let view = DiaryTextView()
+        view.onDictationStart = { [weak coordinator = context.coordinator] in
+            coordinator?.stampBeforeDictation()
+        }
         // Метка для проверок движения (P552).
         view.accessibilityIdentifier = "diaryText"
         view.delegate = context.coordinator
@@ -606,8 +609,16 @@ struct DiaryEditor: UIViewRepresentable {
         /// закончил абзац»). Правило то же, что для первой буквы: чистая
         /// строка в конце записи и пора новой отметки.
         @objc private func inputChanged() {
+            guard view?.textInputMode?.primaryLanguage == "dictation" else { return }
+            stampBeforeDictation()
+        }
+
+        /// Диктовка начинается: время — до первого слова (P599, P671). В новых
+        /// iOS клавиатура при диктовке не сменяется на «диктовку», и вести о
+        /// смене ввода нет — поле само говорит, что диктовка началась
+        /// (`DiaryTextView`), прежде чем положить в текст первые слова.
+        func stampBeforeDictation() {
             guard let view, view.isFirstResponder, parent.editable,
-                  view.textInputMode?.primaryLanguage == "dictation",
                   view.markedTextRange == nil, view.selectedRange.length == 0
             else { return }
             let at = view.selectedRange.location
@@ -2358,4 +2369,22 @@ final class AwaitingSlot: NSTextAttachment {
     convenience init() { self.init(data: nil, ofType: nil) }
 
     required init?(coder: NSCoder) { nil }
+}
+
+/// Поле записи, которое замечает начало диктовки (P671): диктовка кладёт
+/// слова в поле временным выделенным текстом или заместителем, и правило
+/// «время с первой буквы» видело их, только когда фразу договорили и
+/// микрофон выключили.
+final class DiaryTextView: UITextView {
+    var onDictationStart: (() -> Void)?
+
+    override func insertDictationResultPlaceholder() -> Any {
+        onDictationStart?()
+        return super.insertDictationResultPlaceholder()
+    }
+
+    override func setMarkedText(_ markedText: String?, selectedRange: NSRange) {
+        if markedTextRange == nil, !(markedText ?? "").isEmpty { onDictationStart?() }
+        super.setMarkedText(markedText, selectedRange: selectedRange)
+    }
 }
