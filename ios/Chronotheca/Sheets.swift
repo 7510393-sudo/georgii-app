@@ -90,6 +90,9 @@ struct SettingsSticker: View {
           }
           // Прокрутка — всё, что листку осталось под шапкой (P669).
           .frame(maxHeight: .infinity)
+          // Строки, уехавшие за край прокрутки, пальца не ловят (P673).
+          .clipShape(Rectangle())
+          .contentShape(Rectangle())
         }
         .animation(nil, value: height)
         .background {

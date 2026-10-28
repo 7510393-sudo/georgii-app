@@ -151,7 +151,7 @@ final class Shell: ObservableObject {
         // ушёл (P515).
         Feel.paper()
         withAnimation(.tuck) { settingsPull = 1 }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.34) {
             var still = Transaction()
             still.disablesAnimations = true
             withTransaction(still) {

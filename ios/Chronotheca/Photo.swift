@@ -449,9 +449,14 @@ struct PlanPhotoRow: View {
                 item(link)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .opacity(carried == link ? 0.25 : 1)
+                    // Жестами iPhone, как ряд внизу дневника (P541, P673):
+                    // жест SwiftUI забирал палец раньше листания, и страницу,
+                    // взятую на снимке под делом, было не перевернуть.
                     .modifier(ThumbCarry(report: report(link), stayed: onRemove == nil ? nil : {
                         armedAt = Date()
                         withAnimation(.easeOut(duration: 0.15)) { onArm?(link) }
+                    }, together: true, tap: {
+                        tapped(link, point: Diary.isPoint(link) ? Geo.point(in: link) : nil)
                     }))
                     .background(GeometryReader { geo in
                         let frame = geo.frame(in: .named(Self.space))
