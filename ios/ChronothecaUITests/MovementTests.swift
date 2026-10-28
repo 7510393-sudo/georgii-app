@@ -171,12 +171,12 @@ final class MovementTests: XCTestCase {
         save("03-листание-с-клавиатурой")
     }
 
-    /// Вложения — в тексте записи, ленты нет (P615): снимок образца не
-    /// стоит в ленте, справа внизу — «＋», и её меню открывается.
+    /// Вложения в конце записи — рядом внизу страницы (P665): снимок
+    /// образца стоит в ряду, справа внизу — «＋», и её меню открывается.
     func testPlusOpensMenu() {
         launch("diary")
-        let ribbon = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "Photo 1")).firstMatch
-        XCTAssertFalse(ribbon.waitForExistence(timeout: 3), "снимок записи стоит в ленте")
+        let row = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "Photo 1")).firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 5), "снимка записи нет в ряду внизу")
         let plus = app.buttons["strip.plus"].firstMatch
         XCTAssertTrue(plus.waitForExistence(timeout: 5), "нет «＋» на странице")
         plus.tap()
