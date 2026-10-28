@@ -75,6 +75,21 @@ enum Photo {
     /// перелистнули туда и обратно, не читает их заново и не мигает.
     static let cache = NSCache<NSString, UIImage>()
 
+    private static let warming = DispatchQueue(label: "превью соседних дней", qos: .utility)
+
+    /// Прочитать превью в память заранее (P669): ряд внизу берёт снимок по
+    /// пути (`PhotoThumb`), ряд под делом — в рамке (`PlanPhotoThumb`).
+    static func warm(_ items: [(url: URL, plan: Bool)]) {
+        guard !items.isEmpty else { return }
+        warming.async {
+            for (url, plan) in items {
+                let key = plan ? PhotoAttachment.key(url) : url.path as NSString
+                guard cache.object(forKey: key) == nil, let raw = load(url, side: 280) else { continue }
+                cache.setObject(plan ? PhotoAttachment.frame(raw) : raw, forKey: key)
+            }
+        }
+    }
+
     /// Прочитать снимок уменьшенным до `side` точек по большей стороне.
     ///
     /// Через системного посредника: снимок мог уйти в iCloud, и посредник

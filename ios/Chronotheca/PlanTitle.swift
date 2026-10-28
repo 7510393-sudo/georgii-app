@@ -288,7 +288,46 @@ struct PlanTitle: UIViewRepresentable {
             open?(point)
         }
 
-        init(_ parent: PlanTitle) { self.parent = parent }
+        init(_ parent: PlanTitle) {
+            self.parent = parent
+            super.init()
+            let вести = NotificationCenter.default
+            вести.addObserver(self, selector: #selector(keyboardMoved(_:)),
+                              name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
+            вести.addObserver(self, selector: #selector(keyboardGone(_:)),
+                              name: UIResponder.keyboardWillHideNotification, object: nil)
+        }
+
+        /// Верх клавиатуры вместе со строкой над ней — в окне.
+        private var keyboardTop: CGFloat?
+
+        @objc private func keyboardMoved(_ note: Notification) {
+            guard let frame = note.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
+                  let window = view?.window else { return }
+            keyboardTop = window.convert(frame, from: nil).minY
+        }
+
+        @objc private func keyboardGone(_ note: Notification) { keyboardTop = nil }
+
+        /// Строка, которую пишут в плашке, не уходит под клавиатуру (P669):
+        /// плашка растёт вниз с каждой новой строкой, и страница подъезжает
+        /// ровно настолько, насколько курсор зашёл под клавиатуру, — как у
+        /// записи (P175) и ответов «Как прошло?» (P406).
+        func showCaret() {
+            guard let view, view.isFirstResponder, let window = view.window,
+                  let top = keyboardTop, let end = view.selectedTextRange?.end else { return }
+            let курсор = view.convert(view.caretRect(for: end), to: window)
+            let ниже = курсор.maxY + 16 - top
+            guard ниже > 0 else { return }
+            var выше = view.superview
+            while let здесь = выше, !(здесь is UIScrollView) { выше = здесь.superview }
+            guard let страница = выше as? UIScrollView else { return }
+            let предел = max(0, страница.contentSize.height + страница.adjustedContentInset.bottom
+                             - страница.bounds.height)
+            let куда = min(страница.contentOffset.y + ниже, предел)
+            guard куда > страница.contentOffset.y else { return }
+            страница.setContentOffset(CGPoint(x: страница.contentOffset.x, y: куда), animated: true)
+        }
 
         /// После первой строки — зазор, если за ней есть вторая: вторая
         /// начинается под головой строки и не должна к ней прилипать.
@@ -323,6 +362,8 @@ struct PlanTitle: UIViewRepresentable {
                 typing[.paragraphStyle] = parent.style[.paragraphStyle]
             }
             view.typingAttributes = typing
+            // Когда плашка уже выросла под новую строку.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in self?.showCaret() }
         }
 
         func textViewDidEndEditing(_ view: UITextView) { parent.onDone() }

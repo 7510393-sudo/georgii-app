@@ -1428,6 +1428,13 @@ struct PlanView: View {
     }
 
     @ViewBuilder private func eventChoices(_ e: DayEvents.Shown) -> some View {
+        // Другое время или день — в окне события от Apple (P669): переносом
+        // на день, как у дела, событие не ходит — приложение в Календарь само
+        // не пишет (P376).
+        Button(T("Другое время или день", "Another time or day")) {
+            askingEvent = nil
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { open(e) }
+        }
         Button(T("Убрать из плана этого дня", "Remove from this day’s plan")) {
             withAnimation(.easeOut(duration: 0.2)) { markEvent(e) { $0.hidden = true } }
         }

@@ -9,34 +9,21 @@ import SwiftUI
 /// говорит, к чему бумажка относится — к дню или ко всему приложению.
 struct SettingsSticker: View {
 
-    /// Высота листка до первой мерки: от верха до рваного края нижней
-    /// строки, за вычетом шапки листка (P667).
-    static func fullHeight(barTop: CGFloat) -> CGFloat {
-        let window = UIApplication.shared.connectedScenes
-            .compactMap { ($0 as? UIWindowScene)?.keyWindow }.first
-        let insets = window?.safeAreaInsets ?? .zero
-        let bottom = barTop > 0 ? barTop - TornEdge.depth
-                                : UIScreen.main.bounds.height - insets.bottom - 66
-        return max(300, bottom - insets.top - 66)
-    }
-
     @EnvironmentObject private var vault: Vault
     @EnvironmentObject private var shell: Shell
     @State private var askingRename = false
     @State private var askingTrial = false
-    /// Где начинается прокрутка листка на экране (P424). Листок выезжает
-    /// сдвигом картинки, а не места, — эта точка стоит, пока он едет.
-    @State private var top: CGFloat = 0
-    /// Листок встал на место: можно мерить (P513).
-    @State private var settled = false
+    /// Где стоит верх листка, когда он на месте (P669): мерится один раз по
+    /// неподвижной подложке листка, а не по самому листку, — тот едет.
+    @State private var origin: CGFloat?
 
-    /// Высота прокрутки: листок кончается над рваным краем нижней строки
-    /// (P667) — строка не заходит на листок, и её копия поверх не нужна
-    /// (отменяет P515: листок заходил под строку, а копия строки над ним
-    /// сдвигалась и подскакивала, P636–P646).
-    private var height: CGFloat {
-        guard top > 0, shell.barTop > top else { return Self.fullHeight(barTop: shell.barTop) }
-        return max(300, shell.barTop - TornEdge.depth - top)
+    /// Высота листка: он кончается над рваным краем нижней строки (P667),
+    /// за вычетом поля под последней плашкой. Известна до выезда (P669):
+    /// прежде верх прокрутки мерился, когда листок уже встал, и низ листка
+    /// дорастал на глазах.
+    private var height: CGFloat? {
+        guard let origin, shell.barTop > origin + 300 else { return nil }
+        return shell.barTop - TornEdge.depth - origin - 8
     }
 
     /// Объём папки, посчитанный заранее (P486): пока листок открывался, объём
@@ -74,7 +61,7 @@ struct SettingsSticker: View {
     var body: some View {
         // Белый лист, разделы на нём — жёлтыми стикерами с тенью (P600).
         Sticker(side: .leading, title: T("Настройки", "Settings"),
-                paper: Look.planBg, edge: Look.rule, width: Self.width, close: close) {
+                paper: Look.planBg, edge: Look.rule, width: Self.width, height: height, close: close) {
           // Длинная бумажка прокручивается: разделов стало много (P249).
           ScrollView {
            // Ленивая стопка (P475): листок строился целиком — все девять
@@ -101,31 +88,20 @@ struct SettingsSticker: View {
             Color.clear.frame(height: 16)
            }
           }
-          // Листок — до нижней неподвижной строки (P291): прикрывает её
-          // рваный край, но не значки и не рамку открытого раздела (P424).
-          .frame(height: height)
-          // Высота листка не должна меняться плавно, пока он едет (P477):
-          // измеренный верх прокрутки приходил в самом начале выезда, высота
-          // менялась пружиной, и вместе с ней дрожал и сам листок.
-          .animation(nil, value: height)
-          .background {
-              // Верх прокрутки меряется, когда листок уже встал (P513): раньше
-              // он читался на каждом кадре выезда, и высота прокрутки
-              // менялась вместе с ним — отсюда рывок в середине движения.
-              GeometryReader { g in
-                  Color.clear
-                      .onChange(of: settled) { _, now in
-                          guard now else { return }
-                          var still = Transaction()
-                          still.disablesAnimations = true
-                          withTransaction(still) { top = g.frame(in: .global).minY }
-                      }
-              }
-          }
-          .onAppear {
-              DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) { settled = true }
-          }
+          // Прокрутка — всё, что листку осталось под шапкой (P669).
+          .frame(maxHeight: .infinity)
         }
+        .animation(nil, value: height)
+        .background {
+            GeometryReader { g in
+                Color.clear.onAppear {
+                    var still = Transaction()
+                    still.disablesAnimations = true
+                    withTransaction(still) { origin = g.frame(in: .global).minY }
+                }
+            }
+        }
+        .onAppear { shell.startPull() }
         .sheet(isPresented: $showingPDF) {
             PDFSheet(vault: vault, archive: archive)
         }

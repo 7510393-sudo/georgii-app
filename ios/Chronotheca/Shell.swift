@@ -115,15 +115,33 @@ final class Shell: ObservableObject {
         // Толчок — сразу по нажатию, не когда бумажка уже легла на место:
         // рука должна почувствовать отклик в момент касания (P320).
         Feel.paper()
+        let built = showingSettings
         var still = Transaction()
         still.disablesAnimations = true
         withTransaction(still) {
             showingSettings = true
             settingsPull = settingsPull ?? 1
         }
-        DispatchQueue.main.async {
-            withAnimation(.pull) { self.settingsPull = nil }
+        if built {
+            // Листок уже тянули пальцем — он построен, ехать сразу.
+            DispatchQueue.main.async { withAnimation(.pull) { self.settingsPull = nil } }
+        } else {
+            // Ход — когда листок построен (P669): прежде он начинался сразу,
+            // первые кадры уходили на постройку листка, и он выпрыгивал
+            // рывком. Подстраховка — если листок не скажет, что появился.
+            pullPending = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { self.startPull() }
         }
+    }
+
+    /// Листок ждёт своего первого кадра, чтобы поехать (P669).
+    private var pullPending = false
+
+    /// Листок появился — ехать.
+    func startPull() {
+        guard pullPending else { return }
+        pullPending = false
+        DispatchQueue.main.async { withAnimation(.pull) { self.settingsPull = nil } }
     }
 
     /// Задвинуть листок обратно: он уезжает вверх, пока снова не останется
