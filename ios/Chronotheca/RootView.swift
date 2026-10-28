@@ -207,6 +207,8 @@ struct RootView: View {
         }
         .onAppear {
             purchase.start()
+            // Бумага прошедших дней — в стороне, пока запускаемся (P679).
+            PageTexture.prepareSoon()
             // Объём папки — заранее, чтобы листок настроек не менялся (P486).
             DispatchQueue.main.asyncAfter(deadline: .now() + 6) { SettingsSticker.warm(vault.root) }
         }

@@ -547,27 +547,61 @@ struct PageTexture: View {
 
     private static let amber: (r: Float, g: Float, b: Float) = (140 / 255, 97 / 255, 41 / 255)
 
-    /// Круговое размытие: края плитки сходятся.
+    /// Круговое размытие: края плитки сходятся. Бегущей суммой — работа не
+    /// растёт с радиусом (P679: прежнее перебирание окна заново для каждой
+    /// точки считалось секундами на главном потоке при первом показе
+    /// прошедшего дня).
     private static func wrapBlur(_ a: [Float], side n: Int, radius r: Int, passes: Int) -> [Float] {
         var src = a, dst = a
         let w = Float(2 * r + 1)
         for _ in 0..<passes {
             for y in 0..<n {
+                let row = y * n
+                var sum: Float = 0
+                for k in -r...r { sum += src[row + (k + n) % n] }
                 for x in 0..<n {
-                    var sum: Float = 0
-                    for k in -r...r { sum += src[y * n + (x + k + n) % n] }
-                    dst[y * n + x] = sum / w
+                    dst[row + x] = sum / w
+                    sum += src[row + (x + r + 1) % n] - src[row + (x - r + n) % n]
                 }
             }
-            for y in 0..<n {
-                for x in 0..<n {
-                    var sum: Float = 0
-                    for k in -r...r { sum += dst[((y + k + n) % n) * n + x] }
+            for x in 0..<n {
+                var sum: Float = 0
+                for k in -r...r { sum += dst[((k + n) % n) * n + x] }
+                for y in 0..<n {
                     src[y * n + x] = sum / w
+                    sum += dst[((y + r + 1) % n) * n + x] - dst[((y - r + n) % n) * n + x]
                 }
             }
         }
         return src
+    }
+
+    /// То же вдоль одной линии.
+    private static func wrapBlur1D(_ a: [Float], radius r: Int, passes: Int) -> [Float] {
+        let n = a.count
+        var src = a, dst = a
+        let w = Float(2 * r + 1)
+        for _ in 0..<passes {
+            var sum: Float = 0
+            for k in -r...r { sum += src[(k + n) % n] }
+            for x in 0..<n {
+                dst[x] = sum / w
+                sum += src[(x + r + 1) % n] - src[(x - r + n) % n]
+            }
+            swap(&src, &dst)
+        }
+        return src
+    }
+
+    /// Всю бумагу — заранее, в стороне, пока приложение запускается (P679):
+    /// первый показ прошедшего дня не должен ждать, пока она нарисуется.
+    static func prepareSoon() {
+        DispatchQueue.global(qos: .utility).async {
+            _ = clouds
+            _ = paper
+            _ = sideEdge
+            _ = footEdge
+        }
     }
 
     private static func normalised(_ a: [Float]) -> [Float] {
@@ -671,15 +705,7 @@ struct PageTexture: View {
             return Float(seed >> 40) / Float(1 << 24) - 0.5
         }
         // Гуляющая глубина: круговая одномерная размытая случайность.
-        var wob = (0..<along).map { _ in next() }
-        for _ in 0..<4 {
-            let src = wob
-            wob = (0..<along).map { i in
-                var sum: Float = 0
-                for k in -40...40 { sum += src[(i + k + along) % along] }
-                return sum / 81
-            }
-        }
+        let wob = wrapBlur1D((0..<along).map { _ in next() }, radius: 40, passes: 4)
         let wn = normalised(wob).map { max(-1.5, min(1.5, $0)) }
         let width = vertical ? depth : along, height = vertical ? along : depth
         var bytes = [UInt8](repeating: 0, count: width * height * 4)
@@ -713,37 +739,10 @@ struct PageTexture: View {
             seed = seed &* 6364136223846793005 &+ 1442695040888963407
             return Float(seed >> 40) / Float(1 << 24) - 0.5
         }
-        // Размытие по кругу плитки: края сходятся.
-        func blurred(_ a: [Float], radius r: Int, passes: Int) -> [Float] {
-            var src = a, dst = a
-            let w = Float(2 * r + 1)
-            for _ in 0..<passes {
-                for y in 0..<n {                      // по строкам
-                    for x in 0..<n {
-                        var sum: Float = 0
-                        for k in -r...r { sum += src[y * n + (x + k + n) % n] }
-                        dst[y * n + x] = sum / w
-                    }
-                }
-                for y in 0..<n {                      // по столбцам
-                    for x in 0..<n {
-                        var sum: Float = 0
-                        for k in -r...r { sum += dst[((y + k + n) % n) * n + x] }
-                        src[y * n + x] = sum / w
-                    }
-                }
-            }
-            return src
-        }
-        func normalised(_ a: [Float]) -> [Float] {
-            let mean = a.reduce(0, +) / Float(a.count)
-            let sd = (a.reduce(0) { $0 + ($1 - mean) * ($1 - mean) } / Float(a.count)).squareRoot()
-            return a.map { ($0 - mean) / max(sd, 0.0001) }
-        }
         let noise1 = (0..<n * n).map { _ in next() }
         let noise2 = (0..<n * n).map { _ in next() }
-        let fine = normalised(blurred(noise1, radius: 1, passes: 2))
-        let coarse = normalised(blurred(noise2, radius: 2, passes: 4))
+        let fine = normalised(wrapBlur(noise1, side: n, radius: 1, passes: 2))
+        let coarse = normalised(wrapBlur(noise2, side: n, radius: 2, passes: 4))
         let height = zip(fine, coarse).map { $0 + $1 * 1.6 }
         // Наклон: свет слева сверху — склон, смотрящий на свет, светлый.
         var lit = [Float](repeating: 0, count: n * n)
