@@ -55,7 +55,25 @@ enum KeyboardBar {
         box.addSubview(made.view)
         host = made
         holder = box
+        // Перед каждым подъёмом клавиатуры строка перерисовывается заново и
+        // сразу (P674): приставка вне экрана не слышит смены гаммы и
+        // всплывала в цвете прежней; а нарисованная по ходу подъёма, она
+        // проступала уже после клавиатуры.
+        watch = NotificationCenter.default.addObserver(
+            forName: UIResponder.keyboardWillShowNotification, object: nil, queue: .main) { _ in
+            refresh()
+        }
         return box
+    }
+
+    private static var watch: NSObjectProtocol?
+
+    /// Перерисовать строку в нынешней гамме — сейчас, до хода клавиатуры.
+    static func refresh() {
+        guard let host else { return }
+        host.rootView = KeyboardBarView(palette: UserDefaults.standard.string(forKey: Prefs.calendarTint) ?? "")
+        host.view.setNeedsLayout()
+        host.view.layoutIfNeeded()
     }
 
     /// Высота приставки: строка вложений с воздухом и под ней строка
@@ -66,6 +84,10 @@ enum KeyboardBar {
 }
 
 struct KeyboardBarView: View {
+
+    /// Гамма, в которой строка нарисована (P674): другая гамма — другой вид,
+    /// и строка перерисовывается.
+    var palette = ""
 
     var body: some View {
         // Нижняя строка разделов поднимается вместе с клавиатурой (P613):
