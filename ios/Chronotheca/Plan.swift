@@ -212,6 +212,15 @@ enum Plan {
         return !items.isEmpty
     }
 
+    /// Ряд вложений под событием Календаря — строка сразу за его отметкой
+    /// (P625). Одно правило для открытой и соседних страниц (P668).
+    static func under(_ key: String, in rows: [PlanRow]) -> PlanRow? {
+        guard let i = rows.firstIndex(where: { $0.verbatim.flatMap(DayEvents.Mark.parse)?.key == key }),
+              i + 1 < rows.count, let line = rows[i + 1].verbatim, isPhotoRow(line)
+        else { return nil }
+        return rows[i + 1]
+    }
+
     /// Предметы такого ряда по порядку: путь к снимку или строка точки.
     static func items(in line: String) -> [String] {
         Diary.objects(in: line).map(\.link)

@@ -407,6 +407,37 @@ struct WeekEnd: Shape {
 // MARK: - Открытая страница
 
 /// Вкладка «План»: дела на день.
+/// Порядок плана — один для открытой и соседних страниц (P668, P114):
+/// события Календаря с вложениями под ними, дела и строки под делами,
+/// пустая плашка следующего дела. Открытая страница даёт строкам правку и
+/// жесты, соседняя — нет; что за чем стоит, решается только здесь.
+struct PlanLayout<Event: View, Task: View, Extra: View, Ghost: View>: View {
+
+    let rows: [PlanRow]
+    let events: [DayEvents.Shown]
+    let ghost: Bool
+    @ViewBuilder let event: (_ number: Int, _ shown: DayEvents.Shown, _ under: PlanRow?) -> Event
+    @ViewBuilder let task: (_ row: PlanRow, _ number: Int) -> Task
+    @ViewBuilder let extra: (_ row: PlanRow, _ line: String) -> Extra
+    @ViewBuilder let ghostRow: (_ number: Int) -> Ghost
+
+    var body: some View {
+        ForEach(Array(events.enumerated()), id: \.element.key) { i, e in
+            event(i + 1, e, Plan.under(e.key, in: rows))
+        }
+        let owned = Set(events.compactMap { Plan.under($0.key, in: rows)?.id })
+        let tasks = rows.filter(\.isTask).map(\.id)
+        ForEach(rows) { row in
+            if row.isTask {
+                task(row, events.count + (tasks.firstIndex(of: row.id) ?? 0) + 1)
+            } else if let line = row.verbatim, !owned.contains(row.id) {
+                extra(row, line)
+            }
+        }
+        if ghost { ghostRow(events.count + tasks.count + 1) }
+    }
+}
+
 struct PlanView: View {
 
     @EnvironmentObject private var store: DayStore
@@ -528,8 +559,15 @@ struct PlanView: View {
                 if store.away.contains(.planner) {
                     PlanEmpty(inCloud: true)
                 } else {
-                    eventBlock
-                    list
+                    PlanLayout(rows: store.planRows, events: shownEvents, ghost: ghostShown) { number, e, under in
+                        eventItem(e, number: number, under: under)
+                    } task: { row, _ in
+                        taskItem(row.id)
+                    } extra: { row, line in
+                        extraItem(row.id, line: line)
+                    } ghostRow: { number in
+                        ghost(number)
+                    }
                 }
                 // Касание по пустому месту под планом убирает клавиатуру и
                 // крестик у точки: выход — там, куда рука тянется сама.
@@ -689,10 +727,10 @@ struct PlanView: View {
         store.canEditPlan && !store.isPast && !store.tasks.contains(where: PlanRow.blank)
     }
 
-    private var ghost: some View {
+    private func ghost(_ number: Int) -> some View {
         VStack(spacing: 0) {
             // Не «Без названия», а предложение помощи (P452).
-            PlanRowLine(number: shownEvents.count + store.tasks.count + 1,
+            PlanRowLine(number: number,
                         row: .task(PlanRow.ghostTitle),
                         bellColor: Look.accent,
                         onTime: { add(then: .time) },
@@ -704,31 +742,28 @@ struct PlanView: View {
         .accessibilityLabel(T("Новое дело", "New task"))
     }
 
-    @ViewBuilder private var list: some View {
-        ForEach($store.planRows) { row in
-            let id = row.wrappedValue.id
-            if row.wrappedValue.isTask {
-                // Дело и черта под ним — одним куском: пока несут точку,
-                // они расступаются вместе (P374).
-                VStack(spacing: 0) {
-                    taskRow(row)
-                }
-                .modifier(Zone(id: id))
-                .offset(y: lineShift(id) + eventShift(id) + photoShift(id))
-                .animation(.easeOut(duration: 0.16), value: lineShift(id) + eventShift(id) + photoShift(id))
-                .zIndex(dragged == id || lifted == id ? 1 : 0)
-            } else if let line = row.wrappedValue.verbatim, !eventOwnedRows.contains(id) {
-                extraLine(id: id, line: line)
-                    .offset(y: lineShift(id) + eventShift(id) + photoShift(id) + blockDisplaced(id))
-                    .animation(Self.makeRoom,
-                               value: lineShift(id) + eventShift(id) + photoShift(id) + blockDisplaced(id))
-                    // Снимки под взятым делом идут за пальцем вместе с ним (P628).
-                    .offset(y: blockDragged(id))
-                    .zIndex(lineDrag == id || blockOwner(id) == dragged && dragged != nil ? 1 : 0)
+    /// Дело и черта под ним — одним куском: пока несут точку, они
+    /// расступаются вместе (P374).
+    @ViewBuilder private func taskItem(_ id: UUID) -> some View {
+        if let i = store.index(of: id) {
+            VStack(spacing: 0) {
+                taskRow($store.planRows[i])
             }
+            .modifier(Zone(id: id))
+            .offset(y: lineShift(id) + eventShift(id) + photoShift(id))
+            .animation(.easeOut(duration: 0.16), value: lineShift(id) + eventShift(id) + photoShift(id))
+            .zIndex(dragged == id || lifted == id ? 1 : 0)
         }
-        if ghostShown { ghost }
-        // Счёта «запланировано · сделано» больше нет (P425).
+    }
+
+    private func extraItem(_ id: UUID, line: String) -> some View {
+        extraLine(id: id, line: line)
+            .offset(y: lineShift(id) + eventShift(id) + photoShift(id) + blockDisplaced(id))
+            .animation(Self.makeRoom,
+                       value: lineShift(id) + eventShift(id) + photoShift(id) + blockDisplaced(id))
+            // Снимки под взятым делом идут за пальцем вместе с ним (P628).
+            .offset(y: blockDragged(id))
+            .zIndex(lineDrag == id || blockOwner(id) == dragged && dragged != nil ? 1 : 0)
     }
 
     /// Строка под делом или под событием: снимки в ряд, точка, текст (P358).
@@ -766,12 +801,6 @@ struct PlanView: View {
                       },
                       photoSlot: photoCarry?.from == id ? photoSlot : nil)
             .modifier(Zone(id: id))
-    }
-
-    /// Ряды снимков, что стоят под событиями Календаря, — рисуются в блоке
-    /// событий, а не среди дел (P625).
-    private var eventOwnedRows: Set<UUID> {
-        Set(shownEvents.compactMap { store.eventPhotoRow($0.key)?.id })
     }
 
     private func taskRow(_ row: Binding<PlanRow>) -> some View {
@@ -1062,21 +1091,19 @@ struct PlanView: View {
         events = DayEvents.items(for: store.date)
     }
 
-    /// События — каждое своим блоком, как дело, над делами (P376).
-    @ViewBuilder private var eventBlock: some View {
+    /// Событие и снимки под ним — одним куском, как дело, над делами (P376, P625).
+    private func eventItem(_ e: DayEvents.Shown, number: Int, under: PlanRow?) -> some View {
+        let i = number - 1
         let list = shownEvents
-        ForEach(Array(list.enumerated()), id: \.element.key) { i, e in
-            // Событие и снимки под ним — одним куском (P625).
-            VStack(spacing: 0) {
-                eventRow(e, number: i + 1)
-                if let photos = store.eventPhotoRow(e.key), let line = photos.verbatim {
-                    extraLine(id: photos.id, line: line)
-                }
+        return VStack(spacing: 0) {
+            eventRow(e, number: number)
+            if let under, let line = under.verbatim {
+                extraLine(id: under.id, line: line)
             }
-            .offset(y: eventPhotoShift(after: i, in: list))
-            .animation(.easeOut(duration: 0.16), value: eventPhotoShift(after: i, in: list))
-            .zIndex(liftedEvent == e.key ? 1 : 0)
         }
+        .offset(y: eventPhotoShift(after: i, in: list))
+        .animation(.easeOut(duration: 0.16), value: eventPhotoShift(after: i, in: list))
+        .zIndex(liftedEvent == e.key ? 1 : 0)
     }
 
     private func eventRow(_ e: DayEvents.Shown, number: Int) -> some View {

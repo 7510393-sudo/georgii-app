@@ -980,10 +980,7 @@ final class DayStore: ObservableObject {
 
     /// Ряд снимков, что стоит сразу под отметкой этого события.
     func eventPhotoRow(_ key: String) -> PlanRow? {
-        guard let i = planRows.firstIndex(where: { $0.verbatim.flatMap(DayEvents.Mark.parse)?.key == key }),
-              i + 1 < planRows.count, let line = planRows[i + 1].verbatim, Plan.isPhotoRow(line)
-        else { return nil }
-        return planRows[i + 1]
+        Plan.under(key, in: planRows)
     }
 
     /// Ключ события, под которым стоит этот ряд снимков; `nil` — не под событием.

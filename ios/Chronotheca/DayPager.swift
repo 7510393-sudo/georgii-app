@@ -798,7 +798,9 @@ struct SideDay: View {
 
 /// Список дел без правки — для соседних страниц.
 ///
-/// Та же оправа и те же строки, что у открытой страницы. Ничего своего.
+/// Порядок строк — общий с открытой страницей (`PlanLayout`, P668), строки —
+/// те же `PlanRowLine` и `PlanExtraLine`; своего здесь только то, что
+/// правки и жестов нет.
 struct PlanPage: View {
 
     let rows: [PlanRow]
@@ -810,64 +812,29 @@ struct PlanPage: View {
     /// Где лежат снимки, поставленные между делами (P205).
     var resolve: ((String) -> URL?)?
 
-    private var tasks: [PlanRow] { rows.filter(\.isTask) }
-
-    /// Ряд вложений под событием Календаря — то же правило, что у открытой
-    /// страницы (`DayStore.eventPhotoRow`).
-    private func eventPhotos(_ key: String) -> PlanRow? {
-        guard let i = rows.firstIndex(where: { $0.verbatim.flatMap(DayEvents.Mark.parse)?.key == key }),
-              i + 1 < rows.count, let line = rows[i + 1].verbatim, Plan.isPhotoRow(line)
-        else { return nil }
-        return rows[i + 1]
-    }
-
-    /// Ряды, что рисуются под событиями, а не среди дел.
-    private var eventOwned: Set<UUID> {
-        Set(events.compactMap { eventPhotos($0.key)?.id })
-    }
-
     var body: some View {
         // Прошедший день — как любой: не бледнее и с теми же кнопками,
         // как на открытой странице (P114, P381). Верх страницы дня, без
         // своей прокрутки — как на открытой (P408).
         VStack(alignment: .leading, spacing: 0) {
-                // События Календаря — первыми, тем же кодом, что на
-                // открытой странице (P114, P376).
-                ForEach(Array(events.enumerated()), id: \.element.key) { i, e in
-                    // Событие и вложения под ним — одним куском, как на
-                    // открытой странице (P625, P662): прежде здесь они стояли
-                    // по порядку файла, ниже дел, и при повороте страницы
-                    // перескакивали под событие.
-                    VStack(spacing: 0) {
-                        PlanRowLine(number: i + 1, row: e.row, faded: false, bellColor: bellColor,
-                                    stripe: e.color, past: isPast)
-                        if let photos = eventPhotos(e.key), let line = photos.verbatim {
-                            PlanExtraLine(line: line, resolve: resolve)
-                        }
-                    }
-                }
-                // Дела и снимки между ними — в том же порядке, что и на
-                // открытой странице; прочие строки файла не рисуются.
-                ForEach(Array(rows.enumerated()), id: \.element.id) { i, row in
-                    if row.isTask {
-                        PlanRowLine(number: events.count + rows[..<i].filter(\.isTask).count + 1,
-                                    row: row, faded: false, bellColor: bellColor, past: isPast)
-                    } else if let line = row.verbatim, !eventOwned.contains(row.id) {
+            // В прошедшем дне пустой плашки нет (P421).
+            PlanLayout(rows: rows, events: events,
+                       ghost: !isPast && !rows.contains { $0.isTask && PlanRow.blank($0) }) { number, e, under in
+                VStack(spacing: 0) {
+                    PlanRowLine(number: number, row: e.row, faded: false, bellColor: bellColor,
+                                stripe: e.color, past: isPast)
+                    if let under, let line = under.verbatim {
                         PlanExtraLine(line: line, resolve: resolve)
                     }
                 }
-                // Пустая плашка следующего дела — как на открытой странице
-                // (P114, P406); в прошедшем дне её нет (P421).
-                if !isPast, !tasks.contains(where: PlanRow.blank) {
-                    // Тот же текст, что у открытой страницы (P481): прежде здесь
-                    // стояло пустое название, и бледное «Без названия»
-                    // превращалось в «Напомню о важном деле», когда страница
-                    // становилась открытой, — буквы скакали.
-                    PlanRowLine(number: events.count + tasks.count + 1, row: .task(PlanRow.ghostTitle),
-                                bellColor: bellColor, ghost: true)
-                }
-                // Счёта «запланировано · сделано» нет — как на открытой
-                // странице (P425, P114).
+            } task: { row, number in
+                PlanRowLine(number: number, row: row, faded: false, bellColor: bellColor, past: isPast)
+            } extra: { _, line in
+                PlanExtraLine(line: line, resolve: resolve)
+            } ghostRow: { number in
+                PlanRowLine(number: number, row: .task(PlanRow.ghostTitle),
+                            bellColor: bellColor, ghost: true)
+            }
             // Воздух под планом — как на открытой странице (P114).
             Color.clear.frame(height: 18)
         }
