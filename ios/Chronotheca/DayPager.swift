@@ -436,9 +436,11 @@ struct PageTexture: View {
             tiled(tab == .plan ? PageTexture.grid : PageTexture.grain)
             if aged {
                 ZStack {
-                    tiled(PageTexture.clouds)
+                    // В тёмной теме светлых облаков и янтарных краёв нет
+                    // (P680): светлые пятна портили светлый текст.
+                    tiled(dark ? PageTexture.cloudsDark : PageTexture.clouds)
                     tiled(PageTexture.paper)
-                    edges
+                    if !dark { edges }
                 }
                 .opacity(dark ? 0.45 : 1)
             }
@@ -471,9 +473,11 @@ struct PageTexture: View {
     static let grid: UIImage = {
         let side: CGFloat = cell
         return UIGraphicsImageRenderer(size: CGSize(width: side, height: side)).image { ctx in
-            UIColor(Look.accent).withAlphaComponent(0.09).setFill()
-            ctx.fill(CGRect(x: 0, y: 0, width: side, height: 0.6))
-            ctx.fill(CGRect(x: 0, y: 0, width: 0.6, height: side))
+            // Заметнее прежнего (P680: было 0,09 и 0,6): клетка видна между
+            // плашками и по полям — под плашками её нет (P415).
+            UIColor(Look.accent).withAlphaComponent(0.17).setFill()
+            ctx.fill(CGRect(x: 0, y: 0, width: side, height: 0.7))
+            ctx.fill(CGRect(x: 0, y: 0, width: 0.7, height: side))
         }
     }()
 
@@ -538,12 +542,32 @@ struct PageTexture: View {
                         .frame(height: PageTexture.footDepth)
                 }
             }
+            // Следы рук (P680): страницу берут за нижний внешний угол и
+            // придерживают за правый край, когда листают, — там бумага
+            // сереет и буреет мягкими пятнами. Нижний правый — сильнее всех.
+            if edgeBottom {
+                GeometryReader { geo in
+                    thumbSmudge(radius: 95, opacity: 0.20)
+                        .position(x: geo.size.width, y: geo.size.height)
+                    thumbSmudge(radius: 70, opacity: 0.11)
+                        .position(x: 0, y: geo.size.height - 6)
+                    thumbSmudge(radius: 60, opacity: 0.09)
+                        .position(x: geo.size.width + 4, y: geo.size.height * 0.62)
+                }
+            }
         }
+    }
+
+    private func thumbSmudge(radius: CGFloat, opacity: Double) -> some View {
+        RadialGradient(colors: [Color(red: 0.42, green: 0.30, blue: 0.16).opacity(opacity * Double(PageTexture.wearStrength)),
+                                .clear],
+                       center: .center, startRadius: 0, endRadius: radius)
+            .frame(width: radius * 2, height: radius * 2)
     }
 
     /// Густота износа (облака, края, крапинки): 1 — средняя (второй вариант
     /// эскиза `docs/paper/износ-по-образцу.png`); 1,7 — сильнее.
-    static let wearStrength = CGFloat(1)
+    static let wearStrength = CGFloat(1.3)
 
     private static let amber: (r: Float, g: Float, b: Float) = (140 / 255, 97 / 255, 41 / 255)
 
@@ -598,6 +622,7 @@ struct PageTexture: View {
     static func prepareSoon() {
         DispatchQueue.global(qos: .utility).async {
             _ = clouds
+            _ = cloudsDark
             _ = paper
             _ = sideEdge
             _ = footEdge
@@ -622,7 +647,12 @@ struct PageTexture: View {
 
     /// Облака тона (P676): крупные мягкие пятна, где светлее и теплее, где
     /// темнее. Плитка 576 точек, замкнута сама на себя.
-    static let clouds: UIImage = {
+    static let clouds: UIImage = cloudImage(darkOnly: false)
+
+    /// Для тёмной темы: только тёмные пятна, без светлых (P680).
+    static let cloudsDark: UIImage = cloudImage(darkOnly: true)
+
+    private static func cloudImage(darkOnly: Bool) -> UIImage {
         let n = 192                                   // 3 точки на пиксель
         var seed: UInt64 = 0xC10D5
         func next() -> Float {
@@ -636,16 +666,18 @@ struct PageTexture: View {
         for i in 0..<n * n {
             let v = (big[i] * 0.8 + small[i] * 0.35) * k
             let light = v > 0
-            // Светлое — тёплый белый, тёмное — коричневый.
-            let alpha = min(abs(v) * (light ? 0.09 : 0.04), 0.4)
-            let c: (Float, Float, Float) = light ? (1, 0.97, 0.88) : (0.45, 0.38, 0.25)
+            if darkOnly && light { continue }
+            // Светлое — тёплый белый, тёмное — коричневый (в тёмной теме —
+            // чёрный, и погуще: на тёмном листе коричневый почти не виден).
+            let alpha = min(abs(v) * (light ? 0.09 : (darkOnly ? 0.08 : 0.04)), 0.4)
+            let c: (Float, Float, Float) = light ? (1, 0.97, 0.88) : (darkOnly ? (0, 0, 0) : (0.45, 0.38, 0.25))
             bytes[i * 4] = UInt8(c.0 * alpha * 255)
             bytes[i * 4 + 1] = UInt8(c.1 * alpha * 255)
             bytes[i * 4 + 2] = UInt8(c.2 * alpha * 255)
             bytes[i * 4 + 3] = UInt8(alpha * 255)
         }
         return picture(bytes, width: n, height: n, scale: 1.0 / 3)
-    }()
+    }
 
     /// Бумага одним слоем (P679): рельеф и редкие бледные крапинки с
     /// волосками. Плитка 384 точки — рельеф (128) повторён три на три,
@@ -691,9 +723,9 @@ struct PageTexture: View {
     static let footDepth: CGFloat = 110
 
     /// Бок: у края глубже всего, дальше затухает; глубина гуляет по длине.
-    static let sideEdge: UIImage = edgeImage(depthPoints: sideDepth, falloff: 16, peak: 0.15, vertical: true)
+    static let sideEdge: UIImage = edgeImage(depthPoints: sideDepth, falloff: 18, peak: 0.17, vertical: true)
     /// Низ: темнее и шире боков.
-    static let footEdge: UIImage = edgeImage(depthPoints: footDepth, falloff: 26, peak: 0.165, vertical: false)
+    static let footEdge: UIImage = edgeImage(depthPoints: footDepth, falloff: 28, peak: 0.18, vertical: false)
 
     /// Полоска вдоль края, 2 пикселя на точку, 480 точек вдоль. Вертикальная —
     /// край слева; горизонтальная — край внизу.

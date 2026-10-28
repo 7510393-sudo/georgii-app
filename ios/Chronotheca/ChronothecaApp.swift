@@ -30,6 +30,7 @@ struct ChronothecaApp: App {
         _ = LaunchClock.start
         // Граница суток из настроек — до того, как откроется «сегодня».
         Prefs.applyBoundary()
+        Prefs.settleFont()
         // Напоминания видны и при открытом приложении (P260).
         if NSClassFromString("XCTestCase") == nil {
             UNUserNotificationCenter.current().delegate = BellDelegate.shared

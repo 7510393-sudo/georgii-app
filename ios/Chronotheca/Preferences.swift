@@ -9,7 +9,7 @@ enum Prefs {
     static let lock = "prefs.lock"
     static let theme = "prefs.theme"            // "system", "light", "dark"
     static let boundary = "prefs.boundary"      // час границы суток, 0…6
-    static let font = "prefs.font"              // "georgia", "newyork", "system"
+    static let font = "prefs.font"              // "newyork", "system"
     // P290: погода, «Как прошло?», цвет календаря. Градусы, неделя, часы, сжатие,
     // размер текста, шелест и навигатор — как в iPhone (P633).
     static let noWeather = "prefs.noWeather"    // true — погоды нет
@@ -51,60 +51,34 @@ enum Prefs {
     static var textScale: CGFloat { Look.grow }
 
 
-    /// Шрифты записи дневника: названия для настроек. К трём прежним — шесть
-    /// из тех, какими пишут дневники (P602): два книжных и четыре от руки,
-    /// все с кириллицей. Лежат в самом приложении (`Fonts/`, лицензия OFL).
+    /// Шрифты записи дневника — два (P680): с засечками (New York) и без.
+    /// Прежние девять — Georgia, Lora, EB Garamond и четыре рукописных —
+    /// убраны: ими почти никто не пользовался, а лежали они в приложении
+    /// почти два мегабайта (отменяет P602).
     static var fonts: [(key: String, name: String)] {
-        [("georgia", "Georgia"), ("newyork", "New York"), ("system", T("Без засечек", "Sans serif")),
-         ("lora", "Lora"), ("garamond", "EB Garamond"),
-         ("caveat", "Caveat"), ("neucha", "Neucha"), ("badscript", "Bad Script"), ("marck", "Marck Script")]
+        [("newyork", T("С засечками", "Serif")), ("system", T("Без засечек", "Sans serif"))]
     }
 
-    /// Свои шрифты: файл в приложении и во сколько крупнее его рисовать —
-    /// рукописные при том же кегле мельче книжных.
-    private static let bundled: [String: (file: String, scale: CGFloat)] = [
-        "lora": ("Lora", 1.0), "garamond": ("EBGaramond", 1.08),
-        "caveat": ("Caveat", 1.28), "neucha": ("Neucha", 1.12),
-        "badscript": ("BadScript-Regular", 1.0), "marck": ("MarckScript-Regular", 1.18),
-    ]
+    /// Выбранный шрифт: «без засечек» или New York. Прежний выбор любого из
+    /// убранных шрифтов — тоже New York.
+    static var fontKey: String {
+        UserDefaults.standard.string(forKey: font) == "system" ? "system" : "newyork"
+    }
 
-    /// Описания своих шрифтов — шрифт из файла берётся по ним, а не по имени
-    /// внутри файла.
-    private static let loaded: [String: CTFontDescriptor] = {
-        var out: [String: CTFontDescriptor] = [:]
-        for (key, font) in bundled {
-            guard let url = Bundle.main.url(forResource: font.file, withExtension: "ttf") else { continue }
-            CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
-            if let all = CTFontManagerCreateFontDescriptorsFromURL(url as CFURL) as? [CTFontDescriptor],
-               let first = all.first {
-                out[key] = first
-            }
+    /// При запуске: выбор убранного шрифта переписывается на New York, чтобы
+    /// в настройках стояла отметка у одного из двух (P680).
+    static func settleFont() {
+        let stored = UserDefaults.standard.string(forKey: font)
+        if let stored, stored != "newyork", stored != "system" {
+            UserDefaults.standard.set("newyork", forKey: font)
         }
-        return out
-    }()
-
-    /// Свой шрифт записи — или `nil`, если выбран встроенный в iPhone.
-    static func bundledFont(_ size: CGFloat) -> UIFont? {
-        guard let font = bundled[fontKey], let descriptor = loaded[fontKey] else { return nil }
-        return CTFontCreateWithFontDescriptor(descriptor, size * font.scale, nil) as UIFont
     }
-
-    /// По умолчанию — New York (P465): засечный шрифт Apple тоньше Georgia
-    /// и легче читается на крупных экранах. Georgia — по выбору.
-    static var fontKey: String { UserDefaults.standard.string(forKey: font) ?? "newyork" }
 
     /// Шрифт записи для полей UIKit.
     static func serifUIFont(_ size: CGFloat) -> UIFont {
-        if let own = bundledFont(size) { return own }
-        switch fontKey {
-        case "newyork":
-            let plain = UIFont.systemFont(ofSize: size)
-            return plain.fontDescriptor.withDesign(.serif).map { UIFont(descriptor: $0, size: size) } ?? plain
-        case "system":
-            return .systemFont(ofSize: size)
-        default:
-            return UIFont(name: "Georgia", size: size) ?? .systemFont(ofSize: size)
-        }
+        if fontKey == "system" { return .systemFont(ofSize: size) }
+        let plain = UIFont.systemFont(ofSize: size)
+        return plain.fontDescriptor.withDesign(.serif).map { UIFont(descriptor: $0, size: size) } ?? plain
     }
 
     /// Граница суток из настроек — применить к расчёту «сегодня».

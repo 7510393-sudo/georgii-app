@@ -639,9 +639,9 @@ struct DiaryPage: View {
                     .onAppear { if editable { DiaryEditor.titleZone = zone } }
                     .onChange(of: zone) { _, now in if editable { DiaryEditor.titleZone = now } }
             })
-            .padding(.bottom, 5)
-
-            Rectangle().fill(Look.rule).frame(height: 1)
+            // Черты под заголовком нет (P680): она читалась как незакрашенная
+            // щель между заголовком и текстом; её один пункт — в отступе.
+            .padding(.bottom, 6)
         }
         .padding(.top, 4)
     }
