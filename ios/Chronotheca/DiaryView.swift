@@ -405,6 +405,11 @@ struct DiaryPage: View {
                 if Prefs.askOn, !asked.isEmpty { askBlock }
                 titleField
                 textField
+                    // Под опущенными вложениями — свой запас поля (40, для
+                    // касания в конец записи) почти весь уходит под погоду:
+                    // прежде между вложениями и погодой оставались две-три
+                    // пустые строки (замечание автора к 188, P663).
+                    .padding(.bottom, trailing ? -Self.underTrailing : 0)
             }
             .padding(.horizontal, 16)
             .padding(.top, 4)
@@ -489,7 +494,7 @@ struct DiaryPage: View {
     /// Пустое место над погодой: под опущенными вложениями — полстроки,
     /// иначе прежние правила (P592, P649).
     private var spacerMin: CGFloat {
-        if trailing { return size * 0.7 }
+        if trailing { return 0 }
         return photos.isEmpty ? gapBelowText : size * 1.45
     }
 
@@ -506,6 +511,10 @@ struct DiaryPage: View {
         if abs(want - push) > 1 { push = want }
         Self.pushes[text] = want
     }
+
+    /// Сколько запаса под полем убрать под опущенными вложениями (P663):
+    /// из 40 остаётся 8 — зазор до погоды.
+    static let underTrailing: CGFloat = 32
 
     /// Последние мерки опущенных вложений по тексту записи (P662).
     private static var pushes: [String: CGFloat] = [:]
