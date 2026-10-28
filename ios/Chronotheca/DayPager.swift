@@ -812,6 +812,20 @@ struct PlanPage: View {
 
     private var tasks: [PlanRow] { rows.filter(\.isTask) }
 
+    /// Ряд вложений под событием Календаря — то же правило, что у открытой
+    /// страницы (`DayStore.eventPhotoRow`).
+    private func eventPhotos(_ key: String) -> PlanRow? {
+        guard let i = rows.firstIndex(where: { $0.verbatim.flatMap(DayEvents.Mark.parse)?.key == key }),
+              i + 1 < rows.count, let line = rows[i + 1].verbatim, Plan.isPhotoRow(line)
+        else { return nil }
+        return rows[i + 1]
+    }
+
+    /// Ряды, что рисуются под событиями, а не среди дел.
+    private var eventOwned: Set<UUID> {
+        Set(events.compactMap { eventPhotos($0.key)?.id })
+    }
+
     var body: some View {
         // Прошедший день — как любой: не бледнее и с теми же кнопками,
         // как на открытой странице (P114, P381). Верх страницы дня, без
@@ -820,8 +834,17 @@ struct PlanPage: View {
                 // События Календаря — первыми, тем же кодом, что на
                 // открытой странице (P114, P376).
                 ForEach(Array(events.enumerated()), id: \.element.key) { i, e in
-                    PlanRowLine(number: i + 1, row: e.row, faded: false, bellColor: bellColor,
-                                stripe: e.color, past: isPast)
+                    // Событие и вложения под ним — одним куском, как на
+                    // открытой странице (P625, P662): прежде здесь они стояли
+                    // по порядку файла, ниже дел, и при повороте страницы
+                    // перескакивали под событие.
+                    VStack(spacing: 0) {
+                        PlanRowLine(number: i + 1, row: e.row, faded: false, bellColor: bellColor,
+                                    stripe: e.color, past: isPast)
+                        if let photos = eventPhotos(e.key), let line = photos.verbatim {
+                            PlanExtraLine(line: line, resolve: resolve)
+                        }
+                    }
                 }
                 // Дела и снимки между ними — в том же порядке, что и на
                 // открытой странице; прочие строки файла не рисуются.
@@ -829,7 +852,7 @@ struct PlanPage: View {
                     if row.isTask {
                         PlanRowLine(number: events.count + rows[..<i].filter(\.isTask).count + 1,
                                     row: row, faded: false, bellColor: bellColor, past: isPast)
-                    } else if let line = row.verbatim {
+                    } else if let line = row.verbatim, !eventOwned.contains(row.id) {
                         PlanExtraLine(line: line, resolve: resolve)
                     }
                 }

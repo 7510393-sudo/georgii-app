@@ -464,6 +464,9 @@ struct DiaryPage: View {
                 .onChange(of: frame) { _, now in pageFrame = now; settlePush() }
         })
         .onChange(of: trailing) { _, _ in settlePush() }
+        // Соседняя страница уже посчитала, на сколько опустить вложения, —
+        // открытая берёт ту же мерку сразу, без скачка при повороте (P662).
+        .onAppear { if trailing, let known = Self.pushes[text] { push = known } }
     }
 
     /// Запись кончается вложениями, а ряда прежних вложений внизу нет —
@@ -501,7 +504,11 @@ struct DiaryPage: View {
         let natural = pageFrame.height - max(0, spacerHeight - spacerMin) - push
         let want = max(0, (diaryRoom - pageFrame.minY - natural).rounded())
         if abs(want - push) > 1 { push = want }
+        Self.pushes[text] = want
     }
+
+    /// Последние мерки опущенных вложений по тексту записи (P662).
+    private static var pushes: [String: CGFloat] = [:]
 
     /// На сколько погода и шаги опускаются в место под «＋» (P619).
     static let footerDrop: CGFloat = 34
