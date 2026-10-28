@@ -730,26 +730,13 @@ final class DayStore: ObservableObject {
     private func attach(_ link: String, to tab: Shell.Tab) {
         switch tab {
         case .diary:
-            // Под последним текстом записи (P615): ленты больше нет.
-            diaryText = DayStore.appending(Diary.line(link), to: diaryText)
+            // В ряд внизу страницы (P665).
+            photos.append(link)
             touchDiary()
         case .plan:
             planPhotos.append(link)
         }
         save()
-    }
-
-    /// Новое вложение — под последним текстом записи, через одну пустую
-    /// строку (P610, P611, P615). Следом за другими вложениями — в тот же
-    /// ряд, по четыре; полный ряд — новый ряд сразу под ним.
-    static func appending(_ line: String, to text: String) -> String {
-        var body = text
-        while let last = body.last, last.isWhitespace { body.removeLast() }
-        guard !body.isEmpty else { return line }
-        let lastLine = body.components(separatedBy: "\n").last ?? ""
-        let row = Diary.objects(in: lastLine).count
-        if row > 0 { return body + (row < 4 ? " " : "\n") + line }
-        return body + "\n\n" + line
     }
 
     /// Убрать вложение из файла дня; сам файл остаётся в папке. Удалить
@@ -1058,7 +1045,7 @@ final class DayStore: ObservableObject {
     func returnPlanPhoto(_ link: String) {
         guard canEditPlan, !planPhotos.contains(link), takeOutPlanPhoto(link) else { return }
         if canEditDiary {
-            diaryText = DayStore.appending(Diary.line(link), to: diaryText)
+            photos.append(link)
             touchDiary()
         } else {
             planPhotos.append(link)
@@ -1098,11 +1085,11 @@ final class DayStore: ObservableObject {
         save()
     }
 
-    /// «Вниз» — в конец записи, под последний текст, туда же, куда ложится
-    /// новое вложение (P620; прежде — в полоску внизу, P216).
+    /// «Вниз» — в ряд внизу страницы, туда же, куда ложится новое вложение
+    /// (P665; прежде — в конец текста, P620).
     func moveToEnd(_ link: String) {
         guard canEditDiary, cutFromDiary(link) else { return }
-        diaryText = DayStore.appending(Diary.line(link), to: diaryText)
+        photos.append(link)
         touchDiary()
         save()
     }

@@ -90,13 +90,6 @@ struct DiaryEditor: UIViewRepresentable {
     var onToPlanEvent: ((String, DayEvents.Mark) -> Bool)? = nil
     /// Крестик у снимка → «удалить файл» (P409): в корзину на 30 дней.
     var onDeleteAttachment: ((String) -> Void)? = nil
-    /// Отступ поля сверху (P664: меняется, когда опущены вложения в начале
-    /// записи).
-    static let topInset: CGFloat = 8
-
-    /// Вложения в конце записи опущены к низу страницы на столько (P661):
-    /// отступ перед их первой строкой, только на экране — в файле его нет.
-    var push: CGFloat = 0
 
     /// Отметка времени в начале строки: «08:15 » и дальше текст.
     /// В прошедший день за временем идёт дата, когда писали:
@@ -134,7 +127,7 @@ struct DiaryEditor: UIViewRepresentable {
         // Касание по тексту не ждёт: там долгое нажатие сразу не берётся.
         tap.require(toFail: carry)
         view.backgroundColor = .clear
-        view.textContainerInset = UIEdgeInsets(top: Self.topInset, left: 0, bottom: 40, right: 0)
+        view.textContainerInset = UIEdgeInsets(top: 8, left: 0, bottom: 40, right: 0)
         view.textContainer.lineFragmentPadding = 0
         view.autocapitalizationType = .sentences
         view.spellCheckingType = .no
@@ -203,7 +196,6 @@ struct DiaryEditor: UIViewRepresentable {
         } else {
             context.coordinator.restyle(view)
         }
-        if !context.coordinator.previewing { context.coordinator.applyPush(view) }
 
         if startEditing.wrappedValue {
             // Сбрасываем просьбу сразу. Фокус берём не здесь же, а на
@@ -1026,9 +1018,9 @@ struct DiaryEditor: UIViewRepresentable {
             // оформление кладётся заново (P664).
             didSet { styledKey = "" }
         }
-        /// С каким текстом и меркой поле оформлено в последний раз (P664):
-        /// пока они те же, оформление не перекладывается — иначе картинки
-        /// перерисовывались на каждом обороте экрана и мигали.
+        /// С каким текстом поле оформлено в последний раз (P664): пока он
+        /// тот же, оформление не перекладывается — лишняя перекладка
+        /// перерисовывает картинки.
         var styledKey = ""
         /// Поле до переноса — чтобы вернуть его, если перенос отменили.
         private var before: NSAttributedString?
@@ -2020,66 +2012,16 @@ struct DiaryEditor: UIViewRepresentable {
             return false
         }
 
+        /// Чем поле оформлено: шрифт и текст (P664).
+        func key(_ view: UITextView) -> String {
+            "\(parent.size)|\(parent.serif)|" + (view.text ?? "")
+        }
+
         /// Перекрасить отметки времени, не сдвинув курсор.
         ///
         /// Краска кладётся на тот же текст, а не заменяет его новым: замена
         /// выдёргивала у диктовки её временный знак, и в записи оставалось
         /// «OBJ» (решение P197). Заодно курсор и выделение не трогаются.
-        /// Отступ перед вложениями в конце записи (P661): вложения стоят
-        /// у низа страницы, над погодой, а текст, растя, выталкивает их вниз.
-        /// Конец записи — строки только из вложений (пустые между ними
-        /// не в счёт); промежуток — после строки над ними, а если над ними
-        /// ничего нет — отступ всего поля сверху (P664).
-        func applyPush(_ view: UITextView) {
-            let base = DiaryEditor.topInset
-            let storage = view.textStorage
-            let ns = storage.string as NSString
-            var first: NSRange?
-            if parent.push > 0.5 {
-                var end = ns.length
-                while end > 0 {
-                    let line = ns.lineRange(for: NSRange(location: end - 1, length: 0))
-                    var only = true
-                    var any = false
-                    for i in line.location..<NSMaxRange(line) {
-                        let c = ns.character(at: i)
-                        if c == 10 || c == 32 || c == 0xA0 { continue }
-                        if storage.attribute(.attachment, at: i, effectiveRange: nil) != nil {
-                            any = true
-                        } else {
-                            only = false
-                            break
-                        }
-                    }
-                    if !only { break }
-                    if any { first = line }
-                    end = line.location
-                }
-            }
-            // Вложения с самого начала записи (текста над ними нет) — тогда
-            // опускается всё поле: отступ перед первой строкой поля не
-            // действует (снимок автора к 189, P664).
-            let top = (first?.location == 0) ? base + parent.push : base
-            if abs(view.textContainerInset.top - top) > 0.5 {
-                view.textContainerInset.top = top
-            }
-            // Иначе — промежуток после строки над вложениями.
-            guard let first, first.location > 0 else { return }
-            let above = ns.lineRange(for: NSRange(location: first.location - 1, length: 0))
-            let current = storage.attribute(.paragraphStyle, at: above.location,
-                                            effectiveRange: nil) as? NSParagraphStyle
-            if abs((current?.paragraphSpacing ?? 0) - parent.push) < 0.5 { return }
-            let style = (current?.mutableCopy() as? NSMutableParagraphStyle) ?? NSMutableParagraphStyle()
-            style.paragraphSpacing = parent.push
-            storage.beginEditing()
-            storage.addAttribute(.paragraphStyle, value: style, range: above)
-            storage.endEditing()
-        }
-
-        func key(_ view: UITextView) -> String {
-            "\(parent.size)|\(parent.serif)|" + (view.text ?? "")
-        }
-
         func restyle(_ view: UITextView) {
             let text = view.text ?? ""
             let now = key(view)

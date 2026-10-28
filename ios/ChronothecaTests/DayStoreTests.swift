@@ -223,28 +223,30 @@ extension DayStoreTests {
         v.forget()
     }
 
-    /// «Места дня» больше нет (P294): точка «где я» ложится под текст
-    /// записи (P615), а строка «место:» в файле не заводится.
+    /// «Места дня» больше нет (P294): точка «где я» ложится в ряд внизу
+    /// страницы (P665), а строка «место:» в файле не заводится.
     func testТочкаГдеЯНеЗаводитМестаДня() {
         let день = store(0)
         let дом = CLLocationCoordinate2D(latitude: 54.3211, longitude: -2.7456)
         день.writePoint(GeoPoint(title: "", at: дом), to: .diary, here: true)
         XCTAssertNil(день.place)
-        XCTAssertTrue(день.photos.isEmpty)
-        XCTAssertEqual(день.diaryText, "geo:54.32110,-2.74560")
+        XCTAssertEqual(день.photos, ["geo:54.32110,-2.74560"])
+        XCTAssertEqual(день.diaryText, "")
     }
 
-    /// Новое вложение — под последним текстом через одну пустую строку,
-    /// следом за другими — в тот же ряд, по четыре (P615).
-    func testВложениеЛожитсяПодТекст() {
+    /// Вложения в конце записи — в ряд внизу, в файле — рядами по четыре
+    /// после пустой строки (P665).
+    func testВложенияВКонцеЗаписиРядом() {
         let a = "![](a.jpg)", b = "![](b.jpg)"
-        XCTAssertEqual(DayStore.appending(a, to: ""), a)
-        XCTAssertEqual(DayStore.appending(a, to: "Утро.\n\n\n"), "Утро.\n\n" + a)
-        XCTAssertEqual(DayStore.appending(b, to: "Утро.\n\n" + a), "Утро.\n\n" + a + " " + b)
         let четыре = [a, b, a, b].joined(separator: " ")
-        XCTAssertEqual(DayStore.appending(a, to: "Утро.\n\n" + четыре), "Утро.\n\n" + четыре + "\n" + a)
-        // Посреди текста ряд не продолжается — только последний.
-        XCTAssertEqual(DayStore.appending(b, to: a + "\nВечер."), a + "\nВечер.\n\n" + b)
+        let d = Diary(body: "Утро.\n\n" + четыре + "\n" + a)
+        XCTAssertEqual(d.text, "Утро.")
+        XCTAssertEqual(d.photos, ["a.jpg", "b.jpg", "a.jpg", "b.jpg", "a.jpg"])
+        XCTAssertEqual(d.body(order: []), "Утро.\n\n" + четыре + "\n" + a)
+        // Вложение посреди текста остаётся в тексте.
+        let m = Diary(body: a + "\nВечер.")
+        XCTAssertEqual(m.text, a + "\nВечер.")
+        XCTAssertTrue(m.photos.isEmpty)
     }
 
     /// Вложения прежней ленты, стоявшие столбиком, — на экране рядами по
@@ -263,17 +265,19 @@ extension DayStoreTests {
         let до = vault.reading(.diary, for: вчера).text
         let день = DayStore(vault: vault, date: вчера)
         XCTAssertTrue(день.diaryText.contains([a, b, p, a].joined(separator: " ")))
+        // Последнее вложение после «Вечер.» — в ряду внизу (P665).
+        XCTAssertEqual(день.photos, ["a.jpg"])
         день.save()
         XCTAssertEqual(vault.reading(.diary, for: вчера).text, до, "файл переписан без правки")
     }
 
-    /// Точка из прежней ленты записывается в файл своей строкой и читается
-    /// обратно в текст записи (P588, P615).
+    /// Точка в ряду внизу записывается в файл в ряд и читается обратно в
+    /// ряд (P588, P665).
     func testТочкаВЛентеПереживаетЗапись() {
         let d = Diary(text: "Утро", photos: ["[Дом](geo:54.32110,-2.74560)", "a.jpg"])
         let back = Diary(body: d.body(order: []))
-        XCTAssertEqual(back.text, "Утро\n\n[Дом](geo:54.32110,-2.74560)\n![](a.jpg)")
-        XCTAssertTrue(back.photos.isEmpty)
+        XCTAssertEqual(back.text, "Утро")
+        XCTAssertEqual(back.photos, ["[Дом](geo:54.32110,-2.74560)", "a.jpg"])
     }
 
     /// Точку в плане переставляют между делами; скрытые строки файла
@@ -337,19 +341,15 @@ extension DayStoreTests {
         XCTAssertTrue(день.planAhead.isEmpty)
     }
 
-    // P357, P620: снимок, оказавшийся посреди фразы, уходит «вниз» — в
-    // конец записи, а фраза снова целая.
+    // P357, P665: снимок, оказавшийся посреди фразы, уходит «вниз» — в
+    // ряд внизу страницы, а фраза снова целая.
     func testСнимокИзСерединыФразыУходитВКонец() {
         let день = store(0)
-        let a = "![](../../Photos/2026/a.jpg)", b = "![](../../Photos/2026/b.jpg)"
+        let a = "![](../../Photos/2026/a.jpg)"
         день.diaryText = "она воо\(a)бще толкует!\nДальше."
         день.moveToEnd("../../Photos/2026/a.jpg")
-        XCTAssertEqual(день.diaryText, "она вообще толкует!\nДальше.\n\n" + a)
-        XCTAssertTrue(день.photos.isEmpty)
-
-        день.diaryText = "Утро.\n\(b)\nВечер.\n\n" + a
-        день.moveToEnd("../../Photos/2026/b.jpg")
-        XCTAssertEqual(день.diaryText, "Утро.\nВечер.\n\n" + a + " " + b)
+        XCTAssertEqual(день.diaryText, "она вообще толкует!\nДальше.")
+        XCTAssertEqual(день.photos, ["../../Photos/2026/a.jpg"])
     }
 
     // P409, P620: крестик у снимка в записи — снимок уходит из текста, в

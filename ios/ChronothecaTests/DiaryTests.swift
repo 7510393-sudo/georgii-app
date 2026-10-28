@@ -126,16 +126,17 @@ final class DiaryTests: XCTestCase {
 
     // MARK: - Фотографии (P200)
 
-    /// Вложения в конце записи — часть текста (P615): ленты нет.
-    func testВложениеВКонцеОстаётсяВТексте() {
+    /// Вложения в конце записи — в ряд внизу страницы (P665).
+    func testВложениеВКонцеУходитВРяд() {
         let body = """
         08:15 Туман над полем.
 
         ![](../../Фотографии/2026/2026-09-24_08.15.30.jpg)
         """
         let d = Diary(body: body)
-        XCTAssertEqual(d.text, body)
-        XCTAssertTrue(d.photos.isEmpty)
+        XCTAssertEqual(d.text, "08:15 Туман над полем.")
+        XCTAssertEqual(d.photos, ["../../Фотографии/2026/2026-09-24_08.15.30.jpg"])
+        XCTAssertEqual(d.body(order: []), body)
     }
 
     func testФотографииВстаютВКонецЗаписи() {
@@ -146,12 +147,11 @@ final class DiaryTests: XCTestCase {
         XCTAssertTrue(body.hasSuffix("""
         08:15 Туман.
 
-        ![](../../Фотографии/2026/a.jpg)
-        ![](../../Фотографии/2026/b.jpg)
+        ![](../../Фотографии/2026/a.jpg) ![](../../Фотографии/2026/b.jpg)
         """))
-        // Прочитанное обратно ложится в файл тем же текстом (P615).
+        // Прочитанное обратно ложится в файл тем же текстом (P665).
         let back = Diary(body: body, known: ["Отвезти документы"])
-        XCTAssertTrue(back.photos.isEmpty)
+        XCTAssertEqual(back.photos, ["../../Фотографии/2026/a.jpg", "../../Фотографии/2026/b.jpg"])
         XCTAssertEqual(back.body(order: ["Отвезти документы"]), body)
     }
 
@@ -164,7 +164,7 @@ final class DiaryTests: XCTestCase {
 
     func testПутьСПробеломВУгловыхСкобках() {
         let d = Diary(body: "![](<../../Фотографии/2026/мой снимок.jpg>)")
-        XCTAssertEqual(Diary.picture(in: d.text), "../../Фотографии/2026/мой снимок.jpg")
+        XCTAssertEqual(d.photos, ["../../Фотографии/2026/мой снимок.jpg"])
         XCTAssertEqual(d.body(order: []), "![](<../../Фотографии/2026/мой снимок.jpg>)")
     }
 
@@ -182,9 +182,9 @@ final class DiaryTests: XCTestCase {
         ![](../../Фотографии/2026/b.jpg)
         """
         let d = Diary(body: body)
-        XCTAssertTrue(d.photos.isEmpty)
+        // Посреди текста — в тексте; в самом конце — в ряд внизу (P665).
         XCTAssertTrue(d.text.contains("![](../../Фотографии/2026/a.jpg)"))
-        XCTAssertTrue(d.text.contains("![](../../Фотографии/2026/b.jpg)"))
+        XCTAssertEqual(d.photos, ["../../Фотографии/2026/b.jpg"])
         XCTAssertEqual(d.body(order: []), body)
     }
 

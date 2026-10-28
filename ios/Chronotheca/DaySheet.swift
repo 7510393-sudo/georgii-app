@@ -46,7 +46,7 @@ struct DaySheet<Plan: View, Diary: View>: View {
 
     private static var top: String { "страница-верх" }
     private static var diaryTop: String { "страница-дневник" }
-    static var space: String { SheetSpace.name }
+    static var space: String { "лист" }
     private static var window: String { "окно-листа" }
     /// Строка вложений лежит поверх низа страницы, полупрозрачная (P424):
     /// столько места под концом записи, чтобы её можно было поднять из-под
@@ -98,9 +98,6 @@ struct DaySheet<Plan: View, Diary: View>: View {
                         // строкой, её почти не было видно (снимки автора).
                         .frame(maxHeight: .infinity, alignment: .top)
                     }
-                    // Докуда может дойти дневник на коротком листе (P661):
-                    // по этой мерке вложения в конце записи опускаются к низу.
-                    .environment(\.diaryRoom, outer.size.height - Self.stripRoom)
                     // Место под строкой вложений — всегда, и с клавиатурой
                     // (P432): прежде оно пропадало, пока клавиатура открыта,
                     // и возвращалось скачком, когда она уходила, — низ
@@ -402,23 +399,4 @@ private struct DiaryTopMark: View {
                 .onDisappear { PlanZones.diaryTop = nil }
         }
     }
-}
-
-/// Докуда (в мерке листа) может дойти дневник, пока лист не длиннее окна
-/// (P661). Ноль — мерки нет, вложения в конце записи стоят под текстом.
-private struct DiaryRoomKey: EnvironmentKey {
-    static let defaultValue: CGFloat = 0
-}
-
-extension EnvironmentValues {
-    var diaryRoom: CGFloat {
-        get { self[DiaryRoomKey.self] }
-        set { self[DiaryRoomKey.self] = newValue }
-    }
-}
-
-/// Имя мерки листа — вне `DaySheet`, чтобы его видели и дневник, и план
-/// (P661): у `DaySheet` есть свои параметры, без них к нему не обратиться.
-enum SheetSpace {
-    static let name = "лист"
 }

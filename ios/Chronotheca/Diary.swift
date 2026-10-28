@@ -24,10 +24,10 @@ struct Diary: Equatable {
     /// В файле каждая стоит своей строкой в конце записи, обычной ссылкой
     /// разметки: `![](../../Фотографии/2026/2026-09-24_08.15.30.jpg)`. Её
     /// понимает любой редактор разметки — Obsidian покажет саму фотографию.
-    /// Вложения в конце записи — часть текста (P615): поле записи рисует
-    /// их на месте, ленты под записью нет. Здесь остаются только
-    /// вложения, положенные в ленту до P615 в этом же открытии дня; в файл
-    /// они ложатся так же — в конец записи после пустой строки.
+    /// Вложения в конце записи — рядом внизу страницы, над погодой, по
+    /// четыре в ряд (P665, как в Diarium, но все видны сразу): при чтении
+    /// они уходят из текста сюда, при записи ложатся обратно в конец записи
+    /// после пустой строки рядами по четыре. Отменяет «часть текста» P615.
     var photos: [String] = []
 
     init(answers: [String: String] = [:], text: String = "", photos: [String] = []) {
@@ -52,7 +52,7 @@ struct Diary: Equatable {
         guard i < lines.count,
               [Diary.heading, Diary.oldHeading]
                 .contains(lines[i].trimmingCharacters(in: .whitespaces)) else {
-            text = body.trimmingCharacters(in: .newlines)
+            (text, photos) = Diary.splitTail(body.trimmingCharacters(in: .newlines))
             return
         }
 
@@ -81,7 +81,30 @@ struct Diary: Equatable {
             if !task.isEmpty { answers[task] = answer }
             lines.removeFirst()
         }
-        text = lines.joined(separator: "\n").trimmingCharacters(in: .newlines)
+        (text, photos) = Diary.splitTail(lines.joined(separator: "\n").trimmingCharacters(in: .newlines))
+    }
+
+    /// Вложения, которыми кончается запись (строки только из вложений,
+    /// пустые между ними не в счёт), — отдельно от текста (P665).
+    static func splitTail(_ text: String) -> (String, [String]) {
+        var lines = text.components(separatedBy: "\n")
+        var tail: [[String]] = []
+        var cut = lines.count
+        var k = lines.count - 1
+        while k >= 0 {
+            let line = lines[k]
+            if line.trimmingCharacters(in: .whitespaces).isEmpty { k -= 1; continue }
+            let row = objects(in: line).map(\.link)
+            let one = row.isEmpty ? (picture(in: line).map { [$0] } ?? []) : row
+            guard !one.isEmpty else { break }
+            tail.insert(one, at: 0)
+            cut = k
+            k -= 1
+        }
+        guard !tail.isEmpty else { return (text, []) }
+        lines.removeSubrange(cut...)
+        let rest = lines.joined(separator: "\n").trimmingCharacters(in: .newlines)
+        return (rest, tail.flatMap { $0 })
     }
 
     private static let pictureLine = try! NSRegularExpression(
@@ -228,7 +251,10 @@ struct Diary: Equatable {
         out += text
         if !photos.isEmpty {
             if !out.trimmingCharacters(in: .newlines).isEmpty { out += "\n\n" }
-            out += photos.map(Diary.line).joined(separator: "\n")
+            // Рядами по четыре, как они стоят на экране (P665).
+            out += stride(from: 0, to: photos.count, by: 4).map { start in
+                photos[start..<min(start + 4, photos.count)].map(Diary.line).joined(separator: " ")
+            }.joined(separator: "\n")
         }
         return out.trimmingCharacters(in: .newlines)
     }
