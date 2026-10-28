@@ -67,7 +67,9 @@ struct Sticker<Content: View>: View {
         // содержимого (P428): тень по сложному содержимому считается
         // заново на каждом кадре выезда, и длинный листок настроек
         // дёргался. Вид тот же.
-        .background(shape.fill(paper).shadow(color: .black.opacity(0.32), radius: 14, x: 6, y: 6))
+        .background(shape.fill(paper))
+        // Тень — заранее нарисованная картинка (P675), не размытие на ходу.
+        .background(PaintedShadow(radius: 14, corner: 12, x: 6, y: 6, opacity: 0.32))
         .overlay(StickerBorder(radius: 12, side: side).stroke(edge, lineWidth: 1))
         // Спрятанный листок стоит так, что его нижний угол — ровно уголок
         // над экраном; вытягивают его за этот угол (P237).

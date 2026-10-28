@@ -39,9 +39,9 @@ struct NoteCard<Content: View>: View {
             .padding(.bottom, 4)
             // Тень — у простой фигуры под стикером, а не у содержимого
             // (P428, P488): так она не пересчитывается на каждом кадре выезда.
-            .background(RoundedRectangle(cornerRadius: 8)
-                .fill(Look.sticker)
-                .shadow(color: .black.opacity(0.16), radius: 4, x: 2, y: 2))
+            .background(RoundedRectangle(cornerRadius: 8).fill(Look.sticker))
+            // Тень — заранее нарисованная картинка (P675).
+            .background(PaintedShadow(radius: 4, corner: 8, x: 2, y: 2, opacity: 0.16))
             .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Look.stickerEdge, lineWidth: 0.8))
             .padding(.horizontal, 12)
             .padding(.vertical, 7)

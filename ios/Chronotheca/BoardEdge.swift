@@ -39,8 +39,8 @@ struct BoardEdge: View {
         }
         .frame(height: Self.depth)
         // Тень ложится на книгу с той стороны, куда доска идёт.
-        .shadow(color: .black.opacity(0.3), radius: 11,
-                x: 0, y: fromTop ? 6 : -6)
+        // Тень — заранее нарисованная картинка (P675).
+        .background(PaintedShadow(radius: 11, x: 0, y: fromTop ? 6 : -6, opacity: 0.3))
         .accessibilityHidden(true)
     }
 }
