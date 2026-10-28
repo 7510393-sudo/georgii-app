@@ -421,6 +421,10 @@ struct PageTexture: View {
     var space: String = PageTexture.space
     /// Прошедший день: поверх обычной фактуры — старая бумага (P676).
     var aged = false
+    /// У прошедшего дня края темнеют янтарём (P676): верх — у верхнего
+    /// куска страницы, низ — у нижнего; бока — у всех.
+    var edgeTop = false
+    var edgeBottom = false
     @Environment(\.colorScheme) private var scheme
     private var dark: Bool { scheme == .dark }
 
@@ -430,7 +434,15 @@ struct PageTexture: View {
     var body: some View {
         ZStack {
             tiled(tab == .plan ? PageTexture.grid : PageTexture.grain)
-            if aged { tiled(PageTexture.relief).opacity(dark ? 0.45 : 1) }
+            if aged {
+                ZStack {
+                    tiled(PageTexture.clouds)
+                    tiled(PageTexture.relief)
+                    tiled(PageTexture.specks)
+                    edges
+                }
+                .opacity(dark ? 0.45 : 1)
+            }
         }
         .clipped()
         .allowsHitTesting(false)
@@ -500,6 +512,186 @@ struct PageTexture: View {
             }
         }
     }()
+
+    /// Янтарные края (P676): темнеют к бокам и к низу, неровно — глубина
+    /// гуляет вдоль края. Картинки нарисованы заранее; правый край и верх —
+    /// те же картинки, отражённые.
+    private var edges: some View {
+        ZStack {
+            HStack(spacing: 0) {
+                Image(uiImage: PageTexture.sideEdge).resizable(resizingMode: .tile)
+                    .frame(width: PageTexture.sideDepth)
+                Spacer(minLength: 0)
+                Image(uiImage: PageTexture.sideEdge).resizable(resizingMode: .tile)
+                    .frame(width: PageTexture.sideDepth)
+                    .scaleEffect(x: -1)
+            }
+            VStack(spacing: 0) {
+                if edgeTop {
+                    Image(uiImage: PageTexture.footEdge).resizable(resizingMode: .tile)
+                        .frame(height: PageTexture.footDepth)
+                        .scaleEffect(y: -1)
+                        .opacity(0.3)
+                }
+                Spacer(minLength: 0)
+                if edgeBottom {
+                    Image(uiImage: PageTexture.footEdge).resizable(resizingMode: .tile)
+                        .frame(height: PageTexture.footDepth)
+                }
+            }
+        }
+    }
+
+    /// Густота износа (облака, края, крапинки): 1 — средняя (второй вариант
+    /// эскиза `docs/paper/износ-по-образцу.png`); 1,7 — сильнее.
+    static let wearStrength = CGFloat(1)
+
+    private static let amber: (r: Float, g: Float, b: Float) = (140 / 255, 97 / 255, 41 / 255)
+
+    /// Круговое размытие: края плитки сходятся.
+    private static func wrapBlur(_ a: [Float], side n: Int, radius r: Int, passes: Int) -> [Float] {
+        var src = a, dst = a
+        let w = Float(2 * r + 1)
+        for _ in 0..<passes {
+            for y in 0..<n {
+                for x in 0..<n {
+                    var sum: Float = 0
+                    for k in -r...r { sum += src[y * n + (x + k + n) % n] }
+                    dst[y * n + x] = sum / w
+                }
+            }
+            for y in 0..<n {
+                for x in 0..<n {
+                    var sum: Float = 0
+                    for k in -r...r { sum += dst[((y + k + n) % n) * n + x] }
+                    src[y * n + x] = sum / w
+                }
+            }
+        }
+        return src
+    }
+
+    private static func normalised(_ a: [Float]) -> [Float] {
+        let mean = a.reduce(0, +) / Float(a.count)
+        let sd = (a.reduce(0) { $0 + ($1 - mean) * ($1 - mean) } / Float(a.count)).squareRoot()
+        return a.map { ($0 - mean) / max(sd, 0.0001) }
+    }
+
+    private static func picture(_ bytes: [UInt8], width: Int, height: Int, scale: CGFloat) -> UIImage {
+        let provider = CGDataProvider(data: Data(bytes) as CFData)!
+        let image = CGImage(width: width, height: height, bitsPerComponent: 8, bitsPerPixel: 32,
+                            bytesPerRow: width * 4, space: CGColorSpaceCreateDeviceRGB(),
+                            bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue),
+                            provider: provider, decode: nil, shouldInterpolate: true,
+                            intent: .defaultIntent)!
+        return UIImage(cgImage: image, scale: scale, orientation: .up)
+    }
+
+    /// Облака тона (P676): крупные мягкие пятна, где светлее и теплее, где
+    /// темнее. Плитка 576 точек, замкнута сама на себя.
+    static let clouds: UIImage = {
+        let n = 192                                   // 3 точки на пиксель
+        var seed: UInt64 = 0xC10D5
+        func next() -> Float {
+            seed = seed &* 6364136223846793005 &+ 1442695040888963407
+            return Float(seed >> 40) / Float(1 << 24) - 0.5
+        }
+        let big = normalised(wrapBlur((0..<n * n).map { _ in next() }, side: n, radius: 12, passes: 4))
+        let small = normalised(wrapBlur((0..<n * n).map { _ in next() }, side: n, radius: 4, passes: 3))
+        let k = Float(wearStrength)
+        var bytes = [UInt8](repeating: 0, count: n * n * 4)
+        for i in 0..<n * n {
+            let v = (big[i] * 0.8 + small[i] * 0.35) * k
+            let light = v > 0
+            // Светлое — тёплый белый, тёмное — коричневый.
+            let alpha = min(abs(v) * (light ? 0.09 : 0.04), 0.4)
+            let c: (Float, Float, Float) = light ? (1, 0.97, 0.88) : (0.45, 0.38, 0.25)
+            bytes[i * 4] = UInt8(c.0 * alpha * 255)
+            bytes[i * 4 + 1] = UInt8(c.1 * alpha * 255)
+            bytes[i * 4 + 2] = UInt8(c.2 * alpha * 255)
+            bytes[i * 4 + 3] = UInt8(alpha * 255)
+        }
+        return picture(bytes, width: n, height: n, scale: 1.0 / 3)
+    }()
+
+    /// Редкие мелкие крапинки и волоски, бледные: плитка 400 точек, на ней
+    /// их около полусотни — повтор не бросается в глаза.
+    static let specks: UIImage = {
+        var seed: UInt64 = 0x5BECC5
+        func next() -> CGFloat {
+            seed = seed &* 6364136223846793005 &+ 1442695040888963407
+            return CGFloat(seed >> 33) / CGFloat(UInt64(1) << 31)
+        }
+        let side: CGFloat = 400
+        let k = wearStrength
+        let format = UIGraphicsImageRendererFormat(); format.scale = 2
+        return UIGraphicsImageRenderer(size: CGSize(width: side, height: side), format: format).image { ctx in
+            let cg = ctx.cgContext
+            for _ in 0..<Int(52 * k) {
+                let d = 0.9 + next() * 1.5
+                UIColor(red: 0.42, green: 0.32, blue: 0.18, alpha: 0.10 + next() * 0.12).setFill()
+                cg.fillEllipse(in: CGRect(x: next() * side, y: next() * side, width: d, height: d))
+            }
+            for _ in 0..<Int(13 * k) {
+                let x = next() * side, y = next() * side
+                let angle = next() * .pi, length = 4 + next() * 7
+                let hair = UIBezierPath()
+                hair.move(to: CGPoint(x: x, y: y))
+                hair.addLine(to: CGPoint(x: x + cos(angle) * length, y: y + sin(angle) * length))
+                hair.lineWidth = 0.5
+                UIColor(red: 0.45, green: 0.36, blue: 0.22, alpha: 0.22).setStroke()
+                hair.stroke()
+            }
+        }
+    }()
+
+    static let sideDepth: CGFloat = 70
+    static let footDepth: CGFloat = 110
+
+    /// Бок: у края глубже всего, дальше затухает; глубина гуляет по длине.
+    static let sideEdge: UIImage = edgeImage(depthPoints: sideDepth, falloff: 16, peak: 0.15, vertical: true)
+    /// Низ: темнее и шире боков.
+    static let footEdge: UIImage = edgeImage(depthPoints: footDepth, falloff: 26, peak: 0.165, vertical: false)
+
+    /// Полоска вдоль края, 2 пикселя на точку, 480 точек вдоль. Вертикальная —
+    /// край слева; горизонтальная — край внизу.
+    private static func edgeImage(depthPoints: CGFloat, falloff: Float, peak: Float, vertical: Bool) -> UIImage {
+        let along = 480 * 2, depth = Int(depthPoints) * 2
+        var seed: UInt64 = vertical ? 0xED6E1 : 0xED6E2
+        func next() -> Float {
+            seed = seed &* 6364136223846793005 &+ 1442695040888963407
+            return Float(seed >> 40) / Float(1 << 24) - 0.5
+        }
+        // Гуляющая глубина: круговая одномерная размытая случайность.
+        var wob = (0..<along).map { _ in next() }
+        for _ in 0..<4 {
+            let src = wob
+            wob = (0..<along).map { i in
+                var sum: Float = 0
+                for k in -40...40 { sum += src[(i + k + along) % along] }
+                return sum / 81
+            }
+        }
+        let wn = normalised(wob).map { max(-1.5, min(1.5, $0)) }
+        let width = vertical ? depth : along, height = vertical ? along : depth
+        var bytes = [UInt8](repeating: 0, count: width * height * 4)
+        let k = Float(wearStrength)
+        for a in 0..<along {
+            for d in 0..<depth {
+                // d — расстояние от края в пикселях; в точках вдвое меньше.
+                let distance = Float(d) / 2
+                let alpha = min(peak * k * exp(-distance / (falloff * (1 + 0.35 * wn[a]))), 0.45)
+                let x = vertical ? d : a
+                let y = vertical ? a : depth - 1 - d     // низ: край — последняя строка
+                let i = (y * width + x) * 4
+                bytes[i] = UInt8(amber.r * alpha * 255)
+                bytes[i + 1] = UInt8(amber.g * alpha * 255)
+                bytes[i + 2] = UInt8(amber.b * alpha * 255)
+                bytes[i + 3] = UInt8(alpha * 255)
+            }
+        }
+        return picture(bytes, width: width, height: height, scale: 2)
+    }
 
     /// Рельеф шершавой бумаги (P676, отменяет пятна и волоски): впадинки и
     /// бугорки, освещённые слева сверху, как все тени (P670). Складывается
