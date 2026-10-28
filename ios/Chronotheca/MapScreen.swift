@@ -1852,12 +1852,7 @@ enum MapActions {
         PlaceActions.openInMaps(place.coordinate, name: place.name)
     }
 
-    static func navigate(_ point: GeoPoint) {
-        PlaceActions.openInMaps(point.at, name: point.title)
-    }
-
     static func copy(_ place: Place) { PlaceActions.copy(place.coordinate) }
-    static func copy(_ point: GeoPoint) { PlaceActions.copy(point.at) }
 
     /// Поделиться точкой: название, координаты и ссылка на Карты — её
     /// откроет любой iPhone, а на других телефонах — браузер (P222).

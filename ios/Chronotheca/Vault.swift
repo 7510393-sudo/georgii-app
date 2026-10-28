@@ -225,69 +225,7 @@ final class Vault: ObservableObject {
 
     init() {
         if Vault.isPreview { usePreviewFolder() }
-        else if Vault.speedTestOn, (try? Vault.makeSpeedFolder()) != nil { useSpeedFolder() }
         else { restore() }
-    }
-
-    // MARK: - Проверка скорости (P581)
-
-    /// Открыт пробный архив за десять лет — вместо своей папки, до тех
-    /// пор, пока его не закроют. Помнится и после перезапуска: так видно,
-    /// сколько идёт запуск на большом архиве.
-    static let speedTestKey = "debug.speedTest"
-    /// Вне TestFlight пробного архива нет (P603): кто включил его в
-    /// TestFlight и поставил приложение из App Store, увидит свои записи.
-    static var speedTestOn: Bool { Build.isTestFlight && UserDefaults.standard.bool(forKey: speedTestKey) }
-
-    /// Пробный архив лежит внутри самого приложения, в его служебной папке:
-    /// не в «Файлах», не в iCloud и не внутри своей папки «На iPhone»
-    /// (та — вся папка «Документы» приложения).
-    static var speedFolder: URL {
-        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("Speed test archive")
-    }
-
-    private static func makeSpeedFolder() throws {
-        try FileManager.default.createDirectory(at: speedFolder, withIntermediateDirectories: true)
-    }
-
-    private func useSpeedFolder() {
-        let url = Vault.speedFolder
-        do {
-            try makeTree(in: url)
-            granted = url
-            root = url
-        } catch {
-            problem = error.localizedDescription
-        }
-    }
-
-    /// Открыть пробный архив (сперва написав его — это полминуты) или
-    /// вернуться к своей папке. Своя папка и её закладка не трогаются:
-    /// возвращение — та же дорога, что при обычном запуске.
-    func speedTest(_ on: Bool, done: @escaping () -> Void) {
-        if on {
-            DispatchQueue.global(qos: .userInitiated).async {
-                // Прежний пробный архив — только текст (P589): пишется заново.
-                if !FileManager.default.fileExists(
-                    atPath: Vault.speedFolder.appendingPathComponent(".big-archive-2").path) {
-                    try? FileManager.default.removeItem(at: Vault.speedFolder)
-                }
-                try? Vault.makeSpeedFolder()
-                Vault.seedBigArchive(in: Vault.speedFolder, before: DayStore.today())
-                DispatchQueue.main.async {
-                    UserDefaults.standard.set(true, forKey: Vault.speedTestKey)
-                    self.useSpeedFolder()
-                    done()
-                }
-            }
-        } else {
-            UserDefaults.standard.set(false, forKey: Vault.speedTestKey)
-            root = nil
-            granted = nil
-            restore()
-            done()
-        }
     }
 
     // MARK: - Режим показа

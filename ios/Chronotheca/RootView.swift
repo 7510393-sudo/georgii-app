@@ -548,10 +548,6 @@ struct RootView: View {
             // Карту — заранее, когда запуск уже позади (P581).
             warmMapSoon()
             LaunchClock.step(T("первый экран", "first screen"))
-            if Vault.speedTestOn {
-                shell.say(T("Открыт пробный архив. Вернуться — в настройках, долгим нажатием на «Версия».",
-                            "The test archive is open. To go back, long-press “Version” in Settings."), for: 5)
-            }
             // С какой вкладки открывать — из настроек (P249).
             shell.tab = .plan
             shell.openRequestedScreen(store)

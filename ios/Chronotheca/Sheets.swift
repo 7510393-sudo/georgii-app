@@ -530,8 +530,6 @@ struct SettingsSticker: View {
 
     @State private var choosingPlace = false
     @State private var showingSafety = false
-    /// «Проверка скорости» — долгим нажатием на «Версия» (P581).
-    @State private var showingSpeed = false
     @EnvironmentObject private var store: DayStore
 
     @EnvironmentObject private var archive: Archive
@@ -634,10 +632,6 @@ struct SettingsSticker: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 9)
         .contentShape(Rectangle())
-        // Скрытая «Проверка скорости» (P581): для автора, не для всех — и
-        // только в сборках TestFlight (P603): в App Store её нет совсем.
-        .onLongPressGesture(minimumDuration: 1.5) { if Build.isTestFlight { showingSpeed = true } }
-        .sheet(isPresented: $showingSpeed) { SpeedTestSheet() }
     }
 
     private func close() {
@@ -729,17 +723,6 @@ enum Build {
         let version = info?["CFBundleShortVersionString"] as? String ?? "?"
         let build = info?["CFBundleVersion"] as? String ?? "?"
         return "\(version) (\(build))"
-    }
-
-    /// Сборка из TestFlight (или симулятор проверок CI) — только в ней есть
-    /// «Проверка скорости» (P603). iPhone кладёт приложению из TestFlight
-    /// чек «sandboxReceipt», из App Store — «receipt».
-    static var isTestFlight: Bool {
-        #if targetEnvironment(simulator)
-        return true
-        #else
-        return Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
-        #endif
     }
 }
 
@@ -1272,78 +1255,5 @@ struct WelcomeView: View {
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.bottom, 6)
-    }
-}
-
-/// «Проверка скорости» (P581): пробный архив за десять лет в отдельной
-/// папке внутри приложения и время запуска и разделов по шагам.
-struct SpeedTestSheet: View {
-    @EnvironmentObject private var vault: Vault
-    @EnvironmentObject private var store: DayStore
-    @EnvironmentObject private var archive: Archive
-    @Environment(\.dismiss) private var dismiss
-    @State private var on = Vault.speedTestOn
-    @State private var busy = false
-    @State private var erased = false
-
-    var body: some View {
-        NavigationStack {
-            List {
-                Section {
-                    Text(T("Пробный архив — десять лет выдуманных записей со снимками, голосом, файлами и точками "
-                           + "(около полугигабайта, пишется несколько минут) в отдельной папке внутри приложения. "
-                           + "Ваши записи и ваша папка не трогаются. Пока он открыт, всё, что вы пишете, "
-                           + "ложится в него, а не в ваш архив. Вернулись к своим — пробный можно стереть.",
-                           "The test archive is ten years of made-up entries with photos, voice notes, files and places "
-                           + "(about half a gigabyte, takes a few minutes to write) in a separate folder inside the app. "
-                           + "Your entries and your folder are not touched. While it is open, whatever you write "
-                           + "goes into it, not into your archive. Once you are back to your own, the test one can be erased."))
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                    if busy {
-                        HStack {
-                            ProgressView()
-                            Text(T("Пишу пробный архив…", "Writing the test archive…"))
-                        }
-                    } else {
-                        Button(on ? T("Вернуться к своим записям", "Back to my entries")
-                                  : T("Открыть пробный архив", "Open the test archive")) {
-                            switchArchive()
-                        }
-                        // Полгигабайта на телефоне — стереть, когда проверили (P589).
-                        if !on, !erased, FileManager.default.fileExists(atPath: Vault.speedFolder.path) {
-                            Button(T("Стереть пробный архив", "Erase the test archive"), role: .destructive) {
-                                try? FileManager.default.removeItem(at: Vault.speedFolder)
-                                erased = true
-                            }
-                        }
-                    }
-                }
-                Section(T("По шагам, с начала запуска", "Step by step, since launch")) {
-                    if LaunchClock.lines.isEmpty {
-                        Text(T("Пока пусто", "Nothing yet")).foregroundStyle(.secondary)
-                    }
-                    ForEach(Array(LaunchClock.lines.enumerated()), id: \.offset) { _, line in
-                        Text(line).font(Look.mono(12))
-                    }
-                }
-            }
-            .navigationTitle(T("Проверка скорости", "Speed check"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) { Button(T("Готово", "Done")) { dismiss() } }
-            }
-        }
-    }
-
-    private func switchArchive() {
-        busy = true
-        store.save()
-        vault.speedTest(!on) {
-            on = Vault.speedTestOn
-            busy = false
-            store.load()
-            archive.reload()
-        }
     }
 }
