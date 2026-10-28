@@ -1285,14 +1285,16 @@ final class DayStore: ObservableObject {
         DispatchQueue.main.async { [weak self] in self?.warmNeighbours() }
     }
 
-    /// Превью вчерашнего и завтрашнего дня — в память заранее (P669): прежде
+    /// Превью соседних дней — в память заранее (P669, P672): прежде
     /// снимок читался с диска, только когда страницу уже показали, и при
     /// листании после запуска картинки появлялись на открытой странице с
     /// опозданием — кроме тех, что уже видели.
     private func warmNeighbours() {
         guard vault.root != nil else { return }
         var items: [(url: URL, plan: Bool)] = []
-        for step in [-1, 1] {
+        // Два дня в каждую сторону, ближние первыми (P672): пока листается
+        // соседний день, следующий за ним уже готов.
+        for step in [-1, 1, -2, 2] {
             guard let day = Calendar.current.date(byAdding: .day, value: step, to: date) else { continue }
             let (rows, old) = Plan.splitPhotos(
                 Plan.rows(from: DayFile(text: vault.read(.planner, for: day)).body))

@@ -546,7 +546,7 @@ struct DiaryEditor: UIViewRepresentable {
                   let url = photo.url else { return }
             photo.loaded = true
             Task.detached(priority: .userInitiated) {
-                guard let got = Photo.load(url, side: 280) else { return }
+                guard let got = Photo.load(url, side: Photo.thumbSide) else { return }
                 let framed = PhotoAttachment.frame(got)
                 await MainActor.run { [weak view] in
                     Photo.cache.setObject(framed, forKey: PhotoAttachment.key(url))

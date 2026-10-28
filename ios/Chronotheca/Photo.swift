@@ -75,7 +75,13 @@ enum Photo {
     /// перелистнули туда и обратно, не читает их заново и не мигает.
     static let cache = NSCache<NSString, UIImage>()
 
-    private static let warming = DispatchQueue(label: "превью соседних дней", qos: .utility)
+    /// Сторона превью, по которой снимок читается с диска (P672): клетка
+    /// ряда — около 86 точек, самое крупное превью (поиск, «А вот когда-то…»)
+    /// — около 114. Прежде читалось по 280 точек — картинка 840×840, вдесятеро
+    /// больше нужного, и при листании превью не успевали.
+    static let thumbSide: CGFloat = 130
+
+    private static let warming = DispatchQueue(label: "превью соседних дней", qos: .userInitiated)
 
     /// Прочитать превью в память заранее (P669): ряд внизу берёт снимок по
     /// пути (`PhotoThumb`), ряд под делом — в рамке (`PlanPhotoThumb`).
@@ -84,7 +90,7 @@ enum Photo {
         warming.async {
             for (url, plan) in items {
                 let key = plan ? PhotoAttachment.key(url) : url.path as NSString
-                guard cache.object(forKey: key) == nil, let raw = load(url, side: 280) else { continue }
+                guard cache.object(forKey: key) == nil, let raw = load(url, side: thumbSide) else { continue }
                 cache.setObject(plan ? PhotoAttachment.frame(raw) : raw, forKey: key)
             }
         }
@@ -104,6 +110,9 @@ enum Photo {
                     kCGImageSourceCreateThumbnailFromImageAlways: true,
                     kCGImageSourceCreateThumbnailWithTransform: true,
                     kCGImageSourceThumbnailMaxPixelSize: side * 3,
+                    // Раскрыть картинку сразу здесь, в стороне, а не при
+                    // первом показе на экране (P672).
+                    kCGImageSourceShouldCacheImmediately: true,
                 ] as CFDictionary
                 if let cg = CGImageSourceCreateThumbnailAtIndex(source, 0, options) {
                     image = UIImage(cgImage: cg)
@@ -206,7 +215,7 @@ struct PhotoThumb: View {
             got = await Photo.poster(url, side: 160)
         } else {
             got = await Task.detached(priority: .userInitiated) {
-                Photo.load(url, side: 280)
+                Photo.load(url, side: Photo.thumbSide)
             }.value
         }
         guard let got else { return }
@@ -739,7 +748,7 @@ struct PlanPhotoThumb: View {
                 }
                 guard image == nil, let url else { return }
                 let got = await Task.detached(priority: .userInitiated) { () -> UIImage? in
-                    guard let raw = Photo.load(url, side: 280) else { return nil }
+                    guard let raw = Photo.load(url, side: Photo.thumbSide) else { return nil }
                     return PhotoAttachment.frame(raw)
                 }.value
                 guard let got else { return }
