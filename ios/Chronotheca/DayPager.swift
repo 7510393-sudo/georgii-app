@@ -147,7 +147,7 @@ struct DayPage: View {
     /// дневника; различаются они фактурой: план — в клетку, дневник — на
     /// бумаге с волокном (P245).
     private var background: some View {
-        Ru.tint(date).overlay(PageTexture(tab: .diary))
+        Ru.tint(date).overlay(PageTexture(tab: .diary, aged: Ru.isPast(date)))
     }
 
     // MARK: - Шапка дня
@@ -181,7 +181,7 @@ struct DayPage: View {
         .padding(.bottom, 4)
         .frame(maxWidth: .infinity)
         // Шапка — продолжение листа дня, того же цвета (P434).
-        .background(Ru.tint(date).overlay(PageTexture(tab: .diary)))
+        .background(Ru.tint(date).overlay(PageTexture(tab: .diary, aged: Ru.isPast(date))))
         .contentShape(Rectangle())
         .onTapGesture { hideKeyboard() }
     }
@@ -419,14 +419,25 @@ struct PageTexture: View {
     /// От чего отсчитывается узор. На листе дня — от самого листа, который
     /// едет при прокрутке: клетка идёт вместе с текстом (P412).
     var space: String = PageTexture.space
+    /// Прошедший день: поверх обычной фактуры — старая бумага (P676).
+    var aged = false
 
     /// Общая точка отсчёта фактуры — вся страница дня.
     static let space = "страница"
 
     var body: some View {
-        let picture = tab == .plan ? PageTexture.grid : PageTexture.grain
+        ZStack {
+            tiled(tab == .plan ? PageTexture.grid : PageTexture.grain)
+            if aged { tiled(PageTexture.old) }
+        }
+        .clipped()
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    private func tiled(_ picture: UIImage) -> some View {
         let tile = picture.size
-        GeometryReader { geo in
+        return GeometryReader { geo in
             // Узор сдвигается так, будто он нарисован на всей странице
             // разом, а этот кусок — окно в него.
             let at = geo.frame(in: .named(space)).origin
@@ -438,10 +449,63 @@ struct PageTexture: View {
                        height: geo.size.height + tile.height * 2)
                 .offset(x: -dx - tile.width, y: -dy - tile.height)
         }
-        .clipped()
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
     }
+
+    /// Густота старой бумаги: 1 — средняя. Меньше — тише, больше — заметнее
+    /// (P676; автор выбирает по снимкам).
+    static let oldStrength: CGFloat = 1
+
+    /// Старая бумага: пожелтевшие пятнышки («лисьи»), тёмные крапинки и
+    /// длинные волоски, редкие светлые точки. Плитка 220 точек, рисуется
+    /// один раз; узор один и тот же при каждом запуске (P114).
+    static let old: UIImage = {
+        let side: CGFloat = 220
+        let k = oldStrength
+        var seed: UInt64 = 0x01D_BA9E
+        func next() -> CGFloat {
+            seed = seed &* 6364136223846793005 &+ 1442695040888963407
+            return CGFloat(seed >> 33) / CGFloat(UInt64(1) << 31)
+        }
+        let spot = UIColor(red: 0.55, green: 0.38, blue: 0.16, alpha: 1)
+        return UIGraphicsImageRenderer(size: CGSize(width: side, height: side)).image { ctx in
+            let cg = ctx.cgContext
+            // Мягкие пятна: круг с радиальным угасанием, с краёв плитки
+            // дорисованы по другую сторону — на стыке шва нет.
+            let colors = [spot.withAlphaComponent(0.07 * k).cgColor, spot.withAlphaComponent(0).cgColor] as CFArray
+            let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors, locations: [0, 1])!
+            for _ in 0..<9 {
+                let x = next() * side, y = next() * side
+                let r = 6 + next() * 14
+                for ox in [-side, 0, side] {
+                    for oy in [-side, 0, side] {
+                        cg.drawRadialGradient(gradient,
+                                              startCenter: CGPoint(x: x + ox, y: y + oy), startRadius: 0,
+                                              endCenter: CGPoint(x: x + ox, y: y + oy), endRadius: r,
+                                              options: [])
+                    }
+                }
+            }
+            for _ in 0..<260 {
+                let x = next() * side, y = next() * side
+                let r = 0.4 + next() * 0.9
+                spot.withAlphaComponent((0.10 + next() * 0.12) * k).setFill()
+                cg.fillEllipse(in: CGRect(x: x, y: y, width: r, height: r))
+            }
+            for _ in 0..<30 {
+                let x = next() * side, y = next() * side
+                let angle = next() * .pi
+                let length = 6 + next() * 14
+                let hair = UIBezierPath()
+                hair.move(to: CGPoint(x: x, y: y))
+                hair.addQuadCurve(to: CGPoint(x: x + cos(angle) * length, y: y + sin(angle) * length),
+                                  controlPoint: CGPoint(x: x + cos(angle + 0.5) * length / 2,
+                                                        y: y + sin(angle + 0.5) * length / 2))
+                hair.lineWidth = 0.4
+                spot.withAlphaComponent(0.16 * k).setStroke()
+                hair.stroke()
+            }
+        }
+    }()
 
     /// Сторона клетки — по ней же строки плана (P413).
     static let cell: CGFloat = 18

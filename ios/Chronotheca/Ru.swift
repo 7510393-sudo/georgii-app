@@ -145,6 +145,12 @@ enum Ru {
         return n < 0 ? timeTints[0] : timeTints[1]
     }
 
+    /// День уже прошёл (P676) — у его страницы старая бумага.
+    static func isPast(_ date: Date) -> Bool {
+        let cal = Calendar.current
+        return cal.startOfDay(for: date) < DayStore.today()
+    }
+
     /// Цвет прошедших дней — им же залиты плашки прошлого плана (P421).
     static var pastTint: Color { timeTints[0] }
 
