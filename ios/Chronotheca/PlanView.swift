@@ -376,7 +376,7 @@ struct Panel: ViewModifier {
         content
             .background(Look.chrome, in: RoundedRectangle(cornerRadius: 6))
             .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Look.inkFaint, lineWidth: 1))
-            .shadow(color: .black.opacity(0.06), radius: 1, y: 1)
+            .shadow(color: .black.opacity(0.06), radius: 1, x: 1, y: 1)
     }
 }
 
@@ -679,7 +679,7 @@ struct PlanView: View {
                         }
                     }
                         .overlay(RoundedRectangle(cornerRadius: 4).strokeBorder(Look.glow, lineWidth: 2.6))
-                        .shadow(color: .black.opacity(0.25), radius: 8, y: 4)
+                        .shadow(color: .black.opacity(0.25), radius: 8, x: 4, y: 4)
                         .scaleEffect(1.08)
                         .position(x: photoSpot.x - o.x, y: photoSpot.y - o.y - 48)
                 }
@@ -852,7 +852,7 @@ struct PlanView: View {
             .animation(dragged == id ? nil : Self.makeRoom, value: displaced(id))
             .background { underneath(id) }
             .shadow(color: .black.opacity(dragged == id ? 0.18 : 0),
-                    radius: 8, y: 3)
+                    radius: 8, x: 3, y: 3)
             .zIndex(dragged == id || up ? 1 : 0)
             .contentShape(Rectangle())
             // Короткое нажатие ставит курсор в текст дела. Сделано —
@@ -1138,7 +1138,7 @@ struct PlanView: View {
         .background {
             if up, eventSlide < 0 { Self.swipeBack(eventSlide, left: T("Убрать", "Remove")) }
         }
-        .shadow(color: .black.opacity(up && eventDrag != 0 ? 0.18 : 0), radius: 8, y: 3)
+        .shadow(color: .black.opacity(up && eventDrag != 0 ? 0.18 : 0), radius: 8, x: 3, y: 3)
         .zIndex(up ? 1 : 0)
         .contentShape(Rectangle())
         .onTapGesture { open(e) }
@@ -1820,7 +1820,7 @@ private struct Carry: ViewModifier {
         if let report {
             content
                 .offset(y: dragged)
-                .shadow(color: .black.opacity(dragged == 0 ? 0 : 0.18), radius: 8, y: 3)
+                .shadow(color: .black.opacity(dragged == 0 ? 0 : 0.18), radius: 8, x: 3, y: 3)
                 .gesture(LongPressGesture(minimumDuration: 0.3)
                     .sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .global))
                     .updating($holding) { value, state, _ in
@@ -1923,7 +1923,7 @@ struct DeleteBadge: View {
                 .foregroundStyle(.white, Look.pin)
                 .font(.system(size: 31, weight: .bold))
                 .background(Circle().fill(.white).padding(-2.5))
-                .shadow(color: .black.opacity(0.3), radius: 3, y: 1)
+                .shadow(color: .black.opacity(0.3), radius: 3, x: 1, y: 1)
                 .frame(width: 48, height: 40)
                 .contentShape(Rectangle())
         }

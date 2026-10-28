@@ -189,7 +189,7 @@ struct PlusMenu: View {
                 .frame(width: 44, height: 44)
                 .background(KraftPaper().clipShape(Circle()).opacity(0.78))
                 .overlay(Circle().strokeBorder(Look.kraftEdge.opacity(0.55), lineWidth: 1))
-                .shadow(color: .black.opacity(0.18), radius: 3, y: 1.5)
+                .shadow(color: .black.opacity(0.18), radius: 3, x: 1.5, y: 1.5)
         }
         .accessibilityLabel(T("Приложить", "Attach"))
         .accessibilityIdentifier(id)

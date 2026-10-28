@@ -61,7 +61,7 @@ struct SettingsSticker: View {
     var body: some View {
         // Белый лист, разделы на нём — жёлтыми стикерами с тенью (P600).
         Sticker(side: .leading, title: T("Настройки", "Settings"),
-                paper: Look.planBg, edge: Look.rule, width: Self.width, height: height, close: close) {
+                width: Self.width, height: height, close: close) {
           // Длинная бумажка прокручивается: разделов стало много (P249).
           ScrollView {
            // Ленивая стопка (P475): листок строился целиком — все девять

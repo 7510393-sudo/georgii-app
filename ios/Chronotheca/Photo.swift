@@ -341,7 +341,7 @@ struct PhotoStrip: View {
                         Image(uiImage: DiaryEditor.Coordinator.crossImage)
                             .resizable()
                             .frame(width: min(40, size * 0.5), height: min(40, size * 0.5))
-                            .shadow(color: .black.opacity(0.3), radius: 3, y: 1)
+                            .shadow(color: .black.opacity(0.3), radius: 3, x: 1, y: 1)
                             .frame(width: min(48, size * 0.6), height: min(48, size * 0.6))
                             .contentShape(Rectangle())
                     }
@@ -478,7 +478,7 @@ struct PlanPhotoRow: View {
                     Image(uiImage: DiaryEditor.Coordinator.crossImage)
                         .resizable()
                         .frame(width: 40, height: 40)
-                        .shadow(color: .black.opacity(0.3), radius: 3, y: 1)
+                        .shadow(color: .black.opacity(0.3), radius: 3, x: 1, y: 1)
                         .frame(width: 48, height: 48)
                         .contentShape(Rectangle())
                 }
@@ -917,7 +917,7 @@ struct OverPhoto: ViewModifier {
             .frame(minWidth: 40, minHeight: 40)
             .background(Capsule().fill(Color.black.opacity(0.55)))
             .overlay(Capsule().strokeBorder(Color.white.opacity(0.35), lineWidth: 0.8))
-            .shadow(color: .black.opacity(0.3), radius: 4, y: 1)
+            .shadow(color: .black.opacity(0.3), radius: 4, x: 1, y: 1)
             .contentShape(Capsule())
     }
 }

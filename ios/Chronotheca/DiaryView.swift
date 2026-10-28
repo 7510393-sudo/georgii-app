@@ -765,7 +765,7 @@ struct StripGhostLayer: View {
                     // оставалась картинка прошлого переноса.
                     .id(link)
                     .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Look.glow, lineWidth: 2.6))
-                    .shadow(color: .black.opacity(0.25), radius: 8, y: 4)
+                    .shadow(color: .black.opacity(0.25), radius: 8, x: 4, y: 4)
                     // Выше пальца, чтобы он не закрывал картинку (P593).
                     .position(x: ghost.spot.x - o.x, y: ghost.spot.y - o.y - DiaryEditor.Coordinator.lift)
             }

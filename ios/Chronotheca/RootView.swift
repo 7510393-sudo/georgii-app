@@ -565,7 +565,7 @@ struct RootView: View {
                 hideKeyboard()
                 shell.pullOut()
             } label: {
-                Corner(leading: true, paper: Look.sticker, edge: Look.stickerEdge, icon: "gearshape",
+                Corner(leading: true, paper: Look.planBg, edge: Look.rule, icon: "gearshape",
                        tint: shell.showingSettings ? Look.accent : Look.inkSoft)
                     // Пока листок вытянут, его угол — это и есть уголок.
                     .opacity(shell.showingSettings ? 0 : 1)
@@ -961,7 +961,7 @@ struct Corner: View {
             // над листком проступала серая полоса — «неаккуратный верх».
             CornerShape(leading: leading, top: 0.2)
                 .fill(paper)
-                .shadow(color: .black.opacity(0.4), radius: 4, x: leading ? 2 : -2, y: 3.5)
+                .shadow(color: .black.opacity(0.4), radius: 4, x: 3, y: 3.5)
             CornerShape(leading: leading)
                 .fill(LinearGradient(stops: [.init(color: paper.opacity(0), location: 0),
                                              .init(color: paper, location: 0.11)],

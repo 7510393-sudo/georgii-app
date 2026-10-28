@@ -16,8 +16,10 @@ struct Sticker<Content: View>: View {
 
     let side: StickerSide
     let title: String
-    var paper: Color = Look.sticker
-    var edge: Color = Look.stickerEdge
+    /// Одна бумага на все листки (P670): белый лист, как у настроек;
+    /// жёлтый стикер — только там, где он стикер (разделы настроек, подсказки).
+    var paper: Color = Look.planBg
+    var edge: Color = Look.rule
     /// Ширина бумажки. У настроек она больше: там живут пути и списки.
     var width: CGFloat = 262
     /// Высота листка, если она задана заранее (P669): листок настроек
@@ -61,7 +63,7 @@ struct Sticker<Content: View>: View {
         // содержимого (P428): тень по сложному содержимому считается
         // заново на каждом кадре выезда, и длинный листок настроек
         // дёргался. Вид тот же.
-        .background(shape.fill(paper).shadow(color: .black.opacity(0.32), radius: 14, y: 6))
+        .background(shape.fill(paper).shadow(color: .black.opacity(0.32), radius: 14, x: 6, y: 6))
         .overlay(StickerBorder(radius: 12, side: side).stroke(edge, lineWidth: 1))
         // Спрятанный листок стоит так, что его нижний угол — ровно уголок
         // над экраном; вытягивают его за этот угол (P237).

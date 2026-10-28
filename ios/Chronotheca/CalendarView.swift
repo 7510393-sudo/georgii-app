@@ -262,7 +262,7 @@ struct CalendarView: View {
                         .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous)
                             .strokeBorder(Look.stickerEdge, lineWidth: 1))
                         .shadow(color: .black.opacity(down ? 0.06 : 0.16),
-                                radius: down ? 1 : 3, y: down ? 0.5 : 2)
+                                radius: down ? 1 : 3, x: down ? 0.5 : 2, y: down ? 0.5 : 2)
                 )
                 .scaleEffect(down ? 0.96 : 1)
                 .brightness(down ? -0.03 : 0)

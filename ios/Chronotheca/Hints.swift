@@ -190,7 +190,7 @@ struct HintSticker: View {
                 .rotationEffect(.degrees(-3))
                 .offset(y: -9)
         }
-        .shadow(color: .black.opacity(0.28), radius: 12, y: 6)
+        .shadow(color: .black.opacity(0.28), radius: 12, x: 6, y: 6)
         .rotationEffect(.degrees(-1.5))
         .accessibilityElement(children: .contain)
     }

@@ -41,7 +41,7 @@ struct NoteCard<Content: View>: View {
             // (P428, P488): так она не пересчитывается на каждом кадре выезда.
             .background(RoundedRectangle(cornerRadius: 8)
                 .fill(Look.sticker)
-                .shadow(color: .black.opacity(0.16), radius: 4, y: 2))
+                .shadow(color: .black.opacity(0.16), radius: 4, x: 2, y: 2))
             .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(Look.stickerEdge, lineWidth: 0.8))
             .padding(.horizontal, 12)
             .padding(.vertical, 7)

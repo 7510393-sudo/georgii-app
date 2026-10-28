@@ -235,10 +235,10 @@ enum Look {
     static let accent    = Color(light: 0x2F4A6B, dark: 0x8FB3E8)
     static let chrome    = Color(light: 0xF4F4F1, dark: 0x191F26)
     static let planBg    = Color(light: 0xFDFDFB, dark: 0x14191F)
-    /// Свет из-под превью в режиме изменений: их можно взять (P203).
-    /// На 30% насыщеннее прежнего 0x5E9BF0 (P374): контур поднятого дела,
-    /// метки и правки виден сразу.
-    static let glow      = Color(light: 0x2F7BEB, dark: 0x5C9EFF)
+    /// Контур взятого — дела, снимка, точки (P203, P374). Синими чернилами
+    /// перьевой ручки, а не синим цветом iPhone (P670): бумага спорила с
+    /// технологичным синим.
+    static let glow      = Color(light: 0x24478F, dark: 0x8AA9E6)
     /// Булавка точки на карте в тексте — заметная, красная, как булавка
     /// на картах (P358).
     static let pin       = Color(light: 0xD8433A, dark: 0xFF7A6E)
@@ -261,8 +261,9 @@ enum Look {
     static let plateDark   = Color(light: 0xF4E7BC, dark: 0x2B261A)
     static let stickerEdge = Color(light: 0xE8DCAE, dark: 0x3D3520)
     static let note        = Color(light: 0xE9F1F8, dark: 0x1A2430)
-    /// Выбранный вариант в настройках — голубой стикер на жёлтом (P600).
-    static let noteChosen  = Color(light: 0xD3E4F6, dark: 0x27405E)
+    /// Выбранный вариант в настройках (P600) — чуть тронут чернилами, а не
+    /// голубой цвет iPhone (P670).
+    static let noteChosen  = Color(light: 0xDDE2EC, dark: 0x2A3850)
 
     /// Крафт-картон нижней строки разделов (P297): обложка блокнота, одна
     /// во все дни. Значки на нём — тёмно-коричневыми чернилами.
@@ -297,7 +298,7 @@ enum Look {
     }
 
     /// Насыщенный синий дат в поиске (P282).
-    static let dateBlue = Color(light: 0x1D5BD8, dark: 0x6FA3FF)
+    static let dateBlue = Color(light: 0x24478F, dark: 0x8AA9E6)
 
     static func sans(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
         .system(size: step(size) * grow, weight: weight)

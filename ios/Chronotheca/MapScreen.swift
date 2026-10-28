@@ -245,7 +245,7 @@ struct MapScreen: View {
             .background(Capsule().fill(Look.chrome.opacity(0.82)))
             .overlay(Capsule().strokeBorder(Look.inkFaint.opacity(0.4), lineWidth: 0.8))
             .clipShape(Capsule())
-            .shadow(color: .black.opacity(0.18), radius: 3, y: 1.5)
+            .shadow(color: .black.opacity(0.18), radius: 3, x: 1.5, y: 1.5)
 
             Button {
                 Feel.light()
@@ -257,7 +257,7 @@ struct MapScreen: View {
                     .frame(width: MapSide.button, height: MapSide.button)
                     .background(Circle().fill(Look.chrome.opacity(0.82)))
                     .overlay(Circle().strokeBorder(Look.inkFaint.opacity(0.4), lineWidth: 0.8))
-                    .shadow(color: .black.opacity(0.18), radius: 3, y: 1.5)
+                    .shadow(color: .black.opacity(0.18), radius: 3, x: 1.5, y: 1.5)
             }
             .buttonStyle(.plain)
             .accessibilityLabel(shell.mapSatellite ? T("Показать схему", "Show the map")
@@ -278,7 +278,7 @@ struct MapScreen: View {
                     .frame(width: MapSide.button, height: MapSide.button)
                     .background(Circle().fill(Look.chrome.opacity(0.82)))
                     .overlay(Circle().strokeBorder(Look.inkFaint.opacity(0.4), lineWidth: 0.8))
-                    .shadow(color: .black.opacity(0.18), radius: 3, y: 1.5)
+                    .shadow(color: .black.opacity(0.18), radius: 3, x: 1.5, y: 1.5)
             }
             .accessibilityLabel(T("Все места", "All places"))
         }
@@ -409,7 +409,7 @@ struct MapScreen: View {
             .frame(height: 52)
             .background(Capsule()
                 .fill(.regularMaterial)
-                .shadow(color: .black.opacity(0.16), radius: 4, y: 2))
+                .shadow(color: .black.opacity(0.16), radius: 4, x: 2, y: 2))
             // Кромка — кнопки чётче на пёстрой карте (P283).
             .overlay(Capsule().strokeBorder(Look.inkFaint.opacity(0.7), lineWidth: 1))
             .opacity(on ? 1 : 0.55)
@@ -734,7 +734,7 @@ struct MapSearch: View {
                 .foregroundStyle(Look.ink)
                 .frame(width: 42, height: 42)
                 .background(.ultraThinMaterial, in: Circle())
-                .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
+                .shadow(color: .black.opacity(0.15), radius: 4, x: 2, y: 2)
         }
         .accessibilityLabel(T("Поиск на карте", "Search the map"))
     }
@@ -763,7 +763,7 @@ struct MapSearch: View {
         .padding(.horizontal, 14)
         .frame(height: 42)
         .background(.regularMaterial, in: Capsule())
-        .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
+        .shadow(color: .black.opacity(0.15), radius: 4, x: 2, y: 2)
         .transition(.scale(scale: 0.2, anchor: .leading).combined(with: .opacity))
     }
 

@@ -856,7 +856,7 @@ struct DiaryEditor: UIViewRepresentable {
             chip.layer.cornerRadius = square ? 8 : picture.size.height / 2
             chip.layer.shadowOpacity = 0.25
             chip.layer.shadowRadius = 6
-            chip.layer.shadowOffset = CGSize(width: 0, height: 2)
+            chip.layer.shadowOffset = CGSize(width: 2, height: 2)
             veil.addSubview(chip)
             // Снимок и так крупный — он лишь чуть приподнимается (P392).
             let grow: CGFloat = square ? 1.05 : 1.4
@@ -870,7 +870,7 @@ struct DiaryEditor: UIViewRepresentable {
             cross.layer.shadowColor = UIColor.black.cgColor
             cross.layer.shadowOpacity = 0.3
             cross.layer.shadowRadius = 3
-            cross.layer.shadowOffset = CGSize(width: 0, height: 1)
+            cross.layer.shadowOffset = CGSize(width: 1, height: 1)
             cross.isAccessibilityElement = true
             cross.accessibilityTraits = .button
             // Подпись крестика — по виду вложения.
