@@ -2372,16 +2372,11 @@ final class AwaitingSlot: NSTextAttachment {
 }
 
 /// Поле записи, которое замечает начало диктовки (P671): диктовка кладёт
-/// слова в поле временным выделенным текстом или заместителем, и правило
+/// слова в поле временным выделенным текстом, и правило
 /// «время с первой буквы» видело их, только когда фразу договорили и
 /// микрофон выключили.
 final class DiaryTextView: UITextView {
     var onDictationStart: (() -> Void)?
-
-    override func insertDictationResultPlaceholder() -> Any {
-        onDictationStart?()
-        return super.insertDictationResultPlaceholder()
-    }
 
     override func setMarkedText(_ markedText: String?, selectedRange: NSRange) {
         if markedTextRange == nil, !(markedText ?? "").isEmpty { onDictationStart?() }
