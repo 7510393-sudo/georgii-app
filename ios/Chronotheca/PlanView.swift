@@ -135,13 +135,20 @@ struct PlanRowLine: View {
             .fill(LinearGradient(colors: past ? [Ru.pastTint, Ru.pastTint]
                                               : [Look.plateLight, Look.plateDark],
                                  startPoint: .topLeading, endPoint: .bottomTrailing))
-            .overlay(shape.strokeBorder(LinearGradient(colors: [.white.opacity(past ? 0 : 0.9), .white.opacity(0)],
+            .overlay(shape.strokeBorder(LinearGradient(colors: [.white.opacity(past ? 0.6 : 0.9), .white.opacity(0)],
                                                        startPoint: .topLeading, endPoint: .center),
                                         lineWidth: 1.2))
             .overlay(shape.strokeBorder(lifted ? Look.glow
                                                : (past ? .clear : Look.inkFaint.opacity(ghost ? 0.2 : 0.4)),
                                         lineWidth: lifted ? 3.25 : 0.8))
-            .shadow(color: .black.opacity(0.16), radius: 2.5, x: 1.5, y: 2)
+            // Рельеф (P678): у кромки — плотная короткая тень, дальше — мягкая
+            // и длинная, обе вправо вниз, откуда свет не идёт; блик — по
+            // левой верхней кромке (и у прошедших дней). Тени нарисованы
+            // заранее (P675), у пустой плашки бледнее.
+            .background(PaintedShadow(radius: 5, corner: 9, x: 2.5, y: 3,
+                                      opacity: ghost ? 0.12 : 0.2))
+            .background(PaintedShadow(radius: 1.3, corner: 9, x: 0.8, y: 1.1,
+                                      opacity: ghost ? 0.14 : 0.26))
             .shadow(color: Look.glow.opacity(lifted ? 0.9 : 0), radius: 5)
             // Плашка уже с боков (P413).
             .padding(.leading, 10)
