@@ -231,10 +231,10 @@ final class DiaryTests: XCTestCase {
         XCTAssertEqual(Diary.kind(of: "a.JPG"), .photo)
     }
 
-    func testВложенияВКонцеЗаписиОстаютсяВТексте() {
+    func testВложенияВКонцеЗаписиВозвращаютсяВРяд() {
         let d = Diary(photos: ["../../Фотографии/2026/a.jpg", "../../Аудио/2026/b.m4a"])
         let обратно = Diary(body: d.body(order: []))
-        XCTAssertTrue(обратно.photos.isEmpty)
+        XCTAssertEqual(обратно.photos, d.photos)
         XCTAssertEqual(обратно.body(order: []), d.body(order: []))
     }
 
@@ -252,10 +252,10 @@ final class DiaryTests: XCTestCase {
                        ["../../Фотографии/2026/a.jpg", "../../Фотографии/2026/b c.jpg"])
         XCTAssertTrue(Diary.links(in: "Смотри ![](a.jpg) вот").isEmpty)
         XCTAssertEqual(Diary.links(in: "![](a.jpg)"), ["a.jpg"])
-        // Ряд в конце записи — часть текста, а не полоска: его поставили сами.
+        // Ряд в конце записи — ряд вложений внизу страницы (P665).
         let d = Diary(body: "Текст\n" + row)
-        XCTAssertTrue(d.photos.isEmpty)
-        XCTAssertTrue(d.text.contains(row))
+        XCTAssertEqual(d.photos, ["../../Фотографии/2026/a.jpg", "../../Фотографии/2026/b c.jpg"])
+        XCTAssertEqual(d.text, "Текст")
     }
 
     func testСнимокИзПолоскиВстаётРядом() {

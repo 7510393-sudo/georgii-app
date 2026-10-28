@@ -50,23 +50,22 @@ final class PlaceTests: XCTestCase {
         XCTAssertEqual(Geo.point(in: "geo:59.93863,30.31413")?.title, "")
         XCTAssertNil(Geo.point(in: "[Дом](../../Фотографии/2026/x.jpg)"))
         XCTAssertNil(Geo.point(in: "Были у [Дом](geo:1,2) вечером"))
-        // Точка — не файл; в конце записи она часть текста (P615).
+        // Точка — не файл, но в конце записи уходит в ряд внизу (P665).
         XCTAssertNil(Diary.picture(in: строка))
         let запись = Diary(body: "Гуляли.\n\n" + строка)
-        XCTAssertEqual(запись.photos, [])
-        XCTAssertEqual(запись.text, "Гуляли.\n\n" + строка)
+        XCTAssertEqual(запись.photos, [строка])
+        XCTAssertEqual(запись.text, "Гуляли.")
         // Посреди записи — остаётся в тексте.
         let посреди = Diary(body: "Гуляли.\n" + строка + "\nВечер.")
         XCTAssertEqual(посреди.photos, [])
-        // Последней строкой сразу под текстом — тоже текст (P591): прежде
-        // точка, перенесённая в конец записи, возвращалась в ленту.
+        // Последней строкой сразу под текстом — тоже в ряд (P665).
         let вКонце = Diary(body: "Гуляли.\n" + строка)
-        XCTAssertEqual(вКонце.photos, [])
-        XCTAssertEqual(вКонце.text, "Гуляли.\n" + строка)
-        // И снимок за ней после пустой строки — тоже текст (P615).
+        XCTAssertEqual(вКонце.photos, [строка])
+        XCTAssertEqual(вКонце.text, "Гуляли.")
+        // И снимок за ней после пустой строки — в тот же ряд.
         let сЛентой = Diary(body: "Гуляли.\n" + строка + "\n\n![](a.jpg)")
-        XCTAssertEqual(сЛентой.photos, [])
-        XCTAssertEqual(сЛентой.text, "Гуляли.\n" + строка + "\n\n![](a.jpg)")
+        XCTAssertEqual(сЛентой.photos, [строка, "a.jpg"])
+        XCTAssertEqual(сЛентой.text, "Гуляли.")
     }
 
     /// Точка с карты встаёт своей строкой — следующей за абзацем, где
