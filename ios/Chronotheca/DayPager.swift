@@ -421,6 +421,8 @@ struct PageTexture: View {
     var space: String = PageTexture.space
     /// Прошедший день: поверх обычной фактуры — старая бумага (P676).
     var aged = false
+    @Environment(\.colorScheme) private var scheme
+    private var dark: Bool { scheme == .dark }
 
     /// Общая точка отсчёта фактуры — вся страница дня.
     static let space = "страница"
@@ -428,7 +430,7 @@ struct PageTexture: View {
     var body: some View {
         ZStack {
             tiled(tab == .plan ? PageTexture.grid : PageTexture.grain)
-            if aged { tiled(PageTexture.old) }
+            if aged { tiled(PageTexture.relief).opacity(dark ? 0.45 : 1) }
         }
         .clipped()
         .allowsHitTesting(false)
@@ -451,109 +453,85 @@ struct PageTexture: View {
         }
     }
 
-    /// Густота старой бумаги: 1 — средняя. Меньше — тише, больше — заметнее
-    /// (P676; автор выбирает по снимкам).
-    static let oldStrength: CGFloat = 1
-
-    /// Старая бумага: пожелтевшие пятнышки («лисьи»), тёмные крапинки и
-    /// длинные волоски, редкие светлые точки. Плитка 220 точек, рисуется
-    /// один раз; узор один и тот же при каждом запуске (P114).
-    static let old: UIImage = {
-        let side: CGFloat = 220
-        let k = oldStrength
-        var seed: UInt64 = 0x01D_BA9E
-        func next() -> CGFloat {
+    /// Рельеф шершавой бумаги (P676, отменяет пятна и волоски): впадинки и
+    /// бугорки, освещённые слева сверху, как все тени (P670). Складывается
+    /// из двух слоёв случайных высот — мелкого и крупного; каждая точка
+    /// светлеет или темнеет по тому, куда наклонена. Плитка 128 точек
+    /// замкнута сама на себя — шва нет. Рисуется один раз.
+    static let relief: UIImage = {
+        let n = 256                                  // пикселей, плитка 128 точек при масштабе 2
+        var seed: UInt64 = 0x0E11EF
+        func next() -> Float {
             seed = seed &* 6364136223846793005 &+ 1442695040888963407
-            return CGFloat(seed >> 33) / CGFloat(UInt64(1) << 31)
+            return Float(seed >> 40) / Float(1 << 24) - 0.5
         }
-        let spot = UIColor(red: 0.55, green: 0.38, blue: 0.16, alpha: 1)
-        return UIGraphicsImageRenderer(size: CGSize(width: side, height: side)).image { ctx in
-            let cg = ctx.cgContext
-            // Мягкие пятна: круг с радиальным угасанием, с краёв плитки
-            // дорисованы по другую сторону — на стыке шва нет.
-            let colors = [spot.withAlphaComponent(0.07 * k).cgColor, spot.withAlphaComponent(0).cgColor] as CFArray
-            let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors, locations: [0, 1])!
-            for _ in 0..<9 {
-                let x = next() * side, y = next() * side
-                let r = 6 + next() * 14
-                for ox in [-side, 0, side] {
-                    for oy in [-side, 0, side] {
-                        cg.drawRadialGradient(gradient,
-                                              startCenter: CGPoint(x: x + ox, y: y + oy), startRadius: 0,
-                                              endCenter: CGPoint(x: x + ox, y: y + oy), endRadius: r,
-                                              options: [])
+        // Размытие по кругу плитки: края сходятся.
+        func blurred(_ a: [Float], radius r: Int, passes: Int) -> [Float] {
+            var src = a, dst = a
+            let w = Float(2 * r + 1)
+            for _ in 0..<passes {
+                for y in 0..<n {                      // по строкам
+                    for x in 0..<n {
+                        var sum: Float = 0
+                        for k in -r...r { sum += src[y * n + (x + k + n) % n] }
+                        dst[y * n + x] = sum / w
+                    }
+                }
+                for y in 0..<n {                      // по столбцам
+                    for x in 0..<n {
+                        var sum: Float = 0
+                        for k in -r...r { sum += dst[((y + k + n) % n) * n + x] }
+                        src[y * n + x] = sum / w
                     }
                 }
             }
-            for _ in 0..<260 {
-                let x = next() * side, y = next() * side
-                let r = 0.4 + next() * 0.9
-                spot.withAlphaComponent((0.10 + next() * 0.12) * k).setFill()
-                cg.fillEllipse(in: CGRect(x: x, y: y, width: r, height: r))
-            }
-            for _ in 0..<30 {
-                let x = next() * side, y = next() * side
-                let angle = next() * .pi
-                let length = 6 + next() * 14
-                let hair = UIBezierPath()
-                hair.move(to: CGPoint(x: x, y: y))
-                hair.addQuadCurve(to: CGPoint(x: x + cos(angle) * length, y: y + sin(angle) * length),
-                                  controlPoint: CGPoint(x: x + cos(angle + 0.5) * length / 2,
-                                                        y: y + sin(angle + 0.5) * length / 2))
-                hair.lineWidth = 0.4
-                spot.withAlphaComponent(0.16 * k).setStroke()
-                hair.stroke()
+            return src
+        }
+        func normalised(_ a: [Float]) -> [Float] {
+            let mean = a.reduce(0, +) / Float(a.count)
+            let sd = (a.reduce(0) { $0 + ($1 - mean) * ($1 - mean) } / Float(a.count)).squareRoot()
+            return a.map { ($0 - mean) / max(sd, 0.0001) }
+        }
+        let noise1 = (0..<n * n).map { _ in next() }
+        let noise2 = (0..<n * n).map { _ in next() }
+        let fine = normalised(blurred(noise1, radius: 1, passes: 2))
+        let coarse = normalised(blurred(noise2, radius: 2, passes: 4))
+        let height = zip(fine, coarse).map { $0 + $1 * 1.6 }
+        // Наклон: свет слева сверху — склон, смотрящий на свет, светлый.
+        var lit = [Float](repeating: 0, count: n * n)
+        for y in 0..<n {
+            for x in 0..<n {
+                let h = height[y * n + x]
+                let dx = height[y * n + (x + 1) % n] - h
+                let dy = height[((y + 1) % n) * n + x] - h
+                lit[y * n + x] = -(dx + dy)
             }
         }
+        lit = normalised(lit)
+        // Светлое — белым, тёмное — чёрным, густота по наклону.
+        var bytes = [UInt8](repeating: 0, count: n * n * 4)
+        for i in 0..<n * n {
+            let v = lit[i] * Float(PageTexture.reliefStrength)
+            let white = v > 0
+            let alpha = min(abs(v) * (white ? 0.11 : 0.021), 0.5)
+            let c: Float = white ? 1 : 0
+            bytes[i * 4] = UInt8(c * alpha * 255)
+            bytes[i * 4 + 1] = UInt8(c * alpha * 255)
+            bytes[i * 4 + 2] = UInt8(c * alpha * 255)
+            bytes[i * 4 + 3] = UInt8(alpha * 255)
+        }
+        let provider = CGDataProvider(data: Data(bytes) as CFData)!
+        let image = CGImage(width: n, height: n, bitsPerComponent: 8, bitsPerPixel: 32,
+                            bytesPerRow: n * 4, space: CGColorSpaceCreateDeviceRGB(),
+                            bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue),
+                            provider: provider, decode: nil, shouldInterpolate: false,
+                            intent: .defaultIntent)!
+        return UIImage(cgImage: image, scale: 2, orientation: .up)
     }()
 
-    /// Сторона клетки — по ней же строки плана (P413).
-    static let cell: CGFloat = 18
-
-    /// Клетка в 18 точек — как в школьной тетради, но еле видная.
-    static let grid: UIImage = {
-        let side: CGFloat = cell
-        return UIGraphicsImageRenderer(size: CGSize(width: side, height: side)).image { ctx in
-            UIColor(Look.accent).withAlphaComponent(0.09).setFill()
-            ctx.fill(CGRect(x: 0, y: 0, width: side, height: 0.6))
-            ctx.fill(CGRect(x: 0, y: 0, width: 0.6, height: side))
-        }
-    }()
-
-    /// Волокно бумаги: мелкие крапинки и короткие волоски, светлые и
-    /// тёмные вперемешку. Узор один и тот же при каждом запуске — иначе
-    /// соседние страницы различались бы на снимках (P114).
-    static let grain: UIImage = {
-        let side: CGFloat = 160
-        var seed: UInt64 = 0x5EED_2026
-        func next() -> CGFloat {
-            seed = seed &* 6364136223846793005 &+ 1442695040888963407
-            return CGFloat(seed >> 33) / CGFloat(UInt64(1) << 31)
-        }
-        return UIGraphicsImageRenderer(size: CGSize(width: side, height: side)).image { ctx in
-            for _ in 0..<700 {
-                let x = next() * side, y = next() * side
-                let r = 0.3 + next() * 0.7
-                let dark = next() < 0.6
-                (dark ? UIColor(Look.ink).withAlphaComponent(0.035 + next() * 0.03)
-                      : UIColor.white.withAlphaComponent(0.25 + next() * 0.2)).setFill()
-                ctx.cgContext.fillEllipse(in: CGRect(x: x, y: y, width: r, height: r))
-            }
-            for _ in 0..<40 {
-                let x = next() * side, y = next() * side
-                let angle = next() * .pi
-                let length = 3 + next() * 6
-                let fibre = UIBezierPath()
-                fibre.move(to: CGPoint(x: x, y: y))
-                fibre.addQuadCurve(to: CGPoint(x: x + cos(angle) * length, y: y + sin(angle) * length),
-                                   controlPoint: CGPoint(x: x + cos(angle + 0.6) * length / 2,
-                                                         y: y + sin(angle + 0.6) * length / 2))
-                fibre.lineWidth = 0.4
-                UIColor(Look.ink).withAlphaComponent(0.05).setStroke()
-                fibre.stroke()
-            }
-        }
-    }()
+    /// Густота рельефа: 1 — средняя (в эскизе `docs/paper/рельеф.png` — второй
+    /// вариант); 0,55 — тихая, 1,55 — резкая.
+    static let reliefStrength = CGFloat(1)
 }
 
 /// «＋» внизу страницы (P615) и всё, что она открывает: галерея, камера,
