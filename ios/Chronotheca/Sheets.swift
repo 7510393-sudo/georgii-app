@@ -9,12 +9,15 @@ import SwiftUI
 /// говорит, к чему бумажка относится — к дню или ко всему приложению.
 struct SettingsSticker: View {
 
-    /// Высота листка: от верха до нижних разделов, за вычетом шапки листка.
-    static var fullHeight: CGFloat {
+    /// Высота листка до первой мерки: от верха до рваного края нижней
+    /// строки, за вычетом шапки листка (P667).
+    static func fullHeight(barTop: CGFloat) -> CGFloat {
         let window = UIApplication.shared.connectedScenes
             .compactMap { ($0 as? UIWindowScene)?.keyWindow }.first
         let insets = window?.safeAreaInsets ?? .zero
-        return max(300, UIScreen.main.bounds.height - insets.top - insets.bottom - 66 + 8)
+        let bottom = barTop > 0 ? barTop - TornEdge.depth
+                                : UIScreen.main.bounds.height - insets.bottom - 66
+        return max(300, bottom - insets.top - 66)
     }
 
     @EnvironmentObject private var vault: Vault
@@ -27,11 +30,13 @@ struct SettingsSticker: View {
     /// Листок встал на место: можно мерить (P513).
     @State private var settled = false
 
-    /// Высота прокрутки: листок кончается под нижней строкой, на 16 точек ниже её
-    /// верха (P515): строка лежит поверх, рваный край виден на листке.
+    /// Высота прокрутки: листок кончается над рваным краем нижней строки
+    /// (P667) — строка не заходит на листок, и её копия поверх не нужна
+    /// (отменяет P515: листок заходил под строку, а копия строки над ним
+    /// сдвигалась и подскакивала, P636–P646).
     private var height: CGFloat {
-        guard top > 0, shell.barTop > top else { return Self.fullHeight }
-        return max(300, shell.barTop + 16 - top)
+        guard top > 0, shell.barTop > top else { return Self.fullHeight(barTop: shell.barTop) }
+        return max(300, shell.barTop - TornEdge.depth - top)
     }
 
     /// Объём папки, посчитанный заранее (P486): пока листок открывался, объём
@@ -92,9 +97,8 @@ struct SettingsSticker: View {
                 aboutPart
                 version
             }
-            // Низ листка уходит под нижнюю строку (P515) — последняя строка
-            // («Версия») пряталась под ней и не нажималась (P585).
-            Color.clear.frame(height: 72)
+            // Воздух под последней строкой («Версия», P585).
+            Color.clear.frame(height: 16)
            }
           }
           // Листок — до нижней неподвижной строки (P291): прикрывает её
