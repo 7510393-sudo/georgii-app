@@ -436,9 +436,6 @@ struct PageTexture: View {
             tiled(tab == .plan ? PageTexture.grid : PageTexture.grain)
             if aged {
                 ZStack {
-                    // В тёмной теме светлых облаков и янтарных краёв нет
-                    // (P680): светлые пятна портили светлый текст.
-                    tiled(dark ? PageTexture.cloudsDark : PageTexture.clouds)
                     tiled(PageTexture.paper)
                     if !dark { edges }
                 }
@@ -621,8 +618,6 @@ struct PageTexture: View {
     /// первый показ прошедшего дня не должен ждать, пока она нарисуется.
     static func prepareSoon() {
         DispatchQueue.global(qos: .utility).async {
-            _ = clouds
-            _ = cloudsDark
             _ = paper
             _ = sideEdge
             _ = footEdge
@@ -647,38 +642,6 @@ struct PageTexture: View {
 
     /// Облака тона (P676): крупные мягкие пятна, где светлее и теплее, где
     /// темнее. Плитка 576 точек, замкнута сама на себя.
-    static let clouds: UIImage = cloudImage(darkOnly: false)
-
-    /// Для тёмной темы: только тёмные пятна, без светлых (P680).
-    static let cloudsDark: UIImage = cloudImage(darkOnly: true)
-
-    private static func cloudImage(darkOnly: Bool) -> UIImage {
-        let n = 192                                   // 3 точки на пиксель
-        var seed: UInt64 = 0xC10D5
-        func next() -> Float {
-            seed = seed &* 6364136223846793005 &+ 1442695040888963407
-            return Float(seed >> 40) / Float(1 << 24) - 0.5
-        }
-        let big = normalised(wrapBlur((0..<n * n).map { _ in next() }, side: n, radius: 12, passes: 4))
-        let small = normalised(wrapBlur((0..<n * n).map { _ in next() }, side: n, radius: 4, passes: 3))
-        let k = Float(wearStrength)
-        var bytes = [UInt8](repeating: 0, count: n * n * 4)
-        for i in 0..<n * n {
-            let v = (big[i] * 0.8 + small[i] * 0.35) * k
-            let light = v > 0
-            if darkOnly && light { continue }
-            // Светлое — тёплый белый, тёмное — коричневый (в тёмной теме —
-            // чёрный, и погуще: на тёмном листе коричневый почти не виден).
-            let alpha = min(abs(v) * (light ? 0.09 : (darkOnly ? 0.08 : 0.04)), 0.4)
-            let c: (Float, Float, Float) = light ? (1, 0.97, 0.88) : (darkOnly ? (0, 0, 0) : (0.45, 0.38, 0.25))
-            bytes[i * 4] = UInt8(c.0 * alpha * 255)
-            bytes[i * 4 + 1] = UInt8(c.1 * alpha * 255)
-            bytes[i * 4 + 2] = UInt8(c.2 * alpha * 255)
-            bytes[i * 4 + 3] = UInt8(alpha * 255)
-        }
-        return picture(bytes, width: n, height: n, scale: 1.0 / 3)
-    }
-
     /// Бумага одним слоем (P679): рельеф и редкие бледные крапинки с
     /// волосками. Плитка 384 точки — рельеф (128) повторён три на три,
     /// поверх разбросаны крапинки, которых на ней около полусотни, так что
@@ -719,7 +682,7 @@ struct PageTexture: View {
         }
     }()
 
-    static let sideDepth: CGFloat = 70
+    static let sideDepth: CGFloat = 96
     static let footDepth: CGFloat = 110
 
     /// Бок: у края глубже всего, дальше затухает; глубина гуляет по длине.
@@ -737,8 +700,14 @@ struct PageTexture: View {
             return Float(seed >> 40) / Float(1 << 24) - 0.5
         }
         // Гуляющая глубина: круговая одномерная размытая случайность.
-        let wob = wrapBlur1D((0..<along).map { _ in next() }, radius: 40, passes: 4)
-        let wn = normalised(wob).map { max(-1.5, min(1.5, $0)) }
+        // Глубина края гуляет вдоль него крупными пятнами и мелкой рябью
+        // (P681): край — не ровная полоса, а несколько потемнений разной
+        // ширины, как у страницы, которую брали руками.
+        let slow = normalised(wrapBlur1D((0..<along).map { _ in next() }, radius: 60, passes: 4))
+            .map { max(-1.5, min(1.5, $0)) }
+        let quick = normalised(wrapBlur1D((0..<along).map { _ in next() }, radius: 14, passes: 3))
+            .map { max(-1.5, min(1.5, $0)) }
+        let wn = zip(slow, quick).map { $0 * 0.75 + $1 * 0.3 }
         let width = vertical ? depth : along, height = vertical ? along : depth
         var bytes = [UInt8](repeating: 0, count: width * height * 4)
         let k = Float(wearStrength)
@@ -746,7 +715,7 @@ struct PageTexture: View {
             for d in 0..<depth {
                 // d — расстояние от края в пикселях; в точках вдвое меньше.
                 let distance = Float(d) / 2
-                let alpha = min(peak * k * exp(-distance / (falloff * (1 + 0.35 * wn[a]))), 0.45)
+                let alpha = min(peak * k * exp(-distance / (falloff * max(0.35, 1 + wn[a]))), 0.45)
                 let x = vertical ? d : a
                 let y = vertical ? a : depth - 1 - d     // низ: край — последняя строка
                 let i = (y * width + x) * 4
