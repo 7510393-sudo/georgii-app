@@ -453,6 +453,54 @@ struct PageTexture: View {
         }
     }
 
+    /// Сторона клетки — по ней же строки плана (P413).
+    static let cell: CGFloat = 18
+
+    /// Клетка в 18 точек — как в школьной тетради, но еле видная.
+    static let grid: UIImage = {
+        let side: CGFloat = cell
+        return UIGraphicsImageRenderer(size: CGSize(width: side, height: side)).image { ctx in
+            UIColor(Look.accent).withAlphaComponent(0.09).setFill()
+            ctx.fill(CGRect(x: 0, y: 0, width: side, height: 0.6))
+            ctx.fill(CGRect(x: 0, y: 0, width: 0.6, height: side))
+        }
+    }()
+
+    /// Волокно бумаги: мелкие крапинки и короткие волоски, светлые и
+    /// тёмные вперемешку. Узор один и тот же при каждом запуске — иначе
+    /// соседние страницы различались бы на снимках (P114).
+    static let grain: UIImage = {
+        let side: CGFloat = 160
+        var seed: UInt64 = 0x5EED_2026
+        func next() -> CGFloat {
+            seed = seed &* 6364136223846793005 &+ 1442695040888963407
+            return CGFloat(seed >> 33) / CGFloat(UInt64(1) << 31)
+        }
+        return UIGraphicsImageRenderer(size: CGSize(width: side, height: side)).image { ctx in
+            for _ in 0..<700 {
+                let x = next() * side, y = next() * side
+                let r = 0.3 + next() * 0.7
+                let dark = next() < 0.6
+                (dark ? UIColor(Look.ink).withAlphaComponent(0.035 + next() * 0.03)
+                      : UIColor.white.withAlphaComponent(0.25 + next() * 0.2)).setFill()
+                ctx.cgContext.fillEllipse(in: CGRect(x: x, y: y, width: r, height: r))
+            }
+            for _ in 0..<40 {
+                let x = next() * side, y = next() * side
+                let angle = next() * .pi
+                let length = 3 + next() * 6
+                let fibre = UIBezierPath()
+                fibre.move(to: CGPoint(x: x, y: y))
+                fibre.addQuadCurve(to: CGPoint(x: x + cos(angle) * length, y: y + sin(angle) * length),
+                                   controlPoint: CGPoint(x: x + cos(angle + 0.6) * length / 2,
+                                                         y: y + sin(angle + 0.6) * length / 2))
+                fibre.lineWidth = 0.4
+                UIColor(Look.ink).withAlphaComponent(0.05).setStroke()
+                fibre.stroke()
+            }
+        }
+    }()
+
     /// Рельеф шершавой бумаги (P676, отменяет пятна и волоски): впадинки и
     /// бугорки, освещённые слева сверху, как все тени (P670). Складывается
     /// из двух слоёв случайных высот — мелкого и крупного; каждая точка
