@@ -437,8 +437,7 @@ struct PageTexture: View {
             if aged {
                 ZStack {
                     tiled(PageTexture.clouds)
-                    tiled(PageTexture.relief)
-                    tiled(PageTexture.specks)
+                    tiled(PageTexture.paper)
                     edges
                 }
                 .opacity(dark ? 0.45 : 1)
@@ -614,25 +613,34 @@ struct PageTexture: View {
         return picture(bytes, width: n, height: n, scale: 1.0 / 3)
     }()
 
-    /// Редкие мелкие крапинки и волоски, бледные: плитка 400 точек, на ней
-    /// их около полусотни — повтор не бросается в глаза.
-    static let specks: UIImage = {
+    /// Бумага одним слоем (P679): рельеф и редкие бледные крапинки с
+    /// волосками. Плитка 384 точки — рельеф (128) повторён три на три,
+    /// поверх разбросаны крапинки, которых на ней около полусотни, так что
+    /// повтор не бросается в глаза. Слоёв на странице стало меньше —
+    /// страница, которую листают, легче.
+    static let paper: UIImage = {
         var seed: UInt64 = 0x5BECC5
         func next() -> CGFloat {
             seed = seed &* 6364136223846793005 &+ 1442695040888963407
             return CGFloat(seed >> 33) / CGFloat(UInt64(1) << 31)
         }
-        let side: CGFloat = 400
+        let side: CGFloat = 384
         let k = wearStrength
         let format = UIGraphicsImageRendererFormat(); format.scale = 2
+        let tile = relief
         return UIGraphicsImageRenderer(size: CGSize(width: side, height: side), format: format).image { ctx in
             let cg = ctx.cgContext
-            for _ in 0..<Int(52 * k) {
+            for row in 0..<3 {
+                for column in 0..<3 {
+                    tile.draw(at: CGPoint(x: CGFloat(column) * 128, y: CGFloat(row) * 128))
+                }
+            }
+            for _ in 0..<Int(48 * k) {
                 let d = 0.9 + next() * 1.5
                 UIColor(red: 0.42, green: 0.32, blue: 0.18, alpha: 0.10 + next() * 0.12).setFill()
                 cg.fillEllipse(in: CGRect(x: next() * side, y: next() * side, width: d, height: d))
             }
-            for _ in 0..<Int(13 * k) {
+            for _ in 0..<Int(12 * k) {
                 let x = next() * side, y = next() * side
                 let angle = next() * .pi, length = 4 + next() * 7
                 let hair = UIBezierPath()
@@ -1009,6 +1017,24 @@ struct SideDay: View {
     @State private var events: [DayEvents.Shown] = []
     /// День из «Здоровья» (P378) — как на открытой странице.
     @State private var health: String?
+    /// Чей день сейчас лежит в полях выше: готовая страница (P679) кладётся
+    /// сразу при создании, до первого кадра.
+    @State private var loadedStamp: String?
+
+    init(date: Date) {
+        self.date = date
+        if let page = ReadyPages.shared.page(for: date) {
+            _rows = State(initialValue: page.rows)
+            _planPhotos = State(initialValue: page.planPhotos)
+            _title = State(initialValue: page.title)
+            _text = State(initialValue: page.text)
+            _answers = State(initialValue: page.answers)
+            _photos = State(initialValue: page.photos)
+            _weather = State(initialValue: page.weather)
+            _events = State(initialValue: page.events)
+            _loadedStamp = State(initialValue: Vault.stamp(date))
+        }
+    }
 
     var body: some View {
         // Та же страница, что у открытого дня: план сверху, дневник ниже
@@ -1029,7 +1055,12 @@ struct SideDay: View {
         // Страницу могли переиспользовать для другого дня, а запись открытого
         // дня — лечь на диск уже после первого чтения (P439).
         .onChange(of: date) { _, _ in load() }
-        .onChange(of: store.savedTick) { _, _ in load() }
+        // Запись открытого дня легла на диск — её страница в готовых уже
+        // выброшена (`DayStore.save`), соседние остаются как были (P679).
+        .onChange(of: store.savedTick) { _, _ in
+            loadedStamp = nil
+            load()
+        }
     }
 
     private var tasks: [PlanRow] { rows.filter { $0.isTask } }
@@ -1060,21 +1091,21 @@ struct SideDay: View {
         }
     }
 
+    /// Страница берёт готовое (`ReadyPages`, P679) и только раскладывает по
+    /// полям; собранной нет — собирает сейчас, как прежде.
     private func load() {
-        (rows, planPhotos) = Plan.splitPhotos(
-            Plan.rows(from: DayFile(text: vault.read(.planner, for: date)).body))
-        let file = DayFile(text: vault.read(.diary, for: date))
-        // Ответы «Как прошло?» — по настоящим названиям дел, как у открытой
-        // страницы (P155): без них дело с двоеточием в названии («Звонок в
-        // 10:30») теряло ответ на соседней странице, и он появлялся скачком,
-        // когда страница становилась открытой (P441).
-        let diary = Diary(body: file.body, known: rows.map(\.text))
-        title = file.value("title") ?? ""
-        text = diary.text
-        answers = diary.answers
-        photos = diary.photos
-        weather = file.value("weather")
-        events = DayEvents.shown(DayEvents.items(for: date), marks: DayEvents.marks(in: rows))
+        let stamp = Vault.stamp(date)
+        guard loadedStamp != stamp else { return }
+        let page = ReadyPages.shared.pageNow(for: date, vault: vault)
+        rows = page.rows
+        planPhotos = page.planPhotos
+        title = page.title
+        text = page.text
+        answers = page.answers
+        photos = page.photos
+        weather = page.weather
+        events = page.events
+        loadedStamp = stamp
     }
 }
 

@@ -393,15 +393,20 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
                 guard !reachDone else { return }
                 if stuck { busy = false }
                 guard !busy else { return }
-                let at = pan.location(in: view).x
                 let moved = pan.translation(in: view)
                 let speed = pan.velocity(in: view)
-                let band = EdgeGate.band
-                // Быстро, почти прямо и не на пару миллиметров.
-                let fast = abs(speed.x) > 500 && abs(speed.x) > abs(speed.y) * 2 && abs(moved.x) > 60
-                let right = moved.x > 0 && at > view.bounds.width - band
-                let left = moved.x < 0 && at < band
-                guard fast, right || left else { return }
+                // Посреди страницы с клавиатурой (P679): прежде брался только
+                // быстрый и почти прямой взмах на 60 точек и дальше — лист не
+                // слушался. Теперь взмах мягче и короче (250 точек в секунду,
+                // 30 точек пути), но только начатый сразу после касания:
+                // курсор и ручки выделения берут после удержания, и пока
+                // выделен текст, лист посреди страницы не идёт.
+                let quick = Date().timeIntervalSince(EdgeGate.touchDown) < 0.5
+                let swipe = abs(speed.x) > 250 && abs(speed.x) > abs(speed.y) * 1.4 && abs(moved.x) > 30
+                guard quick, swipe, !EdgeGate.selecting else { return }
+                let right = moved.x > 0
+                let left = moved.x < 0
+                guard right || left else { return }
                 reachDone = true
                 busy = true
                 // Вправо — назад, влево — вперёд, как везде.
@@ -563,6 +568,28 @@ final class EdgeGate: UIGestureRecognizer, UIGestureRecognizerDelegate {
     /// пока пишут. Без клавиатуры движение вбок курсор не двигает — лист
     /// берут где угодно; с клавиатурой — только у края (P532).
     static var keyboardUp = false
+
+    /// Когда палец лёг в последний раз (P679).
+    static var touchDown = Date.distantPast
+
+    /// Выделен ли текст в поле, где пишут: тогда посреди страницы палец,
+    /// скорее всего, тянет ручку выделения, и лист не берём (P679).
+    static var selecting: Bool {
+        for scene in UIApplication.shared.connectedScenes {
+            guard let windows = (scene as? UIWindowScene)?.windows else { continue }
+            for window in windows {
+                if let text = firstResponderText(in: window), text.selectedRange.length > 0 { return true }
+            }
+        }
+        return false
+    }
+
+    private static func firstResponderText(in view: UIView) -> UITextView? {
+        if let text = view as? UITextView, text.isFirstResponder { return text }
+        for sub in view.subviews { if let found = firstResponderText(in: sub) { return found } }
+        return nil
+    }
+
     private static let watching: Void = {
         let centre = NotificationCenter.default
         centre.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil,
@@ -576,9 +603,13 @@ final class EdgeGate: UIGestureRecognizer, UIGestureRecognizerDelegate {
         guard state == .possible, let view, let touch = touches.first else { return }
         let x = touch.location(in: view).x
         let atEdge = x < Self.band || x > view.bounds.width - Self.band
-        // Лента превью листается вбок сама (P535): на ней лист не берут.
-        let onStrip = StripZones.strip?.contains(touch.location(in: nil)) ?? false
-        let free = !Self.keyboardUp && !onStrip
+        // Ленты, которая листалась бы вбок сама, больше нет (P665, P679):
+        // вложения внизу страницы — обычные ряды, и лист берут и над ними
+        // (прежде над лентой лист не брался — P535, отменено).
+        let free = !Self.keyboardUp
+        // Когда палец лёг: быстрый взмах начинается сразу, а курсор и
+        // ручки выделения берут после удержания (P679).
+        Self.touchDown = Date()
         state = atEdge || free ? .failed : .recognized
     }
 

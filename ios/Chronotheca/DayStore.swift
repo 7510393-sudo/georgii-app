@@ -1282,31 +1282,7 @@ final class DayStore: ObservableObject {
         mine = [.planner: planFile().text, .diary: diaryFileNow().text]
         if away.isEmpty { retries = 0 } else { waitForCloud() }
         // Следом, не задерживая открытый день.
-        DispatchQueue.main.async { [weak self] in self?.warmNeighbours() }
-    }
-
-    /// Превью соседних дней — в память заранее (P669, P672): прежде
-    /// снимок читался с диска, только когда страницу уже показали, и при
-    /// листании после запуска картинки появлялись на открытой странице с
-    /// опозданием — кроме тех, что уже видели.
-    private func warmNeighbours() {
-        guard vault.root != nil else { return }
-        var items: [(url: URL, plan: Bool)] = []
-        // Два дня в каждую сторону, ближние первыми (P672): пока листается
-        // соседний день, следующий за ним уже готов.
-        for step in [-1, 1, -2, 2] {
-            guard let day = Calendar.current.date(byAdding: .day, value: step, to: date) else { continue }
-            let (rows, old) = Plan.splitPhotos(
-                Plan.rows(from: DayFile(text: vault.read(.planner, for: day)).body))
-            let diary = Diary(body: DayFile(text: vault.read(.diary, for: day)).body)
-            let underTasks = rows.compactMap(\.verbatim).filter(Plan.isPhotoRow).flatMap(Plan.items(in:))
-            for (links, plan) in [(underTasks, true), (diary.photos + old, false)] {
-                for link in links where !Diary.isPoint(link) && Diary.kind(of: link) == .photo {
-                    if let url = vault.mediaURL(link, for: day) { items.append((url, plan)) }
-                }
-            }
-        }
-        Photo.warm(items)
+        ReadyPages.shared.warm(around: date, vault: vault)
     }
 
     /// Сверить открытый день с диском.
@@ -1368,6 +1344,8 @@ final class DayStore: ObservableObject {
         // Заголовок дня — это уже запись, даже если под ним пока нет ни строчки.
         let b = write(diary, to: .diary, keep: !diaryTitle.isEmpty || place != nil || weather != nil)
         if a || b { load() }
+        // Готовая страница этого дня устарела (P679).
+        ReadyPages.shared.forget(date)
         savedTick += 1
         // Напоминания дня — по тому, что теперь в плане (P260). Недокачанный
         // план не трогаем: пустой список снял бы настоящие напоминания.
@@ -1400,6 +1378,8 @@ final class DayStore: ObservableObject {
     /// Человек вернулся в приложение: сверить день с диском заново.
     func comeBack() {
         retries = 0
+        // Пока приложение стояло, дни могли поправить в другом месте (P679).
+        ReadyPages.shared.forget()
         // Сутки могли смениться, пока приложение стояло в фоне, — тогда
         // открытый день уже не сегодняшний. Возвращаемся на настоящее
         // сегодня, а не остаёмся на вчерашней странице (P330).
