@@ -57,7 +57,13 @@ struct NoteRow<Trailing: View>: View {
     /// Кнопка всегда справа, подпись переносится (P485) — для строк, у которых
     /// подпись дополняется уже на открытом листке.
     var pinned = false
+    /// Длинное пояснение — в окошке по значку «i», а не строками листка (P687).
+    var info: String? = nil
+    /// Ссылка в том же окошке (условия Погоды Apple).
+    var infoLink: (title: String, url: URL)? = nil
     @ViewBuilder let trailing: () -> Trailing
+    @State private var showingInfo = false
+    @Environment(\.openURL) private var openURL
 
     var body: some View {
         Group {
@@ -92,6 +98,15 @@ struct NoteRow<Trailing: View>: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 9)
+        // Окошко одно на строку: подпись в `ViewThatFits` строится дважды.
+        .alert(title, isPresented: $showingInfo) {
+            if let infoLink {
+                Button(infoLink.title) { openURL(infoLink.url) }
+            }
+            Button(T("Закрыть", "Close"), role: .cancel) { }
+        } message: {
+            Text(info ?? "")
+        }
         // Строки одного стикера-раздела разделены тонкой чертой (P600).
         .overlay(alignment: .top) {
             Rectangle().fill(Look.stickerEdge).frame(height: 0.8).padding(.horizontal, 12)
@@ -101,10 +116,23 @@ struct NoteRow<Trailing: View>: View {
     private var label: some View {
         VStack(alignment: .leading, spacing: 2) {
             // Название — засечным, как записи и заголовки (P387).
-            Text(title)
-                .font(Look.serif(16.5))
-                .foregroundStyle(Look.ink)
-                .fixedSize(horizontal: false, vertical: true)
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(title)
+                    .font(Look.serif(16.5))
+                    .foregroundStyle(Look.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                if let info {
+                    Button { showingInfo = true } label: {
+                        Image(systemName: "info.circle")
+                            .font(.system(size: 15))
+                            .foregroundStyle(Look.inkSoft)
+                            .frame(minWidth: 28, minHeight: 28)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(T("Подробнее", "More"))
+                }
+            }
             if let detail {
                 Text(detail)
                     .font(Look.sans(12.5))
@@ -148,6 +176,9 @@ struct Choice<Value: Hashable>: View {
 /// Выбор цветовой гаммы (P498): кнопки — словами, без образцов (P647).
 struct SchemeChoice: View {
     @Binding var selection: String
+    /// Нажатая гамма видна сразу; смена гаммы пересобирает все страницы и
+    /// занимает время — она идёт следом (P687).
+    @State private var pending: String?
     /// Какие варианты показать: «без цвета» стоит в строке с названием, три
     /// гаммы — строкой ниже (P650).
     var keys: [String]? = nil
@@ -163,11 +194,16 @@ struct SchemeChoice: View {
         Flow(spacing: 4, trailing: true) {
             ForEach(options.filter { keys?.contains($0.0) ?? true }, id: \.0) { key, name in
                 // Прежний «weekday» читается как первая гамма.
-                let on = key == selection || (key == "distance" && selection == "weekday")
+                let shown = pending ?? selection
+                let on = key == shown || (key == "distance" && shown == "weekday")
                 Button {
                     guard !on else { return }
                     Feel.tick()
-                    selection = key
+                    pending = key
+                    DispatchQueue.main.async {
+                        selection = key
+                        pending = nil
+                    }
                 } label: {
                     // Кнопка — размером со слово (замечание автора к 182):
                     // с кружками-образцами четыре кнопки вставали в три строки.

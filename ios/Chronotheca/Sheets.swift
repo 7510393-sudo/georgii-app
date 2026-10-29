@@ -159,9 +159,8 @@ struct SettingsSticker: View {
         // Язык — в Настройках iPhone, как у всех приложений (P633): там
         // у приложения с переводами стоит своя строка «Язык».
         NoteRow(title: T("Язык приложения", "App language"),
-                detail: T("Язык приложения выбирается в Настройках iPhone: Приложения → Graphomanus → Язык.",
-                          "The app’s language is chosen in iPhone Settings: Apps → Graphomanus → Language."),
-                pinned: true) {
+                info: T("Язык приложения выбирается в Настройках iPhone: Приложения → Graphomanus → Язык.",
+                          "The app’s language is chosen in iPhone Settings: Apps → Graphomanus → Language.")) {
             NoteButton(title: T("Настройки iPhone ›", "iPhone Settings ›")) {
                 if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
             }
@@ -243,17 +242,15 @@ struct SettingsSticker: View {
         // docs/50): меню и так длинное. Страница в переключателе приложений
         // под замком и так прячется (P293).
         NoteRow(title: T("Замок: Face ID или код", "Lock: Face ID or passcode"),
-                detail: T("Для полной защиты можно включить двухфакторную защиту Apple ID и «Расширенную защиту данных» в iCloud.",
-                          "For fuller protection you can turn on two-factor authentication for your Apple ID and Advanced Data Protection in iCloud."),
-                pinned: true) {
+                info: T("Для полной защиты можно включить двухфакторную защиту Apple ID и «Расширенную защиту данных» в iCloud.",
+                          "For fuller protection you can turn on two-factor authentication for your Apple ID and Advanced Data Protection in iCloud.")) {
             Lever(isOn: lockChoice)
         }
         // Чужая клавиатура с «полным доступом» видит всё набранное (P633, по
         // docs/50): выключатель, как у банковских приложений.
         NoteRow(title: T("Только клавиатура iPhone", "Only the iPhone keyboard"),
-                detail: T("Клавиатура из App Store с «полным доступом» видит всё, что вы набираете. Включено — в приложении работает только клавиатура iPhone. Может понадобиться перезапуск приложения.",
-                          "A keyboard from the App Store with “Full Access” can see everything you type. On: only the iPhone keyboard works in the app. May need an app restart."),
-                pinned: true) {
+                info: T("Клавиатура из App Store с «полным доступом» видит всё, что вы набираете. Включено — в приложении работает только клавиатура iPhone. Может понадобиться перезапуск приложения.",
+                          "A keyboard from the App Store with “Full Access” can see everything you type. On: only the iPhone keyboard works in the app. May need an app restart.")) {
             Lever(isOn: $ownKeyboardOnly)
         }
     }
@@ -279,8 +276,8 @@ struct SettingsSticker: View {
         // одиннадцати вечера (P602), а не только 20, 21 или 22: списком,
         // как «Новый день начинается в».
         NoteRow(title: T("Напоминание о дневнике", "Diary reminder"),
-                detail: evening >= 0 ? T("Короткая мысль в этот час — если в дневнике сегодня пусто.",
-                                         "A short thought at this hour — if today’s diary is empty.") : nil) {
+                info: T("Короткая мысль в этот час — если в дневнике сегодня пусто.",
+                        "A short thought at this hour — if today’s diary is empty.")) {
             Menu {
                 Button(T("выкл", "off")) { setEvening(-1) }
                 ForEach(6..<24, id: \.self) { h in
@@ -314,7 +311,9 @@ struct SettingsSticker: View {
         // выключено, пока он сам не включит (P452, P609).
         NoteSection(title: T("Дополнения", "Extras"))
         // Погоды нет — почему (P354). Текст можно выделить и прислать.
-        NoteRow(title: T("Погода", "Weather")) {
+        NoteRow(title: T("Погода", "Weather"),
+                info: T("Погода в записях — от Погоды Apple.", "The weather in entries comes from Apple Weather."),
+                infoLink: (T("Условия", "Terms"), WeatherNote.legal)) {
             Lever(isOn: Binding(get: { !noWeather }, set: { on in
                 noWeather = !on
                 if on { store.fetchWeatherIfNeeded() }
@@ -334,7 +333,7 @@ struct SettingsSticker: View {
         // Не вышло спросить — подсказка прямо под выключателем (P503).
         if HealthDay.available {
             NoteRow(title: T("Здоровье: шаги, сон, тренировки", "Health: steps, sleep, workouts"),
-                    detail: healthDetail, pinned: true) {
+                    detail: healthDetail, pinned: true, info: healthHint) {
                 Lever(isOn: Binding(get: { health }, set: { on in
                     health = on
                     if on { HealthDay.ask { healthIssue = !$0 } } else { healthIssue = false; HealthDay.changed() }
@@ -345,7 +344,9 @@ struct SettingsSticker: View {
         }
         // События Календаря iPhone в плане (P376).
         NoteRow(title: T("События Календаря iPhone", "iPhone Calendar events"),
-                detail: eventsDetail, detailColor: eventsDenied ? .orange : Look.inkSoft, pinned: true) {
+                detail: eventsDetail, detailColor: eventsDenied ? .orange : Look.inkSoft, pinned: true,
+                info: T("Над делами, по времени; звонит сам Календарь.",
+                        "Above your tasks, by time; Calendar itself rings.")) {
             Lever(isOn: Binding(get: { calendarEvents }, set: { on in
                 calendarEvents = on
                 if on, DayEvents.status == .notDetermined { DayEvents.ask { _ in } }
@@ -378,8 +379,7 @@ struct SettingsSticker: View {
             return T("Нет доступа к Календарю — разрешите в Настройках iPhone.",
                      "No access to Calendar — allow it in iPhone Settings.")
         }
-        return T("Над делами, по времени; звонит сам Календарь.",
-                 "Above your tasks, by time; Calendar itself rings.")
+        return nil
     }
 
     @ViewBuilder private var lookPart: some View {
@@ -433,11 +433,6 @@ struct SettingsSticker: View {
                 NoteButton(title: T("Начать ›", "Start ›")) { askingTrial = true }
             }
         }
-        // Погода в записях — от Погоды Apple; её условия положено
-        // показывать там, где приложение показывает погоду (P208).
-        NoteRow(title: T("Погода — Погода Apple", "Weather — Apple Weather")) {
-            NoteButton(title: T("Условия ›", "Terms ›")) { openURL(WeatherNote.legal) }
-        }
     }
 
     @State private var storageBytes: Int64? = SettingsSticker.cachedBytes
@@ -484,11 +479,15 @@ struct SettingsSticker: View {
             return T("У этой сборки нет права на «Здоровье» — iPhone не может спросить разрешение.",
                      "This build has no Health permission, so iPhone cannot ask for access.")
         }
-        // Путь, который помог автору (24.10): шагов не было с весны — iPhone
-        // их не считал, а не прятал.
-        let hint = T("Нет строки? Шаги считает iPhone: Настройки → Конфиденциальность и безопасность → Движение и фитнес → «Отслеживание фитнеса». Доступ: «Здоровье» → ваш значок → Приложения → Graphomanus.",
-                     "No line? iPhone counts steps: Settings → Privacy & Security → Motion & Fitness → Fitness Tracking. Access: Health → your picture → Apps → Graphomanus.")
-        return healthToday.map { $0 + "\n" + hint } ?? hint
+        // Итог проверки — на виду; путь, как включить шаги, — в окошке «i» (P687).
+        return healthToday
+    }
+
+    /// Путь, который помог автору (24.10): шагов не было с весны — iPhone
+    /// их не считал, а не прятал.
+    private var healthHint: String {
+        T("Нет строки? Шаги считает iPhone: Настройки → Конфиденциальность и безопасность → Движение и фитнес → «Отслеживание фитнеса». Доступ: «Здоровье» → ваш значок → Приложения → Graphomanus.",
+          "No line? iPhone counts steps: Settings → Privacy & Security → Motion & Fitness → Fitness Tracking. Access: Health → your picture → Apps → Graphomanus.")
     }
     @AppStorage(DayEvents.holidaysKey) private var calendarHolidays = false
     @AppStorage(Prefs.calendarTint) private var calendarTint = "distance"
