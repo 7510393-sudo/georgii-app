@@ -1,371 +1,59 @@
-Analysis of sampling Chronotheca (pid 16039) every 1 millisecond
-Process:         Chronotheca [16039]
-Path:            /Users/USER/Library/Developer/CoreSimulator/Devices/77AA4492-C787-4EEE-A772-05D4B3E9ECCD/data/Containers/Bundle/Application/F3368EE8-7918-42C2-A728-F4DD1424A9DC/Chronotheca.app/Chronotheca
-Load Address:    0x1044cc000
-Identifier:      Chronotheca
-Version:         ???
-Code Type:       ARM64
-Platform:        iOS Simulator
-Parent Process:  launchd_sim [3027]
-Target Type:     live task
-
-Date/Time:       2026-10-29 13:49:32.358 +0000
-Launch Time:     2026-10-29 13:49:25.838 +0000
-OS Version:      macOS 26.6.2 (25G83)
-Report Version:  7
-Analysis Tool:   /usr/bin/sample
-
-Physical footprint:         201.0M
-Physical footprint (peak):  203.5M
-Idle exit:                  untracked
-----
-
-Call graph:
-    2 Thread_50578   DispatchQueue_1: com.apple.main-thread  (serial)
-    + 2 start  (in dyld) + 6992  [0x1045b44e4]
-    +   2 start_sim  (in dyld_sim) + 20  [0x10483b0e4]
-    +     2 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x1063ad770]  ChronothecaApp.swift:0
-    +       2 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1063ad6c4]  /<compiler-generated>:0
-    +         2 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
-    +           2 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
-    +             2 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
-    +               2 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
-    +                 2 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
-    +                   2 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
-    +                     2 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
-    +                       2 __CFRunLoopRun  (in CoreFoundation) + 1884  [0x180421c6c]
-    +                         2 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__  (in CoreFoundation) + 12  [0x180422a94]
-    +                           2 _dispatch_main_queue_callback_4CF  (in libdispatch.dylib) + 40  [0x180195890]
-    +                             2 _dispatch_main_queue_drain  (in libdispatch.dylib) + 644  [0x180195b24]
-    +                               2 _dispatch_source_invoke  (in libdispatch.dylib) + 1800  [0x18019df44]
-    +                                 2 _dispatch_continuation_pop  (in libdispatch.dylib) + 776  [0x18018b068]
-    +                                   2 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
-    +                                     2 thunk for @escaping @callee_guaranteed () -> ()  (in Chronotheca.debug.dylib) + 48  [0x1062e4178]  /<compiler-generated>:0
-    +                                       2 closure #1 in closure #2 in ChronothecaApp.body.getter  (in Chronotheca.debug.dylib) + 328  [0x1063ad3fc]  ChronothecaApp.swift:94
-    +                                         1 DayStore.fetchWeatherIfNeeded()  (in Chronotheca.debug.dylib) + 436  [0x1064486e4]  <stdin>:0
-    +                                         ! 1 ???  (in CoreLocation)  load address 0x184a65000 + 0x1752c  [0x184a7c52c]
-    +                                         !   1 ???  (in CoreLocation)  load address 0x184a65000 + 0x14b98  [0x184a79b98]
-    +                                         !     1 CLClientInvalidate  (in CoreLocation) + 188  [0x184a69a50]
-    +                                         !       1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
-    +                                         !         1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
-    +                                         !           1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9820  [0x1800b68f4]
-    +                                         !             1 _os_log_impl_stream  (in libsystem_trace.dylib) + 524  [0x1800b6e94]
-    +                                         !               1 _os_activity_stream_reflect  (in libsystem_trace.dylib) + 336  [0x1800a605c]
-    +                                         !                 1 dyld4::APIs::dyld_image_path_containing_address(void const*)  (in dyld_sim) + 68  [0x104833184]
-    +                                         !                   1 dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 528  [0x104832ec0]
-    +                                         !                     1 dyld4::RuntimeLocks::withLoadersReadLock(void () block_pointer)  (in dyld_sim) + 48  [0x104841390]
-    +                                         !                       1 _os_unfair_lock_lock_slow  (in libsystem_platform.dylib) + 168  [0x104561258]
-    +                                         !                         1 __ulock_wait2  (in libsystem_kernel.dylib) + 8  [0x1044edb04]
-    +                                         1 DayStore.fetchWeatherIfNeeded()  (in Chronotheca.debug.dylib) + 412  [0x1064486cc]  DayStore.swift:1153
-    +                                           1 ???  (in CoreLocation)  load address 0x184a65000 + 0x2d154  [0x184a92154]
-    +                                             1 ???  (in CoreLocation)  load address 0x184a65000 + 0x137904  [0x184b9c904]
-    +                                               1 ???  (in CoreLocation)  load address 0x184a65000 + 0x12ef9c  [0x184b93f9c]
-    +                                                 1 _NSXPCDistantObjectSimpleMessageSend3  (in Foundation) + 72  [0x181226190]
-    +                                                   1 -[NSXPCConnection _sendSelector:withProxy:arg1:arg2:arg3:]  (in Foundation) + 132  [0x181212564]
-    +                                                     1 -[NSXPCConnection _sendInvocation:orArguments:count:methodSignature:selector:withProxy:]  (in Foundation) + 1960  [0x181212e14]
-    +                                                       1 __NSXPCCONNECTION_IS_WAITING_FOR_A_SYNCHRONOUS_REPLY__  (in Foundation) + 12  [0x1812137dc]
-    +                                                         1 xpc_connection_send_message_with_reply_sync  (in libxpc.dylib) + 252  [0x1800cf918]
-    +                                                           1 dispatch_mach_send_with_result_and_wait_for_reply  (in libdispatch.dylib) + 56  [0x1801a2adc]
-    +                                                             1 _dispatch_mach_send_and_wait_for_reply  (in libdispatch.dylib) + 564  [0x1801a2740]
-    +                                                               1 mach_msg  (in libsystem_kernel.dylib) + 20  [0x1044e0ef0]
-    +                                                                 1 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x1044e8c44]
-    +                                                                   1 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x1044f1e84]
-    +                                                                     1 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x1044e0b70]
-    2 Thread_51692   DispatchQueue_16: com.apple.root.user-initiated-qos  (concurrent)
-    + 2 start_wqthread  (in libsystem_pthread.dylib) + 8  [0x104769a28]
-    +   2 _pthread_wqthread  (in libsystem_pthread.dylib) + 228  [0x10476abec]
-    +     2 _dispatch_worker_thread2  (in libdispatch.dylib) + 252  [0x180199eb0]
-    +       2 _dispatch_root_queue_drain  (in libdispatch.dylib) + 880  [0x1801996fc]
-    +         2 <deduplicated_symbol>  (in libdispatch.dylib) + 24  [0x1801bd748]
-    +           2 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
-    +             2 _dispatch_call_block_and_release  (in libdispatch.dylib) + 24  [0x1801866a0]
-    +               2 thunk for @escaping @callee_guaranteed @Sendable () -> ()  (in Chronotheca.debug.dylib) + 48  [0x1062e4270]  /<compiler-generated>:0
-    +                 2 closure #1 in Vault.seedBigArchive(before:)  (in Chronotheca.debug.dylib) + 196  [0x1068f7a6c]  Vault.swift:413
-    +                   1 static Vault.seedBigArchive(in:before:)  (in Chronotheca.debug.dylib) + 6540  [0x1068f94e4]  Vault.swift:468
-    +                   ! 1 static Vault.write(_:to:)  (in Chronotheca.debug.dylib) + 116  [0x1068fb2f4]  Vault.swift:1274
-    +                   !   1 static Vault.write(data:to:)  (in Chronotheca.debug.dylib) + 796  [0x1068faef4]  Vault.swift:1290
-    +                   !     1 -[NSFileCoordinator coordinateWritingItemAtURL:options:error:byAccessor:]  (in Foundation) + 84  [0x1811c78b4]
-    +                   !       1 -[NSFileCoordinator(NSPrivate) _coordinateWritingItemAtURL:options:error:byAccessor:]  (in Foundation) + 540  [0x1811c9c3c]
-    +                   !         1 -[NSFileCoordinator(NSPrivate) _blockOnAccessClaim:withAccessArbiter:]  (in Foundation) + 320  [0x1811c8c0c]
-    +                   !           1 interposed_dispatch_semaphore_wait  (in libRPAC.dylib) + 124  [0x104ac8458]
-    +                   !             1 _dispatch_semaphore_wait_slow  (in libdispatch.dylib) + 128  [0x1801883c0]
-    +                   !               1 _dispatch_sema4_wait  (in libdispatch.dylib) + 24  [0x180187d60]
-    +                   !                 1 semaphore_wait_trap  (in libsystem_kernel.dylib) + 8  [0x1044e0aec]
-    +                   1 static Vault.seedBigArchive(in:before:)  (in Chronotheca.debug.dylib) + 10096  [0x1068fa2c8]  Vault.swift:486
-    +                     1 static Vault.write(_:to:)  (in Chronotheca.debug.dylib) + 116  [0x1068fb2f4]  Vault.swift:1274
-    +                       1 static Vault.write(data:to:)  (in Chronotheca.debug.dylib) + 796  [0x1068faef4]  Vault.swift:1290
-    +                         1 -[NSFileCoordinator coordinateWritingItemAtURL:options:error:byAccessor:]  (in Foundation) + 84  [0x1811c78b4]
-    +                           1 -[NSFileCoordinator(NSPrivate) _coordinateWritingItemAtURL:options:error:byAccessor:]  (in Foundation) + 540  [0x1811c9c3c]
-    +                             1 -[NSFileCoordinator(NSPrivate) _blockOnAccessClaim:withAccessArbiter:]  (in Foundation) + 320  [0x1811c8c0c]
-    +                               1 interposed_dispatch_semaphore_wait  (in libRPAC.dylib) + 124  [0x104ac8458]
-    +                                 1 _dispatch_semaphore_wait_slow  (in libdispatch.dylib) + 128  [0x1801883c0]
-    +                                   1 _dispatch_sema4_wait  (in libdispatch.dylib) + 24  [0x180187d60]
-    +                                     1 semaphore_wait_trap  (in libsystem_kernel.dylib) + 8  [0x1044e0aec]
-    2 Thread_51933   DispatchQueue_7: com.apple.root.background-qos  (concurrent)
-    + 2 start_wqthread  (in libsystem_pthread.dylib) + 8  [0x104769a28]
-    +   2 _pthread_wqthread  (in libsystem_pthread.dylib) + 228  [0x10476abec]
-    +     2 _dispatch_worker_thread2  (in libdispatch.dylib) + 252  [0x180199eb0]
-    +       2 _dispatch_root_queue_drain  (in libdispatch.dylib) + 880  [0x1801996fc]
-    +         2 <deduplicated_symbol>  (in libdispatch.dylib) + 24  [0x1801bd748]
-    +           2 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
-    +             2 _dispatch_call_block_and_release  (in libdispatch.dylib) + 24  [0x1801866a0]
-    +               2 _CFXNotificationRegisterObserver  (in CoreFoundation) + 212  [0x1803eb08c]
-    +                 2 _CFNotificationCenterInitializeDependentNotificationIfNecessary  (in CoreFoundation) + 244  [0x1803eace8]
-    +                   2 _os_unfair_lock_unlock_slow  (in libsystem_platform.dylib) + 52  [0x104561350]
-    +                     2 __ulock_wake  (in libsystem_kernel.dylib) + 8  [0x1044e2844]
-    2 Thread_51995
-    + 2 start_wqthread  (in libsystem_pthread.dylib) + 8  [0x104769a28]
-    +   2 _pthread_wqthread  (in libsystem_pthread.dylib) + 364  [0x10476ac74]
-    +     2 __workq_kernreturn  (in libsystem_kernel.dylib) + 8  [0x1044e2698]
-    2 Thread_51996: com.apple.uikit.eventfetch-thread
-    + 2 thread_start  (in libsystem_pthread.dylib) + 8  [0x104769a34]
-    +   2 _pthread_start  (in libsystem_pthread.dylib) + 104  [0x10476e63c]
-    +     2 __NSThread__start__  (in Foundation) + 716  [0x181154edc]
-    +       2 -[UIEventFetcher threadMain]  (in UIKitCore) + 404  [0x1861d7ad4]
-    +         2 -[NSRunLoop(NSRunLoop) runUntilDate:]  (in Foundation) + 60  [0x18112fc68]
-    +           2 -[NSRunLoop(NSRunLoop) runMode:beforeDate:]  (in Foundation) + 208  [0x18112fa4c]
-    +             2 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
-    +               2 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
-    +                 2 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
-    +                   2 mach_msg  (in libsystem_kernel.dylib) + 20  [0x1044e0ef0]
-    +                     2 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x1044e8c44]
-    +                       2 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x1044f1e84]
-    +                         2 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x1044e0b70]
-    2 Thread_51998   DispatchQueue_10: com.apple.root.utility-qos  (concurrent)
-    + 2 start_wqthread  (in libsystem_pthread.dylib) + 8  [0x104769a28]
-    +   2 _pthread_wqthread  (in libsystem_pthread.dylib) + 228  [0x10476abec]
-    +     2 _dispatch_worker_thread2  (in libdispatch.dylib) + 252  [0x180199eb0]
-    +       2 _dispatch_root_queue_drain  (in libdispatch.dylib) + 880  [0x1801996fc]
-    +         2 <deduplicated_symbol>  (in libdispatch.dylib) + 24  [0x1801bd748]
-    +           2 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
-    +             2 _dispatch_call_block_and_release  (in libdispatch.dylib) + 24  [0x1801866a0]
-    +               2 thunk for @escaping @callee_guaranteed @Sendable () -> ()  (in Chronotheca.debug.dylib) + 48  [0x1062e4270]  /<compiler-generated>:0
-    +                 2 closure #1 in static PageTexture.prepareSoon()  (in Chronotheca.debug.dylib) + 16  [0x1063d9cfc]  DayPager.swift:640
-    +                   2 PageTexture.sideEdge.unsafeMutableAddressor  (in Chronotheca.debug.dylib) + 76  [0x1063d701c]  DayPager.swift:707
-    +                     2 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
-    +                       2 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
-    +                         2 one-time initialization function for sideEdge  (in Chronotheca.debug.dylib) + 44  [0x1063db05c]  DayPager.swift:707
-    +                           1 static PageTexture.edgeImage(depthPoints:falloff:peak:vertical:)  (in Chronotheca.debug.dylib) + 1796  [0x1063db770]  DayPager.swift:0
-    +                           ! 1 IndexingIterator.next()  (in libswiftCore.dylib) + 400  [0x19824d250]
-    +                           !   1 protocol witness for Collection.formIndex(after:) in conformance <> Range<A>  (in libswiftCore.dylib) + 596  [0x19839cb08]
-    +                           1 static PageTexture.edgeImage(depthPoints:falloff:peak:vertical:)  (in Chronotheca.debug.dylib) + 2728  [0x1063dbb14]  DayPager.swift:740
-    +                             1 Array.subscript.modify  (in libswiftCore.dylib) + 56  [0x19825b45c]
-    +                               1 Array._checkSubscript_mutating(_:)  (in libswiftCore.dylib) + 36  [0x19825abc8]
-    +                                 1 _swift_isClassOrObjCExistentialType  (in libswiftCore.dylib) + 0  [0x19817fb34]
-    2 Thread_52001
-    + 1 start_wqthread  (in libsystem_pthread.dylib) + 8  [0x104769a28]
-    + ! 1 _pthread_wqthread  (in libsystem_pthread.dylib) + 364  [0x10476ac74]
-    + !   1 __workq_kernreturn  (in libsystem_kernel.dylib) + 8  [0x1044e2698]
-    + 1 start_wqthread  (in libsystem_pthread.dylib) + 0  [0x104769a20]
-    2 Thread_52002   DispatchQueue_10: com.apple.root.utility-qos  (concurrent)
-    + 2 start_wqthread  (in libsystem_pthread.dylib) + 8  [0x104769a28]
-    +   2 _pthread_wqthread  (in libsystem_pthread.dylib) + 228  [0x10476abec]
-    +     2 _dispatch_worker_thread2  (in libdispatch.dylib) + 252  [0x180199eb0]
-    +       2 _dispatch_root_queue_drain  (in libdispatch.dylib) + 880  [0x1801996fc]
-    +         2 <deduplicated_symbol>  (in libdispatch.dylib) + 24  [0x1801bd748]
-    +           2 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
-    +             2 AG::(anonymous namespace)::TypeDescriptorCache::drain_queue(void*)  (in AttributeGraph) + 356  [0x1c42e1774]
-    +               2 AG::LayoutDescriptor::make_layout(AG::swift::metadata const*, AGComparisonMode, AG::LayoutDescriptor::HeapMode)  (in AttributeGraph) + 112  [0x1c42dfb70]
-    +                 2 AG::swift::metadata::visit(AG::swift::metadata_visitor&) const  (in AttributeGraph) + 780  [0x1c42c8384]
-    +                   2 AG::swift::metadata_visitor::visit_field(AG::swift::metadata const*, AG::swift::field_record const&, unsigned long, unsigned long)  (in AttributeGraph) + 132  [0x1c42c8bc0]
-    +                     2 AG::LayoutDescriptor::Builder::visit_element(AG::swift::metadata const*, AG::swift::metadata::ref_kind, unsigned long, unsigned long)  (in AttributeGraph) + 116  [0x1c42ded3c]
-    +                       2 AG::LayoutDescriptor::Builder::should_visit_fields(AG::swift::metadata const*, bool)  (in AttributeGraph) + 56  [0x1c42dee90]
-    +                         2 AG::(anonymous namespace)::TypeDescriptorCache::fetch(AG::swift::metadata const*, unsigned int, AG::LayoutDescriptor::HeapMode, int)  (in AttributeGraph) + 368  [0x1c42dfeb0]
-    +                           2 AG::LayoutDescriptor::make_layout(AG::swift::metadata const*, AGComparisonMode, AG::LayoutDescriptor::HeapMode)  (in AttributeGraph) + 112  [0x1c42dfb70]
-    +                             2 AG::swift::metadata::visit(AG::swift::metadata_visitor&) const  (in AttributeGraph) + 780  [0x1c42c8384]
-    +                               2 AG::swift::metadata_visitor::visit_field(AG::swift::metadata const*, AG::swift::field_record const&, unsigned long, unsigned long)  (in AttributeGraph) + 132  [0x1c42c8bc0]
-    +                                 2 AG::LayoutDescriptor::Builder::visit_element(AG::swift::metadata const*, AG::swift::metadata::ref_kind, unsigned long, unsigned long)  (in AttributeGraph) + 116  [0x1c42ded3c]
-    +                                   2 AG::LayoutDescriptor::Builder::should_visit_fields(AG::swift::metadata const*, bool)  (in AttributeGraph) + 56  [0x1c42dee90]
-    +                                     2 AG::(anonymous namespace)::TypeDescriptorCache::fetch(AG::swift::metadata const*, unsigned int, AG::LayoutDescriptor::HeapMode, int)  (in AttributeGraph) + 368  [0x1c42dfeb0]
-    +                                       2 AG::LayoutDescriptor::make_layout(AG::swift::metadata const*, AGComparisonMode, AG::LayoutDescriptor::HeapMode)  (in AttributeGraph) + 112  [0x1c42dfb70]
-    +                                         2 AG::swift::metadata::visit(AG::swift::metadata_visitor&) const  (in AttributeGraph) + 780  [0x1c42c8384]
-    +                                           2 AG::swift::metadata_visitor::visit_field(AG::swift::metadata const*, AG::swift::field_record const&, unsigned long, unsigned long)  (in AttributeGraph) + 132  [0x1c42c8bc0]
-    +                                             2 AG::LayoutDescriptor::Builder::visit_element(AG::swift::metadata const*, AG::swift::metadata::ref_kind, unsigned long, unsigned long)  (in AttributeGraph) + 116  [0x1c42ded3c]
-    +                                               2 AG::LayoutDescriptor::Builder::should_visit_fields(AG::swift::metadata const*, bool)  (in AttributeGraph) + 56  [0x1c42dee90]
-    +                                                 2 AG::(anonymous namespace)::TypeDescriptorCache::fetch(AG::swift::metadata const*, unsigned int, AG::LayoutDescriptor::HeapMode, int)  (in AttributeGraph) + 368  [0x1c42dfeb0]
-    +                                                   2 AG::LayoutDescriptor::make_layout(AG::swift::metadata const*, AGComparisonMode, AG::LayoutDescriptor::HeapMode)  (in AttributeGraph) + 112  [0x1c42dfb70]
-    +                                                     2 AG::swift::metadata::visit(AG::swift::metadata_visitor&) const  (in AttributeGraph) + 588  [0x1c42c82c4]
-    +                                                       2 AG::LayoutDescriptor::Builder::visit_case(AG::swift::metadata const*, AG::swift::field_record const&, unsigned int)  (in AttributeGraph) + 452  [0x1c42df2e8]
-    +                                                         2 AG::swift::metadata::visit(AG::swift::metadata_visitor&) const  (in AttributeGraph) + 780  [0x1c42c8384]
-    +                                                           2 AG::swift::metadata_visitor::visit_field(AG::swift::metadata const*, AG::swift::field_record const&, unsigned long, unsigned long)  (in AttributeGraph) + 132  [0x1c42c8bc0]
-    +                                                             2 AG::LayoutDescriptor::Builder::visit_element(AG::swift::metadata const*, AG::swift::metadata::ref_kind, unsigned long, unsigned long)  (in AttributeGraph) + 116  [0x1c42ded3c]
-    +                                                               2 AG::LayoutDescriptor::Builder::should_visit_fields(AG::swift::metadata const*, bool)  (in AttributeGraph) + 56  [0x1c42dee90]
-    +                                                                 2 AG::(anonymous namespace)::TypeDescriptorCache::fetch(AG::swift::metadata const*, unsigned int, AG::LayoutDescriptor::HeapMode, int)  (in AttributeGraph) + 368  [0x1c42dfeb0]
-    +                                                                   2 AG::LayoutDescriptor::make_layout(AG::swift::metadata const*, AGComparisonMode, AG::LayoutDescriptor::HeapMode)  (in AttributeGraph) + 112  [0x1c42dfb70]
-    +                                                                     2 AG::swift::metadata::visit(AG::swift::metadata_visitor&) const  (in AttributeGraph) + 780  [0x1c42c8384]
-    +                                                                       2 AG::swift::metadata_visitor::visit_field(AG::swift::metadata const*, AG::swift::field_record const&, unsigned long, unsigned long)  (in AttributeGraph) + 132  [0x1c42c8bc0]
-    +                                                                         2 AG::LayoutDescriptor::Builder::visit_element(AG::swift::metadata const*, AG::swift::metadata::ref_kind, unsigned long, unsigned long)  (in AttributeGraph) + 116  [0x1c42ded3c]
-    +                                                                           2 AG::LayoutDescriptor::Builder::should_visit_fields(AG::swift::metadata const*, bool)  (in AttributeGraph) + 56  [0x1c42dee90]
-    +                                                                             2 AG::(anonymous namespace)::TypeDescriptorCache::fetch(AG::swift::metadata const*, unsigned int, AG::LayoutDescriptor::HeapMode, int)  (in AttributeGraph) + 368  [0x1c42dfeb0]
-    +                                                                               2 AG::LayoutDescriptor::make_layout(AG::swift::metadata const*, AGComparisonMode, AG::LayoutDescriptor::HeapMode)  (in AttributeGraph) + 112  [0x1c42dfb70]
-    +                                                                                 2 AG::swift::metadata::visit(AG::swift::metadata_visitor&) const  (in AttributeGraph) + 780  [0x1c42c8384]
-    +                                                                                   2 AG::swift::metadata_visitor::visit_field(AG::swift::metadata const*, AG::swift::field_record const&, unsigned long, unsigned long)  (in AttributeGraph) + 132  [0x1c42c8bc0]
-    +                                                                                     2 AG::LayoutDescriptor::Builder::visit_element(AG::swift::metadata const*, AG::swift::metadata::ref_kind, unsigned long, unsigned long)  (in AttributeGraph) + 116  [0x1c42ded3c]
-    +                                                                                       2 AG::LayoutDescriptor::Builder::should_visit_fields(AG::swift::metadata const*, bool)  (in AttributeGraph) + 56  [0x1c42dee90]
-    +                                                                                         2 AG::(anonymous namespace)::TypeDescriptorCache::fetch(AG::swift::metadata const*, unsigned int, AG::LayoutDescriptor::HeapMode, int)  (in AttributeGraph) + 368  [0x1c42dfeb0]
-    +                                                                                           2 AG::LayoutDescriptor::make_layout(AG::swift::metadata const*, AGComparisonMode, AG::LayoutDescriptor::HeapMode)  (in AttributeGraph) + 112  [0x1c42dfb70]
-    +                                                                                             2 AG::swift::metadata::visit(AG::swift::metadata_visitor&) const  (in AttributeGraph) + 588  [0x1c42c82c4]
-    +                                                                                               2 AG::LayoutDescriptor::Builder::visit_case(AG::swift::metadata const*, AG::swift::field_record const&, unsigned int)  (in AttributeGraph) + 376  [0x1c42df29c]
-    +                                                                                                 2 AG::LayoutDescriptor::Builder::should_visit_fields(AG::swift::metadata const*, bool)  (in AttributeGraph) + 56  [0x1c42dee90]
-    +                                                                                                   2 AG::(anonymous namespace)::TypeDescriptorCache::fetch(AG::swift::metadata const*, unsigned int, AG::LayoutDescriptor::HeapMode, int)  (in AttributeGraph) + 368  [0x1c42dfeb0]
-    +                                                                                                     2 AG::LayoutDescriptor::make_layout(AG::swift::metadata const*, AGComparisonMode, AG::LayoutDescriptor::HeapMode)  (in AttributeGraph) + 96  [0x1c42dfb60]
-    +                                                                                                       2 AG::LayoutDescriptor::Builder::should_visit_fields(AG::swift::metadata const*, bool)  (in AttributeGraph) + 324  [0x1c42def9c]
-    +                                                                                                         2 swift_conformsToProtocol  (in libswiftCore.dylib) + 60  [0x1981d1618]
-    +                                                                                                           2 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib) + 3052  [0x1981d3bcc]
-    +                                                                                                             2 swift::TargetProtocolConformanceDescriptor<swift::InProcess>::getWitnessTable(swift::TargetMetadata<swift::InProcess> const*, swift::ConformanceExecutionContext&) const  (in libswiftCore.dylib) + 464  [0x1981ce2c0]
-    +                                                                                                               2 swift::_checkGenericRequirements(__swift::__runtime::llvm::ArrayRef<swift::GenericParamDescriptor>, __swift::__runtime::llvm::ArrayRef<swift::TargetGenericRequirementDescriptor<swift::InProcess>>, __swift::__runtime::llvm::SmallVectorImpl<void const*>&, std::function<void const* (unsigned int, unsigned int)>, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>, swift::ConformanceExecutionContext*)  (in libswiftCore.dylib) + 6448  [0x1981cff40]
-    +                                                                                                                 2 swift::_conformsToProtocol(swift::OpaqueValue const*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptorRef<swift::InProcess>, swift::TargetWitnessTable<swift::InProcess> const**, swift::ConformanceExecutionContext*)  (in libswiftCore.dylib) + 48  [0x19817f170]
-    +                                                                                                                   2 swift_conformsToProtocolWithExecutionContext  (in libswiftCore.dylib) + 68  [0x1981d1b30]
-    +                                                                                                                     1 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib) + 3292  [0x1981d3cbc]
-    +                                                                                                                     ! 1 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib) + 348  [0x1981d4fa0]
-    +                                                                                                                     1 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib) + 3304  [0x1981d3cc8]
-    2 Thread_52004   DispatchQueue_1234: AXBundleLoadQueue  (serial)
-    + 2 start_wqthread  (in libsystem_pthread.dylib) + 8  [0x104769a28]
-    +   2 _pthread_wqthread  (in libsystem_pthread.dylib) + 288  [0x10476ac28]
-    +     2 _dispatch_workloop_worker_thread  (in libdispatch.dylib) + 692  [0x18019a608]
-    +       2 _dispatch_root_queue_drain_deferred_wlh  (in libdispatch.dylib) + 288  [0x18019aec0]
-    +         2 _dispatch_lane_invoke  (in libdispatch.dylib) + 396  [0x1801901e8]
-    +           2 _dispatch_lane_serial_drain  (in libdispatch.dylib) + 984  [0x18018f724]
-    +             2 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
-    +               2 _dispatch_call_block_and_release  (in libdispatch.dylib) + 24  [0x1801866a0]
-    +                 2 __50-[AXCodeItem loadWithStrategy:onQueue:completion:]_block_invoke_2  (in AXCoreUtilities) + 180  [0x192aba984]
-    +                   2 -[NSBundleAccessibility loadAndReturnError:]  (in UIAccessibility) + 52  [0x1952b9b88]
-    +                     1 -[NSBundle loadAndReturnError:]  (in Foundation) + 164  [0x18103c770]
-    +                     ! 1 -[NSBundle _cfBundle]  (in Foundation) + 72  [0x18103b734]
-    +                     !   1 _CFBundleCreate  (in CoreFoundation) + 652  [0x1803afe88]
-    +                     !     1 CFBundleGetInfoDictionary  (in CoreFoundation) + 44  [0x180537d8c]
-    +                     !       1 _CFBundleRefreshInfoDictionaryAlreadyLocked  (in CoreFoundation) + 148  [0x180537e6c]
-    +                     !         1 _CFBundleCopyInfoDictionaryInDirectoryWithVersion  (in CoreFoundation) + 1528  [0x180537220]
-    +                     !           1 _CFDataCreateFromURL  (in CoreFoundation) + 80  [0x180491428]
-    +                     !             1 _CFReadBytesFromFile  (in CoreFoundation) + 360  [0x1803ddda4]
-    +                     !               1 read  (in libsystem_kernel.dylib) + 8  [0x1044e16cc]
-    +                     1 -[NSBundle loadAndReturnError:]  (in Foundation) + 248  [0x18103c7c4]
-    +                       1 _CFBundleLoadExecutableAndReturnError  (in CoreFoundation) + 460  [0x1803b117c]
-    +                         1 _CFBundleDlfcnLoadFramework  (in CoreFoundation) + 152  [0x1803e4180]
-    +                           1 dyld4::APIs::dlopen_from(char const*, int, void*)  (in dyld_sim) + 344  [0x104833b1c]
-    +                             1 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const  (in dyld_sim) + 184  [0x104838390]
-    +                               1 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const::'lambda'()::operator()() const  (in dyld_sim) + 1884  [0x104839204]
-    +                                 1 dyld4::RuntimeState::notifyDebuggerLoad(std::span<dyld4::Loader const*, 18446744073709551615ul> const&)  (in dyld_sim) + 408  [0x1048457b4]
-    +                                   1 dyld4::ExternallyViewableState::addImages(lsl::Allocator&, lsl::Allocator&, std::span<dyld4::ExternallyViewableState::ImageInfo, 18446744073709551615ul> const&)  (in dyld_sim) + 496  [0x104848154]
-    +                                     1 dyld4::ExternallyViewableState::triggerNotifications(dyld_image_mode, unsigned int, dyld_image_info const*)  (in dyld_sim) + 532  [0x104847ea0]
-    +                                       1 dyld4::ExternallyViewableState::notifyMonitorOfImageListChangesSim(bool, unsigned int, mach_header const**, char const**)  (in dyld) + 792  [0x1045ce36c]
-    +                                         1 invocation function for block in dyld4::ExternallyViewableState::notifyMonitorOfImageListChangesSim(bool, unsigned int, mach_header const**, char const**)  (in dyld) + 1148  [0x1045d1848]
-    +                                           1 dyld4::Atlas::ProcessSnapshot::serialize()  (in dyld) + 56  [0x1045fe4a0]
-    +                                             1 dyld4::Atlas::ProcessSnapshot::Serializer::serialize()  (in dyld) + 2040  [0x1045fed90]
-    +                                               1 dyld4::Atlas::Image::uuid() const  (in dyld) + 88  [0x1045fd96c]
-    +                                                 1 mach_o::UnsafeHeader::getUuid(unsigned char*) const  (in dyld) + 132  [0x10462c484]
-    +                                                   1 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld) + 176  [0x10462a984]
-    2 Thread_52005
-    + 2 start_wqthread  (in libsystem_pthread.dylib) + 0  [0x104769a20]
-    2 Thread_52007   DispatchQueue_10: com.apple.root.utility-qos  (concurrent)
-    + 2 start_wqthread  (in libsystem_pthread.dylib) + 8  [0x104769a28]
-    +   2 _pthread_wqthread  (in libsystem_pthread.dylib) + 228  [0x10476abec]
-    +     2 _dispatch_worker_thread2  (in libdispatch.dylib) + 252  [0x180199eb0]
-    +       2 _dispatch_root_queue_drain  (in libdispatch.dylib) + 880  [0x1801996fc]
-    +         2 <deduplicated_symbol>  (in libdispatch.dylib) + 24  [0x1801bd748]
-    +           2 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
-    +             2 _dispatch_call_block_and_release  (in libdispatch.dylib) + 24  [0x1801866a0]
-    +               2 thunk for @escaping @callee_guaranteed @Sendable () -> ()  (in Chronotheca.debug.dylib) + 48  [0x1062e4270]  /<compiler-generated>:0
-    +                 2 closure #1 in static Places.loadSoon(_:)  (in Chronotheca.debug.dylib) + 160  [0x1066928a4]  Place.swift:235
-    +                   2 static Places.read(_:)  (in Chronotheca.debug.dylib) + 604  [0x106692150]  Place.swift:224
-    +                     2 Sequence.compactMap<A>(_:)  (in libswiftCore.dylib) + 12  [0x1983bc7f0]
-    +                       2 Sequence._compactMap<A>(_:)  (in libswiftCore.dylib) + 700  [0x1983bcab4]
-    +                         2 partial apply for closure #2 in static Places.read(_:)  (in Chronotheca.debug.dylib) + 24  [0x106692a8c]  /<compiler-generated>:0
-    +                           2 closure #2 in static Places.read(_:)  (in Chronotheca.debug.dylib) + 212  [0x1066923a0]  Place.swift:225
-    +                             2 static Vault.reading(at:coordinated:)  (in Chronotheca.debug.dylib) + 796  [0x10690c83c]  Vault.swift:1175
-    +                               2 static Vault.text(of:)  (in Chronotheca.debug.dylib) + 128  [0x10690d2c8]  Vault.swift:1192
-    +                                 2 Data.init(contentsOf:options:)  (in Foundation) + 12  [0x180a98840]
-    +                                   2 specialized Data.init(contentsOf:options:)  (in Foundation) + 120  [0x180aabfd8]
-    +                                     2 readDataFromFile(path:reportProgress:maxLength:options:)  (in Foundation) + 72  [0x180ab294c]
-    +                                       2 readBytesFromFile(path:reportProgress:maxLength:options:attributesToRead:attributes:)  (in Foundation) + 5764  [0x180ab54a0]
-    +                                         2 readBytesFromFileDescriptor(_:path:buffer:length:readUntilLength:reportProgress:)  (in Foundation) + 352  [0x180ab7538]
-    +                                           2 read  (in libsystem_kernel.dylib) + 8  [0x1044e16cc]
-    2 Thread_52174
-    + 2 thread_start  (in libsystem_pthread.dylib) + 8  [0x104769a34]
-    +   2 _pthread_start  (in libsystem_pthread.dylib) + 104  [0x10476e63c]
-    +     2 __NSThread__start__  (in Foundation) + 716  [0x181154edc]
-    +       2 thunk for @escaping @callee_guaranteed @Sendable () -> ()  (in Chronotheca.debug.dylib) + 48  [0x1062e4270]  /<compiler-generated>:0
-    +         2 closure #1 in static LagWatch.start()  (in Chronotheca.debug.dylib) + 1032  [0x1068a4d14]  Shell.swift:414
-    +           2 interposed_dispatch_semaphore_wait  (in libRPAC.dylib) + 124  [0x104ac8458]
-    +             2 _dispatch_semaphore_wait_slow  (in libdispatch.dylib) + 128  [0x1801883c0]
-    +               2 _dispatch_sema4_wait  (in libdispatch.dylib) + 24  [0x180187d60]
-    +                 2 semaphore_wait_trap  (in libsystem_kernel.dylib) + 8  [0x1044e0aec]
-    1 Thread_51997   DispatchQueue_1457: com.apple.CoreLocation.0x11e4a8540  (serial)
-    + 1 start_wqthread  (in libsystem_pthread.dylib) + 8  [0x104769a28]
-    +   1 _pthread_wqthread  (in libsystem_pthread.dylib) + 288  [0x10476ac28]
-    +     1 _dispatch_workloop_worker_thread  (in libdispatch.dylib) + 692  [0x18019a608]
-    +       1 _dispatch_root_queue_drain_deferred_wlh  (in libdispatch.dylib) + 288  [0x18019aec0]
-    +         1 _dispatch_lane_invoke  (in libdispatch.dylib) + 396  [0x1801901e8]
-    +           1 _dispatch_lane_serial_drain  (in libdispatch.dylib) + 304  [0x18018f47c]
-    +             1 _dispatch_mach_invoke  (in libdispatch.dylib) + 492  [0x1801a4c1c]
-    +               1 _dispatch_lane_serial_drain  (in libdispatch.dylib) + 304  [0x18018f47c]
-    +                 1 _dispatch_mach_msg_invoke  (in libdispatch.dylib) + 608  [0x1801a3b60]
-    +                   1 _dispatch_client_callout4  (in libdispatch.dylib) + 12  [0x1801a0ed4]
-    +                     1 _xpc_connection_mach_event  (in libxpc.dylib) + 1364  [0x1800d1dfc]
-    +                       1 _xpc_connection_call_event_handler  (in libxpc.dylib) + 72  [0x1800d04c8]
-    +                         1 ???  (in LocationSupport)  load address 0x18dab3000 + 0xedcc  [0x18dac1dcc]
-    +                           1 ???  (in LocationSupport)  load address 0x18dab3000 + 0xbeb0  [0x18dabeeb0]
-    +                             1 CLConnection::handleMessage(std::shared_ptr<CLConnectionMessage>)  (in LocationSupport) + 552  [0x18dabf134]
-    +                               1 ???  (in LocationSupport)  load address 0x18dab3000 + 0x13378  [0x18dac6378]
-    +                                 1 ???  (in LocationSupport)  load address 0x18dab3000 + 0x13414  [0x18dac6414]
-    +                                   1 ???  (in CoreLocation)  load address 0x184a65000 + 0xc740  [0x184a71740]
-    +                                     1 _pthread_mutex_firstfit_lock_slow  (in libsystem_pthread.dylib) + 212  [0x104769754]
-    +                                       1 _pthread_mutex_firstfit_lock_wait  (in libsystem_pthread.dylib) + 80  [0x10476bb54]
-    +                                         1 __psynch_mutexwait  (in libsystem_kernel.dylib) + 8  [0x1044e357c]
-    1 Thread_51997
-    + 1 start_wqthread  (in libsystem_pthread.dylib) + 8  [0x104769a28]
-    +   1 _pthread_wqthread  (in libsystem_pthread.dylib) + 364  [0x10476ac74]
-    +     1 __workq_kernreturn  (in libsystem_kernel.dylib) + 8  [0x1044e2698]
-    1 Thread_52000   DispatchQueue_29: com.apple.FileCoordination.3  (serial)
-    + 1 start_wqthread  (in libsystem_pthread.dylib) + 8  [0x104769a28]
-    +   1 _pthread_wqthread  (in libsystem_pthread.dylib) + 288  [0x10476ac28]
-    +     1 _dispatch_workloop_worker_thread  (in libdispatch.dylib) + 692  [0x18019a608]
-    +       1 _dispatch_root_queue_drain_deferred_wlh  (in libdispatch.dylib) + 288  [0x18019aec0]
-    +         1 _dispatch_lane_invoke  (in libdispatch.dylib) + 396  [0x1801901e8]
-    +           1 _dispatch_lane_serial_drain  (in libdispatch.dylib) + 304  [0x18018f47c]
-    +             1 _dispatch_mach_msg_async_reply_invoke  (in libdispatch.dylib) + 508  [0x1801a563c]
-    +               1 <deduplicated_symbol>  (in libdispatch.dylib) + 12  [0x1801a0ec0]
-    +                 1 _xpc_connection_call_reply_async  (in libxpc.dylib) + 92  [0x1800d0c84]
-    +                   1 _xpc_connection_reply_callout  (in libxpc.dylib) + 60  [0x1800de338]
-    +                     1 __88-[NSXPCConnection _sendInvocation:orArguments:count:methodSignature:selector:withProxy:]_block_invoke_5  (in Foundation) + 184  [0x18121333c]
-    +                       1 -[NSXPCConnection _decodeAndInvokeReplyBlockWithEvent:sequence:replyInfo:]  (in Foundation) + 484  [0x18120f450]
-    +                         1 <deduplicated_symbol>  (in Foundation) + 12  [0x18120f7e8]
-    +                           1 -[NSInvocation invoke]  (in CoreFoundation) + 276  [0x1804c78f4]
-    +                             1 __invoking___  (in CoreFoundation) + 144  [0x1804ca690]
-    +                               1 __58-[NSFileWritingClaim forwardUsingConnection:crashHandler:]_block_invoke.341  (in Foundation) + 288  [0x1811dd2d0]
-    +                                 1 -[NSFileWritingClaim granted]  (in Foundation) + 592  [0x1811dd724]
-    +                                   1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
-    +                                     1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
-    +                                       1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9820  [0x1800b68f4]
-    +                                         1 _os_log_impl_stream  (in libsystem_trace.dylib) + 524  [0x1800b6e94]
-    +                                           1 _os_activity_stream_reflect  (in libsystem_trace.dylib) + 336  [0x1800a605c]
-    +                                             1 dyld4::APIs::dyld_image_path_containing_address(void const*)  (in dyld_sim) + 68  [0x104833184]
-    +                                               1 dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 528  [0x104832ec0]
-    +                                                 1 dyld4::RuntimeLocks::withLoadersReadLock(void () block_pointer)  (in dyld_sim) + 48  [0x104841390]
-    +                                                   1 _os_unfair_lock_lock_slow  (in libsystem_platform.dylib) + 168  [0x104561258]
-    +                                                     1 __ulock_wait2  (in libsystem_kernel.dylib) + 8  [0x1044edb04]
-    1 Thread_52000
-      1 start_wqthread  (in libsystem_pthread.dylib) + 8  [0x104769a28]
-        1 _pthread_wqthread  (in libsystem_pthread.dylib) + 364  [0x10476ac74]
-          1 __workq_kernreturn  (in libsystem_kernel.dylib) + 8  [0x1044e2698]
-
-Total number in stack (recursive counted multiple, when >=5):
-        12       start_wqthread  (in libsystem_pthread.dylib) + 8  [0x104769a28]
-        8       _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
-        7       AG::(anonymous namespace)::TypeDescriptorCache::fetch(AG::swift::metadata const*, unsigned int, AG::LayoutDescriptor::HeapMode, int)  (in AttributeGraph) + 368  [0x1c42dfeb0]
-        7       AG::LayoutDescriptor::Builder::should_visit_fields(AG::swift::metadata const*, bool)  (in AttributeGraph) + 56  [0x1c42dee90]
-        7       AG::LayoutDescriptor::make_layout(AG::swift::metadata const*, AGComparisonMode, AG::LayoutDescriptor::HeapMode)  (in AttributeGraph) + 112  [0x1c42dfb70]
-        6       AG::LayoutDescriptor::Builder::visit_element(AG::swift::metadata const*, AG::swift::metadata::ref_kind, unsigned long, unsigned long)  (in AttributeGraph) + 116  [0x1c42ded3c]
-        6       AG::swift::metadata::visit(AG::swift::metadata_visitor&) const  (in AttributeGraph) + 780  [0x1c42c8384]
-        6       AG::swift::metadata_visitor::visit_field(AG::swift::metadata const*, AG::swift::field_record const&, unsigned long, unsigned long)  (in AttributeGraph) + 132  [0x1c42c8bc0]
-        5       <deduplicated_symbol>  (in libdispatch.dylib) + 24  [0x1801bd748]
-        5       _dispatch_call_block_and_release  (in libdispatch.dylib) + 24  [0x1801866a0]
-        5       _dispatch_root_queue_drain  (in libdispatch.dylib) + 880  [0x1801996fc]
-        5       _dispatch_worker_thread2  (in libdispatch.dylib) + 252  [0x180199eb0]
-        5       _pthread_wqthread  (in libsystem_pthread.dylib) + 228  [0x10476abec]
+    37 Thread_40581   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 37 start  (in dyld) + 6992  [0x1032284e4]
+    +   37 start_sim  (in dyld_sim) + 20  [0x1030cb0e4]
+    +     37 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x104e45770]  ChronothecaApp.swift:0
+    +       37 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x104e456c4]  /<compiler-generated>:0
+    +         37 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           37 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             37 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               37 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 37 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   37 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     37 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       37 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    +                         37 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    +                           37 mach_msg  (in libsystem_kernel.dylib) + 20  [0x102f80ef0]
+    +                             37 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x102f88c44]
+    +                               37 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x102f91e84]
+    +                                 37 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x102f80b70]
 
 Sort by top of stack, same collapsed (when >= 5):
-        __workq_kernreturn  (in libsystem_kernel.dylib)        5
+        __workq_kernreturn  (in libsystem_kernel.dylib)        329
+        mach_msg2_trap  (in libsystem_kernel.dylib)        74
+        start_wqthread  (in libsystem_pthread.dylib)        41
+        __semwait_signal  (in libsystem_kernel.dylib)        37
+        writev  (in libsystem_kernel.dylib)        36
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        32
+        semaphore_wait_trap  (in libsystem_kernel.dylib)        16
+        fsync  (in libsystem_kernel.dylib)        11
 
-Binary images description not available
-
+Binary Images:
+       0x102f6c000 -        0x102f6f507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/77AA4492-C787-4EEE-A772-05D4B3E9ECCD/data/Containers/Bundle/Application/71816F5B-6EE7-4E2C-ABF1-00D09A14CFE1/Chronotheca.app/Chronotheca
+       0x102f80000 -        0x102fbaed7  libsystem_kernel.dylib (12377.161.14) <26CFE427-C180-3145-8D46-DE3129B1CD2A> /usr/lib/system/libsystem_kernel.dylib
+       0x103000000 -        0x1030083d3  libsystem_platform.dylib (375.120.2) <7E129155-1748-370C-8EDC-D762067A6D9F> /usr/lib/system/libsystem_platform.dylib
+       0x1030c0000 -        0x10310ee9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x10317c000 -        0x10318810b  libsystem_pthread.dylib (539.100.4) <85A501D2-0B0E-3DEA-B121-B24119D80CFE> /usr/lib/system/libsystem_pthread.dylib
+       0x103208000 -        0x1032bb4ff  dyld (1.0.0 - 1387) <74E52480-C2BD-3C8D-812D-95FE2B74A096> /usr/lib/dyld
+       0x103360000 -        0x1033a365f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x1034b4000 -        0x10354d2af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x103c38000 -        0x103c3adff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x103c54000 -        0x103c5c03f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x103d68000 -        0x103d68b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x103d78000 -        0x103d8339f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x103d9c000 -        0x103d9fe5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x103dbc000 -        0x103dc549f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x103de0000 -        0x103de6b7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x103e2c000 -        0x103e306ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
+       0x10418c000 -        0x1041932df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
+       0x1041ac000 -        0x1041b1407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
+       0x1042ac000 -        0x1042c527f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
+       0x1042fc000 -        0x1042ff1ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
+       0x1043d4000 -        0x10462fbbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+       0x104c88000 -        0x104cdb7bf  com.apple.dt.XCTAutomationSupport (26.5 - 24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
+       0x104d70000 -        0x1054ac60f +Chronotheca.debug.dylib (0) <0CB057FF-6370-37AA-870C-99EE348CAB28> /Users/*/Library/Developer/CoreSimulator/Devices/77AA4492-C787-4EEE-A772-05D4B3E9ECCD/data/Containers/Bundle/Application/71816F5B-6EE7-4E2C-ABF1-00D09A14CFE1/Chronotheca.app/Chronotheca.debug.dylib
+       0x105f88000 -        0x105faef5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
+       0x108dd0000 -        0x108e0a15f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
+       0x108f34000 -        0x108fa3cbf  com.apple.UIUnderstanding (1.0 - 1) <576E64EB-8AA4-3B1E-A89D-365C4DE0C7C8> /Volumes/*/UIUnderstanding.framework/UIUnderstanding
+       0x109400000 -        0x1095f3d3f  com.apple.UIKit.axbundle (1.0.0 - 1.0) <D3D808D1-AB02-3566-B2DD-1B139F8E9569> /Volumes/*/UIKit
+       0x109c40000 -        0x109c62cff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
+       0x109de8000 -        0x109dee99f  com.apple.ContactsAutocompleteUI.axbundle (1.0 - 1.0) <A3869774-602B-3DE7-A78E-A0EC18D45E48> /Volumes/*/ContactsAutocompleteUI

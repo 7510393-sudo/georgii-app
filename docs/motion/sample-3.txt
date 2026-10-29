@@ -1,0 +1,100 @@
+    4 Thread_49237   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 4 start  (in dyld) + 6992  [0x1027a44e4]
+    +   4 start_sim  (in dyld_sim) + 20  [0x1026570e4]
+    +     4 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x1043c1770]  ChronothecaApp.swift:0
+    +       4 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1043c16c4]  /<compiler-generated>:0
+    +         4 static App.main()  (in SwiftUI) + 132  [0x1d2c5f084]
+    +           4 protocol witness for App.init() in conformance ChronothecaApp  (in Chronotheca.debug.dylib) + 12  [0x1043c175c]  /<compiler-generated>:0
+    +             4 ChronothecaApp.init()  (in Chronotheca.debug.dylib) + 604  [0x1043be408]  ChronothecaApp.swift:30
+    +               4 Vault.__allocating_init()  (in Chronotheca.debug.dylib) + 44  [0x104915640]  Vault.swift:0
+    +                 4 Vault.init()  (in Chronotheca.debug.dylib) + 2036  [0x104915e40]  Vault.swift:227
+    +                   4 Vault.usePreviewFolder()  (in Chronotheca.debug.dylib) + 904  [0x104916924]  Vault.swift:259
+    +                     4 Vault.seedPreview()  (in Chronotheca.debug.dylib) + 1204  [0x104919864]  Vault.swift:311
+    +                       4 Vault.addPhoto(_:for:)  (in Chronotheca.debug.dylib) + 80  [0x10491af48]  Vault.swift:1340
+    +                         4 static Photo.stored(from:)  (in Chronotheca.debug.dylib) + 1616  [0x104650e9c]  Photo.swift:38
+    +                           4 static Photo.shrunk(_:side:as:quality:)  (in Chronotheca.debug.dylib) + 464  [0x104651518]  Photo.swift:55
+    +                             4 CGImageSourceCreateThumbnailAtIndex  (in ImageIO) + 764  [0x181ab4248]
+    +                               4 IIOImageSource::createThumbnailAtIndex(unsigned long, IIODictionary*, int*, unsigned int*)  (in ImageIO) + 5232  [0x181aafd64]
+    +                                 4 CGImageCreateCopyWithParametersNew(CGImage*, CGColor*, CGAffineTransform, unsigned long, unsigned long, unsigned long, unsigned long, unsigned long, CGColorSpace*, unsigned int, bool, CGColorRenderingIntent, CGInterpolationQuality, bool)  (in ImageIO) + 1876  [0x181ade910]
+    +                                   4 CGContextDrawImage  (in CoreGraphics) + 536  [0x18d3e40f4]
+    +                                     4 CGContextDrawImageWithOptions  (in CoreGraphics) + 1088  [0x18d3e3cc8]
+    +                                       4 ripc_DrawImage  (in CoreGraphics) + 752  [0x18d3ffd00]
+    +                                         4 ripc_AcquireRIPImageData  (in CoreGraphics) + 836  [0x18d174a40]
+    +                                           4 CGSImageDataLock  (in CoreGraphics) + 1164  [0x18d3d7adc]
+    +                                             4 img_data_lock  (in CoreGraphics) + 7864  [0x18d3db1cc]
+    +                                               4 img_interpolate_read  (in CoreGraphics) + 588  [0x18d3d6964]
+    +                                                 4 img_decode_read  (in CoreGraphics) + 1052  [0x18d3d2ed0]
+    +                                                   4 get_access_session  (in CoreGraphics) + 48  [0x18d3d33f8]
+    +                                                     4 CGAccessSessionCreate  (in CoreGraphics) + 120  [0x18d52a388]
+    +                                                       4 CGDataProviderRetainData  (in CoreGraphics) + 72  [0x18d2d3670]
+    +                                                         4 provider_for_destination_retain_data  (in CoreGraphics) + 24  [0x18d488024]
+    +                                                           4 CGDataProviderRetainData  (in CoreGraphics) + 72  [0x18d2d3670]
+    +                                                             4 imageProvider_retain_data  (in CoreGraphics) + 92  [0x18d541b5c]
+    +                                                               4 IIOImageProviderInfo::CopyImageBlockSetWithOptions(void*, CGImageProvider*, CGRect, CGSize, __CFDictionary const*)  (in ImageIO) + 904  [0x181ad8a90]
+    +                                                                 4 IIOImageProviderInfo::copyImageBlockSetWithOptions(CGImageProvider*, CGRect, CGSize, __CFDictionary const*)  (in ImageIO) + 724  [0x181adb620]
+    +                                                                   4 IIO_Reader::CopyImageBlockSetProc(void*, CGImageProvider*, CGRect, CGSize, __CFDictionary const*)  (in ImageIO) + 688  [0x181acad08]
+    +                                                                     4 IIOReadPlugin::callDecodeImage(IIODecodeParameter*, IIOImageType, __IOSurface**, __CVBuffer**, CGImageBlockSet**)  (in ImageIO) + 956  [0x181b0d0cc]
+    +                                                                       4 AppleJPEGReadPlugin::decodeImageImp(IIODecodeParameter*, IIOImageType, __IOSurface**, __CVBuffer**, CGImageBlockSet**)  (in ImageIO) + 524  [0x181bace3c]
+    +                                                                         4 AppleJPEGReadPlugin::copyImageBlockSetImp(InfoRec*, CGImageProvider*, CGRect, CGSize, __CFDictionary const*)  (in ImageIO) + 1868  [0x181bad688]
+    +                                                                           4 AppleJPEGReadPlugin::createImageBlockSetWithHardwareDecode(InfoRec*, CGImageProvider*, CGSize, __CFDictionary const*, int*)  (in ImageIO) + 264  [0x181badfdc]
+    +                                                                             4 AppleJPEGReadPlugin::copyIOSurfaceImp(CGImageProvider*, __CFDictionary const*, __IOSurface**, __CFDictionary const**)  (in ImageIO) + 976  [0x181bae574]
+    +                                                                               4 CMPhotoDecompressionContainerCreateImageForIndex  (in CMPhoto) + 136  [0x1d820567c]
+    +                                                                                 4 ???  (in CMPhoto)  load address 0x1d812b000 + 0x1020a8  [0x1d822d0a8]
+    +                                                                                   4 ???  (in CMPhoto)  load address 0x1d812b000 + 0x47228  [0x1d8172228]
+    +                                                                                     4 ???  (in CMPhoto)  load address 0x1d812b000 + 0x110a58  [0x1d823ba58]
+    +                                                                                       4 applejpeg_decode_image_all  (in AppleJPEG) + 692  [0x1c401c048]
+    +                                                                                         4 perform_decode  (in AppleJPEG) + 248  [0x1c401c200]
+    +                                                                                           2 aj_decode_all  (in AppleJPEG) + 256  [0x1c3ff5810]
+    +                                                                                           ! 2 fill_coeff_buffer  (in AppleJPEG) + 408  [0x1c3ff5e08]
+    +                                                                                           !   1 aj_mcu_decode  (in AppleJPEG) + 1268  [0x1c3ff45b8]
+    +                                                                                           !   : 1 aj_block_decode  (in AppleJPEG) + 104  [0x1c400031c]
+    +                                                                                           !   :   1 aj_huffman_decode_val  (in AppleJPEG) + 24  [0x1c3ffacd0]
+    +                                                                                           !   1 aj_mcu_decode  (in AppleJPEG) + 1800  [0x1c3ff47cc]
+    +                                                                                           !     1 aj_block_decode  (in AppleJPEG) + 224  [0x1c4000394]
+    +                                                                                           !       1 aj_idct_s1  (in AppleJPEG) + 596  [0x1c3ffb320]
+    +                                                                                           2 aj_decode_all  (in AppleJPEG) + 296  [0x1c3ff5838]
+    +                                                                                             2 aj_bufferproc_crop  (in AppleJPEG) + 468  [0x1c400e348]
+    +                                                                                               2 aj_icol_mcurow_semiplanar4X0  (in AppleJPEG) + 640  [0x1c4010c5c]
+    +                                                                                                 2 aj_icol_row_420_to_biplanar  (in AppleJPEG) + 112  [0x1c400edcc]
+    +                                                                                                   2 _platform_memmove  (in libsystem_platform.dylib) + 224,240  [0x10258f190,0x10258f1a0]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        8
+
+Binary Images:
+       0x1024f8000 -        0x1024fb507 +Chronotheca (0.1 - 0) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/77AA4492-C787-4EEE-A772-05D4B3E9ECCD/data/Containers/Bundle/Application/71816F5B-6EE7-4E2C-ABF1-00D09A14CFE1/Chronotheca.app/Chronotheca
+       0x10250c000 -        0x102546ed7  libsystem_kernel.dylib (12377.161.14) <26CFE427-C180-3145-8D46-DE3129B1CD2A> /usr/lib/system/libsystem_kernel.dylib
+       0x10258c000 -        0x1025943d3  libsystem_platform.dylib (375.120.2) <7E129155-1748-370C-8EDC-D762067A6D9F> /usr/lib/system/libsystem_platform.dylib
+       0x10264c000 -        0x10269ae9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x102708000 -        0x10271410b  libsystem_pthread.dylib (539.100.4) <85A501D2-0B0E-3DEA-B121-B24119D80CFE> /usr/lib/system/libsystem_pthread.dylib
+       0x102770000 -        0x10277803f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x102784000 -        0x1028374ff  dyld (1.0.0 - 1387) <74E52480-C2BD-3C8D-812D-95FE2B74A096> /usr/lib/dyld
+       0x1028dc000 -        0x10291f65f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x102a30000 -        0x102ac92af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x1032d4000 -        0x1032d6dff +SpeakTypingServices (3191.35) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x1032f0000 -        0x1032f0b99 +AXGuestPassServices (3191.35) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x103300000 -        0x10330b39f +AXFrontBoardUtils (3191.35) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x103324000 -        0x103327e5f +SpeakThisServices (3191.35) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x103344000 -        0x10334d49f +AccessibilityUI (3191.35) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x10336c000 -        0x10338527f +AccessibilitySettingsLoader (3191.35) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
+       0x1033bc000 -        0x1033c2b7f +AccessibilityUIShared (3191.35) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x1034fc000 -        0x1035032df +AutomationMode (31) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
+       0x10351c000 -        0x10351f1ff +iCloudDriveFileProviderOverride (4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
+       0x1038f0000 -        0x1038f46ff +FileProviderOverride (4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
+       0x103950000 -        0x103babbbf +_StoreKit_SwiftUI (1.0 - 815.5.6) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+       0x1041cc000 -        0x1041d1407 +XCTestSupport (24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
+       0x104280000 -        0x1042a6f5f +DTXConnectionServices (64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
+       0x1042ec000 -        0x104a2860f +Chronotheca.debug.dylib (0) <0CB057FF-6370-37AA-870C-99EE348CAB28> /Users/*/Library/Developer/CoreSimulator/Devices/77AA4492-C787-4EEE-A772-05D4B3E9ECCD/data/Containers/Bundle/Application/71816F5B-6EE7-4E2C-ABF1-00D09A14CFE1/Chronotheca.app/Chronotheca.debug.dylib
+       0x1055ac000 -        0x1055cecff +AccessibilityPlatformTranslation (545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
+       0x105730000 -        0x1057837bf +XCTAutomationSupport (24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
+       0x1085d0000 -        0x10860a15f +AccessibilityAudit (187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
+       0x108c00000 -        0x108c6fcbf +UIUnderstanding (2.8) <576E64EB-8AA4-3B1E-A89D-365C4DE0C7C8> /Volumes/*/UIUnderstanding.framework/UIUnderstanding
+       0x10926c000 -        0x10926de9f +SafariSharedUI (3005.28) <C7D2CBA1-9CE4-3871-B70E-AE820A7E5016> /Volumes/*/SafariSharedUI
+       0x109280000 -        0x109282bdf +GeoServices (3005.28) <69D2FB7A-6D7C-3EDE-9495-629B7904ED32> /Volumes/*/GeoServices
+       0x109298000 -        0x10929a49f +SocialFramework (3005.28) <CB6DA988-1D72-3206-9B80-B3F1DCE99964> /Volumes/*/SocialFramework
+       0x1093d0000 -        0x1093d57df +LinkPresentation (3005.28) <7BAD0605-47F6-3470-9C28-AE38795FEC45> /Volumes/*/LinkPresentation
+       0x1093ec000 -        0x1095dfd3f +UIKit (3005.28) <D3D808D1-AB02-3566-B2DD-1B139F8E9569> /Volumes/*/UIKit
+       0x109ddc000 -        0x109de099f +PhotosFramework (3005.28) <BB735A91-188F-3375-861E-F575CD66C934> /Volumes/*/PhotosFramework
+       0x109df8000 -        0x109e0c41f +AVKit (3005.28) <C5AC1369-B745-33DD-9237-CBAAD541CBE3> /Volumes/*/AVKit
+       0x109e48000 -        0x109e5703f +PreferencesFramework (3005.28) <CECA756F-AD42-3681-8023-94C05C2E12C6> /Volumes/*/PreferencesFramework
+       0x118f98000 -        0x118f99a7f +FrontBoard (3005.28) <FA25F3DC-A3E7-344D-8680-FFB8D8BBA712> /Volumes/*/FrontBoard
