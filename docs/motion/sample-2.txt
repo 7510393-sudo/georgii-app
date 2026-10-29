@@ -1,0 +1,115 @@
+    3 Thread_44251   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 3 start  (in dyld) + 6992  [0x100aa04e4]
+    +   3 start_sim  (in dyld_sim) + 20  [0x1009c70e4]
+    +     3 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x1026c17c8]  ChronothecaApp.swift:0
+    +       3 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1026c171c]  /<compiler-generated>:0
+    +         3 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           3 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             3 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               3 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 2 -[UIApplication _run]  (in UIKitCore) + 740  [0x1864a54a8]
+    +                 ! 2 -[UIApplication _compellApplicationLaunchToCompleteUnconditionally]  (in UIKitCore) + 48  [0x1864a51b4]
+    +                 !   2 -[_UISceneLifecycleMultiplexer completeApplicationLaunchWithFBSScene:transitionContext:]  (in UIKitCore) + 88  [0x1859a41e8]
+    +                 !     2 -[UIApplication _runWithMainScene:transitionContext:completion:]  (in UIKitCore) + 832  [0x1864a8610]
+    +                 !       2 -[UIApplication _callInitializationDelegatesWithActions:forScene:payload:fromOriginatingProcess:]  (in UIKitCore) + 3156  [0x1864a2fec]
+    +                 !         2 -[UIApplication _handleDelegateCallbacksWithOptions:isSuspended:restoreState:]  (in UIKitCore) + 332  [0x1864a19f4]
+    +                 !           2 @objc AppDelegate.application(_:didFinishLaunchingWithOptions:)  (in SwiftUI) + 132  [0x1d292dc14]
+    +                 !             2 AppDelegate.application(_:didFinishLaunchingWithOptions:)  (in SwiftUI) + 72  [0x1d292da98]
+    +                 !               2 +[UIMainMenuSystemConfiguration _compatibilityConfiguration]  (in UIKitCore) + 180  [0x1857cc024]
+    +                 !                 2 _UISolariumEnabled  (in UIKitCore) + 56  [0x185ebdcf4]
+    +                 !                   2 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +                 !                     2 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                 !                       2 ___UISolariumEnabled_block_invoke  (in UIKitCore) + 140  [0x185ebdd88]
+    +                 !                         2 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +                 !                           2 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                 !                             2 ___UISolariumFeatureFlagEnabled_block_invoke  (in UIKitCore) + 20  [0x185ebe3c8]
+    +                 !                               2 ???  (in UIKitCore)  load address 0x185289000 + 0x2f91a8  [0x1855821a8]
+    +                 !                                 2 ???  (in UIKitCore)  load address 0x185289000 + 0x2f9320  [0x185582320]
+    +                 !                                   2 static Solarium.isEnabled(_:)  (in SwiftUICore) + 76  [0x1d3bd1604]
+    +                 !                                     2 closure #1 in static Solarium.computeValues(_:)  (in SwiftUICore) + 392  [0x1d3bd1858]
+    +                 !                                       2 ???  (in FeatureFlags)  load address 0x1dbc30000 + 0x6a4  [0x1dbc306a4]
+    +                 !                                         2 ???  (in FeatureFlags)  load address 0x1dbc30000 + 0x824  [0x1dbc30824]
+    +                 !                                           2 _os_feature_enabled_SLOWPATH  (in libsystem_featureflags.dylib) + 1088  [0x1cc2c1ed8]
+    +                 !                                             2 _os_feature_enabled_load  (in libsystem_featureflags.dylib) + 248  [0x1cc2c2380]
+    +                 !                                               2 pread  (in libsystem_kernel.dylib) + 8  [0x10087e34c]
+    +                 1 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   1 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     1 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 760  [0x180421808]
+    +                         1 __CFRunLoopDoSources0  (in CoreFoundation) + 312  [0x180422690]
+    +                           1 __CFRunLoopDoSource0  (in CoreFoundation) + 168  [0x180422ea4]
+    +                             1 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__  (in CoreFoundation) + 24  [0x180422f5c]
+    +                               1 UC::DriverCore::continueProcessing()  (in UpdateCycle) + 80  [0x2343d22c0]
+    +                                 1 schedulerStepScheduledMainSectionContinue  (in UIKitCore) + 56  [0x1863b6064]
+    +                                   1 _UIUpdateSequenceRunNext  (in UIKitCore) + 120  [0x18590339c]
+    +                                     1 __setupUpdateSequence_block_invoke_2  (in UIKitCore) + 372  [0x1863b5c0c]
+    +                                       1 _UIApplicationFlushCATransaction  (in UIKitCore) + 68  [0x1864a3b64]
+    +                                         1 _cleanUpAfterCAFlushAndRunDeferredBlocks  (in UIKitCore) + 76  [0x1864a3a94]
+    +                                           1 _runAfterCACommitDeferredBlocks  (in UIKitCore) + 256  [0x1864b23dc]
+    +                                             1 -[_UIAfterCACommitQueue flush]  (in UIKitCore) + 156  [0x186a4b028]
+    +                                               1 -[_UIAfterCACommitBlock run]  (in UIKitCore) + 64  [0x186a4ac04]
+    +                                                 1 -[UIApplication _immediatelyUpdateSerializableKeyCommands]  (in UIKitCore) + 228  [0x1864c2910]
+    +                                                   1 -[UIResponder _enumerateKeyboardShortcutsInChainWithOptions:usingBlock:]  (in UIKitCore) + 532  [0x1864d4c28]
+    +                                                     1 -[UIMainMenuSystem _keyCommands]  (in UIKitCore) + 24  [0x1857ca1c0]
+    +                                                       1 -[UIMainMenuSystem _automaticallyRebuildIfNeeded]  (in UIKitCore) + 160  [0x1857ca184]
+    +                                                         1 -[UIMenuSystem _newBuilderFromResponderChain:atLocation:inCoordinateSpace:]  (in UIKitCore) + 100  [0x186a52f1c]
+    +                                                           1 -[UIMainMenuSystem _defaultRootMenuChildren]  (in UIKitCore) + 196  [0x1857c88c8]
+    +                                                             1 -[UIApplication _supportsOpenMainMenuCommands]  (in UIKitCore) + 56  [0x1864c77f0]
+    +                                                               1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +                                                                 1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                                                                   1 __46-[UIApplication _supportsOpenMainMenuCommands]_block_invoke  (in UIKitCore) + 44  [0x1864c7824]
+    +                                                                     1 +[LSBundleRecord bundleRecordForCurrentProcess]  (in CoreServices) + 88  [0x181698a74]
+    +                                                                       1 +[LSBundleRecord _bundleRecordForAuditToken:checkNSBundleMainBundle:error:]  (in CoreServices) + 264  [0x181699458]
+    +                                                                         1 _getBundleRecordFinderForNode:]::$_0::__invoke(LaunchServices::Database::Context&, FSNode*, NSError* __autoreleasing*)  (in CoreServices) + 140  [0x18169e59c]
+    +                                                                           1 -[LSApplicationRecord _initWithNode:bundleIdentifier:placeholderBehavior:systemPlaceholder:itemID:forceInBundleContainer:context:error:]  (in CoreServices) + 216  [0x18164e9cc]
+    +                                                                             1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                                                               1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                                                                 1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9820  [0x1800b68f4]
+    +                                                                                   1 _os_log_impl_stream  (in libsystem_trace.dylib) + 524  [0x1800b6e94]
+    +                                                                                     1 _os_activity_stream_reflect  (in libsystem_trace.dylib) + 336  [0x1800a605c]
+    +                                                                                       1 dyld4::APIs::dyld_image_path_containing_address(void const*)  (in dyld_sim) + 68  [0x1009bf184]
+    +                                                                                         1 dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 528  [0x1009beec0]
+    +                                                                                           1 dyld4::RuntimeLocks::withLoadersReadLock(void () block_pointer)  (in dyld_sim) + 48  [0x1009cd390]
+    +                                                                                             1 _os_unfair_lock_lock_slow  (in libsystem_platform.dylib) + 168  [0x1008fd258]
+    +                                                                                               1 __ulock_wait2  (in libsystem_kernel.dylib) + 8  [0x100889b04]
+
+Sort by top of stack, same collapsed (when >= 5):
+
+Binary Images:
+       0x100868000 -        0x10086b507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/E839A11B-51B4-4AD3-ACF4-A53B95B7C957/data/Containers/Bundle/Application/9025E0D6-82EC-496B-8C15-109C91E00283/Chronotheca.app/Chronotheca
+       0x10087c000 -        0x1008b6ed7  libsystem_kernel.dylib (12377.161.14) <26CFE427-C180-3145-8D46-DE3129B1CD2A> /usr/lib/system/libsystem_kernel.dylib
+       0x1008fc000 -        0x1009043d3  libsystem_platform.dylib (375.120.2) <7E129155-1748-370C-8EDC-D762067A6D9F> /usr/lib/system/libsystem_platform.dylib
+       0x1009bc000 -        0x100a0ae9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x100a80000 -        0x100b334ff  dyld (1.0.0 - 1387) <74E52480-C2BD-3C8D-812D-95FE2B74A096> /usr/lib/dyld
+       0x100bd8000 -        0x100c1b65f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x100d2c000 -        0x100dc52af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x1013e4000 -        0x1013f010b  libsystem_pthread.dylib (539.100.4) <85A501D2-0B0E-3DEA-B121-B24119D80CFE> /usr/lib/system/libsystem_pthread.dylib
+       0x101544000 -        0x101546dff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x101560000 -        0x10156803f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x101674000 -        0x101674b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x101684000 -        0x10168f39f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x1016a8000 -        0x1016abe5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x1016c8000 -        0x1016d149f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x1016ec000 -        0x1016f2b7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x101bb8000 -        0x101bd127f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
+       0x101c4c000 -        0x101ea7bbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+       0x1025ec000 -        0x102d28ca7 +Chronotheca.debug.dylib (0) <CB3BDFB3-8283-37AE-83A5-AD1A1AE8B3F7> /Users/*/Library/Developer/CoreSimulator/Devices/E839A11B-51B4-4AD3-ACF4-A53B95B7C957/data/Containers/Bundle/Application/9025E0D6-82EC-496B-8C15-109C91E00283/Chronotheca.app/Chronotheca.debug.dylib
+       0x10f9c4000 -        0x10fbb7d3f  com.apple.UIKit.axbundle (1.0.0 - 1.0) <D3D808D1-AB02-3566-B2DD-1B139F8E9569> /Volumes/*/UIKit
+       0x180038000 -        0x180074943 +libobjc.A.dylib (951.7) <727C4040-5E6D-3DAE-B22C-9A337D46C34F> /Volumes/*/libobjc.A.dylib
+       0x180075000 -        0x1800a01d2 +libdyld.dylib (1378) <2B7568E6-5EEE-33E0-B471-2FDAAE4FF448> /Volumes/*/libdyld.dylib
+       0x1800a1000 -        0x1800bf01f +libsystem_trace.dylib (1861.120.4) <4138F7EF-2588-38B1-9977-1502A60E2E36> /Volumes/*/libsystem_trace.dylib
+       0x1800c0000 -        0x18010481f +libxpc.dylib (3102.120.13) <FF603B08-461E-35C4-82E6-3AD8E5D12848> /Volumes/*/libxpc.dylib
+       0x180105000 -        0x180107da8 +libsystem_blocks.dylib (96) <A5FDF1FF-B793-3574-8903-D24571EACD25> /Volumes/*/libsystem_blocks.dylib
+       0x180108000 -        0x1801842b7 +libsystem_c.dylib (1752.120.2) <05F4B01B-E685-39FA-93F3-DE10CD9B511A> /Volumes/*/libsystem_c.dylib
+       0x180185000 -        0x1801ca3bf +libdispatch.dylib (1542.100.32) <42B50931-38D5-3A5D-90EF-0FD7239C408D> /Volumes/*/libdispatch.dylib
+       0x1801cb000 -        0x18021213f +libsystem_malloc.dylib (812.100.31) <F71AEB05-0D59-37BA-B0F2-457432BB09B5> /Volumes/*/libsystem_malloc.dylib
+       0x180213000 -        0x1802bd50f +libcorecrypto.dylib (1922.122.1) <730B0835-7D7B-35A3-B73E-7FC1D2C4403E> /Volumes/*/libcorecrypto.dylib
+       0x1802be000 -        0x1802d66df +libc++abi.dylib (2100.43) <CA04D801-3E4B-3A57-AEAD-0A5EB2DB0671> /Volumes/*/libc++abi.dylib
+       0x1802d7000 -        0x1802df38b +libsystem_darwin.dylib (1752.120.2) <C063C99F-5786-3246-A3D5-1FDB58B6E724> /Volumes/*/libsystem_darwin.dylib
+       0x1802e0000 -        0x18036909f +libc++.1.dylib (2100.43) <FD646C4C-99C5-3828-8199-3A66A48FF1A1> /Volumes/*/libc++.1.dylib
+       0x18036a000 -        0x18038e713 +libsystem_info.dylib (600) <29821F88-C763-338E-A4CC-4FB7C6FB5D35> /Volumes/*/libsystem_info.dylib
+       0x18038f000 -        0x1807c04ff  com.apple.CoreFoundation (6.9 - 5026.5.4) <E74D7B62-0AAC-3013-A55B-F15135D4BD2E> /Volumes/*/CoreFoundation.framework/CoreFoundation
+       0x1807c1000 -        0x18083f74f  com.apple.SystemConfiguration (1.21 - 1.21) <374CDDD1-FAE2-39A7-B824-6F019733EB4F> /Volumes/*/SystemConfiguration.framework/SystemConfiguration
+       0x180840000 -        0x1815f8ddf  com.apple.Foundation (6.9 - 5026.5.4) <2CC9FCE0-08F9-3A0D-8A2F-6DB229462DE5> /Volumes/*/Foundation.framework/Foundation
+       0x1815f9000 -        0x1816264bb +libCRFSuite.dylib (55) <FE8035C1-8537-39AE-A899-1E34ECBA2DCB> /Volumes/*/libCRFSuite.dylib
+       0x181627000 -        0x1818626df  com.apple.CoreServices (839 - 839) <27D2320D-91DF-3974-A815-FBEE4375327A> /Volumes/*/CoreServices.framework/CoreServices
