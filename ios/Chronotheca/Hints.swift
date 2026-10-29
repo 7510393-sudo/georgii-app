@@ -133,7 +133,8 @@ final class Hints: ObservableObject {
     }
 }
 
-/// Жёлтый стикер с подсказкой — приклеен полоской скотча, чуть наискось.
+/// Жёлтый самоклеящийся стикер с подсказкой, чуть наискось; левый нижний
+/// уголок приподнят (P688).
 struct HintSticker: View {
 
     @ObservedObject var hints: Hints
@@ -179,18 +180,14 @@ struct HintSticker: View {
         .padding(.top, 20)
         .padding(.bottom, 14)
         .frame(maxWidth: 320, alignment: .leading)
-        .background(Look.sticker)
-        .overlay(Rectangle().strokeBorder(Look.stickerEdge, lineWidth: 1))
-        // Полоска скотча сверху.
-        .overlay(alignment: .top) {
-            Rectangle()
-                .fill(Color.white.opacity(0.55))
-                .overlay(Rectangle().strokeBorder(Color.black.opacity(0.06), lineWidth: 0.6))
-                .frame(width: 74, height: 18)
-                .rotationEffect(.degrees(-3))
-                .offset(y: -9)
-        }
-        .shadow(color: .black.opacity(0.28), radius: 12, x: 6, y: 6)
+        // Самоклеящийся листок без скотча: тень вправо-вниз, левый нижний
+        // уголок отстал и приподнят (P688, отменяет скотч).
+        .background(
+            PeeledCorner(lift: 26).fill(Look.sticker)
+                .overlay(PeeledCorner(lift: 26).stroke(Look.stickerEdge, lineWidth: 1))
+        )
+        .background(PaintedShadow(radius: 12, x: 6, y: 6, opacity: 0.28))
+        .overlay(alignment: .bottomLeading) { CurledFlap(size: 26) }
         .rotationEffect(.degrees(-1.5))
         .accessibilityElement(children: .contain)
     }
@@ -240,5 +237,56 @@ struct HintLayer: View {
         guard !Task.isCancelled, quiet, hints.shown == nil,
               let next = hints.next(for: screen) else { return }
         withAnimation(.easeOut(duration: 0.25)) { hints.shown = next }
+    }
+}
+
+
+/// Листок без левого нижнего уголка: он отогнут (рисуется `CurledFlap`).
+struct PeeledCorner: Shape {
+    let lift: CGFloat
+    func path(in r: CGRect) -> Path {
+        var p = Path()
+        p.move(to: CGPoint(x: r.minX, y: r.minY))
+        p.addLine(to: CGPoint(x: r.maxX, y: r.minY))
+        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
+        p.addLine(to: CGPoint(x: r.minX + lift, y: r.maxY))
+        p.addLine(to: CGPoint(x: r.minX, y: r.maxY - lift))
+        p.closeSubpath()
+        return p
+    }
+}
+
+/// Отогнутый уголок: обратная сторона бумаги — светлее листа, с мягким
+/// переходом света и тенью, падающей на сам листок.
+struct CurledFlap: View {
+    let size: CGFloat
+    var body: some View {
+        ZStack(alignment: .bottomLeading) {
+            // Тень уголка на листке — вправо-вверх от сгиба, под лампой слева сверху.
+            FlapShape()
+                .fill(Color.black.opacity(0.22))
+                .blur(radius: 3)
+                .offset(x: 2, y: -2)
+            FlapShape()
+                .fill(LinearGradient(colors: [Color.white.opacity(0.92), Look.sticker],
+                                     startPoint: .bottomLeading, endPoint: .topTrailing))
+            FlapShape()
+                .stroke(Look.stickerEdge, lineWidth: 0.8)
+        }
+        .frame(width: size, height: size)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    /// Треугольник: линия сгиба и отражённый угол листа.
+    private struct FlapShape: Shape {
+        func path(in r: CGRect) -> Path {
+            var p = Path()
+            p.move(to: CGPoint(x: r.minX, y: r.minY))
+            p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
+            p.addLine(to: CGPoint(x: r.maxX, y: r.minY))
+            p.closeSubpath()
+            return p
+        }
     }
 }
