@@ -409,6 +409,22 @@ struct DayPage: View {
     }
 }
 
+/// Бумага прошедшего дня для мелких мест — клетки календаря, строки списка,
+/// панельки месяцев (P684): тот же рельеф и те же крапинки, что у страницы
+/// (`PageTexture.paper`), без краёв. Кладётся поверх цвета прошлого и
+/// обрезается фигурой самой клетки; касаний не ловит.
+struct OldPaper: View {
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        Image(uiImage: PageTexture.paper)
+            .resizable(resizingMode: .tile)
+            .opacity(scheme == .dark ? 0.45 : 1)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+    }
+}
+
 /// Фактура страницы: у плана — бледная клетка, как в тетради; у дневника —
 /// волокно бумаги (P245). Рисуется один раз и кладётся плиткой.
 struct PageTexture: View {

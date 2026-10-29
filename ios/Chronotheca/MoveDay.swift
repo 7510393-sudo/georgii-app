@@ -132,12 +132,7 @@ struct MoveDaySticker: View {
     }
 
     /// Цвет клетки — как выбрано для «Календаря» в настройках (P290).
-    private func tint(_ date: Date) -> Color {
-        switch UserDefaults.standard.string(forKey: Prefs.calendarTint) ?? "distance" {
-        case "none":    return Look.planBg
-        default:        return Ru.tint(date)
-        }
-    }
+    private func tint(_ date: Date) -> Color { Ru.tint(date) }
 
     private func shift(_ by: Int) {
         Feel.light()

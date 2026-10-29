@@ -242,6 +242,18 @@ struct CalendarView: View {
                     }
                     .padding(6)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    // Прошедший месяц — на бумаге прошлого с рельефом (P684).
+                    .background {
+                        if monthIsPast(year: year, month: m) {
+                            ZStack {
+                                Ru.pastTint
+                                OldPaper()
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .strokeBorder(Look.stickerEdge, lineWidth: 1))
+                        }
+                    }
                 }
                 .buttonStyle(MonthPanelStyle())
             }
@@ -268,6 +280,13 @@ struct CalendarView: View {
                 .brightness(down ? -0.03 : 0)
                 .animation(.easeOut(duration: 0.12), value: down)
         }
+    }
+
+    /// Месяц целиком позади — до нынешнего месяца (P684).
+    private func monthIsPast(year: Int, month: Int) -> Bool {
+        let first = cal.date(from: DateComponents(year: year, month: month, day: 1)) ?? Date()
+        let nowFirst = cal.date(from: cal.dateComponents([.year, .month], from: DayStore.today())) ?? Date()
+        return first < nowFirst
     }
 
     private func miniMonth(year: Int, month: Int) -> some View {
@@ -377,6 +396,12 @@ struct CalendarView: View {
             // Клетка — того же цвета, что страница этого дня: сегодня
             // абрикосовое, прошлое голубеет, будущее зеленеет (P245).
             .background(isToday ? Look.accent : tint(date), in: RoundedRectangle(cornerRadius: 8))
+            // Прошедший день — на бумаге с рельефом, как его страница (P684).
+            .overlay {
+                if !isToday && Ru.isPast(date) {
+                    OldPaper().clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+            }
             .overlay(RoundedRectangle(cornerRadius: 8)
                 .strokeBorder(isSelected ? Look.accent : .clear, lineWidth: 1.5))
         }
@@ -418,12 +443,7 @@ struct CalendarView: View {
     }
 
     /// Цвет клетки дня — как выбрано в настройках (P290): цветом гаммы или без цвета (P498).
-    private func tint(_ date: Date) -> Color {
-        switch UserDefaults.standard.string(forKey: Prefs.calendarTint) ?? "distance" {
-        case "none":    return Look.planBg
-        default:        return Ru.tint(date)
-        }
-    }
+    private func tint(_ date: Date) -> Color { Ru.tint(date) }
 
     @ViewBuilder private var dayList: some View {
         if let stamp = selected, let date = Vault.date(from: stamp) {
@@ -566,6 +586,8 @@ struct CalendarView: View {
             .opacity(quiet ? 0.75 : 1)
             // Строка дня — цвета его страницы (P245); выбранная обведена.
             .background(tint(date))
+            // Прошедший день — на бумаге с рельефом (P684).
+            .overlay { if Ru.isPast(date) { OldPaper() } }
             .clipShape(RoundedRectangle(cornerRadius: 6))
             .overlay(RoundedRectangle(cornerRadius: 6)
                 .strokeBorder(open ? Look.accent.opacity(0.6) : .clear, lineWidth: 1.5))

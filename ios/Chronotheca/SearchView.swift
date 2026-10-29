@@ -37,6 +37,10 @@ struct SearchView: View {
             }
         }
         .keyboardHeight($keyboard)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        // Страница поиска — бумага гаммы с волокном, как страница дня
+        // (P684): прежде серый лист, что бы ни выбрали в настройках.
+        .background(Scheme.current.today.overlay(PageTexture(tab: .diary)))
     }
 
     /// Строка поиска стоит вместо заголовка «Поиск» — между уголками
