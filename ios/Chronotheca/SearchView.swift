@@ -38,9 +38,11 @@ struct SearchView: View {
         }
         .keyboardHeight($keyboard)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        // Страница поиска — бумага гаммы с волокном, как страница дня
-        // (P684): прежде серый лист, что бы ни выбрали в настройках.
-        .background(Scheme.current.today.overlay(PageTexture(tab: .diary)))
+        // Страница поиска — та же старая бумага, что у прошедших дней:
+        // сливочный цвет гаммы, рельеф и янтарные края (P693; прежде
+        // персиковая бумага с одним волокном, P684). Архив — это прошлое.
+        .background(Scheme.current.past.overlay(PageTexture(tab: .diary, aged: true,
+                                                            edgeTop: true, edgeBottom: true)))
     }
 
     /// Строка поиска стоит вместо заголовка «Поиск» — между уголками
@@ -168,7 +170,9 @@ struct SearchView: View {
             LazyVStack(spacing: 0) {
                 ForEach(found) { day in
                     row(day)
-                    Rectangle().fill(Look.ruleSoft).frame(height: 1).padding(.leading, 18)
+                    // Черта между находками — тёплая, во всю ширину, чтобы
+                    // каждая плашка читалась отдельно (P693).
+                    Rectangle().fill(Scheme.current.kraftEdge.opacity(0.5)).frame(height: 1)
                 }
             }
             // Место под клавиатуру. Без него последние находки лежат под
