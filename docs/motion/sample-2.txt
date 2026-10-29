@@ -1,27 +1,59 @@
+    273 Thread_50836   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 273 start  (in dyld) + 6992  [0x1002ec4e4]
+    +   273 start_sim  (in dyld_sim) + 20  [0x1001d30e4]
+    +     273 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x101f257c8]  ChronothecaApp.swift:0
+    +       273 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x101f2571c]  /<compiler-generated>:0
+    +         273 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           273 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             273 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               273 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 273 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   273 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     273 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       273 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    +                         273 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    +                           273 mach_msg  (in libsystem_kernel.dylib) + 20  [0x100088ef0]
+    +                             273 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x100090c44]
+    +                               273 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x100099e84]
+    +                                 273 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x100088b70]
 
 Sort by top of stack, same collapsed (when >= 5):
-        __workq_kernreturn  (in libsystem_kernel.dylib)        1087
-        void resample_horizontal<unsigned char, int, 3, false>(resample_filter const*, unsigned int, unsigned int, int, void**, void const* const*, int*, int, void const* const*)  (in CoreGraphics)        33
-        void resample_vertical<int, unsigned char, 3, (AlphaStyle)0>(resample_filter const*, unsigned int, unsigned int, int, void**, void const* const*)  (in CoreGraphics)        21
-        RGBA32_shade_axial_RGB  (in CoreGraphics)        20
-        mach_msg2_trap  (in dyld)        19
-        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        19
-        __ulock_wait  (in libsystem_kernel.dylib)        18
-        semaphore_wait_trap  (in libsystem_kernel.dylib)        17
-        __ulock_wait2  (in libsystem_kernel.dylib)        16
-        _platform_memmove  (in libsystem_platform.dylib)        16
-        aj_block_dct  (in AppleJPEG)        16
-        <deduplicated_symbol>  (in dyld)        13
-        aj_RGBA8888_YUV420  (in AppleJPEG)        10
-        decode_byte_8bpc_3  (in CoreGraphics)        10
-        _platform_memset_pattern16  (in libsystem_platform.dylib)        9
-        aj_block_encode_ac  (in AppleJPEG)        9
-        argb32_image_mark  (in CoreGraphics)        9
-        aj_icol_row_444_to_rgba  (in AppleJPEG)        8
-        swift::_getWitnessTable(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*, void const* const*)  (in libswiftCore.dylib)        6
-        __open  (in libsystem_kernel.dylib)        5
-        aj_huffman_encode_val_lkup  (in AppleJPEG)        5
-        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib)        5
+        __workq_kernreturn  (in libsystem_kernel.dylib)        1092
+        mach_msg2_trap  (in libsystem_kernel.dylib)        546
+        start_wqthread  (in libsystem_pthread.dylib)        546
+        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        273
+        __semwait_signal  (in libsystem_kernel.dylib)        271
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        222
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib)        19
+        getContextDescriptor(swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        9
+        getSuperclassForMaybeIncompleteMetadata(swift::TargetMetadata<swift::InProcess> const*, std::optional<swift::MetadataState>, bool)  (in libswiftCore.dylib)        9
+        _swift_class_getSuperclass  (in libswiftCore.dylib)        7
 
-Binary images description not available
-
+Binary Images:
+       0x100074000 -        0x100077507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/77AA4492-C787-4EEE-A772-05D4B3E9ECCD/data/Containers/Bundle/Application/A92D1C86-CB08-4196-AD7A-69328E469263/Chronotheca.app/Chronotheca
+       0x100088000 -        0x1000c2ed7  libsystem_kernel.dylib (12377.161.14) <26CFE427-C180-3145-8D46-DE3129B1CD2A> /usr/lib/system/libsystem_kernel.dylib
+       0x100108000 -        0x1001103d3  libsystem_platform.dylib (375.120.2) <7E129155-1748-370C-8EDC-D762067A6D9F> /usr/lib/system/libsystem_platform.dylib
+       0x1001c8000 -        0x100216e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x100284000 -        0x10029010b  libsystem_pthread.dylib (539.100.4) <85A501D2-0B0E-3DEA-B121-B24119D80CFE> /usr/lib/system/libsystem_pthread.dylib
+       0x1002cc000 -        0x10037f4ff  dyld (1.0.0 - 1387) <74E52480-C2BD-3C8D-812D-95FE2B74A096> /usr/lib/dyld
+       0x100424000 -        0x10046765f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x100578000 -        0x1006112af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x100d50000 -        0x100d50b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x100d64000 -        0x100d6c03f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x100e78000 -        0x100e8339f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x100e9c000 -        0x100e9edff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x100ebc000 -        0x100ec549f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x100ee0000 -        0x100ee6b7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x100f00000 -        0x100f072df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
+       0x100f2c000 -        0x100f2fe5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x101088000 -        0x10108b1ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
+       0x1013ec000 -        0x10140527f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
+       0x10143c000 -        0x101441407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
+       0x101458000 -        0x10145c6ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
+       0x101498000 -        0x1016f3bbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+       0x101dbc000 -        0x101de2f5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
+       0x101e50000 -        0x102594047 +Chronotheca.debug.dylib (0) <4B68B0AB-7F8A-39FC-AA47-D6A291B8B399> /Users/*/Library/Developer/CoreSimulator/Devices/77AA4492-C787-4EEE-A772-05D4B3E9ECCD/data/Containers/Bundle/Application/A92D1C86-CB08-4196-AD7A-69328E469263/Chronotheca.app/Chronotheca.debug.dylib
+       0x103084000 -        0x1030d77bf  com.apple.dt.XCTAutomationSupport (26.5 - 24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
+       0x103138000 -        0x10317215f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
+       0x103210000 -        0x103232cff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
+       0x1032d4000 -        0x103343cbf  com.apple.UIUnderstanding (1.0 - 1) <576E64EB-8AA4-3B1E-A89D-365C4DE0C7C8> /Volumes/*/UIUnderstanding.framework/UIUnderstanding
