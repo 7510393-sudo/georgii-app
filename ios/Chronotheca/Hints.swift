@@ -178,7 +178,7 @@ struct HintSticker: View {
         }
         .padding(.horizontal, 18)
         .padding(.top, 20)
-        .padding(.bottom, 14)
+        .padding(.bottom, 28)
         .frame(maxWidth: 320, alignment: .leading)
         // Самоклеящийся листок без скотча: тень вправо-вниз, левый нижний
         // уголок отстал и приподнят (P688, отменяет скотч).
