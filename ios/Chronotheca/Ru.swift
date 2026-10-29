@@ -158,7 +158,7 @@ enum Ru {
 }
 
 /// Цветовая гамма (P498): цвет прошлого и «сегодня», крафт строк разделов.
-/// Три гаммы; «без цвета» касается только календаря и гаммы не меняет.
+/// Три гаммы и «без цвета» — нейтральная (P683).
 struct Scheme {
     let past: Color
     let today: Color
@@ -190,6 +190,16 @@ struct Scheme {
         kraftInk: Color(light: 0x2D2340, dark: 0xE4DCF2),
         kraftEdge: Color(light: 0x8A7FA3, dark: 0x1B1824))
 
+    /// «Без цвета» (P683): нейтральные серые страницы и картон без желтизны и
+    /// розовости. Прежде эта кнопка красила только календарь, а страницы и
+    /// картон оставались абрикосовыми — выглядела как «Абрикос».
+    static let plain = Scheme(
+        past: Color(light: 0xDCDBD7, dark: 0x1B1B1A),
+        today: Color(light: 0xF5F4F1, dark: 0x262625),
+        kraft: Color(light: 0xB9B6AF, dark: 0x363634),
+        kraftInk: Color(light: 0x2B2A27, dark: 0xE4E3DF),
+        kraftEdge: Color(light: 0x86837C, dark: 0x181817))
+
     /// Выбранная в настройках; «distance» — прежний ключ абрикосовой, «weekday»
     /// (цвет по дням недели) убран, он читается как абрикосовая.
     static var current: Scheme { named(UserDefaults.standard.string(forKey: Prefs.calendarTint)) }
@@ -198,6 +208,7 @@ struct Scheme {
         switch key {
         case "sage": return sage
         case "lavender": return lavender
+        case "none": return plain
         default: return apricot
         }
     }
