@@ -1,0 +1,174 @@
+    534 Thread_57953   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 534 start  (in dyld) + 6992  [0x104c384e4]
+    +   534 start_sim  (in dyld_sim) + 20  [0x104d7b0e4]
+    +     534 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x1068edf58]  ChronothecaApp.swift:0
+    +       534 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1068edeac]  /<compiler-generated>:0
+    +         534 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           534 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             534 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               534 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 534 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   534 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     534 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       534 __CFRunLoopRun  (in CoreFoundation) + 2280  [0x180421df8]
+    +                         534 __CFRunLoopDoBlocks  (in CoreFoundation) + 340  [0x1804224b4]
+    +                           534 __CFRUNLOOP_IS_CALLING_OUT_TO_A_BLOCK__  (in CoreFoundation) + 20  [0x180422d28]
+    +                             534 __XCTPerformOnMainRunLoop_block_invoke  (in XCTAutomationSupport) + 392  [0x10aabbca4]
+    +                               534 __90-[XCTElementQuery matchingSnapshotsInSnapshotTree:relatedElements:noMatchesMessage:error:]_block_invoke  (in XCTAutomationSupport) + 156  [0x10aa9ea24]
+    +                                 534 +[XCTRuntimeIssueContext captureIssuesWithContext:inScope:]  (in XCTAutomationSupport) + 196  [0x10aaa87ec]
+    +                                   534 __90-[XCTElementQuery matchingSnapshotsInSnapshotTree:relatedElements:noMatchesMessage:error:]_block_invoke_2  (in XCTAutomationSupport) + 328  [0x10aa9eb90]
+    +                                     534 -[XCTElementQuery _firstMatchingSnapshotForInput:transformersSubarrays:relatedElements:noMatchesMessage:error:]  (in XCTAutomationSupport) + 256  [0x10aa9f23c]
+    +                                       525 -[XCTElementQuery _firstMatchingSnapshotForInput:transformers:relatedElements:noMatchesMessage:error:]  (in XCTAutomationSupport) + 560  [0x10aa9f764]
+    +                                       ! 525 -[XCTElementFilteringTransformer iteratorForInput:]  (in XCTAutomationSupport) + 56  [0x10aa984d4]
+    +                                       !   525 -[XCTFilteringTransformerIterator initWithInput:filteringTransformer:]  (in XCTAutomationSupport) + 248  [0x10aa9869c]
+    +                                       !     525 -[XCElementSnapshot descendantEnumerator]  (in XCTAutomationSupport) + 36  [0x10aab72a8]
+    +                                       !       525 -[XCTElementSnapshotDescendantsEnumerator initWithElementSnapshot:]  (in XCTAutomationSupport) + 112  [0x10aaba26c]
+    +                                       !         525 -[XCElementSnapshot childEnumerator]  (in XCTAutomationSupport) + 16  [0x10aab7254]
+    +                                       !           525 -[XCElementSnapshot children]  (in XCTAutomationSupport) + 124  [0x10aab52f8]
+    +                                       !             525 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 264  [0x10aab2270]
+    +                                       !               525 -[XCTAutomationSession attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 76  [0x10aac2ca4]
+    +                                       !                 525 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 360  [0x10aa9ad28]
+    +                                       !                   525 -[XCTAccessibilityFramework attributes:forElement:error:]  (in XCTAutomationSupport) + 128  [0x10aa9bf2c]
+    +                                       !                     525 AXUIElementCopyMultipleAttributeValues  (in AXRuntime) + 584  [0x1938ee088]
+    +                                       !                       525 _AXXMIGCopyMultipleAttributeValues  (in AXRuntime) + 596  [0x1938f3960]
+    +                                       !                         525 _handleNonMainThreadCallback  (in AXRuntime) + 52  [0x1938f35e0]
+    +                                       !                           525 ___AXXMIGCopyMultipleAttributeValues_block_invoke  (in AXRuntime) + 60  [0x1938f3a60]
+    +                                       !                             524 _copyMultipleAttributeValuesCallback  (in UIAccessibility) + 552  [0x1952685b4]
+    +                                       !                             : 524 -[UIApplicationAccessibility _iosAccessibilityAttributeValue:]  (in UIKit) + 2112  [0x10b84111c]
+    +                                       !                             :   524 -[NSObject(AXPrivCategory) _iosAccessibilityAttributeValue:]  (in UIAccessibility) + 200  [0x19528b694]
+    +                                       !                             :     524 -[UIApplicationAccessibility automationElements]  (in UIKit) + 32  [0x10b839e44]
+    +                                       !                             :       524 -[UIApplicationAccessibility _accessibilityWindows]  (in UIKit) + 40  [0x10b83a0c8]
+    +                                       !                             :         524 -[UIApplicationAccessibility _accessibilityWindowsIgnoringWindowsWithHiddenElements:]  (in UIKit) + 188  [0x10b839f0c]
+    +                                       !                             :           524 -[NSArray(AXExtras) ax_filteredArrayUsingBlock:]  (in AXCoreUtilities) + 20  [0x192ac79ec]
+    +                                       !                             :             523 __NSArrayGetIndexesPassingTest  (in CoreFoundation) + 440  [0x1804278dc]
+    +                                       !                             :             | 523 __NSARRAY_IS_CALLING_OUT_TO_A_BOOL_BLOCK__  (in CoreFoundation) + 16  [0x180426e88]
+    +                                       !                             :             |   523 __85-[UIApplicationAccessibility _accessibilityWindowsIgnoringWindowsWithHiddenElements:]_block_invoke_2  (in UIKit) + 88  [0x10b83a078]
+    +                                       !                             :             |     523 -[UIWindowAccessibility accessibilityElementsHidden]  (in UIKit) + 92  [0x10b9578f8]
+    +                                       !                             :             |       523 _isDevicePasscodeLocked  (in UIKit) + 36  [0x10b957b28]
+    +                                       !                             :             |         523 +[AXSpringBoardServer server]  (in AccessibilityUtilities) + 224  [0x19336f1a4]
+    +                                       !                             :             |           523 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +                                       !                             :             |             523 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                                       !                             :             |               523 __29+[AXSpringBoardServer server]_block_invoke.336  (in AccessibilityUtilities) + 16  [0x19336f1fc]
+    +                                       !                             :             |                 523 -[AXSpringBoardServer init]  (in AccessibilityUtilities) + 116  [0x19336f284]
+    +                                       !                             :             |                   523 -[AXAccessQueue initWithParentClass:description:appendUUIDToLabel:]  (in AXCoreUtilities) + 104  [0x192acfa98]
+    +                                       !                             :             |                     523 -[NSBundle bundleIdentifier]  (in Foundation) + 12  [0x18103de40]
+    +                                       !                             :             |                       523 -[NSBundle infoDictionary]  (in Foundation) + 12  [0x18103e19c]
+    +                                       !                             :             |                         523 -[NSBundle _cfBundle]  (in Foundation) + 72  [0x18103b734]
+    +                                       !                             :             |                           515 _CFBundleCreate  (in CoreFoundation) + 372  [0x1803afd70]
+    +                                       !                             :             |                           + 515 _CFBundleGetBundleVersionForURL  (in CoreFoundation) + 376  [0x1803b38a0]
+    +                                       !                             :             |                           +   515 _CFIterateDirectory  (in CoreFoundation) + 96  [0x1803def78]
+    +                                       !                             :             |                           +     515 readdir  (in libsystem_c.dylib) + 36  [0x1801303a4]
+    +                                       !                             :             |                           +       515 _readdir_unlocked  (in libsystem_c.dylib) + 220  [0x1801302b0]
+    +                                       !                             :             |                           +         515 __getdirentries64  (in libsystem_kernel.dylib) + 8  [0x104a5e670]
+    +                                       !                             :             |                           8 _CFBundleCreate  (in CoreFoundation) + 652  [0x1803afe88]
+    +                                       !                             :             |                             8 CFBundleGetInfoDictionary  (in CoreFoundation) + 44  [0x180537d8c]
+    +                                       !                             :             |                               8 _CFBundleRefreshInfoDictionaryAlreadyLocked  (in CoreFoundation) + 148  [0x180537e6c]
+    +                                       !                             :             |                                 8 _CFBundleCopyInfoDictionaryInDirectoryWithVersion  (in CoreFoundation) + 1528  [0x180537220]
+    +                                       !                             :             |                                   8 _CFDataCreateFromURL  (in CoreFoundation) + 80  [0x180491428]
+    +                                       !                             :             |                                     7 _CFReadBytesFromFile  (in CoreFoundation) + 360  [0x1803ddda4]
+    +                                       !                             :             |                                     ! 7 read  (in libsystem_kernel.dylib) + 8  [0x104a5d6cc]
+    +                                       !                             :             |                                     1 _CFReadBytesFromFile  (in CoreFoundation) + 292  [0x1803ddd60]
+    +                                       !                             :             |                                       1 _xzm_xzone_malloc_tiny  (in libsystem_malloc.dylib) + 224  [0x1801ee430]
+    +                                       !                             :             1 __NSArrayGetIndexesPassingTest  (in CoreFoundation) + 456  [0x1804278ec]
+    +                                       !                             :               1 objc_msgSend  (in libobjc.A.dylib) + 20  [0x18003ac14]
+    +                                       !                             1 _copyMultipleAttributeValuesCallback  (in UIAccessibility) + 580  [0x1952685d0]
+    +                                       !                               1 UIAXRuntimeConvertOutgoingParameterizedValue  (in UIAccessibility) + 264  [0x1952696e0]
+    +                                       !                                 1 AXConvertOutgoingValue  (in AXRuntime) + 48  [0x1938fc000]
+    +                                       8 -[XCTElementQuery _firstMatchingSnapshotForInput:transformers:relatedElements:noMatchesMessage:error:]  (in XCTAutomationSupport) + 848  [0x10aa9f884]
+    +                                       ! 7 -[XCTFilteringTransformerIterator nextMatch]  (in XCTAutomationSupport) + 40  [0x10aa9871c]
+    +                                       ! : 7 -[XCTElementSnapshotDescendantsEnumerator nextObject]  (in XCTAutomationSupport) + 140  [0x10aaba334]
+    +                                       ! :   7 -[XCElementSnapshot childEnumerator]  (in XCTAutomationSupport) + 16  [0x10aab7254]
+    +                                       ! :     7 -[XCElementSnapshot children]  (in XCTAutomationSupport) + 124  [0x10aab52f8]
+    +                                       ! :       5 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 636  [0x10aab23e4]
+    +                                       ! :       | 5 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                       ! :       |   5 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       ! :       |     5 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                       ! :       |       5 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                       ! :       |         5 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                       ! :       |           5 writev  (in libsystem_kernel.dylib) + 8  [0x104a60600]
+    +                                       ! :       2 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 264  [0x10aab2270]
+    +                                       ! :         2 -[XCTAutomationSession attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 76  [0x10aac2ca4]
+    +                                       ! :           1 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 360  [0x10aa9ad28]
+    +                                       ! :           + 1 -[XCTAccessibilityFramework attributes:forElement:error:]  (in XCTAutomationSupport) + 128  [0x10aa9bf2c]
+    +                                       ! :           +   1 AXUIElementCopyMultipleAttributeValues  (in AXRuntime) + 584  [0x1938ee088]
+    +                                       ! :           +     1 _AXXMIGCopyMultipleAttributeValues  (in AXRuntime) + 596  [0x1938f3960]
+    +                                       ! :           +       1 _handleNonMainThreadCallback  (in AXRuntime) + 52  [0x1938f35e0]
+    +                                       ! :           +         1 ___AXXMIGCopyMultipleAttributeValues_block_invoke  (in AXRuntime) + 60  [0x1938f3a60]
+    +                                       ! :           +           1 _copyMultipleAttributeValuesCallback  (in UIAccessibility) + 552  [0x1952685b4]
+    +                                       ! :           +             1 -[NSObject(AXPrivCategory) _iosAccessibilityAttributeValue:]  (in UIAccessibility) + 200  [0x19528b694]
+    +                                       ! :           +               1 -[UIViewAccessibility automationElements]  (in UIKit) + 156  [0x10b94af04]
+    +                                       ! :           +                 1 -[UIViewAccessibility _accessibilityUserTestingSubviewsSorted:]  (in UIKit) + 328  [0x10b94b06c]
+    +                                       ! :           +                   1 -[NSMutableArray sortUsingSelector:]  (in CoreFoundation) + 0  [0x1804d89d8]
+    +                                       ! :           1 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 524  [0x10aa9adcc]
+    +                                       ! :             1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                       ! :               1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       ! :                 1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                       ! :                   1 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 364  [0x1800b70c4]
+    +                                       ! :                     1 os_trace_blob_add_localtime  (in libsystem_trace.dylib) + 84  [0x1800ab514]
+    +                                       ! :                       1 localtime_r  (in libsystem_c.dylib) + 48  [0x1801556a0]
+    +                                       ! :                         1 tzsetwall_basic  (in libsystem_c.dylib) + 72  [0x1801537e4]
+    +                                       ! :                           1 notify_check_tz  (in libsystem_c.dylib) + 40  [0x180153c5c]
+    +                                       ! :                             1 notify_check  (in libsystem_notify.dylib) + 0  [0x18342129c]
+    +                                       ! 1 -[XCTFilteringTransformerIterator nextMatch]  (in XCTAutomationSupport) + 100  [0x10aa98758]
+    +                                       !   1 -[NSComparisonPredicate evaluateWithObject:substitutionVariables:]  (in Foundation) + 276  [0x18104d1bc]
+    +                                       !     1 -[NSKeyPathExpression expressionValueWithObject:context:]  (in Foundation) + 216  [0x18109e7bc]
+    +                                       !       1 -[NSFunctionExpression expressionValueWithObject:context:]  (in Foundation) + 2388  [0x181085144]
+    +                                       !         1 -[NSObject(NSKeyValueCoding) valueForKey:]  (in Foundation) + 260  [0x1810aad78]
+    +                                       !           1 -[XCElementSnapshot label]  (in XCTAutomationSupport) + 80  [0x10aab498c]
+    +                                       !             1 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 264  [0x10aab2270]
+    +                                       !               1 -[XCTAutomationSession attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 76  [0x10aac2ca4]
+    +                                       !                 1 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 524  [0x10aa9adcc]
+    +                                       !                   1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                       !                     1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       !                       1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                       !                         1 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                       !                           1 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                       !                             1 writev  (in libsystem_kernel.dylib) + 8  [0x104a60600]
+    +                                       1 -[XCTElementQuery _firstMatchingSnapshotForInput:transformers:relatedElements:noMatchesMessage:error:]  (in XCTAutomationSupport) + 496  [0x10aa9f724]
+    +                                         1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                           1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                             1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                               1 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                                 1 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                                   1 writev  (in libsystem_kernel.dylib) + 8  [0x104a60600]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        4872
+        mach_msg2_trap  (in libsystem_kernel.dylib)        534
+        semaphore_timedwait_trap  (in libsystem_kernel.dylib)        534
+        __getdirentries64  (in libsystem_kernel.dylib)        515
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        454
+        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        381
+        __CFAllocatorSystemAllocateTyped  (in CoreFoundation)        93
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib)        25
+        dyld4::LibSystemHelpers::os_unfair_recursive_lock_lock_with_options(os_unfair_recursive_lock_s*, os_unfair_lock_options_t) const  (in libdyld.dylib)        18
+        getContextDescriptor(swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        15
+        __CFStringCreateImmutableFunnel3  (in CoreFoundation)        8
+        getSuperclassForMaybeIncompleteMetadata(swift::TargetMetadata<swift::InProcess> const*, std::optional<swift::MetadataState>, bool)  (in libswiftCore.dylib)        7
+        read  (in libsystem_kernel.dylib)        7
+        swift::equalContexts(swift::TargetContextDescriptor<swift::InProcess> const*, swift::TargetContextDescriptor<swift::InProcess> const*)  (in libswiftCore.dylib)        7
+        writev  (in libsystem_kernel.dylib)        7
+        _swift_class_getSuperclass  (in libswiftCore.dylib)        6
+        _xzm_free  (in libsystem_malloc.dylib)        6
+        <deduplicated_symbol>  (in libswiftCore.dylib)        5
+
+Binary Images:
+       0x104a48000 -        0x104a4b507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/77AA4492-C787-4EEE-A772-05D4B3E9ECCD/data/Containers/Bundle/Application/DA856912-5B7D-4974-8C87-7738FD76A4A0/Chronotheca.app/Chronotheca
+       0x104a5c000 -        0x104a96ed7  libsystem_kernel.dylib (12377.161.14) <26CFE427-C180-3145-8D46-DE3129B1CD2A> /usr/lib/system/libsystem_kernel.dylib
+       0x104adc000 -        0x104ae43d3  libsystem_platform.dylib (375.120.2) <7E129155-1748-370C-8EDC-D762067A6D9F> /usr/lib/system/libsystem_platform.dylib
+       0x104b84000 -        0x104b9010b  libsystem_pthread.dylib (539.100.4) <85A501D2-0B0E-3DEA-B121-B24119D80CFE> /usr/lib/system/libsystem_pthread.dylib
+       0x104c18000 -        0x104ccb4ff  dyld (1.0.0 - 1387) <74E52480-C2BD-3C8D-812D-95FE2B74A096> /usr/lib/dyld
+       0x104d70000 -        0x104dbee9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x104e2c000 -        0x104e6f65f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x104f80000 -        0x1050192af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x105724000 -        0x105726dff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x105740000 -        0x10574803f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x105854000 -        0x105854b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x105864000 -        0x10586f39f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x105888000 -        0x10588be5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x1058a8000 -        0x1058b149f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x1058cc000 -        0x1058d2b7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x105918000 -        0x10591c6ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
+       0x105b80000 -        0x105b872df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
+       0x105ba0000 -        0x105ba5407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
+       0x105ea0000 -        0x1060fbbbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
