@@ -166,15 +166,27 @@ struct SearchView: View {
     }
 
     private var list: some View {
-        ScrollView {
-            LazyVStack(spacing: 0) {
-                ForEach(found) { day in
-                    row(day)
-                    // Черта между находками — тёплая, во всю ширину, чтобы
-                    // каждая плашка читалась отдельно (P693).
-                    Rectangle().fill(Scheme.current.kraftEdge.opacity(0.5)).frame(height: 1)
+        // Выборка считается один раз, а не на каждую карточку.
+        let days = found
+        return ScrollView {
+            // Находки — карточки картотеки: каждая заходит краем на соседнюю
+            // (отрицательный промежуток), передняя — верхняя; уходя вверх,
+            // карточка уменьшается и бледнеет, будто уходит вдаль (P694).
+            LazyVStack(spacing: -10) {
+                ForEach(Array(days.enumerated()), id: \.element.id) { index, day in
+                    SearchCard { row(day) }
+                        .zIndex(Double(days.count - index))
+                        .scrollTransition(.interactive, axis: .vertical) { content, phase in
+                            // value: от −1 (ушла за верх) до 0 (на месте) и
+                            // до 1 (ещё не въехала); вдаль уходит только верх.
+                            content
+                                .scaleEffect(1 + min(phase.value, 0) * 0.08)
+                                .opacity(1 + min(phase.value, 0) * 0.55)
+                        }
                 }
             }
+            .padding(.horizontal, 10)
+            .padding(.top, 4)
             // Место под клавиатуру. Без него последние находки лежат под
             // ней и не достаются прокруткой: список кончается там, где
             // начинается клавиатура (решение P174).
@@ -273,4 +285,33 @@ enum Search {
     /// Превью находки — того же размера, что все превью: в пять строк
     /// дневника (P385; прежде 86 — пять строк мелкого текста находки).
     static let previewSide: CGFloat = DiaryEditor.photoSize.width
+}
+
+
+/// Карточка находки: листок бумаги чуть светлее страницы, закруглённый, с
+/// заранее нарисованной тенью вправо-вниз (лампа слева сверху, P670, P675).
+/// Снизу оставлено место под край соседа — карточки заходят друг на друга
+/// (P694).
+private struct SearchCard<Content: View>: View {
+    @Environment(\.colorScheme) private var scheme
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        content()
+            .padding(.top, 6)
+            .padding(.bottom, 10)
+            .background {
+                // Непрозрачная: цвет страницы и поверх него светлая вуаль —
+                // иначе край соседа просвечивал бы сквозь карточку.
+                ZStack {
+                    Scheme.current.past
+                    Color.white.opacity(scheme == .dark ? 0.06 : 0.32)
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(Scheme.current.kraftEdge.opacity(0.45), lineWidth: 0.8))
+                .background(PaintedShadow(radius: 5, corner: 12, x: 2, y: 3,
+                                          opacity: scheme == .dark ? 0.5 : 0.28))
+            }
+    }
 }
