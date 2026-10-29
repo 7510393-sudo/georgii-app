@@ -85,6 +85,15 @@ enum Prefs {
     /// рисуется чуть меньше.
     static let comfortaaScale: CGFloat = 0.94
 
+    /// Надпись кнопки выбора шрифта — тем же шрифтом, какой она называет (P690).
+    static func sampleFont(_ key: String, bold: Bool) -> Font {
+        switch key {
+        case "comfortaa": return .custom(bold ? "Comfortaa-Bold" : "Comfortaa-Regular", size: 13.5)
+        case "system": return .system(size: 13.5, weight: bold ? .semibold : .regular)
+        default: return .system(size: 13.5, weight: bold ? .semibold : .regular, design: .serif)
+        }
+    }
+
     /// Шрифт записи для полей UIKit.
     static func serifUIFont(_ size: CGFloat) -> UIFont {
         if fontKey == "comfortaa",

@@ -147,6 +147,9 @@ struct NoteRow<Trailing: View>: View {
 struct Choice<Value: Hashable>: View {
     let options: [(Value, String)]
     @Binding var selection: Value
+    /// Свой шрифт надписи варианта (выбор шрифта записи — каждое имя своим
+    /// шрифтом, P690); `nil` — как у всех.
+    var labelFont: ((Value, Bool) -> Font?)? = nil
 
     var body: some View {
         // Не помещаются в строку — переходят на следующую, а не уходят за
@@ -161,7 +164,7 @@ struct Choice<Value: Hashable>: View {
                     selection = value
                 } label: {
                     Text(name)
-                        .font(Look.sans(13.5, weight: on ? .semibold : .regular))
+                        .font(labelFont?(value, on) ?? Look.sans(13.5, weight: on ? .semibold : .regular))
                         .lineLimit(1)
                         .fixedSize()
                         .modifier(Tag(look: on ? .chosen : .plain))

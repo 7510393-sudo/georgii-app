@@ -389,7 +389,8 @@ struct SettingsSticker: View {
                              ("dark", T("тёмная", "dark"))], selection: $theme)
         }
         NoteRow(title: T("Шрифт записи", "Entry font")) {
-            Choice(options: Prefs.fonts.map { ($0.key, $0.name) }, selection: $fontKey)
+            Choice(options: Prefs.fonts.map { ($0.key, $0.name) }, selection: $fontKey,
+                   labelFont: { key, on in Prefs.sampleFont(key, bold: on) })
         }
         // Три гаммы и «без цвета» (P498). Гамма красит страницы, календарь и
         // строки разделов; «без цвета» — только календарь. «Без цвета» — в
