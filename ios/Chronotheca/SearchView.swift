@@ -173,7 +173,7 @@ struct SearchView: View {
             // верхней и своим корешком с датой закрывает её низ; уходя
             // вверх, карточка уменьшается и бледнеет, будто уходит
             // вдаль (P694, P695).
-            LazyVStack(spacing: -SearchCard.tabHeight) {
+            LazyVStack(spacing: -Search.tabHeight) {
                 ForEach(days) { day in
                     SearchCard(stamp: Search.stamp(day.date)) { row(day) }
                         .scrollTransition(.interactive, axis: .vertical) { content, phase in
@@ -269,6 +269,9 @@ struct SearchView: View {
 }
 
 enum Search {
+    /// Высота корешка карточки, она же наложение карточек (P695).
+    static let tabHeight: CGFloat = 22
+
     /// «2026 сентябрь 22» — от крупного к мелкому, как ищут в архиве.
     static func stamp(_ date: Date) -> String {
         let c = Calendar.current.dateComponents([.day, .month, .year], from: date)
@@ -289,8 +292,6 @@ enum Search {
 /// лежит поверх этой и закрывает пустой низ.
 private struct SearchCard<Content: View>: View {
     @Environment(\.colorScheme) private var scheme
-    /// Высота корешка, она же наложение карточек.
-    static var tabHeight: CGFloat { 22 }
     let stamp: String
     @ViewBuilder let content: () -> Content
 
@@ -301,10 +302,10 @@ private struct SearchCard<Content: View>: View {
                 Color.clear.frame(maxWidth: .infinity)
                 Color.clear.frame(maxWidth: .infinity)
             }
-            .frame(height: Self.tabHeight)
+            .frame(height: Search.tabHeight)
             content()
                 .padding(.top, 2)
-                .padding(.bottom, Self.tabHeight)
+                .padding(.bottom, Search.tabHeight)
                 .frame(maxWidth: .infinity)
                 .background {
                     paper
