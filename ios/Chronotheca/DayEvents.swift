@@ -19,9 +19,12 @@ enum DayEvents {
     static let store = EKEventStore()
 
     static let onKey = "prefs.calendarEvents"
+    static let holidaysKey = "prefs.calendarHolidays"
 
     /// Показывать события Календаря — по умолчанию да.
     static var on: Bool { UserDefaults.standard.object(forKey: onKey) as? Bool ?? true }
+    /// Праздники и дни рождения — по умолчанию нет.
+    static var holidays: Bool { UserDefaults.standard.bool(forKey: holidaysKey) }
 
     static var status: EKAuthorizationStatus { EKEventStore.authorizationStatus(for: .event) }
     static var allowed: Bool { status == .fullAccess }
@@ -55,7 +58,7 @@ enum DayEvents {
         let cal = Calendar.current
         let start = cal.startOfDay(for: day)
         guard let end = cal.date(byAdding: .day, value: 1, to: start) else { return [] }
-        let calendars = store.calendars(for: .event)
+        let calendars = store.calendars(for: .event).filter { holidays || !isHolidays($0) }
         guard !calendars.isEmpty else { return [] }
         let found = store.events(matching: store.predicateForEvents(withStart: start, end: end,
                                                                      calendars: calendars))
@@ -108,6 +111,12 @@ enum DayEvents {
                                                                      calendars: nil))
         let base = key.prefix(8)
         return found.first { DayEvents.key(of: $0) == base }
+    }
+
+    /// Праздники, дни рождения и прочие календари-подписки, которые
+    /// нельзя править.
+    static func isHolidays(_ c: EKCalendar) -> Bool {
+        c.type == .birthday || (c.type == .subscription && !c.allowsContentModifications)
     }
 
     /// Восемь знаков из постоянного имени события. Своя свёртка, а не

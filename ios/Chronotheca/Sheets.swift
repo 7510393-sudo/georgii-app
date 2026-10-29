@@ -362,6 +362,12 @@ struct SettingsSticker: View {
                 }
             }
         }
+        if calendarEvents {
+            NoteRow(title: T("Праздники и дни рождения", "Holidays and birthdays")) {
+                Choice(options: [(true, T("показывать", "show")), (false, T("нет", "hide"))],
+                       selection: $calendarHolidays)
+            }
+        }
     }
 
     private var eventsDenied: Bool {
@@ -485,6 +491,7 @@ struct SettingsSticker: View {
         T("Шаги, сон и тренировки берутся из «Здоровья» iPhone и показываются в шапке дня; iPhone спросит разрешение один раз. Нет строки? Шаги считает iPhone: Настройки → Конфиденциальность и безопасность → Движение и фитнес → «Отслеживание фитнеса». Доступ: «Здоровье» → ваш значок → Приложения → Graphomanus.",
           "Steps, sleep and workouts come from iPhone Health and show at the top of a day; iPhone asks for permission once. No line? iPhone counts steps: Settings → Privacy & Security → Motion & Fitness → Fitness Tracking. Access: Health → your picture → Apps → Graphomanus.")
     }
+    @AppStorage(DayEvents.holidaysKey) private var calendarHolidays = false
     @AppStorage(Prefs.calendarTint) private var calendarTint = "distance"
     @State private var showingTrash = false
     @State private var showingPDF = false

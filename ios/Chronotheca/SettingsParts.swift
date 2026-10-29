@@ -207,7 +207,10 @@ struct SchemeChoice: View {
             guard !on else { return }
             Feel.tick()
             pending = key
-            DispatchQueue.main.async {
+            // Через десятую долю секунды: сперва нарисуется нажатая кнопка,
+            // потом начнётся перекраска (P692; сразу следом оба шага
+            // попадали в один кадр, и отклика не было видно).
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 selection = key
                 pending = nil
             }
