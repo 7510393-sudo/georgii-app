@@ -56,8 +56,7 @@ enum Prefs {
     /// убраны: ими почти никто не пользовался, а лежали они в приложении
     /// почти два мегабайта (отменяет P602).
     static var fonts: [(key: String, name: String)] {
-        [("newyork", T("С засечками", "Serif")), ("system", T("Без засечек", "Sans serif")),
-         ("comfortaa", "Comfortaa")]
+        [("newyork", "New York"), ("system", "San Francisco"), ("comfortaa", "Comfortaa")]
     }
 
     /// Выбранный шрифт: Comfortaa, «без засечек» или New York. Прежний выбор
