@@ -18,14 +18,6 @@ struct ChronothecaApp: App {
     @StateObject private var archive: Archive
     @StateObject private var shell = Shell()
     @Environment(\.scenePhase) private var phase
-    /// Когда приложение ушло в фон — по этому решается, была ли пауза.
-    @State private var leftAt: Date?
-
-    /// После скольких минут в фоне приложение открывается заново, на
-    /// «Сегодня» (P346). Короче — нельзя: человек сбегал в Карты Google за
-    /// координатами и вернулся вставить их — его место должно остаться.
-    private static let pause: TimeInterval = 5 * 60
-
     init() {
         _ = LaunchClock.start
         // Граница суток из настроек — до того, как откроется «сегодня».
@@ -81,12 +73,13 @@ struct ChronothecaApp: App {
                 store.save()
             case .background:
                 store.save()
-                leftAt = Date()
+                shell.rememberLeft(store)
             // Вернувшись — сверить день с диском: пока приложение стояло,
             // запись могли поправить на Mac или на другом устройстве, и
             // старая копия не должна лечь поверх новой (P183).
             case .active:
-                store.comeBack()
+                let newDay = shell.newDaySinceLeft()
+                store.comeBack(newDay: newDay)
                 // Опись папки — в стороне (P565): прежде она читалась
                 // целиком до первого кадра, и приложение открывалось долго.
                 archive.reloadSoon()
@@ -107,11 +100,9 @@ struct ChronothecaApp: App {
                                     + "More in Settings, “Is my data safe?”."), for: 6)
                     }
                 }
-                // Долгая пауза — открыть заново, как после запуска (P346).
-                if let leftAt, Date().timeIntervalSince(leftAt) > Self.pause {
-                    shell.startOver(store)
-                }
-                leftAt = nil
+                // Наступил новый день — «День» сегодняшний; иначе остаёмся
+                // там, где были (P686, отменяет P346).
+                if newDay { shell.startOver(store) }
             @unknown default:
                 break
             }

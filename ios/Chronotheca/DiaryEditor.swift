@@ -2382,4 +2382,21 @@ final class DiaryTextView: UITextView {
         if markedTextRange == nil, !(markedText ?? "").isEmpty { onDictationStart?() }
         super.setMarkedText(markedText, selectedRange: selectedRange)
     }
+
+    /// Диктовка просит у поля место для будущих слов (P686): это первое,
+    /// что видит поле, — раньше любого временного текста. Свой метод
+    /// без `override` (в классе поля его нет, он из протокола ввода): время
+    /// встаёт, затем зовётся прежний, системный.
+    private static let placeholder = Selector(("insertDictationResultPlaceholder"))
+
+    @objc(insertDictationResultPlaceholder)
+    func ownInsertDictationResultPlaceholder() -> Any? {
+        onDictationStart?()
+        // Системный метод берём у UITextView напрямую: `perform` ушёл бы
+        // обратно в этот же метод.
+        guard let method = class_getInstanceMethod(UITextView.self, Self.placeholder) else { return nil }
+        typealias Call = @convention(c) (AnyObject, Selector) -> Unmanaged<AnyObject>?
+        let call = unsafeBitCast(method_getImplementation(method), to: Call.self)
+        return call(self, Self.placeholder)?.takeUnretainedValue()
+    }
 }

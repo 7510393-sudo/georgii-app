@@ -160,7 +160,7 @@ final class StorageSafetyTests: XCTestCase {
         день.save()
 
         put("- [ ] поправлено на Mac\n", at: planURL())
-        день.comeBack()
+        день.comeBack(newDay: false)
 
         XCTAssertEqual(день.tasks.map(\.text), ["поправлено на Mac"])
         XCTAssertTrue(asides(near: planURL()).isEmpty, "своей правки не было — класть рядом нечего")

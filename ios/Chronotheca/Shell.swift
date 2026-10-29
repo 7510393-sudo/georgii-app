@@ -231,6 +231,46 @@ final class Shell: ObservableObject {
         freshStart += 1
     }
 
+    /// Где закрыли приложение: экран, вкладка, день и какое было «сегодня»
+    /// (P686). Открываясь вновь — после запуска или фона, — приложение
+    /// встаёт там же; если «сегодня» сменилось, то на «День» сегодняшний.
+    func rememberLeft(_ store: DayStore) {
+        let d = UserDefaults.standard
+        d.set(["today", "calendar", "map", "search"][[Screen.today, .calendar, .map, .search].firstIndex(of: screen) ?? 0],
+              forKey: "left.screen")
+        d.set(tab.rawValue, forKey: "left.tab")
+        d.set(Vault.stamp(store.date), forKey: "left.day")
+        d.set(Vault.stamp(DayStore.today()), forKey: "left.today")
+    }
+
+    /// Новые сутки с тех пор, как закрыли? Нет сведений — нет.
+    func newDaySinceLeft() -> Bool {
+        guard let t = UserDefaults.standard.string(forKey: "left.today") else { return false }
+        return t != Vault.stamp(DayStore.today())
+    }
+
+    /// Холодный запуск: встать там, где закрыли (P686).
+    func restoreLeft(_ store: DayStore) {
+        guard !Vault.isPreview, !newDaySinceLeft() else { return }
+        let d = UserDefaults.standard
+        if let raw = d.string(forKey: "left.tab"), let t = Tab(rawValue: raw) { tab = t }
+        if let st = d.string(forKey: "left.day"), let day = Vault.date(from: st), day != store.date {
+            store.go(to: day)
+        }
+        let target: Screen
+        switch d.string(forKey: "left.screen") {
+        case "calendar": target = .calendar
+        case "map": target = .map
+        case "search": target = .search
+        default: target = .today
+        }
+        if target != .today {
+            instant = true
+            screen = target
+            stack = [.today, target]
+        }
+    }
+
     /// Просьба календарю вернуться к нынешнему месяцу или году, перелистнув
     /// страницы. Поднимается из меню календаря; выполняет сам календарь.
     @Published var calendarHome = false
