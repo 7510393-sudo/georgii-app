@@ -419,7 +419,9 @@ struct OldPaper: View {
     var body: some View {
         Image(uiImage: PageTexture.paper)
             .resizable(resizingMode: .tile)
-            .opacity(scheme == .dark ? 0.45 : 1)
+            // Вдвое слабее, чем на странице (P685): рельеф подобран под лист
+            // во весь экран, на мелких клетках он выходил «пухлым».
+            .opacity(scheme == .dark ? 0.22 : 0.5)
             .allowsHitTesting(false)
             .accessibilityHidden(true)
     }
