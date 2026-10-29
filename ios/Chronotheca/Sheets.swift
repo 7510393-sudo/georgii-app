@@ -248,9 +248,9 @@ struct SettingsSticker: View {
         }
         // Чужая клавиатура с «полным доступом» видит всё набранное (P633, по
         // docs/50): выключатель, как у банковских приложений.
-        NoteRow(title: T("Только клавиатура iPhone", "Only the iPhone keyboard"),
-                info: T("Клавиатура из App Store с «полным доступом» видит всё, что вы набираете. Включено — в приложении работает только клавиатура iPhone. Может понадобиться перезапуск приложения.",
-                          "A keyboard from the App Store with “Full Access” can see everything you type. On: only the iPhone keyboard works in the app. May need an app restart.")) {
+        NoteRow(title: T("Без сторонних клавиатур", "No third-party keyboards"),
+                info: T("Клавиатуры из App Store (например, Gboard или SwiftKey) могут видеть всё, что вы набираете, если у них включён «полный доступ». Когда выключатель включён, в Graphomanus работает только обычная клавиатура iPhone. Может понадобиться перезапуск приложения.",
+                          "Keyboards from the App Store (such as Gboard or SwiftKey) can see everything you type if they have “Full Access”. When this is on, only the standard iPhone keyboard works in Graphomanus. You may need to restart the app.")) {
             Lever(isOn: $ownKeyboardOnly)
         }
     }
@@ -312,7 +312,8 @@ struct SettingsSticker: View {
         NoteSection(title: T("Дополнения", "Extras"))
         // Погоды нет — почему (P354). Текст можно выделить и прислать.
         NoteRow(title: T("Погода", "Weather"),
-                info: T("Погода в записях — от Погоды Apple.", "The weather in entries comes from Apple Weather."),
+                info: T("Погода в шапке дня берётся из Погоды Apple, градусы — как в настройках iPhone. Если погоды нет, причина появится красным под выключателем. Условия Погоды Apple — по кнопке ниже.",
+                        "The weather at the top of a day comes from Apple Weather; degrees follow your iPhone settings. If there is no weather, the reason appears in red under the switch. Apple Weather terms are on the button below."),
                 infoLink: (T("Условия", "Terms"), WeatherNote.legal)) {
             Lever(isOn: Binding(get: { !noWeather }, set: { on in
                 noWeather = !on
@@ -345,8 +346,8 @@ struct SettingsSticker: View {
         // События Календаря iPhone в плане (P376).
         NoteRow(title: T("События Календаря iPhone", "iPhone Calendar events"),
                 detail: eventsDetail, detailColor: eventsDenied ? .orange : Look.inkSoft, pinned: true,
-                info: T("Над делами, по времени; звонит сам Календарь.",
-                        "Above your tasks, by time; Calendar itself rings.")) {
+                info: T("События из приложения «Календарь» на iPhone показываются над делами дня, по времени. Какие календари и как показывать, настраивается в самом «Календаре»; о событиях напоминает тоже он. Нужен доступ к Календарю — iPhone спросит один раз.",
+                        "Events from the Calendar app on your iPhone appear above the day’s tasks, by time. Which calendars exist and how they look is set in Calendar itself, and Calendar sends the reminders. It needs Calendar access; iPhone asks once.")) {
             Lever(isOn: Binding(get: { calendarEvents }, set: { on in
                 calendarEvents = on
                 if on, DayEvents.status == .notDetermined { DayEvents.ask { _ in } }
@@ -359,12 +360,6 @@ struct SettingsSticker: View {
                         UIApplication.shared.open(url)
                     }
                 }
-            }
-        }
-        if calendarEvents {
-            NoteRow(title: T("Праздники и дни рождения", "Holidays and birthdays")) {
-                Choice(options: [(true, T("показывать", "show")), (false, T("нет", "hide"))],
-                       selection: $calendarHolidays)
             }
         }
     }
@@ -388,22 +383,22 @@ struct SettingsSticker: View {
             Choice(options: [("system", T("системная", "system")), ("light", T("светлая", "light")),
                              ("dark", T("тёмная", "dark"))], selection: $theme)
         }
+        // Шрифт — в две строки: название и первый вариант, ниже справа
+        // остальные (P691).
         NoteRow(title: T("Шрифт записи", "Entry font")) {
-            Choice(options: Prefs.fonts.map { ($0.key, $0.name) }, selection: $fontKey,
+            Choice(options: Prefs.fonts.prefix(1).map { ($0.key, $0.name) }, selection: $fontKey,
                    labelFont: { key, on in Prefs.sampleFont(key, bold: on) })
         }
-        // Три гаммы и «без цвета» (P498). Гамма красит страницы, календарь и
-        // строки разделов; «без цвета» — только календарь. «Без цвета» — в
-        // строке с названием, три гаммы — строкой ниже справа: две строки
-        // вместо трёх (P650).
-        NoteRow(title: T("Цветовая гамма", "Colour scheme")) {
-            SchemeChoice(selection: $calendarTint, keys: ["none"])
-        }
-        SchemeChoice(selection: $calendarTint, keys: ["distance", "sage", "lavender"])
+        Choice(options: Prefs.fonts.dropFirst().map { ($0.key, $0.name) }, selection: $fontKey,
+               labelFont: { key, on in Prefs.sampleFont(key, bold: on) })
             .frame(maxWidth: .infinity, alignment: .trailing)
             .padding(.horizontal, 12)
             .padding(.top, -3)
             .padding(.bottom, 9)
+        // Четыре гаммы двумя столбцами справа от названия (P691, замена P650).
+        NoteRow(title: T("Цветовая гамма", "Colour scheme")) {
+            SchemeChoice(selection: $calendarTint)
+        }
     }
 
     @ViewBuilder private var aboutPart: some View {
@@ -487,10 +482,9 @@ struct SettingsSticker: View {
     /// Путь, который помог автору (24.10): шагов не было с весны — iPhone
     /// их не считал, а не прятал.
     private var healthHint: String {
-        T("Нет строки? Шаги считает iPhone: Настройки → Конфиденциальность и безопасность → Движение и фитнес → «Отслеживание фитнеса». Доступ: «Здоровье» → ваш значок → Приложения → Graphomanus.",
-          "No line? iPhone counts steps: Settings → Privacy & Security → Motion & Fitness → Fitness Tracking. Access: Health → your picture → Apps → Graphomanus.")
+        T("Шаги, сон и тренировки берутся из «Здоровья» iPhone и показываются в шапке дня; iPhone спросит разрешение один раз. Нет строки? Шаги считает iPhone: Настройки → Конфиденциальность и безопасность → Движение и фитнес → «Отслеживание фитнеса». Доступ: «Здоровье» → ваш значок → Приложения → Graphomanus.",
+          "Steps, sleep and workouts come from iPhone Health and show at the top of a day; iPhone asks for permission once. No line? iPhone counts steps: Settings → Privacy & Security → Motion & Fitness → Fitness Tracking. Access: Health → your picture → Apps → Graphomanus.")
     }
-    @AppStorage(DayEvents.holidaysKey) private var calendarHolidays = false
     @AppStorage(Prefs.calendarTint) private var calendarTint = "distance"
     @State private var showingTrash = false
     @State private var showingPDF = false
@@ -647,8 +641,8 @@ struct SafetySheet: View {
 
                 Text(onPhone
                      ? T("Записи лежат внутри самой «Graphomanus», на этом iPhone. ", "Your entries are inside Graphomanus itself, on this iPhone. ")
-                       + T("Удалите приложение — iPhone сотрёт их вместе с ним, без возврата.", "Delete the app, and the iPhone erases them with it, for good.")
-                     : T("Записи лежат вне приложения, в вашей папке. Удалите «Graphomanus» — ", "Your entries are outside the app, in your own folder. Delete Graphomanus, and ")
+                       + T("Если приложение удалить, iPhone сотрёт их вместе с ним, без возврата.", "If the app is deleted, the iPhone erases them with it, for good.")
+                     : T("Записи лежат вне приложения, в вашей папке. Если «Graphomanus» удалить, ", "Your entries are outside the app, in your own folder. If Graphomanus is deleted, ")
                        + T("они останутся на месте: в «Файлах», в облаке, на других устройствах.", "they stay where they are: in Files, in the cloud, on other devices."))
                     .font(.callout)
                     .foregroundStyle(.secondary)

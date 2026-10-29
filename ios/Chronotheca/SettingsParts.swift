@@ -176,15 +176,13 @@ struct Choice<Value: Hashable>: View {
     }
 }
 
-/// Выбор цветовой гаммы (P498): кнопки — словами, без образцов (P647).
+/// Выбор цветовой гаммы (P498): кнопки — словом, без образцов (P647);
+/// четыре кнопки двумя столбцами (P691).
 struct SchemeChoice: View {
     @Binding var selection: String
     /// Нажатая гамма видна сразу; смена гаммы пересобирает все страницы и
     /// занимает время — она идёт следом (P687).
     @State private var pending: String?
-    /// Какие варианты показать: «без цвета» стоит в строке с названием, три
-    /// гаммы — строкой ниже (P650).
-    var keys: [String]? = nil
 
     private var options: [(String, String)] {
         [("distance", T("Абрикос", "Apricot")),
@@ -194,32 +192,35 @@ struct SchemeChoice: View {
     }
 
     var body: some View {
-        Flow(spacing: 4, trailing: true) {
-            ForEach(options.filter { keys?.contains($0.0) ?? true }, id: \.0) { key, name in
-                // Прежний «weekday» читается как первая гамма.
-                let shown = pending ?? selection
-                let on = key == shown || (key == "distance" && shown == "weekday")
-                Button {
-                    guard !on else { return }
-                    Feel.tick()
-                    pending = key
-                    DispatchQueue.main.async {
-                        selection = key
-                        pending = nil
-                    }
-                } label: {
-                    // Кнопка — размером со слово (замечание автора к 182):
-                    // с кружками-образцами четыре кнопки вставали в три строки.
-                    Text(name)
-                        .font(Look.sans(13.5, weight: on ? .semibold : .regular))
-                        .lineLimit(1)
-                        .fixedSize()
-                        .modifier(Tag(look: on ? .chosen : .plain))
-                }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(on ? .isSelected : [])
-            }
+        Grid(horizontalSpacing: 4, verticalSpacing: 4) {
+            GridRow { button(options[0]); button(options[1]) }
+            GridRow { button(options[2]); button(options[3]) }
         }
+    }
+
+    private func button(_ option: (String, String)) -> some View {
+        let (key, name) = option
+        let shown = pending ?? selection
+        // Прежний «weekday» читается как первая гамма.
+        let on = key == shown || (key == "distance" && shown == "weekday")
+        return Button {
+            guard !on else { return }
+            Feel.tick()
+            pending = key
+            DispatchQueue.main.async {
+                selection = key
+                pending = nil
+            }
+        } label: {
+            // Кнопка одной ширины со столбцом (P691).
+            Text(name)
+                .font(Look.sans(13.5, weight: on ? .semibold : .regular))
+                .lineLimit(1)
+                .frame(maxWidth: .infinity)
+                .modifier(Tag(look: on ? .chosen : .plain))
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(on ? .isSelected : [])
     }
 }
 
