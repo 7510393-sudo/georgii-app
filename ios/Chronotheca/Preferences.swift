@@ -56,27 +56,41 @@ enum Prefs {
     /// убраны: ими почти никто не пользовался, а лежали они в приложении
     /// почти два мегабайта (отменяет P602).
     static var fonts: [(key: String, name: String)] {
-        [("newyork", T("С засечками", "Serif")), ("system", T("Без засечек", "Sans serif"))]
+        [("newyork", T("С засечками", "Serif")), ("system", T("Без засечек", "Sans serif")),
+         ("comfortaa", "Comfortaa")]
     }
 
-    /// Выбранный шрифт: «без засечек» или New York. Прежний выбор любого из
-    /// убранных шрифтов — тоже New York.
+    /// Выбранный шрифт: Comfortaa, «без засечек» или New York. Прежний выбор
+    /// любого из убранных шрифтов — тоже New York.
     static var fontKey: String {
-        UserDefaults.standard.string(forKey: font) == "system" ? "system" : "newyork"
+        let stored = UserDefaults.standard.string(forKey: font)
+        return stored == "system" || stored == "comfortaa" ? stored! : "newyork"
     }
 
     /// При запуске: выбор убранного шрифта переписывается на New York, чтобы
-    /// в настройках стояла отметка у одного из двух (P680).
+    /// в настройках стояла отметка у одного из трёх (P680); Comfortaa из
+    /// файлов приложения подключается один раз (P689).
     static func settleFont() {
         let stored = UserDefaults.standard.string(forKey: font)
-        if let stored, stored != "newyork", stored != "system" {
+        if let stored, !["newyork", "system", "comfortaa"].contains(stored) {
             UserDefaults.standard.set("newyork", forKey: font)
+        }
+        for file in ["Comfortaa-Regular", "Comfortaa-Bold"] {
+            if let url = Bundle.main.url(forResource: file, withExtension: "ttf") {
+                CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
+            }
         }
     }
 
+    /// Comfortaa шире и крупнее на вид, чем шрифты iPhone: тот же размер
+    /// рисуется чуть меньше.
+    static let comfortaaScale: CGFloat = 0.94
+
     /// Шрифт записи для полей UIKit.
     static func serifUIFont(_ size: CGFloat) -> UIFont {
-        if fontKey == "system" { return .systemFont(ofSize: size) }
+        if fontKey == "comfortaa",
+           let own = UIFont(name: "Comfortaa-Regular", size: size * comfortaaScale) { return own }
+        if fontKey == "system" || fontKey == "comfortaa" { return .systemFont(ofSize: size) }
         let plain = UIFont.systemFont(ofSize: size)
         return plain.fontDescriptor.withDesign(.serif).map { UIFont(descriptor: $0, size: size) } ?? plain
     }

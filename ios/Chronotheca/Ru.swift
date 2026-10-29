@@ -302,6 +302,9 @@ enum Look {
     static func serif(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
         switch Prefs.fontKey {
         case "system":  return .system(size: size, weight: weight)
+        case "comfortaa":
+            return .custom([Font.Weight.semibold, .bold, .heavy, .black].contains(weight) ? "Comfortaa-Bold" : "Comfortaa-Regular",
+                           size: size * Prefs.comfortaaScale)
         default:        return .system(size: size, weight: weight, design: .serif)
         }
     }
