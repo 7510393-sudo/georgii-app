@@ -564,7 +564,7 @@ struct PageTexture: View {
 
     /// Густота износа (облака, края, крапинки): 1 — средняя (второй вариант
     /// эскиза `docs/paper/износ-по-образцу.png`); 1,7 — сильнее.
-    static let wearStrength = CGFloat(1.3)
+    static let wearStrength = CGFloat(1.05)
 
     private static let amber: (r: Float, g: Float, b: Float) = (140 / 255, 97 / 255, 41 / 255)
 
@@ -779,7 +779,7 @@ struct PageTexture: View {
 
     /// Густота рельефа: 1 — средняя (в эскизе `docs/paper/рельеф.png` — второй
     /// вариант); 0,55 — тихая, 1,55 — резкая.
-    static let reliefStrength = CGFloat(1)
+    static let reliefStrength = CGFloat(1.3)
 }
 
 /// «＋» внизу страницы (P615) и всё, что она открывает: галерея, камера,
