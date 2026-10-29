@@ -169,13 +169,13 @@ struct SearchView: View {
         // Выборка считается один раз, а не на каждую карточку.
         let days = found
         return ScrollView {
-            // Находки — карточки картотеки: каждая заходит краем на соседнюю
-            // (отрицательный промежуток), передняя — верхняя; уходя вверх,
-            // карточка уменьшается и бледнеет, будто уходит вдаль (P694).
-            LazyVStack(spacing: -10) {
-                ForEach(Array(days.enumerated()), id: \.element.id) { index, day in
-                    SearchCard { row(day) }
-                        .zIndex(Double(days.count - index))
+            // Находки — карточки картотеки, вид сверху: нижняя лежит поверх
+            // верхней и своим корешком с датой закрывает её низ; уходя
+            // вверх, карточка уменьшается и бледнеет, будто уходит
+            // вдаль (P694, P695).
+            LazyVStack(spacing: -SearchCard.tabHeight) {
+                ForEach(days) { day in
+                    SearchCard(stamp: Search.stamp(day.date)) { row(day) }
                         .scrollTransition(.interactive, axis: .vertical) { content, phase in
                             // value: от −1 (ушла за верх) до 0 (на месте) и
                             // до 1 (ещё не въехала); вдаль уходит только верх.
@@ -210,15 +210,9 @@ struct SearchView: View {
         } label: {
             HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: 3) {
-                    // Год, месяц, число — в этом порядке: при поиске по архиву
-                    // сначала выбирают время, а не день недели. День недели
-                    // виден на самой записи, когда до неё дойдут.
-                    // Дата — насыщенным синим, видна сразу (P282).
-                    Text(Search.stamp(day.date))
-                        .font(Look.mono(11.5, weight: .medium))
-                        .tracking(0.3)
-                        .foregroundStyle(Look.dateBlue)
-
+                    // Дата — на корешке карточки (P695): год, месяц, число —
+                    // в этом порядке, при поиске по архиву сначала выбирают
+                    // время, а не день недели (P282).
                     if !day.title.isEmpty {
                         Text(Geo.stripped(day.title))
                             .font(Look.serif(15, weight: .semibold))
@@ -288,30 +282,70 @@ enum Search {
 }
 
 
-/// Карточка находки: листок бумаги чуть светлее страницы, закруглённый, с
-/// заранее нарисованной тенью вправо-вниз (лампа слева сверху, P670, P675).
-/// Снизу оставлено место под край соседа — карточки заходят друг на друга
-/// (P694).
+/// Карточка находки — лист картотеки с корешком (P695): на левой трети
+/// сверху выступает корешок с датой, остальное — лист чуть светлее
+/// страницы, с заранее нарисованной тенью вправо-вниз (лампа слева сверху,
+/// P670, P675). Снизу оставлено место под корешок следующей карточки: она
+/// лежит поверх этой и закрывает пустой низ.
 private struct SearchCard<Content: View>: View {
     @Environment(\.colorScheme) private var scheme
+    /// Высота корешка, она же наложение карточек.
+    static var tabHeight: CGFloat { 22 }
+    let stamp: String
     @ViewBuilder let content: () -> Content
 
     var body: some View {
-        content()
-            .padding(.top, 6)
-            .padding(.bottom, 10)
-            .background {
-                // Непрозрачная: цвет страницы и поверх него светлая вуаль —
-                // иначе край соседа просвечивал бы сквозь карточку.
-                ZStack {
-                    Scheme.current.past
-                    Color.white.opacity(scheme == .dark ? 0.06 : 0.32)
-                }
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .overlay(RoundedRectangle(cornerRadius: 12)
-                    .strokeBorder(Scheme.current.kraftEdge.opacity(0.45), lineWidth: 0.8))
-                .background(PaintedShadow(radius: 5, corner: 12, x: 2, y: 3,
-                                          opacity: scheme == .dark ? 0.5 : 0.28))
+        VStack(spacing: 0) {
+            HStack(spacing: 0) {
+                tab.frame(maxWidth: .infinity)
+                Color.clear.frame(maxWidth: .infinity)
+                Color.clear.frame(maxWidth: .infinity)
             }
+            .frame(height: Self.tabHeight)
+            content()
+                .padding(.top, 2)
+                .padding(.bottom, Self.tabHeight)
+                .frame(maxWidth: .infinity)
+                .background {
+                    paper
+                        .clipShape(body_shape)
+                        .overlay(body_shape.stroke(edge, lineWidth: 0.8))
+                        .background(PaintedShadow(radius: 5, corner: 12, x: 2, y: 3,
+                                                  opacity: scheme == .dark ? 0.5 : 0.28))
+                }
+        }
+    }
+
+    private var edge: Color { Scheme.current.kraftEdge.opacity(0.45) }
+
+    /// Лист: цвет страницы и поверх светлая вуаль — непрозрачный, иначе
+    /// корешок соседа просвечивал бы.
+    private var paper: some View {
+        ZStack {
+            Scheme.current.past
+            Color.white.opacity(scheme == .dark ? 0.06 : 0.32)
+        }
+    }
+
+    private var body_shape: UnevenRoundedRectangle {
+        // Левый верхний угол прямой: там лист переходит в корешок.
+        UnevenRoundedRectangle(topLeadingRadius: 0, bottomLeadingRadius: 12,
+                               bottomTrailingRadius: 12, topTrailingRadius: 12)
+    }
+
+    private var tab: some View {
+        let shape = UnevenRoundedRectangle(topLeadingRadius: 10, bottomLeadingRadius: 0,
+                                           bottomTrailingRadius: 0, topTrailingRadius: 10)
+        return Text(stamp)
+            .font(Look.mono(11.5, weight: .medium))
+            .tracking(0.3)
+            .foregroundStyle(Look.dateBlue)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .padding(.horizontal, 8)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            .background { paper.clipShape(shape).overlay(shape.stroke(edge, lineWidth: 0.8)) }
+            // Шов с листом закрываем: корешок и лист — одна бумага.
+            .overlay(alignment: .bottom) { paper.frame(height: 1.5).padding(.horizontal, 0.8) }
     }
 }
