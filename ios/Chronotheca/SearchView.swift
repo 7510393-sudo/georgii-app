@@ -192,17 +192,7 @@ struct SearchView: View {
         // Вся лента находок искажается одним шейдером: сгибается и уходит в
         // горизонт под строкой поиска плавно, без ступенек между карточками
         // (P707, прежде каждая карточка поворачивалась отдельно, P699–P706).
-        .visualEffect { content, proxy in
-            content.distortionEffect(
-                ShaderLibrary.ribbon(.float2(proxy.size),
-                                     .float(Search.lift),
-                                     .float(Search.bendY),
-                                     .float(Search.horizon)),
-                maxSampleOffset: CGSize(width: 600, height: 300),
-                // В проверках и снимках CI (там нет видеокарты) шейдер не рисует
-                // ничего — список был бы пуст; там лента без искажения.
-                isEnabled: !Vault.isPreview)
-        }
+        .modifier(Ribbon())
         // У самого горизонта лента тает.
         .mask {
             VStack(spacing: 0) {
@@ -286,6 +276,25 @@ struct SearchView: View {
         }
         .padding(.horizontal, 36)
         .frame(maxWidth: .infinity)
+    }
+}
+
+/// Искажение ленты находок шейдером `ribbon` (P707). В проверках и снимках CI
+/// (там нет видеокарты) его нет вовсе — список виден как есть.
+private struct Ribbon: ViewModifier {
+    func body(content: Content) -> some View {
+        if Vault.isPreview {
+            content
+        } else {
+            content.visualEffect { view, proxy in
+                view.distortionEffect(
+                    ShaderLibrary.ribbon(.float2(proxy.size),
+                                         .float(Search.lift),
+                                         .float(Search.bendY),
+                                         .float(Search.horizon)),
+                    maxSampleOffset: CGSize(width: 600, height: 300))
+            }
+        }
     }
 }
 
