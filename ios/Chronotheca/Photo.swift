@@ -245,9 +245,8 @@ struct PhotoStrip: View {
     var onRemove: ((Int) -> Void)? = nil
     /// Сторона превью: над клавиатурой они мельче (P541).
     var size: CGFloat = PhotoStrip.side
-    @State private var armed: Int?
-    /// Когда крестик появился — отпущенный палец не должен тут же его убрать.
-    @State private var armedAt = Date.distantPast
+    /// Где превью в окне — по нему крестик встаёт на угол (`Cross`, P713).
+    @State private var places: [Int: CGRect] = [:]
 
     /// Как снимок в тексте — в пять строк дневника (P383; прежде 60,
     /// P275), с промежутком, как между снимками в тексте (P557).
@@ -303,14 +302,18 @@ struct PhotoStrip: View {
         }
     }
 
-    /// Касание по превью — открыть его; при крестике — только убрать крестик.
+    /// Касание по превью — открыть его. Крестик убирает касание мимо него —
+    /// по покрывалу `Cross` (P713).
     private func tapped(_ i: Int) {
-        // Палец только что отпустили после долгого нажатия — это
-        // касание то же самое, оно крестик не убирает (P536): прежде
-        // крестик мелькал и тут же пропадал.
-        guard Date().timeIntervalSince(armedAt) > 0.5 else { return }
-        if armed != nil { withAnimation(.easeOut(duration: 0.15)) { armed = nil } }
-        else { onOpen?(i) }
+        onOpen?(i)
+    }
+
+    /// Подержали и не повели — крестик, как везде (P713).
+    private func arm(_ i: Int) {
+        guard let onRemove, let frame = places[i] else { return }
+        let label = point(i) != nil ? T("Удалить точку", "Delete place")
+            : kind(i) == .photo ? T("Удалить снимок", "Delete photo") : T("Удалить файл", "Delete file")
+        Cross.show(at: frame, label: label, onCross: { onRemove(i) })
     }
 
     private func cell(_ i: Int) -> some View {
@@ -330,43 +333,22 @@ struct PhotoStrip: View {
             // быстро провели — ряд едет, подержали — превью взято, и ряд
             // уже не едет. Крестик ложится выше — его касание своё.
             .modifier(ThumbCarry(report: onCarry.map { f -> (Lift, CGPoint) -> Void in
-                { phase, spot in
-                    if case .began = phase { armed = nil }
-                    f(i, phase, spot)
-                }
-            }, stayed: onRemove == nil ? nil : {
-                armedAt = Date()
-                withAnimation(.easeOut(duration: 0.15)) { armed = i }
-            }, together: true, tap: { tapped(i) }))
-            .overlay(alignment: .topTrailing) {
-                if armed == i, let onRemove {
-                    Button {
-                        armed = nil
-                        onRemove(i)
-                    } label: {
-                        // Тот же крестик, что у снимка в тексте (P536):
-                        // крупный, с тенью. Внутри превью — ряд листается
-                        // вбок и всё, что за краем превью, обрезает.
-                        Image(uiImage: DiaryEditor.Coordinator.crossImage)
-                            .resizable()
-                            .frame(width: min(40, size * 0.5), height: min(40, size * 0.5))
-                            .shadow(color: .black.opacity(0.3), radius: 3, x: 1, y: 1)
-                            .frame(width: min(48, size * 0.6), height: min(48, size * 0.6))
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .transition(.scale.combined(with: .opacity))
-                    .accessibilityLabel(T("Убрать", "Remove"))
-                }
-            }
+                { phase, spot in f(i, phase, spot) }
+            }, stayed: onRemove == nil ? nil : { arm(i) }, together: true, tap: { tapped(i) }))
             .opacity(carried == i ? 0.3 : 1)
             // Где превью на экране — чтобы, отпустив над полоской, поставить
-            // взятое на место соседа (P380).
+            // взятое на место соседа (P380), и для крестика на углу (P713).
             .background(GeometryReader { geo in
                 let frame = geo.frame(in: .global)
                 Color.clear
-                    .onAppear { if onCarry != nil { StripZones.cells[i] = frame } }
-                    .onChange(of: frame) { _, now in if onCarry != nil { StripZones.cells[i] = now } }
+                    .onAppear {
+                        places[i] = frame
+                        if onCarry != nil { StripZones.cells[i] = frame }
+                    }
+                    .onChange(of: frame) { _, now in
+                        places[i] = now
+                        if onCarry != nil { StripZones.cells[i] = now }
+                    }
             })
     }
 }
@@ -425,20 +407,11 @@ struct PlanPhotoRow: View {
     /// Крестик (P623): подержали снимок и не повели — у него крестик, как у
     /// снимка в тексте; касание по крестику — вопрос об удалении.
     var onRemove: ((String) -> Void)? = nil
-    /// Предмет, у которого сейчас крестик, и как его включить или убрать —
-    /// состояние у плана (P634): пустое место страницы убирает крестик, как
-    /// у точки в тексте.
-    var armedLink: String? = nil
-    var onArm: ((String?) -> Void)? = nil
     /// Место в сетке, куда встанет несомое (P660): соседи расступаются
     /// сразу, пока палец ещё держит, а не после того, как его отпустили.
     var slot: Int? = nil
-    /// Где предметы ряда в самом ряду — по ним крестик встаёт на угол.
+    /// Где предметы ряда в окне — по ним крестик встаёт на угол (`Cross`, P713).
     @State private var frames: [String: CGRect] = [:]
-    /// Когда крестик появился: касание, которым кончилось долгое нажатие,
-    /// его не убирает (P536, P634).
-    @State private var armedAt = Date.distantPast
-    private static let space = "planPhotoRow"
 
     var body: some View {
         // Сколько угодно вложений — по четыре в ряд, дальше новый ряд
@@ -453,13 +426,12 @@ struct PlanPhotoRow: View {
                     // жест SwiftUI забирал палец раньше листания, и страницу,
                     // взятую на снимке под делом, было не перевернуть.
                     .modifier(ThumbCarry(report: report(link), stayed: onRemove == nil ? nil : {
-                        armedAt = Date()
-                        withAnimation(.easeOut(duration: 0.15)) { onArm?(link) }
+                        arm(link)
                     }, together: true, tap: {
                         tapped(link, point: Diary.isPoint(link) ? Geo.point(in: link) : nil)
                     }))
                     .background(GeometryReader { geo in
-                        let frame = geo.frame(in: .named(Self.space))
+                        let frame = geo.frame(in: .global)
                         Color.clear
                             .onAppear { frames[link] = frame }
                             .onChange(of: frame) { _, now in frames[link] = now }
@@ -468,41 +440,20 @@ struct PlanPhotoRow: View {
         }
         .padding(.bottom, PlanPhotoLine.below)
         .animation(.easeOut(duration: 0.18), value: shown)
-        // Касание пустого места ряда убирает крестик, а нет крестика —
-        // курсор из дела (P660): прежде касание сюда съедалось, и курсор
-        // оставался в плашке.
+        // Касание пустого места ряда убирает курсор из дела (P660): прежде
+        // касание сюда съедалось, и курсор оставался в плашке.
         .contentShape(Rectangle())
-        .onTapGesture {
-            if armedLink != nil {
-                withAnimation(.easeOut(duration: 0.15)) { onArm?(nil) }
-            } else {
-                hideKeyboard()
-            }
-        }
-        .coordinateSpace(name: Self.space)
-        // Крестик — на верхнем правом углу предмета, снаружи, как у снимка в
-        // тексте и значка на экране «Домой» (P634); прежде он сидел внутри
-        // квадрата и обрезался рядом.
-        .overlay(alignment: .topLeading) {
-            if let link = armedLink, let f = frames[link], let onRemove {
-                Button {
-                    onArm?(nil)
-                    onRemove(link)
-                } label: {
-                    Image(uiImage: DiaryEditor.Coordinator.crossImage)
-                        .resizable()
-                        .frame(width: 40, height: 40)
-                        .shadow(color: .black.opacity(0.3), radius: 3, x: 1, y: 1)
-                        .frame(width: 48, height: 48)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .position(x: f.maxX, y: f.minY + 4)
-                .transition(.scale.combined(with: .opacity))
-                .accessibilityLabel(T("Убрать", "Remove"))
-            }
-        }
+        .onTapGesture { hideKeyboard() }
     }
+
+    /// Подержали и не повели — крестик, как везде (P713).
+    private func arm(_ link: String) {
+        guard let onRemove, let frame = frames[link] else { return }
+        let label = Diary.isPoint(link) ? T("Удалить точку", "Delete place")
+            : Diary.kind(of: link) == .photo ? T("Удалить снимок", "Delete photo") : T("Удалить файл", "Delete file")
+        Cross.show(at: frame, label: label, onCross: { onRemove(link) })
+    }
+
     /// Порядок на экране: несомое уже стоит там, куда ляжет (P660), —
     /// тем же правилом, что и при отпускании (`reorderPlanPhoto`).
     private var shown: [String] {
@@ -535,14 +486,10 @@ struct PlanPhotoRow: View {
         }
     }
 
-    /// Касание: с крестиком — убрать крестик, без него — открыть.
+    /// Касание — открыть. Крестик убирает касание мимо него — по покрывалу
+    /// `Cross` (P713).
     private func tapped(_ link: String, point: GeoPoint?) {
-        if armedLink != nil {
-            // Палец только что отпустили после долгого нажатия — это то же
-            // касание, оно крестик не убирает (P536, P634).
-            guard Date().timeIntervalSince(armedAt) > 0.5 else { return }
-            withAnimation(.easeOut(duration: 0.15)) { onArm?(nil) }
-        } else if let point {
+        if let point {
             openPoint?(point)
         } else {
             open?(resolve?(link))
@@ -551,10 +498,7 @@ struct PlanPhotoRow: View {
 
     private func report(_ link: String) -> ((Lift, CGPoint) -> Void)? {
         guard let onCarry else { return nil }
-        return { phase, spot in
-            if case .began = phase { onArm?(nil) }
-            onCarry(link, phase, spot)
-        }
+        return { phase, spot in onCarry(link, phase, spot) }
     }
 }
 
@@ -646,7 +590,7 @@ struct ThumbCarry: ViewModifier {
                 }
                 .scaleEffect(lifted && !away ? 1.05 : 1)
                 .animation(.easeOut(duration: 0.12), value: lifted && !away)
-                .gesture(LongPressGesture(minimumDuration: 0.3)
+                .gesture(LongPressGesture(minimumDuration: Cross.hold)
                     .sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .global))
                     .updating($holding) { value, state, _ in
                         if case .second(true, _) = value { state = true }
@@ -1079,7 +1023,7 @@ struct HoldCatcher: UIViewRepresentable {
         view.backgroundColor = .clear
         let press = UILongPressGestureRecognizer(target: context.coordinator,
                                                  action: #selector(Coordinator.pressed(_:)))
-        press.minimumPressDuration = 0.3
+        press.minimumPressDuration = Cross.hold
         view.addGestureRecognizer(press)
         let touch = UITapGestureRecognizer(target: context.coordinator,
                                            action: #selector(Coordinator.tapped))

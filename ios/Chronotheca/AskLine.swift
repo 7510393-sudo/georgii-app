@@ -71,7 +71,7 @@ struct AskLine: UIViewRepresentable {
         view.addGestureRecognizer(tap)
         let hold = UILongPressGestureRecognizer(target: context.coordinator,
                                                 action: #selector(Coordinator.held(_:)))
-        hold.minimumPressDuration = 0.45
+        hold.minimumPressDuration = Cross.hold
         hold.delegate = context.coordinator
         view.addGestureRecognizer(hold)
         return view
@@ -318,7 +318,7 @@ struct AskLine: UIViewRepresentable {
         // MARK: Касание и долгое нажатие по вложению
 
         /// Вложение под пальцем: строка, как в файле, и место в поле.
-        private func object(at at: CGPoint, in view: UITextView) -> (line: String, photo: Bool)? {
+        private func object(at at: CGPoint, in view: UITextView) -> (line: String, photo: Bool, rect: CGRect)? {
             guard let position = view.closestPosition(to: at) else { return nil }
             let storage = view.textStorage
             let offset = view.offset(from: view.beginningOfDocument, to: position)
@@ -329,11 +329,12 @@ struct AskLine: UIViewRepresentable {
                       let range = view.textRange(from: start, to: end),
                       view.firstRect(for: range).insetBy(dx: -4, dy: -4).contains(at)
                 else { continue }
+                let rect = view.firstRect(for: range)
                 if let link = storage.attribute(DiaryEditor.photoKey, at: i, effectiveRange: nil) as? String {
-                    return (link, true)
+                    return (link, true, rect)
                 }
                 if let line = storage.attribute(DiaryEditor.lineKey, at: i, effectiveRange: nil) as? String {
-                    return (line, false)
+                    return (line, false, rect)
                 }
             }
             return nil
@@ -366,9 +367,11 @@ struct AskLine: UIViewRepresentable {
             }
         }
 
-        /// Долгое нажатие на снимок или файл — назад в полоску (P407).
+        /// Долгое нажатие на снимок или файл — крестик, как у всех вложений
+        /// (P713); крестик уводит его из ответа назад вниз страницы (P407).
+        /// Прежде вложение уходило сразу, без крестика.
         @objc func held(_ g: UILongPressGestureRecognizer) {
-            guard g.state == .began, let view,
+            guard g.state == .began, let view, let window = view.window,
                   let hit = object(at: g.location(in: view), in: view),
                   let link = hit.photo ? hit.line : Diary.picture(in: hit.line)
             else { return }
@@ -377,8 +380,10 @@ struct AskLine: UIViewRepresentable {
                 other.isEnabled = false
                 other.isEnabled = true
             }
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-            parent.onReturn?(link)
+            let back = parent.onReturn
+            Cross.show(at: view.convert(hit.rect, to: window),
+                       label: T("Убрать из ответа", "Remove from the answer"),
+                       onCross: { back?(link) })
         }
 
         func textViewDidBeginEditing(_ view: UITextView) {

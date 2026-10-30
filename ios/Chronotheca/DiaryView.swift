@@ -694,18 +694,26 @@ private struct TitlePoint: View {
 
     @State private var lifted = false
     @State private var drop: CGFloat = 0
+    /// Где кнопочка в окне — по ней встаёт крестик (P713).
+    @State private var place: CGRect = .zero
 
     var body: some View {
         PointChipView(point: point)
-            .scaleEffect(armed ? 1.3 : 1)
+            .background(GeometryReader { geo in
+                let frame = geo.frame(in: .global)
+                Color.clear
+                    .onAppear { place = frame }
+                    .onChange(of: frame) { _, now in place = now }
+            })
             .offset(y: drop)
-            .overlay(alignment: .topTrailing) {
-                if armed, let delete {
-                    DeleteBadge(action: delete)
-                        .offset(x: PointChipView.width(point) * 0.15 + 13, y: -18)
-                }
+            // Подержали и отпустили — крестик, как у всех вложений (P713):
+            // прежде у точки в заголовке был свой, другим рисунком.
+            .onChange(of: armed) { _, now in
+                guard now, let delete else { return }
+                Cross.show(at: place, chip: true, label: T("Удалить точку", "Delete place"),
+                           onCross: delete, onDismiss: { arm?(false) })
             }
-            .zIndex(armed || drop != 0 ? 1 : 0)
+            .zIndex(drop != 0 ? 1 : 0)
             .contentShape(Capsule())
             .onTapGesture {
                 if armed { arm?(false) } else { open() }
@@ -716,7 +724,7 @@ private struct TitlePoint: View {
     }
 
     private var hold: some Gesture {
-        LongPressGesture(minimumDuration: 0.3)
+        LongPressGesture(minimumDuration: Cross.hold)
             .sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .global))
             .onChanged { value in
                 guard case .second(true, let drag) = value else { return }

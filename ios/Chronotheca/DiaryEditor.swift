@@ -123,7 +123,7 @@ struct DiaryEditor: UIViewRepresentable {
         view.addGestureRecognizer(tap)
         let carry = UILongPressGestureRecognizer(target: context.coordinator,
                                                  action: #selector(Coordinator.carried(_:)))
-        carry.minimumPressDuration = 0.25
+        carry.minimumPressDuration = Cross.hold
         carry.delegate = context.coordinator
         view.addGestureRecognizer(carry)
         // Подержали вложение и отпустили — оно не открывается (P561).
@@ -798,12 +798,8 @@ struct DiaryEditor: UIViewRepresentable {
 
         // MARK: - Крестик у точки (P362) и у снимка (P392)
 
-        /// Покрывало поверх окна: на нём точка крупнее и крестик. Касание
-        /// мимо крестика — покрывало уходит, и всё как было.
-        private var cover: UIView?
-
-        /// Показать точку крупнее, с крестиком «удалить» на углу — как
-        /// значок на экране «Домой», когда его подержали.
+        /// Показать предмет крупнее, с крестиком «удалить» на углу — тем же,
+        /// что у вложений везде (`Cross`, P713).
         private func arm(_ i: Int, in view: UITextView) {
             let photo = view.textStorage.attribute(DiaryEditor.photoKey, at: i,
                                                    effectiveRange: nil) as? String
@@ -816,67 +812,25 @@ struct DiaryEditor: UIViewRepresentable {
                   let end = view.position(from: start, offset: 1),
                   let range = view.textRange(from: start, to: end)
             else { return }
-            disarm()
-            Feel.light()
-            let place = view.convert(view.firstRect(for: range), to: window)
-            let veil = UIControl(frame: window.bounds)
-            veil.backgroundColor = UIColor.black.withAlphaComponent(0.06)
-            veil.addTarget(self, action: #selector(disarm), for: .touchDown)
-            // Синей рамки во всю строку больше нет (P561, прежде P380): в
-            // ряду стоят и другие вложения — выделяется только взятое.
-            let field = view.convert(view.bounds, to: window)
-            let chip = UIImageView(image: picture)
-            chip.center = CGPoint(x: place.midX, y: place.midY)
+            let rect = view.convert(view.firstRect(for: range), to: window)
+            let place = CGRect(x: rect.midX - picture.size.width / 2, y: rect.midY - picture.size.height / 2,
+                               width: picture.size.width, height: picture.size.height)
             // Квадрат — снимок, файл и точка своей строкой или в ряду (P560);
             // кнопочка — точка посреди фразы.
             let square = picture.size.height >= 40
-            // Синяя кромка — та же, что у поднятого дела (P374).
-            chip.layer.borderColor = UIColor(Look.glow).cgColor
-            chip.layer.borderWidth = square ? 3 : 2
-            chip.layer.cornerRadius = square ? 8 : picture.size.height / 2
-            chip.layer.shadowOpacity = 0.25
-            chip.layer.shadowRadius = 6
-            chip.layer.shadowOffset = CGSize(width: 2, height: 2)
-            veil.addSubview(chip)
-            // Снимок и так крупный — он лишь чуть приподнимается (P392).
-            let grow: CGFloat = square ? 1.05 : 1.4
-            // Крестик нарисован свой (P409): системный значок с двумя
-            // цветами в кнопке выходил пустым кружком без креста.
-            let cross = UIControl(frame: CGRect(x: 0, y: 0, width: 56, height: 56))
-            let mark = UIImageView(image: Self.crossImage)
-            mark.frame = CGRect(x: 6, y: 6, width: 44, height: 44)
-            mark.isUserInteractionEnabled = false
-            cross.addSubview(mark)
-            cross.layer.shadowColor = UIColor.black.cgColor
-            cross.layer.shadowOpacity = 0.3
-            cross.layer.shadowRadius = 3
-            cross.layer.shadowOffset = CGSize(width: 1, height: 1)
-            cross.isAccessibilityElement = true
-            cross.accessibilityTraits = .button
             // Подпись крестика — по виду вложения.
             let point = Geo.point(in: line) != nil
             let label = photo != nil ? T("Убрать снимок из текста", "Remove photo from text")
                 : point ? T("Удалить точку", "Delete place") : T("Удалить файл", "Delete file")
-            if square {
-                // У снимка крестик — на верхнем правом углу, как у значка
-                // на экране «Домой».
-                cross.center = CGPoint(x: min(place.midX + picture.size.width * grow / 2, field.maxX - 10),
-                                       y: place.midY - picture.size.height * grow / 2 + 4)
-            } else {
-                cross.center = CGPoint(x: min(place.midX + picture.size.width * grow / 2 + 22, field.maxX - 10),
-                                       y: place.midY)
-            }
-            cross.accessibilityLabel = label
-            cross.addAction(UIAction { [weak self, weak view] _ in
+            Cross.show(at: place, picture: picture, chip: !square, label: label,
+                       onCross: { [weak self, weak view] in
                 guard let self, let view else { return }
-                self.disarm()
                 // Удаляется то самое, если оно ещё на своём месте.
                 guard i < view.textStorage.length,
                       (view.textStorage.attribute(DiaryEditor.photoKey, at: i, effectiveRange: nil) as? String
                         ?? view.textStorage.attribute(DiaryEditor.lineKey, at: i,
                                                       effectiveRange: nil) as? String) == line
                 else { return }
-                Feel.light()
                 // Снимок: спросить — в полоску внизу или удалить файл
                 // (P409; прежде крестик молча уводил в полоску, P392).
                 if let link = photo {
@@ -888,30 +842,7 @@ struct DiaryEditor: UIViewRepresentable {
                     // Голос и файл — тот же вопрос, что у снимка: в корзину.
                     self.askAbout(line, in: view)
                 }
-            }, for: .touchUpInside)
-            cross.alpha = 0
-            veil.addSubview(cross)
-            window.addSubview(veil)
-            cover = veil
-            UIView.animate(withDuration: 0.15) {
-                chip.transform = CGAffineTransform(scaleX: grow, y: grow)
-                cross.alpha = 1
-            }
-        }
-
-        /// Крестик: белая кайма, красный круг, белый крест.
-        static let crossImage: UIImage = UIGraphicsImageRenderer(size: CGSize(width: 44, height: 44)).image { _ in
-            UIColor.white.setFill()
-            UIBezierPath(ovalIn: CGRect(x: 2, y: 2, width: 40, height: 40)).fill()
-            UIColor(Look.pin).setFill()
-            UIBezierPath(ovalIn: CGRect(x: 6, y: 6, width: 32, height: 32)).fill()
-            let x = UIBezierPath()
-            x.move(to: CGPoint(x: 16, y: 16)); x.addLine(to: CGPoint(x: 28, y: 28))
-            x.move(to: CGPoint(x: 28, y: 16)); x.addLine(to: CGPoint(x: 16, y: 28))
-            x.lineWidth = 3.4
-            x.lineCapStyle = .round
-            UIColor.white.setStroke()
-            x.stroke()
+            })
         }
 
         /// Что сделать со снимком из текста: убрать в полоску внизу или
@@ -952,9 +883,8 @@ struct DiaryEditor: UIViewRepresentable {
             top?.present(sheet, animated: true)
         }
 
-        @objc private func disarm() {
-            cover?.removeFromSuperview()
-            cover = nil
+        private func disarm() {
+            Cross.hide()
         }
 
         /// Точка над заголовком дня — отпустить здесь значит перенести её в
@@ -1688,7 +1618,7 @@ struct DiaryEditor: UIViewRepresentable {
             // Это было долгое нажатие, а не касание: точка с крестиком
             // остаётся на экране, карта не открывается (P374).
             // Несут ли что-то сейчас — по картинке над пальцем (P418).
-            guard Date().timeIntervalSince(heldEnded) > 0.4, ghost == nil, cover == nil else { return }
+            guard Date().timeIntervalSince(heldEnded) > 0.4, ghost == nil, !Cross.shown else { return }
             maybeTaken = nil
             if let link = got.photo { parent.onOpenPhoto?(link) }
             if let point = got.point { parent.onOpenPoint?(point) }
