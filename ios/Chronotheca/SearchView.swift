@@ -340,7 +340,8 @@ enum Search {
     /// ленты. Ниже изгиба — без искажения и без лишней работы.
     static func bend(_ view: EmptyVisualEffect, _ proxy: GeometryProxy) -> some VisualEffect {
         let top = proxy.frame(in: .named(space)).minY - lift
-        let wide = proxy.size.width / 2 * (1 - vanish) + 4
+        // Предел выборки по ширине: край ленты и ещё 12 точек за тенью (Ribbon.metal).
+        let wide = proxy.size.width / 2 * (1 - vanish) + 16
         return view.distortionEffect(
             ShaderLibrary.ribbon(.float2(proxy.size), .float(top), .float(bendY),
                                  .float(horizon), .float(vanish)),

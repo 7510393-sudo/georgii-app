@@ -32,9 +32,10 @@ using namespace metal;
     float sourceY = bend - c - top;
     float centre = size.x * 0.5;
     float sourceX = centre + (position.x - centre) / s;
-    // За краем ленты — пусто: берём точку сразу за краем карточки (там
-    // прозрачно), не дальше предела выборки.
-    if (sourceX < 0.0) { sourceX = -1.0; }
-    if (sourceX > size.x) { sourceX = size.x + 1.0; }
+    // За краем ленты — пусто: берём точку за краем карточки дальше её тени
+    // (тень выходит на несколько точек; ближе — по бокам ложились тёмные
+    // полосы, снимок CI 30.10), но не дальше предела выборки.
+    if (sourceX < 0.0) { sourceX = -12.0; }
+    if (sourceX > size.x) { sourceX = size.x + 12.0; }
     return float2(sourceX, sourceY);
 }
