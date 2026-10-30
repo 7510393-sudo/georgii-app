@@ -172,33 +172,37 @@ struct SearchView: View {
             LazyVStack(spacing: -Search.overlap) {
                 ForEach(days) { day in
                     SearchCard(stamp: Search.stamp(day.date)) { row(day) }
+                        // Лента сгибается и уходит в горизонт одним шейдером
+                        // (P707): каждая карточка искажается той же общей
+                        // формулой по своему месту на экране, поэтому края
+                        // соседних сходятся точно и ступенек нет.
+                        .modifier(Ribbon())
                 }
             }
             .padding(.horizontal, 10)
             // Над первой находкой — место, которое ленту не касается: пока список
             // не листали, ничего не искажено. `lift` — запас над списком: туда
-            // лента заходит и оттуда закручивается в горизонт (P707).
-            .padding(.top, Search.lift + Search.bendY)
+            // лента заходит и оттуда закручивается в горизонт (P707). В снимках
+            // CI первая находка стоит у самого верха — там видно, что шейдер
+            // работает.
+            .padding(.top, Search.lift + (Vault.isPreview ? 4 : Search.bendY))
             // Место под клавиатуру. Без него последние находки лежат под
             // ней и не достаются прокруткой: список кончается там, где
             // начинается клавиатура (решение P174).
             // Строки разделов над клавиатурой больше нет (P505).
             .padding(.bottom, keyboard > 0 ? keyboard + 4 : 0)
         }
+        .coordinateSpace(name: Search.space)
         // Второе нажатие на «Поиск» — список заново, с начала (P576).
         .id(shell.searchHome)
         .scrollDismissesKeyboard(.interactively)
         .animation(.easeOut(duration: 0.25), value: keyboard)
-        // Вся лента находок искажается одним шейдером: сгибается и уходит в
-        // горизонт под строкой поиска плавно, без ступенек между карточками
-        // (P707, прежде каждая карточка поворачивалась отдельно, P699–P706).
-        .modifier(Ribbon())
         // У самого горизонта лента тает.
         .mask {
             VStack(spacing: 0) {
-                Color.clear.frame(height: Search.lift + Search.horizon)
+                Color.clear.frame(height: Search.lift + Search.vanishY)
                 LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
-                    .frame(height: 36)
+                    .frame(height: 18)
                 Color.black
             }
         }
@@ -279,22 +283,18 @@ struct SearchView: View {
     }
 }
 
-/// Искажение ленты находок шейдером `ribbon` (P707). В проверках и снимках CI
-/// (там нет видеокарты) его нет вовсе — список виден как есть.
+/// Искажение карточки шейдером `ribbon` (P707). Шейдер на весь список не
+/// годится: прокрутка рисуется самой системой, и шейдер получал пустую
+/// картинку — список пропадал (снимок CI 30.10). Карточка же рисуется
+/// целиком SwiftUI. Под карточкой — прозрачный запас `reach`: сжатая лента
+/// ложится ниже того места, где карточка стоит без искажения. Карточки ниже
+/// изгиба не искажаются вовсе.
 private struct Ribbon: ViewModifier {
     func body(content: Content) -> some View {
-        if Vault.isPreview {
-            content
-        } else {
-            content.visualEffect { view, proxy in
-                view.distortionEffect(
-                    ShaderLibrary.ribbon(.float2(proxy.size),
-                                         .float(Search.lift),
-                                         .float(Search.bendY),
-                                         .float(Search.horizon)),
-                    maxSampleOffset: CGSize(width: 600, height: 300))
-            }
-        }
+        content
+            .padding(.bottom, Search.reach)
+            .visualEffect { view, proxy in Search.bend(view, proxy) }
+            .padding(.bottom, -Search.reach)
     }
 }
 
@@ -311,17 +311,42 @@ enum Search {
     /// и немного воздуха (P697).
     static var pitch: CGFloat { tabHeight + 8 + body + 6 }
 
-    /// Сколько точек ленты над верхом списка рисуется тоже: из этого запаса лента
-    /// закручивается в горизонт (P707).
-    static let lift: CGFloat = 240
+    /// Система координат прокрутки: по ней карточка знает своё место.
+    static let space = "searchList"
     /// Где лента начинает сгибаться (от верха списка): за треть карточки до
     /// верха (P703). Первая находка в покое стоит ровно здесь, ниже изгиба.
     static var bendY: CGFloat { pitch / 3 }
     /// Горизонт ленты — на 6 точек выше верха списка, то есть сразу под строкой
-    /// поиска: лента сходится к нему и пропадает (P706). Шейдер `ribbon` в
-    /// `Ribbon.metal` — плоскость, ложащаяся к горизонту: ширина `1/√(1−t)`,
-    /// где `t` — доля пути от изгиба до горизонта.
+    /// поиска (P706).
     static let horizon: CGFloat = -6
+    /// Ширина ленты там, где она пропадает (P704: сужение на 60%).
+    static let vanish: CGFloat = 0.4
+    /// Шейдер `ribbon` в `Ribbon.metal` — плоскость, ложащаяся к горизонту:
+    /// ширина `√(1−t)`, где `t` — доля пути от изгиба до горизонта; `focal` —
+    /// расстояние до зрителя.
+    static var focal: CGFloat { 2 * (bendY - horizon) }
+    /// Сколько точек ленты выше изгиба уходит до места, где она пропадает.
+    static var depth: CGFloat { focal * (1 / vanish - 1) }
+    /// Высота, на которой лента пропадает (от верха списка): выше — пусто.
+    static var vanishY: CGFloat { bendY - focal / 2 * (1 - vanish * vanish) }
+    /// На сколько сжатая лента ложится ниже своего места: прозрачный запас
+    /// под каждой карточкой и предел выборки шейдера по высоте.
+    static var reach: CGFloat { vanishY - (bendY - depth) + 4 }
+    /// Сколько точек над верхом списка тоже рисуется: оттуда лента
+    /// закручивается в горизонт (P707).
+    static var lift: CGFloat { depth - bendY + 8 }
+
+    /// Искажение одной карточки: её верх в системе списка, общая формула
+    /// ленты. Ниже изгиба — без искажения и без лишней работы.
+    static func bend(_ view: EmptyVisualEffect, _ proxy: GeometryProxy) -> some VisualEffect {
+        let top = proxy.frame(in: .named(space)).minY - lift
+        let wide = proxy.size.width / 2 * (1 - vanish) + 4
+        return view.distortionEffect(
+            ShaderLibrary.ribbon(.float2(proxy.size), .float(top), .float(bendY),
+                                 .float(horizon), .float(vanish)),
+            maxSampleOffset: CGSize(width: wide, height: reach),
+            isEnabled: top < bendY)
+    }
 
     /// Высота блока из пяти строк находки: строка заголовка и четыре строки
     /// текста; по ней же — сторона снимка (P696).
