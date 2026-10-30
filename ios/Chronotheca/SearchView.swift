@@ -38,11 +38,9 @@ struct SearchView: View {
         }
         .keyboardHeight($keyboard)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        // Страница поиска — та же старая бумага, что у прошедших дней:
-        // сливочный цвет гаммы, рельеф и янтарные края (P693; прежде
-        // персиковая бумага с одним волокном, P684). Архив — это прошлое.
-        .background(Scheme.current.past.overlay(PageTexture(tab: .diary, aged: true,
-                                                            edgeTop: true, edgeBottom: true)))
+        // Фон поиска — ровный, без фактуры (P696): фактурная бумага — сами
+        // карточки, а не стол под ними (замена P693).
+        .background(Scheme.current.today.overlay(Color.black.opacity(0.05)))
     }
 
     /// Строка поиска стоит вместо заголовка «Поиск» — между уголками
@@ -173,15 +171,18 @@ struct SearchView: View {
             // верхней и своим корешком с датой закрывает её низ; уходя
             // вверх, карточка уменьшается и бледнеет, будто уходит
             // вдаль (P694, P695).
-            LazyVStack(spacing: -Search.tabHeight) {
+            LazyVStack(spacing: -Search.overlap) {
                 ForEach(days) { day in
                     SearchCard(stamp: Search.stamp(day.date)) { row(day) }
                         .scrollTransition(.interactive, axis: .vertical) { content, phase in
-                            // value: от −1 (ушла за верх) до 0 (на месте) и
-                            // до 1 (ещё не въехала); вдаль уходит только верх.
+                            // Как верх ролика времени: уходя вверх, карточка
+                            // заваливается назад (объём), уменьшается и
+                            // бледнеет. value: −1 ушла за верх … 0 на месте.
                             content
-                                .scaleEffect(1 + min(phase.value, 0) * 0.08)
-                                .opacity(1 + min(phase.value, 0) * 0.55)
+                                .rotation3DEffect(.degrees(-min(phase.value, 0) * 55),
+                                                  axis: (x: 1, y: 0, z: 0), perspective: 0.45)
+                                .scaleEffect(1 + min(phase.value, 0) * 0.14)
+                                .opacity(1 + min(phase.value, 0) * 0.65)
                         }
                 }
             }
@@ -209,7 +210,7 @@ struct SearchView: View {
             shell.screen = .today
         } label: {
             HStack(alignment: .top, spacing: 12) {
-                VStack(alignment: .leading, spacing: 3) {
+                VStack(alignment: .leading, spacing: Search.lineGap) {
                     // Дата — на корешке карточки (P695): год, месяц, число —
                     // в этом порядке, при поиске по архиву сначала выбирают
                     // время, а не день недели (P282).
@@ -227,12 +228,14 @@ struct SearchView: View {
                             .multilineTextAlignment(.leading)
                     }
                 }
+                // Ровно пять строк: низ пятой строки — на одной линии с низом
+                // снимка (P696).
+                .frame(height: Search.body, alignment: .top)
                 Spacer(minLength: 0)
                 if let cover = day.cover { preview(cover, of: day) }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 18)
-            .padding(.vertical, 11)
         }
         .buttonStyle(.plain)
     }
@@ -250,9 +253,9 @@ struct SearchView: View {
                                   label: (link as NSString).pathExtension.lowercased())
             }
         }
-        // Превью высотой в пять строк записи (P282).
-        .frame(width: Search.previewSide, height: Search.previewSide)
-        .padding(.top, 2)
+        // Превью — той же высоты, что блок из пяти строк (P282, P696): низы
+        // совпадают.
+        .frame(width: Search.body, height: Search.body)
     }
 
     private func message(_ head: String, _ tail: String) -> some View {
@@ -269,8 +272,21 @@ struct SearchView: View {
 }
 
 enum Search {
-    /// Высота корешка карточки, она же наложение карточек (P695).
+    /// Высота корешка карточки (P695).
     static let tabHeight: CGFloat = 22
+    /// На сколько карточка заходит на предыдущую: корешок и ещё немного
+    /// листа, чтобы нижний край предыдущей скрылся под ней (P696).
+    static let overlap: CGFloat = tabHeight + 10
+
+    static let lineGap: CGFloat = 3
+
+    /// Высота блока из пяти строк находки: строка заголовка и четыре строки
+    /// текста; по ней же — сторона снимка (P696).
+    static var body: CGFloat {
+        let title = ceil(Prefs.serifUIFont(15).lineHeight)
+        let line = ceil(Prefs.serifUIFont(13.5).lineHeight)
+        return title + line * 4 + lineGap * 4
+    }
 
     /// «2026 сентябрь 22» — от крупного к мелкому, как ищут в архиве.
     static func stamp(_ date: Date) -> String {
@@ -279,17 +295,14 @@ enum Search {
         return "\(c.year ?? 2026) \(Ru.monthNames[(c.month ?? 1) - 1]) \(c.day ?? 1)"
     }
 
-    /// Превью находки — того же размера, что все превью: в пять строк
-    /// дневника (P385; прежде 86 — пять строк мелкого текста находки).
-    static let previewSide: CGFloat = DiaryEditor.photoSize.width
 }
 
 
 /// Карточка находки — лист картотеки с корешком (P695): на левой трети
-/// сверху выступает корешок с датой, остальное — лист чуть светлее
-/// страницы, с заранее нарисованной тенью вправо-вниз (лампа слева сверху,
-/// P670, P675). Снизу оставлено место под корешок следующей карточки: она
-/// лежит поверх этой и закрывает пустой низ.
+/// сверху выступает корешок с датой. Карточка из фактурной старой бумаги
+/// (цвет прошлого и рельеф, P696) с заранее нарисованной тенью вправо-вниз
+/// (лампа слева сверху, P670, P675). Снизу пустое место: следующая
+/// карточка заходит на него и скрывает нижний край этой.
 private struct SearchCard<Content: View>: View {
     @Environment(\.colorScheme) private var scheme
     let stamp: String
@@ -304,27 +317,30 @@ private struct SearchCard<Content: View>: View {
             }
             .frame(height: Search.tabHeight)
             content()
-                .padding(.top, 2)
-                .padding(.bottom, Search.tabHeight)
+                .padding(.top, 8)
+                // Пустое место под карточкой — под следующую (P696).
+                .padding(.bottom, Search.overlap + 6)
                 .frame(maxWidth: .infinity)
                 .background {
                     paper
                         .clipShape(body_shape)
                         .overlay(body_shape.stroke(edge, lineWidth: 0.8))
                         .background(PaintedShadow(radius: 5, corner: 12, x: 2, y: 3,
-                                                  opacity: scheme == .dark ? 0.5 : 0.28))
+                                                  opacity: scheme == .dark ? 0.5 : 0.3))
                 }
         }
     }
 
-    private var edge: Color { Scheme.current.kraftEdge.opacity(0.45) }
+    private var edge: Color { Scheme.current.kraftEdge.opacity(0.5) }
 
-    /// Лист: цвет страницы и поверх светлая вуаль — непрозрачный, иначе
+    /// Старая бумага: цвет прошлого и рельеф плиткой — непрозрачная, иначе
     /// корешок соседа просвечивал бы.
     private var paper: some View {
         ZStack {
             Scheme.current.past
-            Color.white.opacity(scheme == .dark ? 0.06 : 0.32)
+            Image(uiImage: PageTexture.paper)
+                .resizable(resizingMode: .tile)
+                .opacity(scheme == .dark ? 0.25 : 0.7)
         }
     }
 
