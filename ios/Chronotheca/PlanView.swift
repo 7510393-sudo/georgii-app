@@ -463,8 +463,6 @@ struct PlanView: View {
     @State private var slide: CGFloat = 0
     /// Точка в плане, у которой после долгого нажатия виден крестик.
     @State private var armedLine: UUID?
-    /// У какого снимка или точки в ряду крестик, когда `armedLine` — этот ряд (P634).
-    @State private var armedPhotoLink: String?
     /// Дело отвели влево — сперва вопрос (P458).
     @State private var askingDelete: UUID?
     /// Дело подержали, не сдвигая, — меню дела (P626).
@@ -802,10 +800,6 @@ struct PlanView: View {
                               if Diary.isPoint(link) { shell.say(store.removePlanRowPhoto(link, delete: false)) }
                               else { removingPlanPhoto = link }
                           } : nil,
-                      armedPhoto: armedLine == id ? armedPhotoLink : nil,
-                      onArmPhoto: { link in
-                          if let link { armedPhotoLink = link; armedLine = id } else { armedLine = nil }
-                      },
                       photoSlot: photoCarry?.from == id ? photoSlot : nil)
             .modifier(Zone(id: id))
     }
@@ -1658,11 +1652,8 @@ struct PlanExtraLine: View {
     /// Снимок из ряда под делом несут пальцем (P377).
     var onPhoto: ((String, Lift, CGPoint) -> Void)? = nil
     var carriedPhoto: String? = nil
-    /// Крестик у снимка под делом (P623) и у какого предмета ряда он сейчас
-    /// (P634).
+    /// Крестик у снимка под делом (P623, общий `Cross` — P713).
     var onRemovePhoto: ((String) -> Void)? = nil
-    var armedPhoto: String? = nil
-    var onArmPhoto: ((String?) -> Void)? = nil
     /// Куда в сетке встанет несомое — соседи расступаются сразу (P660).
     var photoSlot: Int? = nil
 
@@ -1677,13 +1668,13 @@ struct PlanExtraLine: View {
             GridSnap(top: true) {
                 PlanPhotoRow(links: Plan.items(in: line), resolve: resolve, open: open,
                              openPoint: tapPoint, onCarry: onPhoto, carried: carriedPhoto,
-                             onRemove: onRemovePhoto, armedLink: armedPhoto, onArm: onArmPhoto,
+                             onRemove: onRemovePhoto,
                              slot: photoSlot)
             }
         } else if let point = Geo.point(in: line) {
             GridSnap {
-                PlanPointLine(point: point, open: tapPoint, armed: armed, glowing: armed || carried,
-                              onDelete: onDelete)
+                PlanPointLine(point: point, open: tapPoint, armed: armed, glowing: carried,
+                              onDelete: onDelete, onDisarm: { onArm?(false) })
             }
             .modifier(Carry(report: onCarry))
         }
@@ -1828,7 +1819,7 @@ private struct Carry: ViewModifier {
             content
                 .offset(y: dragged)
                 .shadow(color: .black.opacity(dragged == 0 ? 0 : 0.18), radius: 8, x: 3, y: 3)
-                .gesture(LongPressGesture(minimumDuration: 0.3)
+                .gesture(LongPressGesture(minimumDuration: Cross.hold)
                     .sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .global))
                     .updating($holding) { value, state, _ in
                         if case .second(true, _) = value { state = true }
@@ -1879,29 +1870,42 @@ struct PlanPointLine: View {
     let point: GeoPoint
     var open: ((GeoPoint) -> Void)?
     var armed = false
-    /// Синий контур: точку несут или у неё крестик (P374).
+    /// Синий контур: точку несут (P374).
     var glowing = false
     var onDelete: (() -> Void)?
+    /// Крестик убрали касанием мимо него.
+    var onDisarm: (() -> Void)? = nil
+    /// Где квадрат точки в окне — по нему крестик встаёт на угол (P713).
+    @State private var place: CGRect = .zero
 
     var body: some View {
         HStack(spacing: 0) {
             // Такой же квадрат, как снимок и точка в дневнике (P587).
             PointSquare(point: point)
                 .frame(width: DiaryEditor.photoSize.width, height: DiaryEditor.photoSize.height)
-                .scaleEffect(armed ? 1.1 : 1, anchor: .leading)
+                .background(GeometryReader { geo in
+                    let frame = geo.frame(in: .global)
+                    Color.clear
+                        .onAppear { place = frame }
+                        .onChange(of: frame) { _, now in place = now }
+                })
                 .contentShape(Rectangle())
                 .onTapGesture { open?(point) }
                 .accessibilityAddTraits(.isButton)
                 .accessibilityLabel(T("Точка на карте: ", "Place on the map: ") + point.label)
             Spacer(minLength: 0)
-            // Крестик — крупный, в той же строке справа (P380): маленький
-            // на углу точки было плохо видно.
-            if armed, let onDelete { DeleteBadge(action: onDelete) }
         }
         .padding(.horizontal, 14)
         .frame(height: PlanPhotoLine.height)
-        // Строка точки — в тонкой синей рамке, пока точку держат или у
-        // неё крестик; рамка едет вместе с точкой (P380).
+        // Подержали и отпустили — крестик, как у всех вложений (P713):
+        // прежде у точки под делом он стоял справа в строке, другим рисунком.
+        .onChange(of: armed) { _, now in
+            guard now, let onDelete else { return }
+            Cross.show(at: place, label: T("Удалить точку", "Delete place"),
+                       onCross: onDelete, onDismiss: onDisarm)
+        }
+        // Строка точки — в тонкой синей рамке, пока точку несут; рамка едет
+        // вместе с точкой (P380).
         .background {
             if glowing {
                 RoundedRectangle(cornerRadius: 9)
@@ -1913,29 +1917,6 @@ struct PlanPointLine: View {
                     .allowsHitTesting(false)
             }
         }
-    }
-}
-
-/// Крестик «удалить» на углу поднятой точки (P362): красный кружок с белым
-/// крестом — его видно на любой бумаге.
-struct DeleteBadge: View {
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            // Выразительнее (P386): крест толще, белая кайма и тень —
-            // отделяют кружок от снимка или бумаги под ним.
-            Image(systemName: "xmark.circle.fill")
-                .symbolRenderingMode(.palette)
-                .foregroundStyle(.white, Look.pin)
-                .font(.system(size: 31, weight: .bold))
-                .background(Circle().fill(.white).padding(-2.5))
-                .shadow(color: .black.opacity(0.3), radius: 3, x: 1, y: 1)
-                .frame(width: 48, height: 40)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(T("Удалить", "Delete"))
     }
 }
 

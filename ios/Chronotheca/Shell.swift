@@ -243,6 +243,11 @@ final class Shell: ObservableObject {
         d.set(Vault.stamp(DayStore.today()), forKey: "left.today")
     }
 
+    /// Сутки сменились и «День» уже сегодняшний: больше не новые (P711).
+    func noteToday() {
+        UserDefaults.standard.set(Vault.stamp(DayStore.today()), forKey: "left.today")
+    }
+
     /// Новые сутки с тех пор, как закрыли? Нет сведений — нет.
     func newDaySinceLeft() -> Bool {
         guard let t = UserDefaults.standard.string(forKey: "left.today") else { return false }
