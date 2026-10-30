@@ -174,15 +174,11 @@ struct SearchView: View {
             LazyVStack(spacing: -Search.overlap) {
                 ForEach(days) { day in
                     SearchCard(stamp: Search.stamp(day.date)) { row(day) }
-                        .scrollTransition(.interactive, axis: .vertical) { content, phase in
-                            // Как верх ролика времени: уходя вверх, карточка
-                            // заваливается назад (объём), уменьшается и
-                            // бледнеет. value: −1 ушла за верх … 0 на месте.
-                            content
-                                .rotation3DEffect(.degrees(-min(phase.value, 0) * 55),
-                                                  axis: (x: 1, y: 0, z: 0), perspective: 0.45)
-                                .scaleEffect(1 + min(phase.value, 0) * 0.14)
-                                .opacity(1 + min(phase.value, 0) * 0.65)
+                        // Уходя вверх, карточки уходят вдаль стопкой (P697): за
+                        // полторы карточки до верха начинают уменьшаться, у верха
+                        // прижимаются к нему и их всё больше закрывает следующая.
+                        .visualEffect { content, proxy in
+                            Search.recede(content, minY: proxy.frame(in: .named("searchList")).minY)
                         }
                 }
             }
@@ -194,6 +190,7 @@ struct SearchView: View {
             // Строки разделов над клавиатурой больше нет (P505).
             .padding(.bottom, keyboard > 0 ? keyboard + 4 : 0)
         }
+        .coordinateSpace(name: "searchList")
         // Второе нажатие на «Поиск» — список заново, с начала (P576).
         .id(shell.searchHome)
         .scrollDismissesKeyboard(.interactively)
@@ -280,6 +277,36 @@ enum Search {
 
     static let lineGap: CGFloat = 3
 
+    /// Шаг карточек: сколько видно каждой до следующей — корешок, пять строк
+    /// и немного воздуха (P697).
+    static var pitch: CGFloat { tabHeight + 8 + body + 6 }
+
+    /// Насколько карточка в «полутора карточках» до верха (0…1, у верха 1).
+    private static func near(_ minY: CGFloat) -> CGFloat {
+        min(max((1.5 * pitch - minY) / (1.5 * pitch), 0), 1)
+    }
+    /// Насколько ушла за верх (0…1 за полторы карточки).
+    private static func past(_ minY: CGFloat) -> CGFloat {
+        min(max(-minY / (1.5 * pitch), 0), 1)
+    }
+    /// Дальше всех: совсем бледнеют (0…1 ещё за одну карточку).
+    private static func gone(_ minY: CGFloat) -> CGFloat {
+        min(max((-minY - 1.5 * pitch) / pitch, 0), 1)
+    }
+
+    /// Уход вдаль (P697): карточка уменьшается к своему низу, не отрываясь от
+    /// следующей; за верхом прижимается к нему (сдвиг вниз на столько, на
+    /// сколько ушла), и следующая карточка закрывает её всё больше.
+    /// Заваливается назад, как верх ролика времени.
+    static func recede(_ content: EmptyVisualEffect, minY: CGFloat) -> some VisualEffect {
+        content
+            .scaleEffect(1 - 0.10 * near(minY) - 0.40 * past(minY), anchor: .bottom)
+            .rotation3DEffect(.degrees(8 * near(minY) + 32 * past(minY)),
+                              axis: (x: 1, y: 0, z: 0), anchor: .bottom, perspective: 0.45)
+            .offset(y: max(0, -minY))
+            .opacity(1 - 0.15 * near(minY) - 0.45 * past(minY) - 0.4 * gone(minY))
+    }
+
     /// Высота блока из пяти строк находки: строка заголовка и четыре строки
     /// текста; по ней же — сторона снимка (P696).
     static var body: CGFloat {
@@ -300,10 +327,11 @@ enum Search {
 
 
 /// Карточка находки — лист картотеки с корешком (P695): на левой трети
-/// сверху выступает корешок с датой. Карточка из фактурной старой бумаги
-/// (цвет прошлого и рельеф, P696) с заранее нарисованной тенью вправо-вниз
-/// (лампа слева сверху, P670, P675). Снизу пустое место: следующая
-/// карточка заходит на него и скрывает нижний край этой.
+/// сверху выступает корешок с датой; корешок и лист — один контур без черты
+/// между ними (P697). Карточка из фактурной старой бумаги (цвет прошлого и
+/// рельеф, P696) с заранее нарисованной тенью вправо-вниз (лампа слева сверху,
+/// P670, P675). Снизу пустое место: следующая карточка заходит на него и
+/// скрывает нижний край этой.
 private struct SearchCard<Content: View>: View {
     @Environment(\.colorScheme) private var scheme
     let stamp: String
@@ -312,7 +340,14 @@ private struct SearchCard<Content: View>: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
-                tab.frame(maxWidth: .infinity)
+                Text(stamp)
+                    .font(Look.mono(11.5, weight: .medium))
+                    .tracking(0.3)
+                    .foregroundStyle(Look.dateBlue)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .padding(.horizontal, 8)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 Color.clear.frame(maxWidth: .infinity)
                 Color.clear.frame(maxWidth: .infinity)
             }
@@ -322,17 +357,19 @@ private struct SearchCard<Content: View>: View {
                 // Пустое место под карточкой — под следующую (P696).
                 .padding(.bottom, Search.overlap + 6)
                 .frame(maxWidth: .infinity)
-                .background {
-                    paper
-                        .clipShape(body_shape)
-                        .overlay(body_shape.stroke(edge, lineWidth: 0.8))
-                        .background(PaintedShadow(radius: 5, corner: 12, x: 2, y: 3,
-                                                  opacity: scheme == .dark ? 0.5 : 0.3))
-                }
+        }
+        .background {
+            ZStack {
+                // Тень — только у листа, не у корешка.
+                PaintedShadow(radius: 5, corner: 12, x: 2, y: 3,
+                              opacity: scheme == .dark ? 0.5 : 0.3)
+                    .padding(.top, Search.tabHeight)
+                paper.clipShape(FolderShape(tabHeight: Search.tabHeight))
+                FolderShape(tabHeight: Search.tabHeight)
+                    .stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
+            }
         }
     }
-
-    private var edge: Color { Scheme.current.kraftEdge.opacity(0.5) }
 
     /// Старая бумага: цвет прошлого и рельеф плиткой — непрозрачная, иначе
     /// корешок соседа просвечивал бы.
@@ -344,26 +381,35 @@ private struct SearchCard<Content: View>: View {
                 .opacity(scheme == .dark ? 0.25 : 0.7)
         }
     }
+}
 
-    private var body_shape: UnevenRoundedRectangle {
-        // Левый верхний угол прямой: там лист переходит в корешок.
-        UnevenRoundedRectangle(topLeadingRadius: 0, bottomLeadingRadius: 12,
-                               bottomTrailingRadius: 12, topTrailingRadius: 12)
-    }
+/// Контур карточки с корешком на левой трети: корешок и лист — одна фигура.
+private struct FolderShape: Shape {
+    let tabHeight: CGFloat
 
-    private var tab: some View {
-        let shape = UnevenRoundedRectangle(topLeadingRadius: 10, bottomLeadingRadius: 0,
-                                           bottomTrailingRadius: 0, topTrailingRadius: 10)
-        return Text(stamp)
-            .font(Look.mono(11.5, weight: .medium))
-            .tracking(0.3)
-            .foregroundStyle(Look.dateBlue)
-            .lineLimit(1)
-            .minimumScaleFactor(0.7)
-            .padding(.horizontal, 8)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-            .background { paper.clipShape(shape).overlay(shape.stroke(edge, lineWidth: 0.8)) }
-            // Шов с листом закрываем: корешок и лист — одна бумага.
-            .overlay(alignment: .bottom) { paper.frame(height: 1.5).padding(.horizontal, 0.8) }
+    func path(in r: CGRect) -> Path {
+        let tabWidth = r.width / 3
+        let tabR: CGFloat = 10, bodyR: CGFloat = 12, inner: CGFloat = 6
+        var p = Path()
+        p.move(to: CGPoint(x: r.minX, y: r.minY + tabR))
+        p.addArc(tangent1End: CGPoint(x: r.minX, y: r.minY),
+                 tangent2End: CGPoint(x: r.minX + tabR, y: r.minY), radius: tabR)
+        p.addLine(to: CGPoint(x: r.minX + tabWidth - tabR, y: r.minY))
+        p.addArc(tangent1End: CGPoint(x: r.minX + tabWidth, y: r.minY),
+                 tangent2End: CGPoint(x: r.minX + tabWidth, y: r.minY + tabR), radius: tabR)
+        p.addLine(to: CGPoint(x: r.minX + tabWidth, y: r.minY + tabHeight - inner))
+        p.addArc(tangent1End: CGPoint(x: r.minX + tabWidth, y: r.minY + tabHeight),
+                 tangent2End: CGPoint(x: r.minX + tabWidth + inner, y: r.minY + tabHeight), radius: inner)
+        p.addLine(to: CGPoint(x: r.maxX - bodyR, y: r.minY + tabHeight))
+        p.addArc(tangent1End: CGPoint(x: r.maxX, y: r.minY + tabHeight),
+                 tangent2End: CGPoint(x: r.maxX, y: r.minY + tabHeight + bodyR), radius: bodyR)
+        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY - bodyR))
+        p.addArc(tangent1End: CGPoint(x: r.maxX, y: r.maxY),
+                 tangent2End: CGPoint(x: r.maxX - bodyR, y: r.maxY), radius: bodyR)
+        p.addLine(to: CGPoint(x: r.minX + bodyR, y: r.maxY))
+        p.addArc(tangent1End: CGPoint(x: r.minX, y: r.maxY),
+                 tangent2End: CGPoint(x: r.minX, y: r.maxY - bodyR), radius: bodyR)
+        p.closeSubpath()
+        return p
     }
 }
