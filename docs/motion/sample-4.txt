@@ -1,0 +1,146 @@
+    207 Thread_49432   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 207 start  (in dyld) + 6992  [0x1003d44e4]
+    +   207 start_sim  (in dyld_sim) + 20  [0x10065b0e4]
+    +     207 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x102202048]  ChronothecaApp.swift:0
+    +       207 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x102201f9c]  /<compiler-generated>:0
+    +         207 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           207 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             207 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               207 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 207 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   207 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     207 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       196 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    +                       ! 196 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    +                       !   196 mach_msg  (in libsystem_kernel.dylib) + 20  [0x100304ef0]
+    +                       !     196 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x10030cc44]
+    +                       !       196 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x100315e84]
+    +                       !         196 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x100304b70]
+    +                       7 __CFRunLoopRun  (in CoreFoundation) + 760  [0x180421808]
+    +                       ! 7 __CFRunLoopDoSources0  (in CoreFoundation) + 220  [0x180422634]
+    +                       !   7 __CFRunLoopDoSource0  (in CoreFoundation) + 168  [0x180422ea4]
+    +                       !     7 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__  (in CoreFoundation) + 24  [0x180422f5c]
+    +                       !       7 UC::DriverCore::continueProcessing()  (in UpdateCycle) + 80  [0x2343d22c0]
+    +                       !         7 schedulerStepScheduledMainSectionContinue  (in UIKitCore) + 56  [0x1863b6064]
+    +                       !           7 _UIUpdateSequenceRunNext  (in UIKitCore) + 120  [0x18590339c]
+    +                       !             7 CA::Display::DisplayLink::dispatch_deferred_display_links(unsigned int)  (in QuartzCore) + 340  [0x18cdefee4]
+    +                       !               7 CA::Display::DisplayLink::dispatch_items(unsigned long long, unsigned long long, unsigned long long)  (in QuartzCore) + 804  [0x18cde87dc]
+    +                       !                 7 CA::Display::DisplayLinkItem::dispatch_(CA::SignPost::Interval<(CA::SignPost::CAEventCode)835322056>&)  (in QuartzCore) + 56  [0x18cdecdf8]
+    +                       !                   7 @objc KeyboardCornersBand.tick()  (in Chronotheca.debug.dylib) + 44  [0x1023a753c]  /<compiler-generated>:0
+    +                       !                     3 KeyboardCornersBand.tick()  (in Chronotheca.debug.dylib) + 412  [0x1023a5bc8]  KeyboardBar.swift:261
+    +                       !                     : 3 static Vault.isUITest.getter  (in Chronotheca.debug.dylib) + 60  [0x10275a048]  Vault.swift:244
+    +                       !                     :   3 @objc _NSSwiftProcessInfo.environment.getter  (in Foundation) + 12  [0x180d9b62c]
+    +                       !                     :     1 specialized _ProcessInfo.environment.getter  (in Foundation) + 324  [0x180c6b114]
+    +                       !                     :     | 1 specialized Collection<>.firstIndex(of:)  (in Foundation) + 84  [0x180c06798]
+    +                       !                     :     |   1 DYLD-STUB$$String.subscript.getter  (in Foundation) + 4  [0x18123ae90]
+    +                       !                     :     1 specialized _ProcessInfo.environment.getter  (in Foundation) + 368  [0x180c6b140]
+    +                       !                     :     | 1 specialized static String._copying(_:)  (in libswiftCore.dylib) + 180  [0x1984e8954]
+    +                       !                     :     |   1 specialized static String._uncheckedFromUTF8(_:isASCII:)  (in libswiftCore.dylib) + 88  [0x1984e8b40]
+    +                       !                     :     |     1 specialized static __StringStorage.create(initializingFrom:codeUnitCapacity:isASCII:)  (in libswiftCore.dylib) + 52  [0x1984e885c]
+    +                       !                     :     |       1 _allocateStringStorage(codeUnitCapacity:)  (in libswiftCore.dylib) + 96  [0x198403904]
+    +                       !                     :     |         1 swift_allocObject  (in libswiftCore.dylib) + 52  [0x19818bf7c]
+    +                       !                     :     |           1 swift_slowAlloc  (in libswiftCore.dylib) + 48  [0x19818bc00]
+    +                       !                     :     |             1 _xzm_xzone_malloc  (in libsystem_malloc.dylib) + 68  [0x1801e9c24]
+    +                       !                     :     |               1 pthread_getspecific  (in libsystem_pthread.dylib) + 0  [0x100589aa4]
+    +                       !                     :     1 specialized _ProcessInfo.environment.getter  (in Foundation) + 516  [0x180c6b1d4]
+    +                       !                     :       1 specialized static String._copying(_:)  (in libswiftCore.dylib) + 180  [0x1984e8954]
+    +                       !                     :         1 specialized static String._uncheckedFromUTF8(_:isASCII:)  (in libswiftCore.dylib) + 88  [0x1984e8b40]
+    +                       !                     :           1 specialized static __StringStorage.create(initializingFrom:codeUnitCapacity:isASCII:)  (in libswiftCore.dylib) + 52  [0x1984e885c]
+    +                       !                     :             1 _allocateStringStorage(codeUnitCapacity:)  (in libswiftCore.dylib) + 172  [0x198403950]
+    +                       !                     :               1 swift_allocObject  (in libswiftCore.dylib) + 52  [0x19818bf7c]
+    +                       !                     :                 1 swift_slowAlloc  (in libswiftCore.dylib) + 48  [0x19818bc00]
+    +                       !                     :                   1 _xzm_xzone_malloc_tiny  (in libsystem_malloc.dylib) + 564  [0x1801ee584]
+    +                       !                     3 KeyboardCornersBand.tick()  (in Chronotheca.debug.dylib) + 432  [0x1023a5bdc]  KeyboardBar.swift:261
+    +                       !                     : 3 KeyboardCornersBand.report(_:)  (in Chronotheca.debug.dylib) + 2076  [0x1023a6c84]  KeyboardBar.swift:290
+    +                       !                     :   3 -[UIWindow convertRect:toCoordinateSpace:]  (in UIKitCore) + 436  [0x1864e38c4]
+    +                       !                     :     2 -[_UIWindowSceneCoordinateSpace convertRect:toCoordinateSpace:]  (in UIKitCore) + 1060  [0x186763c9c]
+    +                       !                     :     | 2 -[UIWindowScene _referenceBounds]  (in UIKitCore) + 140  [0x18676c2f0]
+    +                       !                     :     |   1 -[FBSSceneSettingsCore frame]  (in FrontBoardServices) + 52  [0x1887ff23c]
+    +                       !                     :     |   + 1 -[FBSSettings(FBSSceneExtension) valueForProperty:expectedClass:]  (in FrontBoardServices) + 84  [0x1887e85b4]
+    +                       !                     :     |   +   1 -[FBSSettings _valueForSetting:]  (in FrontBoardServices) + 20  [0x188865e24]
+    +                       !                     :     |   +     1 -[FBSSettings _underlyingValueForSetting:]  (in FrontBoardServices) + 52  [0x18883b6ec]
+    +                       !                     :     |   +       1 -[FBSSettings _underlyingValueForSetting:].cold.1  (in FrontBoardServices) + 108  [0x188866bf0]
+    +                       !                     :     |   +         1 -[FBSSettings _rootSettingsForLocal:createIfNeeded:]  (in FrontBoardServices) + 44  [0x188865e00]
+    +                       !                     :     |   +           1 OUTLINED_FUNCTION_15  (in FrontBoardServices) + 0  [0x18883d448]
+    +                       !                     :     |   1 -[FBSSceneSettingsCore frame]  (in FrontBoardServices) + 88  [0x1887ff260]
+    +                       !                     :     |     1 -[NSConcreteValue objCType]  (in Foundation) + 0  [0x181169a34]
+    +                       !                     :     1 -[_UIWindowSceneCoordinateSpace convertRect:toCoordinateSpace:]  (in UIKitCore) + 1100  [0x186763cc4]
+    +                       !                     :       1 -[FBSSceneSettingsCore interfaceOrientation]  (in FrontBoardServices) + 64  [0x1887ff438]
+    +                       !                     :         1 -[__NSCFNumber integerValue]  (in CoreFoundation) + 0  [0x1803f4490]
+    +                       !                     1 KeyboardCornersBand.tick()  (in Chronotheca.debug.dylib) + 292  [0x1023a5b50]  KeyboardBar.swift:260
+    +                       !                       1 Sequence.compactMap<A>(_:)  (in libswiftCore.dylib) + 12  [0x1983bc7f0]
+    +                       !                         1 Sequence._compactMap<A>(_:)  (in libswiftCore.dylib) + 612  [0x1983bca5c]
+    +                       !                           1 Array.append(_:)  (in libswiftCore.dylib) + 32  [0x19825e0f4]
+    +                       !                             1 Array._makeUniqueAndReserveCapacityIfNotUnique()  (in libswiftCore.dylib) + 48  [0x19825dd5c]
+    +                       !                               1 swift_isUniquelyReferenced_nonNull_bridgeObject  (in libswiftCore.dylib) + 0  [0x1981de4c0]
+    +                       3 __CFRunLoopRun  (in CoreFoundation) + 2100  [0x180421d44]
+    +                       ! 2 __CFRunLoopDoSource1  (in CoreFoundation) + 476  [0x180422c78]
+    +                       ! : 2 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE1_PERFORM_FUNCTION__  (in CoreFoundation) + 56  [0x180423628]
+    +                       ! :   2 __CFMachPortPerform  (in CoreFoundation) + 164  [0x1803e6c50]
+    +                       ! :     2 UC::DriverCore::continueProcessing()  (in UpdateCycle) + 80  [0x2343d22c0]
+    +                       ! :       2 schedulerStepScheduledMainSectionContinue  (in UIKitCore) + 56  [0x1863b6064]
+    +                       ! :         2 _UIUpdateSequenceRunNext  (in UIKitCore) + 120  [0x18590339c]
+    +                       ! :           2 CA::Display::DisplayLink::dispatch_deferred_display_links(unsigned int)  (in QuartzCore) + 340  [0x18cdefee4]
+    +                       ! :             2 CA::Display::DisplayLink::dispatch_items(unsigned long long, unsigned long long, unsigned long long)  (in QuartzCore) + 804  [0x18cde87dc]
+    +                       ! :               2 CA::Display::DisplayLinkItem::dispatch_(CA::SignPost::Interval<(CA::SignPost::CAEventCode)835322056>&)  (in QuartzCore) + 56  [0x18cdecdf8]
+    +                       ! :                 2 @objc KeyboardCornersBand.tick()  (in Chronotheca.debug.dylib) + 44  [0x1023a753c]  /<compiler-generated>:0
+    +                       ! :                   1 KeyboardCornersBand.tick()  (in Chronotheca.debug.dylib) + 412  [0x1023a5bc8]  KeyboardBar.swift:261
+    +                       ! :                   | 1 static Vault.isUITest.getter  (in Chronotheca.debug.dylib) + 60  [0x10275a048]  Vault.swift:244
+    +                       ! :                   |   1 @objc _NSSwiftProcessInfo.environment.getter  (in Foundation) + 12  [0x180d9b62c]
+    +                       ! :                   |     1 specialized _ProcessInfo.environment.getter  (in Foundation) + 616  [0x180c6b238]
+    +                       ! :                   |       1 specialized _NativeDictionary._copyOrMoveAndResize(capacity:moveElements:)  (in Foundation) + 432  [0x1808ec504]
+    +                       ! :                   |         1 String.hash(into:)  (in libswiftCore.dylib) + 228  [0x19827d910]
+    +                       ! :                   |           1 Hasher.combine(bytes:)  (in libswiftCore.dylib) + 616  [0x198338158]
+    +                       ! :                   1 KeyboardCornersBand.tick()  (in Chronotheca.debug.dylib) + 432  [0x1023a5bdc]  KeyboardBar.swift:261
+    +                       ! :                     1 KeyboardCornersBand.report(_:)  (in Chronotheca.debug.dylib) + 2076  [0x1023a6c84]  KeyboardBar.swift:290
+    +                       ! :                       1 -[UIWindow convertRect:toCoordinateSpace:]  (in UIKitCore) + 436  [0x1864e38c4]
+    +                       ! :                         1 -[_UIWindowSceneCoordinateSpace convertRect:toCoordinateSpace:]  (in UIKitCore) + 136  [0x186763900]
+    +                       ! :                           1 -[UIScreen fixedCoordinateSpace]  (in UIKitCore) + 0  [0x185fe8ae4]
+    +                       ! 1 __CFRunLoopDoSource1  (in CoreFoundation) + 404  [0x180422c30]
+    +                       !   1 _CFAutoreleasePoolPush  (in CoreFoundation) + 16  [0x1804d98f4]
+    +                       !     1 DYLD-STUB$$objc_autoreleasePoolPush  (in CoreFoundation) + 0  [0x180554004]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 864  [0x180421870]
+    +                         1 __CFRunLoopDoObservers  (in CoreFoundation) + 556  [0x180421430]
+    +                           1 __CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__  (in CoreFoundation) + 32  [0x180421f4c]
+    +                             1 _UIApplicationDrainManagedAutoreleasePool  (in UIKitCore) + 96  [0x185eaab0c]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        1859
+        mach_msg2_trap  (in libsystem_kernel.dylib)        403
+        objc_msgSend$initWithArray:  (in UIKitCore)        207
+        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        111
+        __46-[AXBinaryMonitor _addHandler:withName:toMap:]_block_invoke_2  (in AXCoreUtilities)        55
+        objc_msgSend  (in libobjc.A.dylib)        41
+
+Binary Images:
+       0x1002f0000 -        0x1002f3507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/F0C70C77-E423-4478-B648-3D25045B311B/data/Containers/Bundle/Application/A55838B5-D9AB-4B22-8AAE-3EE0F7311DA8/Chronotheca.app/Chronotheca
+       0x100304000 -        0x10033eed7  libsystem_kernel.dylib (12377.161.14) <26CFE427-C180-3145-8D46-DE3129B1CD2A> /usr/lib/system/libsystem_kernel.dylib
+       0x100384000 -        0x10038c3d3  libsystem_platform.dylib (375.120.2) <7E129155-1748-370C-8EDC-D762067A6D9F> /usr/lib/system/libsystem_platform.dylib
+       0x1003b4000 -        0x1004674ff  dyld (1.0.0 - 1387) <74E52480-C2BD-3C8D-812D-95FE2B74A096> /usr/lib/dyld
+       0x100588000 -        0x10059410b  libsystem_pthread.dylib (539.100.4) <85A501D2-0B0E-3DEA-B121-B24119D80CFE> /usr/lib/system/libsystem_pthread.dylib
+       0x100650000 -        0x10069ee9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x10070c000 -        0x10074f65f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x100860000 -        0x1008f92af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x100fcc000 -        0x100fccb99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x100fe0000 -        0x100fe803f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x1010f4000 -        0x1010ff39f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x101118000 -        0x10111adff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x101138000 -        0x10114149f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x10115c000 -        0x101162b7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x10117c000 -        0x1011832df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
+       0x1011a8000 -        0x1011abe5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x101360000 -        0x1013631ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
+       0x101650000 -        0x10166927f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
+       0x1016a0000 -        0x1016a5407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
+       0x1016bc000 -        0x1016c06ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
+       0x101780000 -        0x1019dbbbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+       0x101ffc000 -        0x10204f7bf  com.apple.dt.XCTAutomationSupport (26.5 - 24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
+       0x1020b0000 -        0x1020d6f5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
+       0x10212c000 -        0x10286b79f +Chronotheca.debug.dylib (0) <574AD4C5-75D7-3AFF-99C1-17155C281213> /Users/*/Library/Developer/CoreSimulator/Devices/F0C70C77-E423-4478-B648-3D25045B311B/data/Containers/Bundle/Application/A55838B5-D9AB-4B22-8AAE-3EE0F7311DA8/Chronotheca.app/Chronotheca.debug.dylib
+       0x103354000 -        0x10338e15f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
+       0x106378000 -        0x10639acff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
+       0x106984000 -        0x1069f3cbf  com.apple.UIUnderstanding (1.0 - 1) <576E64EB-8AA4-3B1E-A89D-365C4DE0C7C8> /Volumes/*/UIUnderstanding.framework/UIUnderstanding
+       0x106fec000 -        0x1071dfd3f  com.apple.UIKit.axbundle (1.0.0 - 1.0) <D3D808D1-AB02-3566-B2DD-1B139F8E9569> /Volumes/*/UIKit
+       0x108400000 -        0x1084118bf  com.apple.MapKitFramework.axbundle (1.0 - 1.0) <E47E82F2-C0CB-3371-85B9-B78F40DB406A> /Volumes/*/MapKitFramework
+       0x108448000 -        0x108449a7f  com.apple.FrontBoard.axbundle (1.0 - 1.0) <FA25F3DC-A3E7-344D-8680-FFB8D8BBA712> /Volumes/*/FrontBoard
+       0x108470000 -        0x10847697f  com.apple.QuickLook.axbundle (1.0 - 1.0) <76E33FCF-316E-370C-89D6-BC03C44D009F> /Volumes/*/QuickLook
