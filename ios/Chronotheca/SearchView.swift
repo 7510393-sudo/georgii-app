@@ -283,12 +283,12 @@ enum Search {
     /// и немного воздуха (P697).
     static var pitch: CGFloat { tabHeight + 8 + body + 6 }
 
-    /// Где лента начинает сгибаться (от верха списка): за две карточки до
+    /// Где лента начинает сгибаться (от верха списка): за одну карточку до
     /// верха (P700; прежде за полторы).
-    private static var bendY: CGFloat { 2 * pitch }
+    private static var bendY: CGFloat { pitch }
     /// Резкость перспективы: чем меньше, тем сильнее сужается лента. Подобрано
     /// так, что у верха списка, где карточка скрывается, она уже на треть (P700).
-    private static var focal: CGFloat { 6 * pitch }
+    private static var focal: CGFloat { 3 * bendY }
 
     /// Одна общая лента (P699, P700) — как плоскость, ложащаяся к горизонту:
     /// `c` — на сколько точек выше линии сгиба место ленты; ширина там
@@ -328,8 +328,8 @@ enum Search {
             : min((1 / r - 1) * rotationDistance / (h * max(sin(angle), 0.08)), 40)
         // Растягивать по высоте нельзя (P700): только сплющивать.
         let squash = min(drop / (sb * h * cos(angle) * r), 1)
-        // Бледнеют в последней трети пути к верху списка.
-        let t = min(max((bendY - minY - 1.6 * pitch) / (1.4 * pitch), 0), 1)
+        // Бледнеют в последней трети пути к верху списка (весь путь — 1,5 bendY).
+        let t = min(max((bendY - minY - 0.8 * bendY) / (0.7 * bendY), 0), 1)
         return content
             .rotation3DEffect(.radians(angle), axis: (x: 1, y: 0, z: 0),
                               anchor: .bottom, perspective: power)
