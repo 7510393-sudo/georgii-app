@@ -99,6 +99,8 @@ struct RememberSheet: View {
     let ago: Ago
     @Binding var open: Bool
     @EnvironmentObject private var vault: Vault
+    @EnvironmentObject private var store: DayStore
+    @EnvironmentObject private var shell: Shell
 
     var body: some View {
         NavigationStack {
@@ -138,6 +140,15 @@ struct RememberSheet: View {
             .background(Look.diaryBg)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                // «Перейти» — слева сверху (P710): листок закрывается,
+                // открывается дневник того дня, о котором воспоминание.
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(T("Перейти", "Go to day")) {
+                        open = false
+                        store.go(to: day.date)
+                        shell.tab = .diary
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(T("Закрыть", "Close")) { open = false }
                 }

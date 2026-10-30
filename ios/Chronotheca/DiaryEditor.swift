@@ -2383,6 +2383,22 @@ final class DiaryTextView: UITextView {
         super.setMarkedText(markedText, selectedRange: selectedRange)
     }
 
+    /// Диктовка кладёт слова в поле через закрытый метод с атрибутами (P708) —
+    /// в новых iOS не через `setMarkedText`, поэтому время вставало только
+    /// тогда, когда микрофон выключали. Свой метод вызывает время и затем
+    /// прежний, системный. Если в системе такого метода нет, наш никто не
+    /// зовёт — ничего не меняется.
+    private static let attributedMarked = Selector(("setAttributedMarkedText:selectedRange:"))
+
+    @objc(setAttributedMarkedText:selectedRange:)
+    func ownSetAttributedMarkedText(_ text: NSAttributedString?, selectedRange: NSRange) {
+        if markedTextRange == nil, let text, text.length > 0 { onDictationStart?() }
+        guard let method = class_getInstanceMethod(UITextView.self, Self.attributedMarked) else { return }
+        typealias Call = @convention(c) (AnyObject, Selector, NSAttributedString?, NSRange) -> Void
+        let call = unsafeBitCast(method_getImplementation(method), to: Call.self)
+        call(self, Self.attributedMarked, text, selectedRange)
+    }
+
     /// Диктовка просит у поля место для будущих слов (P686): это первое,
     /// что видит поле, — раньше любого временного текста. Свой метод
     /// без `override` (в классе поля его нет, он из протокола ввода): время

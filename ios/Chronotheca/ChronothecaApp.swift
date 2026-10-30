@@ -39,11 +39,17 @@ struct ChronothecaApp: App {
     private func openToday(diary: Bool) {
         // Без хода плашки (P583): с виджета — сразу «День».
         if shell.screen != .today { shell.instant = true }
-        store.go(to: DayStore.today())
+        // Сначала экран и вкладка — они рисуются в тот же миг; день читается
+        // следом (P709): прежде приложение сперва читало день, и открытая
+        // страница висела ещё около полусекунды, прежде чем смениться на «День»
+        // (запись автора 30.10: возврат из фона через виджет).
         shell.tab = diary ? .diary : .plan
-        shell.landOnDiary = diary
-        shell.landing += 1
         shell.screen = .today
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [store, shell] in
+            store.go(to: DayStore.today())
+            shell.landOnDiary = diary
+            shell.landing += 1
+        }
     }
 
     var body: some Scene {
