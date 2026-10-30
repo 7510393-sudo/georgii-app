@@ -324,7 +324,7 @@ enum Search {
     /// на ленте их места; прямоугольник становится трапецией (верх уже низа).
     /// Края соседних карточек берутся из одной функции, поэтому лента не
     /// рвётся. Трапеция — поворот назад вокруг низа (наклон и перспектива
-    /// подбираются под ширину и высоту нужного куска), потом сдвиг на место.
+    /// подбираются под ширину верха), растяжение по высоте и сдвиг на место.
     /// Дальше сгиба карточки бледнеют.
     static func recede(_ content: EmptyVisualEffect, minY: CGFloat, size: CGSize) -> some VisualEffect {
         let h = max(size.height, 1)
@@ -333,16 +333,19 @@ enum Search {
         let sb = bottom.s
         let r = min(top.s / sb, 1)
         let drop = max(bottom.y - top.y, 0.01)
-        // Высота куска на экране = sb·h·cos(угла)·r; ширина сверху = r от нижней.
-        let angle = acos(min(drop / (sb * h * r), 1))
+        // Наклон растёт вместе с сужением (без сужения — прямая карточка),
+        // перспектива подбирается под ширину верха, а высота куска — растяжением
+        // по вертикали (у далёких кусков оно сплющивает, у ближних чуть вытягивает).
+        let angle = min(0.6, (1 / r - 1) * 1.2)
         let power: CGFloat = r > 0.999
             ? 1
             : min((1 / r - 1) * rotationDistance / (h * max(sin(angle), 0.08)), 40)
+        let squash = drop / (sb * h * cos(angle) * r)
         let t = min(max((bendY - minY - bendLength) / (2 * pitch), 0), 1)
         return content
             .rotation3DEffect(.radians(angle), axis: (x: 1, y: 0, z: 0),
                               anchor: .bottom, perspective: power)
-            .scaleEffect(sb, anchor: .bottom)
+            .scaleEffect(x: sb, y: sb * squash, anchor: .bottom)
             .offset(y: bottom.y - (minY + h))
             .opacity(1 - 0.85 * t * t * (3 - 2 * t))
     }
