@@ -286,12 +286,11 @@ enum Search {
     /// Где лента начинает сгибаться (от верха списка): за две трети карточки до
     /// верха (P701; было за одну, ещё раньше — за полторы).
     private static var bendY: CGFloat { 2 * pitch / 3 }
-    /// Ширина ленты там, где карточка скрывается у верха списка: на 44% уже, а не
-    /// на треть (P701: перспектива резче на треть).
-    private static let vanishWidth: CGFloat = 0.56
-    /// Расстояние до зрителя: подобрано так, чтобы у верха списка лента была
-    /// шириной `vanishWidth`.
-    private static var focal: CGFloat { 2 * bendY / (1 - vanishWidth * vanishWidth) }
+    /// Расстояние до зрителя: чем меньше, тем сильнее сужается лента. Вдвое
+    /// меньше прежнего — сужение вдвое интенсивнее (P702). Горизонт лежит
+    /// на `bendY - focal / 2` от верха списка, ниже самого верха: к нему лента
+    /// сходится и там тает.
+    private static var focal: CGFloat { pitch }
 
     /// Одна общая лента (P699, P701) — как плоскость, ложащаяся к горизонту:
     /// `c` — на сколько точек выше линии сгиба место ленты; ширина там
@@ -310,18 +309,18 @@ enum Search {
     /// сборки 207: расстояние до зрителя около 255 точек).
     private static let rotationDistance: CGFloat = 255
 
-    /// Карточка — кусок ленты (P699, P701): её видимая часть (корешок и пять
-    /// строк, `pitch`) ложится на ленту так, что низ видимой части совпадает с
-    /// верхом следующей карточки — и по месту, и по ширине, поэтому щелей нет, а
-    /// следующая (ближняя) карточка всегда не уже, чем низ дальней. Прямоугольник
-    /// становится трапецией (верх уже низа): поворот назад вокруг линии низа
-    /// видимой части, сплющивание по высоте и сдвиг на место. Узкая полоса листа
-    /// под этой линией (её закрывает следующая карточка) идёт следом. У верха
-    /// списка карточки тают.
+    /// Карточка — кусок ленты (P699, P702): её видимая часть — от верха корешка
+    /// до верха листа следующей карточки (`pitch` и корешок), и низ видимой
+    /// части совпадает с верхом листа следующей по месту и по ширине, поэтому
+    /// щелей нет, а следующая (ближняя) карточка нигде не уже низа дальней.
+    /// Прямоугольник становится трапецией (верх уже низа): поворот назад вокруг
+    /// линии низа видимой части, сплющивание по высоте и сдвиг на место. Под
+    /// этой линией остаётся лишь узкая полоса листа, которую закрывает листок
+    /// следующей. Дальние карточки тают.
     static func recede(_ content: EmptyVisualEffect, minY: CGFloat, size: CGSize) -> some VisualEffect {
-        let h = max(size.height, pitch + 1)
-        let line = pitch / h
-        let bottom = ribbon(bendY - (minY + pitch))
+        let span = pitch + tabHeight
+        let h = max(size.height, span + 1)
+        let bottom = ribbon(bendY - (minY + span))
         let top = ribbon(bendY - minY)
         let sb = bottom.s
         let r = min(top.s / sb, 1)
@@ -331,19 +330,19 @@ enum Search {
         let angle = min(0.6, (1 / r - 1) * 1.2)
         let power: CGFloat = r > 0.999
             ? 1
-            : min((1 / r - 1) * rotationDistance / (pitch * max(sin(angle), 0.08)), 40)
+            : min((1 / r - 1) * rotationDistance / (span * max(sin(angle), 0.08)), 40)
         // Растягивать по высоте нельзя: только сплющивать.
-        let squash = min(drop / (sb * pitch * cos(angle) * r), 1)
-        // Тают у верха списка: полностью исчезают, когда верх карточки выше
-        // верха списка на 20 точек.
-        let fade = min(max((top.y + 20) / (0.55 * pitch), 0), 1)
-        let anchor = UnitPoint(x: 0.5, y: line)
+        let squash = min(drop / (sb * span * cos(angle) * r), 1)
+        // Тают по пути к горизонту: целые, пока лента не сузилась до 0,55,
+        // исчезают на 0,33.
+        let away = min(max((bendY - minY - 0.8 * focal) / (1.2 * focal), 0), 1)
+        let anchor = UnitPoint(x: 0.5, y: span / h)
         return content
             .rotation3DEffect(.radians(angle), axis: (x: 1, y: 0, z: 0),
                               anchor: anchor, perspective: power)
             .scaleEffect(x: sb, y: sb * squash, anchor: anchor)
-            .offset(y: bottom.y - (minY + pitch))
-            .opacity(fade * fade * (3 - 2 * fade))
+            .offset(y: bottom.y - (minY + span))
+            .opacity(1 - away * away * (3 - 2 * away))
     }
 
     /// Высота блока из пяти строк находки: строка заголовка и четыре строки
