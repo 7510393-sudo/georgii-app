@@ -351,12 +351,13 @@ enum Search {
         return (horizon + (bend - horizon - h) * s, s)
     }
 
-    /// Искажение одной карточки. Ближние к изгибу карточки — шейдером
-    /// (трапеция и плавный изгиб внутри карточки); дальние, когда они уже
-    /// тоньше трети ширины, — простым сжатием: так дешевле, а трапеция в
-    /// несколько точек высотой неотличима. В обоих случаях карточка сдвигается
-    /// на своё место на ленте целиком (`shift`), и шейдеру остаётся искажать
-    /// её в своих пределах — без огромных запасов памяти.
+    /// Искажение одной карточки — шейдером у всех карточек на ленте (P714):
+    /// прежде дальние, тоньше трети ширины, только равномерно сжимались — без
+    /// перспективы они читались маленькими, но стоящими, и на переходе лента
+    /// дёргалась. Чтобы шейдеру хватало немного памяти, карточка сперва
+    /// сжимается целиком до своей средней ширины и высоты на ленте и
+    /// сдвигается на своё место (`shift`), а шейдер лишь доводит перспективу
+    /// внутри неё — выборка рядом, на несколько точек.
     static func bend(_ view: EmptyVisualEffect, _ proxy: GeometryProxy, index: Int,
                      preview: Bool) -> some VisualEffect {
         let top = proxy.frame(in: .named(space)).minY - lift
@@ -373,22 +374,32 @@ enum Search {
         let upper = curl(bend - top, bend: bend, r: r, f: f)
         let shift = lower.y - (top + h)
         let inBend = top < bend
-        let shader = inBend && upper.s >= 0.3
-        let squeeze = max(lower.y - upper.y, 0.5) / h
-        let width = (upper.s + lower.s) / 2
-        // Предел выборки: по ширине — край ленты и ещё 12 точек за тенью, по
-        // высоте — сама карточка (сжатая лента внутри неё).
-        let wide = proxy.size.width / 2 * (1 - upper.s) + 16
+        // Сжатие целиком: по ширине — средняя ширина карточки на ленте, по
+        // высоте — её высота на ленте; низ на месте.
+        let k = inBend ? (upper.s + lower.s) / 2 : 1
+        let q = inBend ? max((lower.y - upper.y) / h, 0.003) : 1
+        // Насколько перспектива внутри карточки отходит от простого сжатия —
+        // столько и нужно шейдеру выбирать по высоте.
+        var reachY: CGFloat = 0
+        if inBend {
+            for j in 0...8 {
+                let ys = h * CGFloat(j) / 8
+                let onRibbon = curl(bend - (top + ys), bend: bend, r: r, f: f).y - top - shift
+                reachY = max(reachY, abs(h - (h - ys) * q - onRibbon))
+            }
+        }
+        let half = proxy.size.width / 2
+        let reachX = half * max(k / max(upper.s, 0.01) - 1, 1 - k / max(lower.s, 0.01), 0)
         // Тают у самого горизонта, когда уже тоньше пятой доли ширины.
         let fade = min(max((upper.s - 0.1) / 0.1, 0), 1)
         return view
+            .scaleEffect(x: k, y: q, anchor: .bottom)
             .distortionEffect(
                 ShaderLibrary.ribbon(.float2(proxy.size), .float(top), .float(shift),
-                                     .float(bend), .float(horizon), .float(r), .float(f)),
-                maxSampleOffset: CGSize(width: wide, height: h + 4),
-                isEnabled: shader)
-            .scaleEffect(x: inBend && !shader ? width : 1,
-                         y: inBend && !shader ? squeeze : 1, anchor: .bottom)
+                                     .float(bend), .float(horizon), .float(r), .float(f),
+                                     .float(k), .float(q)),
+                maxSampleOffset: CGSize(width: reachX + 6, height: reachY + 6),
+                isEnabled: inBend)
             .offset(y: inBend ? shift : 0)
             .opacity(inBend ? fade * fade * (3 - 2 * fade) : 1)
     }
