@@ -198,7 +198,10 @@ struct SearchView: View {
                                      .float(Search.lift),
                                      .float(Search.bendY),
                                      .float(Search.horizon)),
-                maxSampleOffset: CGSize(width: 600, height: 300))
+                maxSampleOffset: CGSize(width: 600, height: 300),
+                // В проверках и снимках CI (там нет видеокарты) шейдер не рисует
+                // ничего — список был бы пуст; там лента без искажения.
+                isEnabled: !Vault.isPreview)
         }
         // У самого горизонта лента тает.
         .mask {
