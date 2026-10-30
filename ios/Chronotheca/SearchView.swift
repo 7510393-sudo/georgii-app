@@ -170,22 +170,19 @@ struct SearchView: View {
             // Находки — карточки картотеки, вид сверху: нижняя лежит поверх
             // верхней и своим корешком с датой закрывает её низ (P694, P695).
             LazyVStack(spacing: -Search.overlap) {
-                ForEach(days) { day in
+                ForEach(Array(days.enumerated()), id: \.element.id) { index, day in
                     SearchCard(stamp: Search.stamp(day.date)) { row(day) }
-                        // Лента сгибается и уходит в горизонт одним шейдером
-                        // (P707): каждая карточка искажается той же общей
+                        // Лента поворачивает вдаль, как по большому цилиндру
+                        // (P712): каждая карточка искажается той же общей
                         // формулой по своему месту на экране, поэтому края
                         // соседних сходятся точно и ступенек нет.
-                        .modifier(Ribbon())
+                        .modifier(Ribbon(index: index, preview: Vault.isPreview))
                 }
             }
             .padding(.horizontal, 10)
-            // Над первой находкой — место, которое ленту не касается: пока список
-            // не листали, ничего не искажено. `lift` — запас над списком: туда
-            // лента заходит и оттуда закручивается в горизонт (P707). В снимках
-            // CI первая находка стоит у самого верха — там видно, что шейдер
-            // работает.
-            .padding(.top, Search.lift + (Vault.isPreview ? 4 : Search.bendY))
+            // `lift` — запас над списком: туда лента заходит и оттуда уходит
+            // к горизонту (P707, P712).
+            .padding(.top, Search.lift + Search.restTop)
             // Место под клавиатуру. Без него последние находки лежат под
             // ней и не достаются прокруткой: список кончается там, где
             // начинается клавиатура (решение P174).
@@ -200,9 +197,9 @@ struct SearchView: View {
         // У самого горизонта лента тает.
         .mask {
             VStack(spacing: 0) {
-                Color.clear.frame(height: Search.lift + Search.vanishY)
+                Color.clear.frame(height: Search.lift + Search.horizon)
                 LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
-                    .frame(height: 18)
+                    .frame(height: 8)
                 Color.black
             }
         }
@@ -283,18 +280,20 @@ struct SearchView: View {
     }
 }
 
-/// Искажение карточки шейдером `ribbon` (P707). Шейдер на весь список не
-/// годится: прокрутка рисуется самой системой, и шейдер получал пустую
-/// картинку — список пропадал (снимок CI 30.10). Карточка же рисуется
-/// целиком SwiftUI. Под карточкой — прозрачный запас `reach`: сжатая лента
-/// ложится ниже того места, где карточка стоит без искажения. Карточки ниже
-/// изгиба не искажаются вовсе.
+/// Искажение карточки (P707, P712). Шейдер на весь список не годится:
+/// прокрутку рисует сама система, и шейдер получал пустую картинку (снимок CI
+/// 30.10). Карточка же рисуется целиком SwiftUI. `index` — место карточки в
+/// списке: по нему видно, на сколько список пролистан.
 private struct Ribbon: ViewModifier {
+    let index: Int
+    /// Снимки и проверки CI (`Vault.isPreview`).
+    let preview: Bool
+
     func body(content: Content) -> some View {
-        content
-            .padding(.bottom, Search.reach)
-            .visualEffect { view, proxy in Search.bend(view, proxy) }
-            .padding(.bottom, -Search.reach)
+        let index = index, preview = preview
+        return content.visualEffect { view, proxy in
+            Search.bend(view, proxy, index: index, preview: preview)
+        }
     }
 }
 
@@ -313,40 +312,85 @@ enum Search {
 
     /// Система координат прокрутки: по ней карточка знает своё место.
     static let space = "searchList"
-    /// Где лента начинает сгибаться (от верха списка): за треть карточки до
-    /// верха (P703). Первая находка в покое стоит ровно здесь, ниже изгиба.
-    static var bendY: CGFloat { pitch / 3 }
-    /// Горизонт ленты — на 6 точек выше верха списка, то есть сразу под строкой
+    /// Где стоит первая находка, пока список не листали (от верха списка).
+    static let restTop: CGFloat = 4
+    /// Где лента начинает поворачивать (от верха списка), когда список
+    /// пролистан: за одну карточку до верха (P712, по согласию автора; прежде
+    /// за треть — поворот выходил слишком резким). Пока список в начале,
+    /// изгиба нет: он «вырастает» по мере листания (`bendNow`).
+    static var bendMax: CGFloat { pitch }
+    /// Горизонт ленты — на 6 точек выше верха списка, сразу под строкой
     /// поиска (P706).
     static let horizon: CGFloat = -6
-    /// Ширина ленты там, где она пропадает (P704: сужение на 60%).
-    static let vanish: CGFloat = 0.4
-    /// Шейдер `ribbon` в `Ribbon.metal` — плоскость, ложащаяся к горизонту:
-    /// ширина `√(1−t)`, где `t` — доля пути от изгиба до горизонта; `focal` —
-    /// расстояние до зрителя.
-    static var focal: CGFloat { 2 * (bendY - horizon) }
-    /// Сколько точек ленты выше изгиба уходит до места, где она пропадает.
-    static var depth: CGFloat { focal * (1 / vanish - 1) }
-    /// Высота, на которой лента пропадает (от верха списка): выше — пусто.
-    static var vanishY: CGFloat { bendY - focal / 2 * (1 - vanish * vanish) }
-    /// На сколько сжатая лента ложится ниже своего места: прозрачный запас
-    /// под каждой карточкой и предел выборки шейдера по высоте.
-    static var reach: CGFloat { vanishY - (bendY - depth) + 4 }
-    /// Сколько точек над верхом списка тоже рисуется: оттуда лента
-    /// закручивается в горизонт (P707).
-    static var lift: CGFloat { depth - bendY + 8 }
+    /// Радиус цилиндра поворота и расстояние до зрителя — доли высоты от
+    /// изгиба до горизонта (подобраны: поворот на одну карточку высоты,
+    /// дальние карточки сужаются до десятой доли).
+    static let radiusShare: CGFloat = 0.47
+    static let focalShare: CGFloat = 1.18
+    /// Сколько точек над верхом списка тоже рисуется: оттуда уходит «хвост»
+    /// ленты — шесть-семь карточек, тающих у горизонта (P712).
+    static var lift: CGFloat { 6 * pitch }
 
-    /// Искажение одной карточки: её верх в системе списка, общая формула
-    /// ленты. Ниже изгиба — без искажения и без лишней работы.
-    static func bend(_ view: EmptyVisualEffect, _ proxy: GeometryProxy) -> some VisualEffect {
+    /// Лента (P712): от линии изгиба вверх — четверть цилиндра радиуса `r`
+    /// (лента плавно ложится от вертикали в горизонталь), дальше — плоскость
+    /// к горизонту; вид с расстояния `f`. `c` — на сколько точек ленты место
+    /// выше линии изгиба. Возвращает место на экране и ширину (1 — прежняя).
+    /// Та же формула — в `Ribbon.metal`.
+    static func curl(_ c: CGFloat, bend: CGFloat, r: CGFloat, f: CGFloat) -> (y: CGFloat, s: CGFloat) {
+        guard c > 0 else { return (bend - c, 1) }
+        let arc = .pi / 2 * r
+        let h: CGFloat, z: CGFloat
+        if c < arc {
+            h = r * sin(c / r)
+            z = r * (1 - cos(c / r))
+        } else {
+            h = r
+            z = r + (c - arc)
+        }
+        let s = f / (f + z)
+        return (horizon + (bend - horizon - h) * s, s)
+    }
+
+    /// Искажение одной карточки. Ближние к изгибу карточки — шейдером
+    /// (трапеция и плавный изгиб внутри карточки); дальние, когда они уже
+    /// тоньше трети ширины, — простым сжатием: так дешевле, а трапеция в
+    /// несколько точек высотой неотличима. В обоих случаях карточка сдвигается
+    /// на своё место на ленте целиком (`shift`), и шейдеру остаётся искажать
+    /// её в своих пределах — без огромных запасов памяти.
+    static func bend(_ view: EmptyVisualEffect, _ proxy: GeometryProxy, index: Int,
+                     preview: Bool) -> some VisualEffect {
         let top = proxy.frame(in: .named(space)).minY - lift
-        // Предел выборки по ширине: край ленты и ещё 12 точек за тенью (Ribbon.metal).
-        let wide = proxy.size.width / 2 * (1 - vanish) + 16
-        return view.distortionEffect(
-            ShaderLibrary.ribbon(.float2(proxy.size), .float(top), .float(bendY),
-                                 .float(horizon), .float(vanish)),
-            maxSampleOffset: CGSize(width: wide, height: reach),
-            isEnabled: top < bendY)
+        let h = max(proxy.size.height, 1)
+        // На сколько список пролистан: где карточка стоит и где стояла бы в
+        // покое. В снимках CI — как пролистанный (в них три находки, листать
+        // некуда), чтобы поворот был виден на снимке.
+        let scrolled = preview ? 2 * pitch : max(0, restTop + CGFloat(index) * pitch - top)
+        let bend = min(bendMax, restTop + scrolled)
+        let height = bend - horizon
+        let r = radiusShare * height
+        let f = focalShare * height
+        let lower = curl(bend - (top + h), bend: bend, r: r, f: f)
+        let upper = curl(bend - top, bend: bend, r: r, f: f)
+        let shift = lower.y - (top + h)
+        let inBend = top < bend
+        let shader = inBend && upper.s >= 0.3
+        let squeeze = max(lower.y - upper.y, 0.5) / h
+        let width = (upper.s + lower.s) / 2
+        // Предел выборки: по ширине — край ленты и ещё 12 точек за тенью, по
+        // высоте — сама карточка (сжатая лента внутри неё).
+        let wide = proxy.size.width / 2 * (1 - upper.s) + 16
+        // Тают у самого горизонта, когда уже тоньше пятой доли ширины.
+        let fade = min(max((upper.s - 0.1) / 0.1, 0), 1)
+        return view
+            .distortionEffect(
+                ShaderLibrary.ribbon(.float2(proxy.size), .float(top), .float(shift),
+                                     .float(bend), .float(horizon), .float(r), .float(f)),
+                maxSampleOffset: CGSize(width: wide, height: h + 4),
+                isEnabled: shader)
+            .scaleEffect(x: inBend && !shader ? width : 1,
+                         y: inBend && !shader ? squeeze : 1, anchor: .bottom)
+            .offset(y: inBend ? shift : 0)
+            .opacity(inBend ? fade * fade * (3 - 2 * fade) : 1)
     }
 
     /// Высота блока из пяти строк находки: строка заголовка и четыре строки
