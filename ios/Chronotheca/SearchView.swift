@@ -285,7 +285,8 @@ enum Search {
     static var body: CGFloat {
         let title = ceil(Prefs.serifUIFont(15).lineHeight)
         let line = ceil(Prefs.serifUIFont(13.5).lineHeight)
-        return title + line * 4 + lineGap * 4
+        // Между заголовком и текстом один промежуток; четыре строки текста идут подряд.
+        return title + lineGap + line * 4
     }
 
     /// «2026 сентябрь 22» — от крупного к мелкому, как ищут в архиве.
