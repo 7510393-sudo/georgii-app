@@ -310,39 +310,41 @@ enum Search {
     /// сборки 207: расстояние до зрителя около 255 точек).
     private static let rotationDistance: CGFloat = 255
 
-    /// Карточка — кусок ленты (P699, P702): её видимая часть — от верха корешка
-    /// до верха листа следующей карточки (`pitch` и корешок), и низ видимой
-    /// части совпадает с верхом листа следующей по месту и по ширине, поэтому
-    /// щелей нет, а следующая (ближняя) карточка нигде не уже низа дальней.
-    /// Прямоугольник становится трапецией (верх уже низа): поворот назад вокруг
-    /// линии низа видимой части, сплющивание по высоте и сдвиг на место. Под
-    /// этой линией остаётся лишь узкая полоса листа, которую закрывает листок
-    /// следующей. Дальние карточки тают.
+    /// Карточка — кусок ленты (P699, P705): ось её поворота — нижняя грань
+    /// карточки, ничего под осью не остаётся. Верх карточки ложится туда, где
+    /// на ленте его место; низ — на своё место на ленте, а ширина низа берётся
+    /// там, где лист следующей карточки (ближней) начинается под корешком:
+    /// низ дальней карточки точно так же широк, как верх листа ближней, и не
+    /// шире (P705, прежде P702 поворачивал по линии выше низа, и часть листа под
+    /// осью раздувалась шире соседа). Прямоугольник становится трапецией (верх
+    /// уже низа): поворот назад вокруг нижней грани, сплющивание по высоте и
+    /// сдвиг на место. Дальние карточки тают.
     static func recede(_ content: EmptyVisualEffect, minY: CGFloat, size: CGSize) -> some VisualEffect {
-        let span = pitch + tabHeight
-        let h = max(size.height, span + 1)
-        let bottom = ribbon(bendY - (minY + span))
+        let h = max(size.height, pitch + tabHeight + 1)
+        let bottom = ribbon(bendY - (minY + h))
+        // Где лист следующей карточки начинается под корешком — по ширине
+        // низ этой карточки равен ей.
+        let join = ribbon(bendY - (minY + pitch + tabHeight))
         let top = ribbon(bendY - minY)
-        let sb = bottom.s
+        let sb = join.s
         let r = min(top.s / sb, 1)
         let drop = max(bottom.y - top.y, 0.01)
         // Наклон растёт вместе с сужением (без сужения — прямая карточка),
-        // перспектива подбирается под ширину верха, высота куска — сплющиванием.
+        // перспектива подбирается под ширину верха, высота — сплющиванием.
         let angle = min(0.6, (1 / r - 1) * 1.2)
         let power: CGFloat = r > 0.999
             ? 1
-            : min((1 / r - 1) * rotationDistance / (span * max(sin(angle), 0.08)), 40)
+            : min((1 / r - 1) * rotationDistance / (h * max(sin(angle), 0.08)), 40)
         // Растягивать по высоте нельзя: только сплющивать.
-        let squash = min(drop / (sb * span * cos(angle) * r), 1)
+        let squash = min(drop / (sb * h * cos(angle) * r), 1)
         // Тают по пути к верху списка: целые, пока лента не сузилась до 0,67,
         // исчезают там, где верх карточки доходит до верха списка (0,40).
         let away = min(max((bendY - minY - 0.5 * focal) / focal, 0), 1)
-        let anchor = UnitPoint(x: 0.5, y: span / h)
         return content
             .rotation3DEffect(.radians(angle), axis: (x: 1, y: 0, z: 0),
-                              anchor: anchor, perspective: power)
-            .scaleEffect(x: sb, y: sb * squash, anchor: anchor)
-            .offset(y: bottom.y - (minY + span))
+                              anchor: .bottom, perspective: power)
+            .scaleEffect(x: sb, y: sb * squash, anchor: .bottom)
+            .offset(y: bottom.y - (minY + h))
             .opacity(1 - away * away * (3 - 2 * away))
     }
 
