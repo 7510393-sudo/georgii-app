@@ -23,20 +23,24 @@ static float2 curl(float c, float bend, float horizon, float r, float f) {
     return float2(horizon + (bend - horizon - h) * s, s);
 }
 
-/// Лента находок поиска (P707, P712): искажает карточку так, будто весь
-/// список — одна лента, которая плавно поворачивает вдаль. Каждая карточка
-/// считает по той же формуле, поэтому края соседних совпадают. Карточка уже
-/// сдвинута на `shift` (низ — на своё место на ленте); шейдер получает точку
-/// итоговой картинки и возвращает, откуда взять цвет в исходной.
+/// Лента находок поиска (P707, P712, P714, P715): искажает карточку так, будто
+/// весь список — одна лента, которая плавно поворачивает вдаль. Каждая
+/// карточка считает по той же формуле, поэтому края соседних совпадают.
 ///
-/// `size` — размер карточки, `top` — её верх в системе списка (ноль — верх
-/// списка) до сдвига. Всё — в точках.
+/// Карточка уже сжата целиком — по ширине в `k` раз от середины, по высоте
+/// в `q` раз от низа — и после шейдера сдвигается на `shift` (низ — на своё
+/// место на ленте). Шейдер доводит перспективу: для точки итоговой картинки
+/// возвращает, откуда взять цвет в сжатой. `size` — размер карточки, `top` —
+/// её верх в системе списка (ноль — верх списка) до сдвига. Всё — в точках.
 [[ stitchable ]] float2 ribbon(float2 position, float2 size, float top, float shift,
-                               float bend, float horizon, float r, float f) {
+                               float bend, float horizon, float r, float f,
+                               float k, float q, float roll) {
+    float centre = size.x * 0.5;
+    float half_ = size.x * 0.5;
+    // Верх сжатой картинки: выше — прозрачно.
+    float roof = size.y - size.y * q;
     // Где эта точка на экране, в системе списка.
     float y = top + shift + position.y;
-    // Пусто: точка сразу над карточкой — там прозрачно, и недалеко.
-    float2 none = float2(position.x, -2.0);
     float c;
     float s;
     if (y >= bend) {
@@ -45,11 +49,11 @@ static float2 curl(float c, float bend, float horizon, float r, float f) {
     } else {
         // Точка ленты, которая легла сюда: место на экране с высотой ленты
         // только убывает, ищем делением пополам.
+        if (y <= curl(4000.0, bend, horizon, r, f).x) {
+            return position;
+        }
         float lo = 0.0;
         float hi = 4000.0;
-        if (y <= curl(hi, bend, horizon, r, f).x) {
-            return none;
-        }
         for (int i = 0; i < 24; i++) {
             float mid = 0.5 * (lo + hi);
             if (curl(mid, bend, horizon, r, f).x > y) {
@@ -61,16 +65,25 @@ static float2 curl(float c, float bend, float horizon, float r, float f) {
         c = 0.5 * (lo + hi);
         s = curl(c, bend, horizon, r, f).y;
     }
-    float sourceY = bend - c - top;
-    // Выше карточки — это уже другая, дальняя карточка: здесь пусто.
-    if (sourceY < 0.0 || sourceY > size.y) {
-        return none;
+    // За валиком лента уходит на изнанку (P715, `RibbonBack`): здесь пусто.
+    if (c > roll) {
+        return float2(position.x, min(position.y, roof - 1.0));
     }
-    float centre = size.x * 0.5;
-    float sourceX = centre + (position.x - centre) / s;
-    // За краем ленты — пусто: точка за краем карточки дальше её тени, но не
-    // дальше предела выборки.
-    if (sourceX < 0.0) { sourceX = -12.0; }
-    if (sourceX > size.x) { sourceX = size.x + 12.0; }
-    return float2(sourceX, sourceY);
+    // Место в самой карточке, затем — в сжатой картинке.
+    float sourceY = bend - c - top;
+    if (sourceY < 0.0) {
+        // Это место другой, дальней карточки: здесь пусто. Над сжатой
+        // картинкой прозрачно — берём точку там, рядом.
+        return float2(position.x, min(position.y, roof - 1.0));
+    }
+    float pressedY = size.y - (size.y - sourceY) * q;
+    // Вне сжатой картинки по ширине — прозрачно, точка остаётся своей.
+    if (abs(position.x - centre) > k * half_ + 2.0) {
+        return position;
+    }
+    float pressedX = centre + (position.x - centre) * k / s;
+    // За краем ленты — пусто: точка сразу за краем сжатой картинки.
+    if (pressedX < centre - k * half_) { pressedX = centre - k * half_ - 2.0; }
+    if (pressedX > centre + k * half_) { pressedX = centre + k * half_ + 2.0; }
+    return float2(pressedX, pressedY);
 }
