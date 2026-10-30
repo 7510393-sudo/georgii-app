@@ -1,4 +1,5 @@
 import SwiftUI
+import QuartzCore
 
 /// Поиск по архиву.
 ///
@@ -174,11 +175,13 @@ struct SearchView: View {
             LazyVStack(spacing: -Search.overlap) {
                 ForEach(days) { day in
                     SearchCard(stamp: Search.stamp(day.date)) { row(day) }
-                        // Уходя вверх, карточки уходят вдаль стопкой (P697): за
-                        // полторы карточки до верха начинают уменьшаться, у верха
-                        // прижимаются к нему и их всё больше закрывает следующая.
+                        // Лента карточек сгибается и уходит вдаль одним гладким
+                        // потоком (P698): общий изгиб на всех, каждая карточка
+                        // ложится по своему куску ленты.
                         .visualEffect { content, proxy in
-                            Search.recede(content, minY: proxy.frame(in: .named("searchList")).minY)
+                            Search.recede(content,
+                                          minY: proxy.frame(in: .named("searchList")).minY,
+                                          size: proxy.size)
                         }
                 }
             }
@@ -281,31 +284,65 @@ enum Search {
     /// и немного воздуха (P697).
     static var pitch: CGFloat { tabHeight + 8 + body + 6 }
 
-    /// Насколько карточка в «полутора карточках» до верха (0…1, у верха 1).
-    private static func near(_ minY: CGFloat) -> CGFloat {
-        min(max((1.5 * pitch - minY) / (1.5 * pitch), 0), 1)
-    }
-    /// Насколько ушла за верх (0…1 за полторы карточки).
-    private static func past(_ minY: CGFloat) -> CGFloat {
-        min(max(-minY / (1.5 * pitch), 0), 1)
-    }
-    /// Дальше всех: совсем бледнеют (0…1 ещё за одну карточку).
-    private static func gone(_ minY: CGFloat) -> CGFloat {
-        min(max((-minY - 1.5 * pitch) / pitch, 0), 1)
+    /// Где лента начинает сгибаться (от верха списка): за полторы карточки до
+    /// верха (P697).
+    private static var bendY: CGFloat { 1.5 * pitch }
+    /// На какой длине лента ложится с вертикали на горизонталь.
+    private static var bendLength: CGFloat { 1.3 * pitch }
+    /// Линия горизонта — над верхом списка, под строкой поиска; лента в неё
+    /// сходится и скрывается.
+    private static var horizonY: CGFloat { -0.8 * pitch }
+    /// Расстояние до зрителя: чем меньше, тем сильнее сужается лента.
+    private static let focal: CGFloat = 300
+
+    /// Одна общая лента (P698). `c` — на сколько точек выше линии сгиба лежит
+    /// место ленты. Лента сгибается плавно: угол растёт от 0 до 90° на длине
+    /// `bendLength` и дальше лежит плашмя, уходя к горизонту. Возвращает, где
+    /// это место на экране и во сколько раз ужато по ширине. Выше сгиба и ниже
+    /// — одна и та же функция, поэтому швов между карточками нет.
+    private static func ribbon(_ c: CGFloat) -> (y: CGFloat, s: CGFloat) {
+        guard c > 0 else { return (bendY - c, 1) }
+        let r = 2 * bendLength / .pi
+        let h: CGFloat, z: CGFloat
+        if c < bendLength {
+            let a = .pi / 2 * c / bendLength
+            h = r * sin(a)
+            z = r * (1 - cos(a))
+        } else {
+            h = r
+            z = r + (c - bendLength)
+        }
+        let s = focal / (focal + z)
+        return (horizonY + (bendY - horizonY - h) * s, s)
     }
 
-    /// Уход вдаль (P697): карточка уменьшается к своему низу, не отрываясь от
-    /// следующей; за верхом прижимается к нему (сдвиг вниз на столько, на
-    /// сколько ушла), и следующая карточка закрывает её всё больше.
-    /// Ложится назад почти плашмя (до 76°): верх карточки сужается, прямоугольник
-    /// становится трапецией, и она улетает вдаль (P698).
-    static func recede(_ content: EmptyVisualEffect, minY: CGFloat) -> some VisualEffect {
-        content
-            .scaleEffect(1 - 0.08 * near(minY) - 0.27 * past(minY), anchor: .bottom)
-            .rotation3DEffect(.degrees(14 * near(minY) + 62 * past(minY)),
-                              axis: (x: 1, y: 0, z: 0), anchor: .bottom, perspective: 0.9)
-            .offset(y: max(0, -minY))
-            .opacity(1 - 0.15 * near(minY) - 0.45 * past(minY) - 0.4 * gone(minY))
+    /// Карточка — кусок ленты (P698): её нижний и верхний края ложатся туда, где
+    /// на ленте их места; прямоугольник становится трапецией (верх уже низа),
+    /// и всё внутри сжимается по перспективе. Края соседних карточек берутся
+    /// из одной функции, поэтому лента не рвётся. Дальше сгиба карточки
+    /// бледнеют.
+    static func recede(_ content: EmptyVisualEffect, minY: CGFloat, size: CGSize) -> some VisualEffect {
+        let w = size.width, h = max(size.height, 1)
+        let bottom = ribbon(bendY - (minY + h))
+        let top = ribbon(bendY - minY)
+        let sb = bottom.s, st = top.s
+        let drop = max(bottom.y - top.y, 0.01)
+        let b = (sb / st - 1) / h
+        let k = drop * sb / (st * h)
+        let yb = bottom.y - minY
+        let cx = w / 2
+        var m = CATransform3DIdentity
+        m.m11 = sb
+        m.m21 = -cx * b
+        m.m41 = cx * (1 - sb + b * h)
+        m.m22 = k - yb * b
+        m.m42 = yb * (1 + b * h) - k * h
+        m.m24 = -b
+        m.m44 = 1 + b * h
+        let t = min(max((bendY - minY - bendLength) / (2 * pitch), 0), 1)
+        return content
+            .transformEffect(ProjectionTransform(m))
+            .opacity(1 - 0.85 * t * t * (3 - 2 * t))
     }
 
     /// Высота блока из пяти строк находки: строка заголовка и четыре строки
