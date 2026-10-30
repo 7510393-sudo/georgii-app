@@ -661,10 +661,18 @@ final class DayStore: ObservableObject {
     /// её ещё «взводило» открытие поля — вместе с переносом курсора в конец
     /// (отменено P607).
     func takeStamp() -> String? {
+        guard let stamp = peekStamp() else { return nil }
+        lastEdit = Date()
+        return stamp
+    }
+
+    /// Отметка времени, если пора её ставить, — без пометки «писали» (P711):
+    /// её ставят, едва курсор встал на чистую строку в конце записи, и
+    /// убирают, если ничего не написали. Пометка — когда напишут.
+    func peekStamp() -> String? {
         guard canEditDiary else { return nil }
         let stale = lastEdit.map { Date().timeIntervalSince($0) > DayStore.stampGap } ?? true
         guard stale else { return nil }
-        lastEdit = Date()
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX")
         // Дописывая прошедший день — с датой, когда писал (P227, P232).

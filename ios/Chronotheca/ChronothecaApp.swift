@@ -61,21 +61,31 @@ struct ChronothecaApp: App {
                 .environmentObject(shell)
                 // Касание по виджету: chronotheca://today/plan или /diary —
                 // открыть сегодняшний день на этой вкладке (P382).
-                .onOpenURL { url in
-                    guard url.scheme == "chronotheca" else { return }
-                    openToday(diary: url.lastPathComponent == "diary")
-                }
+                // Касание по виджету (P711): приложение открывается там, где
+                // его оставили сегодня; начались новые сутки — на «Дне»
+                // сегодняшнем (это решает возвращение из фона, ниже). Прежде
+                // виджет всегда вёл на сегодняшний план или дневник, и
+                // прежняя страница на глазах сменялась «Днём».
+                .onOpenURL { _ in }
                 // Вечернее напоминание — сразу в сегодняшний дневник (P466).
                 .onReceive(NotificationCenter.default.publisher(for: BellDelegate.evening)) { _ in
                     openToday(diary: true)
                 }
         }
-        .onChange(of: phase) { _, now in
+        .onChange(of: phase) { old, now in
             switch now {
             // Уходя с экрана — записать сразу. Запись идёт через полсекунды
             // после последней буквы, и смахнутое приложение этих полсекунд
             // может не дождаться: последние слова пропадали (решение P184).
             case .inactive:
+                // Возвращаемся из фона, а сутки сменились — на «День»
+                // сегодняшний сразу, до того как приложение станет видно
+                // целиком (P711): прежде это делалось позже, и прежняя
+                // страница успевала мелькнуть.
+                if old == .background, shell.newDaySinceLeft() {
+                    shell.startOver(store)
+                    shell.noteToday()
+                }
                 store.save()
             case .background:
                 store.save()

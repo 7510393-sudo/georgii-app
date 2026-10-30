@@ -74,6 +74,9 @@ struct DiaryEditor: UIViewRepresentable {
     /// Отметка времени, ждущая первой буквы новой строки (P403): `nil` —
     /// не ждёт.
     var takeStamp: (() -> String?)? = nil
+    /// Отметка времени под курсор (P711): `nil` — не пора. Без пометки
+    /// «писали» — её ставят, едва курсор встал на чистую строку в конце.
+    var peekStamp: (() -> String?)? = nil
     /// Набрали текст в самом конце записи (P519): от этого отсчитывается час до
     /// новой отметки времени. Правка раньше по тексту — не в счёт.
     var onWrite: (() -> Void)? = nil
@@ -98,10 +101,7 @@ struct DiaryEditor: UIViewRepresentable {
         pattern: #"^(\d{2}:\d{2}(?: [AP]M)?(?: \d{2}\.\d{2}\.\d{2})?)[  ]"#)
 
     func makeUIView(context: Context) -> UITextView {
-        let view = DiaryTextView()
-        view.onDictationStart = { [weak coordinator = context.coordinator] in
-            coordinator?.stampBeforeDictation()
-        }
+        let view = UITextView()
         // Метка для проверок движения (P552).
         view.accessibilityIdentifier = "diaryText"
         view.delegate = context.coordinator
@@ -597,39 +597,6 @@ struct DiaryEditor: UIViewRepresentable {
             вести.addObserver(self, selector: #selector(keyboardGone(_:)),
                               name: UIResponder.keyboardWillHideNotification,
                               object: nil)
-            вести.addObserver(self, selector: #selector(inputChanged),
-                              name: UITextInputMode.currentInputModeDidChangeNotification,
-                              object: nil)
-        }
-
-        /// Начали диктовку — время встаёт сразу, до первого слова (P599).
-        /// Диктовка отдаёт полю фразу целиком, когда её договорили: прежде
-        /// время ждало этой фразы и появлялось, когда абзац был уже сказан
-        /// (замечание автора 23.10: «время ставится после того, как
-        /// закончил абзац»). Правило то же, что для первой буквы: чистая
-        /// строка в конце записи и пора новой отметки.
-        @objc private func inputChanged() {
-            guard view?.textInputMode?.primaryLanguage == "dictation" else { return }
-            stampBeforeDictation()
-        }
-
-        /// Диктовка начинается: время — до первого слова (P599, P671). В новых
-        /// iOS клавиатура при диктовке не сменяется на «диктовку», и вести о
-        /// смене ввода нет — поле само говорит, что диктовка началась
-        /// (`DiaryTextView`), прежде чем положить в текст первые слова.
-        func stampBeforeDictation() {
-            guard let view, view.isFirstResponder, parent.editable,
-                  view.markedTextRange == nil, view.selectedRange.length == 0
-            else { return }
-            let at = view.selectedRange.location
-            let ns = view.textStorage.string as NSString
-            guard at <= ns.length, Self.atEnd(view.textStorage, from: at),
-                  at == 0 || ns.character(at: at - 1) == 10,
-                  let stamp = parent.takeStamp?()
-            else { return }
-            // Через ввод самого поля, а не заменой текста: диктовка держит
-            // в поле своё место, и чужая замена его ломает (P197).
-            view.insertText(stamp)
         }
 
         func textViewDidBeginEditing(_ view: UITextView) {
@@ -643,6 +610,8 @@ struct DiaryEditor: UIViewRepresentable {
 
         func textViewDidEndEditing(_ view: UITextView) {
             parent.onEditing?(false)
+            // Ушли из записи, ничего не написав за отметкой, — её нет (P711).
+            settleStamp(view, leaving: true)
             scrub()
             makeRoom(scroll: false)
         }
@@ -1738,6 +1707,89 @@ struct DiaryEditor: UIViewRepresentable {
                 || view.typingAttributes[DiaryEditor.photoKey] != nil {
                 view.typingAttributes = DiaryEditor.body(parent.size, serif: parent.serif)
             }
+            settleStamp(view, leaving: false)
+        }
+
+        // MARK: - Время под курсором (P711)
+
+        /// Отметка времени, поставленная, едва курсор встал на чистую строку в
+        /// конце записи, — пока за ней ничего не написано. Так время стоит уже
+        /// перед диктовкой: начало диктовки поле узнать не может (P671, P686,
+        /// P708 не сработали). Ушли, не написав, — отметка убирается; вернулись
+        /// позже — встаёт заново, на новое время.
+        private var provisional: NSRange?
+        private var provisionalText = ""
+        /// Своя правка текста идёт — вести о курсоре от неё не в счёт.
+        private var placing = false
+
+        func settleStamp(_ view: UITextView, leaving: Bool) {
+            guard !placing else { return }
+            let ns = view.textStorage.string as NSString
+            let sel = view.selectedRange
+            if let p = provisional {
+                provisional = nil
+                guard NSMaxRange(p) <= ns.length, ns.substring(with: p) == provisionalText else { return }
+                // За отметкой на той же строке что-то есть — написали (или
+                // надиктовали): отметка остаётся насовсем, час — от этого.
+                if Self.lineHasText(ns, from: NSMaxRange(p)) {
+                    parent.onWrite?()
+                    return
+                }
+                // Курсор всё там же, за отметкой, — ждём букв.
+                if !leaving, sel.length == 0, sel.location == NSMaxRange(p) {
+                    provisional = p
+                    return
+                }
+                // Ушли, ничего не написав, — убрать.
+                placing = true
+                view.textStorage.replaceCharacters(in: p, with: "")
+                var s = view.selectedRange
+                if s.location >= NSMaxRange(p) { s.location -= p.length }
+                else if s.location > p.location { s.location = p.location }
+                view.selectedRange = NSRange(location: min(s.location, view.textStorage.length),
+                                             length: s.length)
+                placing = false
+                textViewDidChange(view)
+            }
+            guard !leaving else { return }
+            place(view)
+        }
+
+        /// Поставить отметку под курсор, если он на чистой строке в конце записи
+        /// и пора (правило то же, что для первой буквы, P403, P528, P595).
+        private func place(_ view: UITextView) {
+            let ns = view.textStorage.string as NSString
+            let sel = view.selectedRange
+            guard view.isFirstResponder, parent.editable, view.markedTextRange == nil,
+                  sel.length == 0, sel.location <= ns.length,
+                  Self.atEnd(view.textStorage, from: sel.location),
+                  sel.location == 0 || ns.character(at: sel.location - 1) == 10,
+                  let stamp = parent.peekStamp?()
+            else { return }
+            placing = true
+            view.textStorage.replaceCharacters(
+                in: NSRange(location: sel.location, length: 0),
+                with: NSAttributedString(string: stamp,
+                                         attributes: DiaryEditor.body(parent.size, serif: parent.serif)))
+            let length = (stamp as NSString).length
+            view.selectedRange = NSRange(location: sel.location + length, length: 0)
+            view.typingAttributes = DiaryEditor.body(parent.size, serif: parent.serif)
+            placing = false
+            provisional = NSRange(location: sel.location, length: length)
+            provisionalText = stamp
+            textViewDidChange(view)
+        }
+
+        /// Есть ли что-нибудь, кроме пробелов, от `from` до конца строки.
+        private static func lineHasText(_ ns: NSString, from: Int) -> Bool {
+            var i = from
+            while i < ns.length {
+                let c = ns.character(at: i)
+                if c == 10 { return false }
+                if c != 32 && c != 9 && c != 0xA0 { return true }
+                i += 1
+            }
+            return false
         }
 
         // MARK: - Снимки
@@ -2371,48 +2423,3 @@ final class AwaitingSlot: NSTextAttachment {
     required init?(coder: NSCoder) { nil }
 }
 
-/// Поле записи, которое замечает начало диктовки (P671): диктовка кладёт
-/// слова в поле временным выделенным текстом, и правило
-/// «время с первой буквы» видело их, только когда фразу договорили и
-/// микрофон выключили.
-final class DiaryTextView: UITextView {
-    var onDictationStart: (() -> Void)?
-
-    override func setMarkedText(_ markedText: String?, selectedRange: NSRange) {
-        if markedTextRange == nil, !(markedText ?? "").isEmpty { onDictationStart?() }
-        super.setMarkedText(markedText, selectedRange: selectedRange)
-    }
-
-    /// Диктовка кладёт слова в поле через закрытый метод с атрибутами (P708) —
-    /// в новых iOS не через `setMarkedText`, поэтому время вставало только
-    /// тогда, когда микрофон выключали. Свой метод вызывает время и затем
-    /// прежний, системный. Если в системе такого метода нет, наш никто не
-    /// зовёт — ничего не меняется.
-    private static let attributedMarked = Selector(("setAttributedMarkedText:selectedRange:"))
-
-    @objc(setAttributedMarkedText:selectedRange:)
-    func ownSetAttributedMarkedText(_ text: NSAttributedString?, selectedRange: NSRange) {
-        if markedTextRange == nil, let text, text.length > 0 { onDictationStart?() }
-        guard let method = class_getInstanceMethod(UITextView.self, Self.attributedMarked) else { return }
-        typealias Call = @convention(c) (AnyObject, Selector, NSAttributedString?, NSRange) -> Void
-        let call = unsafeBitCast(method_getImplementation(method), to: Call.self)
-        call(self, Self.attributedMarked, text, selectedRange)
-    }
-
-    /// Диктовка просит у поля место для будущих слов (P686): это первое,
-    /// что видит поле, — раньше любого временного текста. Свой метод
-    /// без `override` (в классе поля его нет, он из протокола ввода): время
-    /// встаёт, затем зовётся прежний, системный.
-    private static let placeholder = Selector(("insertDictationResultPlaceholder"))
-
-    @objc(insertDictationResultPlaceholder)
-    func ownInsertDictationResultPlaceholder() -> Any? {
-        onDictationStart?()
-        // Системный метод берём у UITextView напрямую: `perform` ушёл бы
-        // обратно в этот же метод.
-        guard let method = class_getInstanceMethod(UITextView.self, Self.placeholder) else { return nil }
-        typealias Call = @convention(c) (AnyObject, Selector) -> Unmanaged<AnyObject>?
-        let call = unsafeBitCast(method_getImplementation(method), to: Call.self)
-        return call(self, Self.placeholder)?.takeUnretainedValue()
-    }
-}

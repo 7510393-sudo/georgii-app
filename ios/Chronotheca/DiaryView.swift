@@ -64,6 +64,7 @@ struct DiaryView: View {
             // Брошенный в текст снимок отметку времени не ставит — это
             // знает само поле записи (P362).
             takeStamp: { store.takeStamp() },
+            peekStamp: { store.peekStamp() },
             onWrite: { store.noteWriting() },
             onOpenInline: { link in
                 shell.openedPhoto = .init(tab: .diary, index: -1,
@@ -290,6 +291,8 @@ struct DiaryPage: View {
     /// Возвращает `true`, если приложение поставило отметку времени: тогда
     /// курсор переезжает за неё.
     var takeStamp: (() -> String?)? = nil
+    /// Отметка времени под курсор, без пометки «писали» (P711).
+    var peekStamp: (() -> String?)? = nil
     var onWrite: (() -> Void)? = nil
     /// Касание по снимку посреди текста (P216) и по точке (P213).
     var onOpenInline: ((String) -> Void)?
@@ -666,7 +669,7 @@ struct DiaryPage: View {
                     onOpenPhoto: onOpenInline, onReturnPhoto: onReturnPhoto,
                     onOpenPoint: onOpenPoint, onPointToTitle: onPointToTitle,
                     moving: editable, onEditing: onEditing,
-                    takeStamp: takeStamp, onWrite: onWrite,
+                    takeStamp: takeStamp, peekStamp: peekStamp, onWrite: onWrite,
                     planTarget: planTarget, onPlanHover: onPlanHover, onToPlan: onToPlan,
                     planEventTarget: planEventTarget, onToPlanEvent: onToPlanEvent,
                     onDeleteAttachment: onDeleteAttachment)
