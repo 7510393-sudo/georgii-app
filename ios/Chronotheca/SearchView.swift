@@ -297,12 +297,13 @@ enum Search {
     /// Уход вдаль (P697): карточка уменьшается к своему низу, не отрываясь от
     /// следующей; за верхом прижимается к нему (сдвиг вниз на столько, на
     /// сколько ушла), и следующая карточка закрывает её всё больше.
-    /// Заваливается назад, как верх ролика времени.
+    /// Ложится назад почти плашмя (до 76°): верх карточки сужается, прямоугольник
+    /// становится трапецией, и она улетает вдаль (P698).
     static func recede(_ content: EmptyVisualEffect, minY: CGFloat) -> some VisualEffect {
         content
-            .scaleEffect(1 - 0.10 * near(minY) - 0.40 * past(minY), anchor: .bottom)
-            .rotation3DEffect(.degrees(8 * near(minY) + 32 * past(minY)),
-                              axis: (x: 1, y: 0, z: 0), anchor: .bottom, perspective: 0.45)
+            .scaleEffect(1 - 0.08 * near(minY) - 0.27 * past(minY), anchor: .bottom)
+            .rotation3DEffect(.degrees(14 * near(minY) + 62 * past(minY)),
+                              axis: (x: 1, y: 0, z: 0), anchor: .bottom, perspective: 0.9)
             .offset(y: max(0, -minY))
             .opacity(1 - 0.15 * near(minY) - 0.45 * past(minY) - 0.4 * gone(minY))
     }
