@@ -1,5 +1,4 @@
 import SwiftUI
-import QuartzCore
 
 /// Поиск по архиву.
 ///
@@ -316,32 +315,35 @@ enum Search {
         return (horizonY + (bendY - horizonY - h) * s, s)
     }
 
-    /// Карточка — кусок ленты (P698): её нижний и верхний края ложатся туда, где
-    /// на ленте их места; прямоугольник становится трапецией (верх уже низа),
-    /// и всё внутри сжимается по перспективе. Края соседних карточек берутся
-    /// из одной функции, поэтому лента не рвётся. Дальше сгиба карточки
-    /// бледнеют.
+    /// Во сколько точек раз `perspective: 1` у `rotation3DEffect` ослабляет
+    /// масштаб на каждую точку высоты при повороте на 90° (замер по снимку
+    /// сборки 207: расстояние до зрителя около 255 точек).
+    private static let rotationDistance: CGFloat = 255
+
+    /// Карточка — кусок ленты (P699): её нижний и верхний края ложатся туда, где
+    /// на ленте их места; прямоугольник становится трапецией (верх уже низа).
+    /// Края соседних карточек берутся из одной функции, поэтому лента не
+    /// рвётся. Трапеция — поворот назад вокруг низа (наклон и перспектива
+    /// подбираются под ширину и высоту нужного куска), потом сдвиг на место.
+    /// Дальше сгиба карточки бледнеют.
     static func recede(_ content: EmptyVisualEffect, minY: CGFloat, size: CGSize) -> some VisualEffect {
-        let w = size.width, h = max(size.height, 1)
+        let h = max(size.height, 1)
         let bottom = ribbon(bendY - (minY + h))
         let top = ribbon(bendY - minY)
-        let sb = bottom.s, st = top.s
+        let sb = bottom.s
+        let r = min(top.s / sb, 1)
         let drop = max(bottom.y - top.y, 0.01)
-        let b = (sb / st - 1) / h
-        let k = drop * sb / (st * h)
-        let yb = bottom.y - minY
-        let cx = w / 2
-        var m = CATransform3DIdentity
-        m.m11 = sb
-        m.m21 = -cx * b
-        m.m41 = cx * (1 - sb + b * h)
-        m.m22 = k - yb * b
-        m.m42 = yb * (1 + b * h) - k * h
-        m.m24 = -b
-        m.m44 = 1 + b * h
+        // Высота куска на экране = sb·h·cos(угла)·r; ширина сверху = r от нижней.
+        let angle = acos(min(drop / (sb * h * r), 1))
+        let power: CGFloat = r > 0.999
+            ? 1
+            : min((1 / r - 1) * rotationDistance / (h * max(sin(angle), 0.08)), 40)
         let t = min(max((bendY - minY - bendLength) / (2 * pitch), 0), 1)
         return content
-            .transformEffect(ProjectionTransform(m))
+            .rotation3DEffect(.radians(angle), axis: (x: 1, y: 0, z: 0),
+                              anchor: .bottom, perspective: power)
+            .scaleEffect(sb, anchor: .bottom)
+            .offset(y: bottom.y - (minY + h))
             .opacity(1 - 0.85 * t * t * (3 - 2 * t))
     }
 
