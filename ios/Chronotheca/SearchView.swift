@@ -283,36 +283,23 @@ enum Search {
     /// и немного воздуха (P697).
     static var pitch: CGFloat { tabHeight + 8 + body + 6 }
 
-    /// Где лента начинает сгибаться (от верха списка): за полторы карточки до
-    /// верха (P697).
-    private static var bendY: CGFloat { 1.5 * pitch }
-    /// На какой длине лента ложится с вертикали на горизонталь.
-    private static var bendLength: CGFloat { 1.3 * pitch }
-    /// Линия горизонта — над верхом списка, под строкой поиска; лента в неё
-    /// сходится и скрывается.
-    private static var horizonY: CGFloat { -0.8 * pitch }
-    /// Расстояние до зрителя: чем меньше, тем сильнее сужается лента.
-    private static let focal: CGFloat = 300
+    /// Где лента начинает сгибаться (от верха списка): за одну карточку до
+    /// верха (P700; прежде за полторы).
+    private static var bendY: CGFloat { pitch }
+    /// Резкость перспективы: чем меньше, тем сильнее сужается лента. Подобрано
+    /// так, что у верха списка, где карточка скрывается, она уже на треть (P700).
+    private static var focal: CGFloat { 3 * bendY }
 
-    /// Одна общая лента (P698). `c` — на сколько точек выше линии сгиба лежит
-    /// место ленты. Лента сгибается плавно: угол растёт от 0 до 90° на длине
-    /// `bendLength` и дальше лежит плашмя, уходя к горизонту. Возвращает, где
-    /// это место на экране и во сколько раз ужато по ширине. Выше сгиба и ниже
-    /// — одна и та же функция, поэтому швов между карточками нет.
+    /// Одна общая лента (P699, P700) — как плоскость, ложащаяся к горизонту:
+    /// `c` — на сколько точек выше линии сгиба место ленты; ширина там
+    /// `focal / (focal + c)` от прежней, а высота ужимается как её квадрат, поэтому
+    /// растягиваться по вертикали нечему. Возвращает, где это место на экране
+    /// и во сколько раз ужато по ширине. Выше сгиба и ниже — одна функция,
+    /// швов между карточками нет. У верха списка ширина — две трети.
     private static func ribbon(_ c: CGFloat) -> (y: CGFloat, s: CGFloat) {
         guard c > 0 else { return (bendY - c, 1) }
-        let r = 2 * bendLength / .pi
-        let h: CGFloat, z: CGFloat
-        if c < bendLength {
-            let a = .pi / 2 * c / bendLength
-            h = r * sin(a)
-            z = r * (1 - cos(a))
-        } else {
-            h = r
-            z = r + (c - bendLength)
-        }
-        let s = focal / (focal + z)
-        return (horizonY + (bendY - horizonY - h) * s, s)
+        let s = focal / (focal + c)
+        return (bendY - c * s, s)
     }
 
     /// Во сколько точек раз `perspective: 1` у `rotation3DEffect` ослабляет
@@ -334,20 +321,21 @@ enum Search {
         let r = min(top.s / sb, 1)
         let drop = max(bottom.y - top.y, 0.01)
         // Наклон растёт вместе с сужением (без сужения — прямая карточка),
-        // перспектива подбирается под ширину верха, а высота куска — растяжением
-        // по вертикали (у далёких кусков оно сплющивает, у ближних чуть вытягивает).
+        // перспектива подбирается под ширину верха, высота куска — сплющиванием.
         let angle = min(0.6, (1 / r - 1) * 1.2)
         let power: CGFloat = r > 0.999
             ? 1
             : min((1 / r - 1) * rotationDistance / (h * max(sin(angle), 0.08)), 40)
-        let squash = drop / (sb * h * cos(angle) * r)
-        let t = min(max((bendY - minY - bendLength) / (2 * pitch), 0), 1)
+        // Растягивать по высоте нельзя (P700): только сплющивать.
+        let squash = min(drop / (sb * h * cos(angle) * r), 1)
+        // Бледнеют в последней трети пути к верху списка (весь путь — 1,5 bendY).
+        let t = min(max((bendY - minY - 0.8 * bendY) / (0.7 * bendY), 0), 1)
         return content
             .rotation3DEffect(.radians(angle), axis: (x: 1, y: 0, z: 0),
                               anchor: .bottom, perspective: power)
             .scaleEffect(x: sb, y: sb * squash, anchor: .bottom)
             .offset(y: bottom.y - (minY + h))
-            .opacity(1 - 0.85 * t * t * (3 - 2 * t))
+            .opacity(1 - 0.6 * t * t * (3 - 2 * t))
     }
 
     /// Высота блока из пяти строк находки: строка заголовка и четыре строки
