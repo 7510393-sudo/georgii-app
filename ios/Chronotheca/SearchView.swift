@@ -168,35 +168,51 @@ struct SearchView: View {
         let days = found
         return ScrollView {
             // Находки — карточки картотеки, вид сверху: нижняя лежит поверх
-            // верхней и своим корешком с датой закрывает её низ; уходя
-            // вверх, карточка уменьшается и бледнеет, будто уходит
-            // вдаль (P694, P695).
+            // верхней и своим корешком с датой закрывает её низ (P694, P695).
             LazyVStack(spacing: -Search.overlap) {
                 ForEach(days) { day in
                     SearchCard(stamp: Search.stamp(day.date)) { row(day) }
-                        // Лента карточек сгибается и уходит вдаль одним гладким
-                        // потоком (P698): общий изгиб на всех, каждая карточка
-                        // ложится по своему куску ленты.
-                        .visualEffect { content, proxy in
-                            Search.recede(content,
-                                          minY: proxy.frame(in: .named("searchList")).minY,
-                                          size: proxy.size)
-                        }
                 }
             }
             .padding(.horizontal, 10)
-            .padding(.top, 4)
+            // Над первой находкой — место, которое ленту не касается: пока список
+            // не листали, ничего не искажено. `lift` — запас над списком: туда
+            // лента заходит и оттуда закручивается в горизонт (P707).
+            .padding(.top, Search.lift + Search.bendY)
             // Место под клавиатуру. Без него последние находки лежат под
             // ней и не достаются прокруткой: список кончается там, где
             // начинается клавиатура (решение P174).
             // Строки разделов над клавиатурой больше нет (P505).
             .padding(.bottom, keyboard > 0 ? keyboard + 4 : 0)
         }
-        .coordinateSpace(name: "searchList")
         // Второе нажатие на «Поиск» — список заново, с начала (P576).
         .id(shell.searchHome)
         .scrollDismissesKeyboard(.interactively)
         .animation(.easeOut(duration: 0.25), value: keyboard)
+        // Вся лента находок искажается одним шейдером: сгибается и уходит в
+        // горизонт под строкой поиска плавно, без ступенек между карточками
+        // (P707, прежде каждая карточка поворачивалась отдельно, P699–P706).
+        .visualEffect { content, proxy in
+            content.distortionEffect(
+                ShaderLibrary.ribbon(.float2(proxy.size),
+                                     .float(Search.lift),
+                                     .float(Search.bendY),
+                                     .float(Search.horizon)),
+                maxSampleOffset: CGSize(width: 600, height: 300))
+        }
+        // У самого горизонта лента тает.
+        .mask {
+            VStack(spacing: 0) {
+                Color.clear.frame(height: Search.lift + Search.horizon)
+                LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
+                    .frame(height: 36)
+                Color.black
+            }
+        }
+        // Список продолжается вверх на `lift` — под строку поиска; строка
+        // лежит выше и принимает касания.
+        .padding(.top, -Search.lift)
+        .zIndex(-1)
     }
 
     private func row(_ day: Archive.Day) -> some View {
@@ -283,70 +299,17 @@ enum Search {
     /// и немного воздуха (P697).
     static var pitch: CGFloat { tabHeight + 8 + body + 6 }
 
+    /// Сколько точек ленты над верхом списка рисуется тоже: из этого запаса лента
+    /// закручивается в горизонт (P707).
+    static let lift: CGFloat = 240
     /// Где лента начинает сгибаться (от верха списка): за треть карточки до
-    /// верха (P703; было за две трети, ещё раньше — за одну и за полторы).
-    private static var bendY: CGFloat { pitch / 3 }
+    /// верха (P703). Первая находка в покое стоит ровно здесь, ниже изгиба.
+    static var bendY: CGFloat { pitch / 3 }
     /// Горизонт ленты — на 6 точек выше верха списка, то есть сразу под строкой
-    /// поиска: лента сходится к нему в точку и там пропадает (P706; прежде она
-    /// обрывалась у верха суженной на 60%, и над ней оставалось пустое место).
-    private static let horizon: CGFloat = -6
-    /// Расстояние до зрителя: подобрано так, чтобы горизонт лежал на `horizon`.
-    private static var focal: CGFloat { 2 * (bendY - horizon) }
-
-    /// Одна общая лента (P699, P701) — как плоскость, ложащаяся к горизонту:
-    /// `c` — на сколько точек выше линии сгиба место ленты; ширина там
-    /// `focal / (focal + c)` от прежней, а высота ужимается как куб этой
-    /// ширины, поэтому растягиваться по вертикали нечему и щелей не бывает.
-    /// Возвращает, где это место на экране и во сколько раз ужато по ширине.
-    /// Выше сгиба и ниже — одна функция, швов нет.
-    private static func ribbon(_ c: CGFloat) -> (y: CGFloat, s: CGFloat) {
-        guard c > 0 else { return (bendY - c, 1) }
-        let s = focal / (focal + c)
-        return (bendY - focal / 2 * (1 - s * s), s)
-    }
-
-    /// Во сколько точек раз `perspective: 1` у `rotation3DEffect` ослабляет
-    /// масштаб на каждую точку высоты при повороте на 90° (замер по снимку
-    /// сборки 207: расстояние до зрителя около 255 точек).
-    private static let rotationDistance: CGFloat = 255
-
-    /// Карточка — кусок ленты (P699, P705): ось её поворота — нижняя грань
-    /// карточки, ничего под осью не остаётся. Верх карточки ложится туда, где
-    /// на ленте его место; низ — на своё место на ленте, а ширина низа берётся
-    /// там, где лист следующей карточки (ближней) начинается под корешком:
-    /// низ дальней карточки точно так же широк, как верх листа ближней, и не
-    /// шире (P705, прежде P702 поворачивал по линии выше низа, и часть листа под
-    /// осью раздувалась шире соседа). Прямоугольник становится трапецией (верх
-    /// уже низа): поворот назад вокруг нижней грани, сплющивание по высоте и
-    /// сдвиг на место. Дальние карточки тают.
-    static func recede(_ content: EmptyVisualEffect, minY: CGFloat, size: CGSize) -> some VisualEffect {
-        let h = max(size.height, pitch + tabHeight + 1)
-        let bottom = ribbon(bendY - (minY + h))
-        // Где лист следующей карточки начинается под корешком — по ширине
-        // низ этой карточки равен ей.
-        let join = ribbon(bendY - (minY + pitch + tabHeight))
-        let top = ribbon(bendY - minY)
-        let sb = join.s
-        let r = min(top.s / sb, 1)
-        let drop = max(bottom.y - top.y, 0.01)
-        // Наклон растёт вместе с сужением (без сужения — прямая карточка),
-        // перспектива подбирается под ширину верха, высота — сплющиванием.
-        let angle = min(0.6, (1 / r - 1) * 1.2)
-        let power: CGFloat = r > 0.999
-            ? 1
-            : min((1 / r - 1) * rotationDistance / (h * max(sin(angle), 0.08)), 40)
-        // Растягивать по высоте нельзя: только сплющивать.
-        let squash = min(drop / (sb * h * cos(angle) * r), 1)
-        // Тают только у самого горизонта, когда лента сузилась уже до трети и
-        // меньше.
-        let away = min(max((0.33 - top.s) / 0.23, 0), 1)
-        return content
-            .rotation3DEffect(.radians(angle), axis: (x: 1, y: 0, z: 0),
-                              anchor: .bottom, perspective: power)
-            .scaleEffect(x: sb, y: sb * squash, anchor: .bottom)
-            .offset(y: bottom.y - (minY + h))
-            .opacity(1 - away * away * (3 - 2 * away))
-    }
+    /// поиска: лента сходится к нему и пропадает (P706). Шейдер `ribbon` в
+    /// `Ribbon.metal` — плоскость, ложащаяся к горизонту: ширина `1/√(1−t)`,
+    /// где `t` — доля пути от изгиба до горизонта.
+    static let horizon: CGFloat = -6
 
     /// Высота блока из пяти строк находки: строка заголовка и четыре строки
     /// текста; по ней же — сторона снимка (P696).
