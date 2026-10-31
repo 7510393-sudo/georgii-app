@@ -245,13 +245,14 @@ struct CalendarView: View {
                     // Прошедший месяц — на бумаге прошлого с рельефом (P684).
                     .background {
                         if monthIsPast(year: year, month: m) {
+                            // Кромка — под маской с травмами края (P723).
                             ZStack {
-                                Ru.pastTint
-                                OldPaper()
+                                OldPaper(seed: year * 12 + m, base: Ru.pastTint)
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .strokeBorder(Look.stickerEdge, lineWidth: 1)
+                                    .mask(AgedFrame(band: 7, seed: year * 12 + m, cut: true))
                             }
                             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .strokeBorder(Look.stickerEdge, lineWidth: 1))
                         }
                     }
                 }
@@ -395,11 +396,14 @@ struct CalendarView: View {
             .frame(height: 32)
             // Клетка — того же цвета, что страница этого дня: сегодня
             // абрикосовое, прошлое голубеет, будущее зеленеет (P245).
-            .background(isToday ? Look.accent : tint(date), in: RoundedRectangle(cornerRadius: 8))
-            // Прошедший день — на бумаге с рельефом, как его страница (P684).
-            .overlay {
+            // Прошедший день — на бумаге с рельефом, как его страница (P684),
+            // со своим износом и травмами края (P723).
+            .background {
                 if !isToday && Ru.isPast(date) {
-                    OldPaper().clipShape(RoundedRectangle(cornerRadius: 8))
+                    OldPaper(seed: PageTexture.seed(date), base: tint(date))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                } else {
+                    RoundedRectangle(cornerRadius: 8).fill(isToday ? Look.accent : tint(date))
                 }
             }
             .overlay(RoundedRectangle(cornerRadius: 8)
@@ -585,9 +589,15 @@ struct CalendarView: View {
             .padding(.vertical, quiet ? 4 : 9)
             .opacity(quiet ? 0.75 : 1)
             // Строка дня — цвета его страницы (P245); выбранная обведена.
-            .background(tint(date))
-            // Прошедший день — на бумаге с рельефом (P684).
-            .overlay { if Ru.isPast(date) { OldPaper() } }
+            // Прошедший день — на бумаге с рельефом (P684), со своим износом
+            // и травмами края (P723).
+            .background {
+                if Ru.isPast(date) {
+                    OldPaper(seed: PageTexture.seed(date), base: tint(date))
+                } else {
+                    tint(date)
+                }
+            }
             .clipShape(RoundedRectangle(cornerRadius: 6))
             .overlay(RoundedRectangle(cornerRadius: 6)
                 .strokeBorder(open ? Look.accent.opacity(0.6) : .clear, lineWidth: 1.5))

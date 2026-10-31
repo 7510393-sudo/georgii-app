@@ -177,7 +177,8 @@ struct SearchView: View {
             // верхней и своим корешком с датой закрывает её низ (P694, P695).
             LazyVStack(spacing: -Search.overlap) {
                 ForEach(items) { item in
-                    SearchCard(stamp: Search.stamp(item.day.date), past: Ru.isPast(item.day.date)) {
+                    SearchCard(stamp: Search.stamp(item.day.date), past: Ru.isPast(item.day.date),
+                               seed: PageTexture.seed(item.day.date)) {
                         row(item.day)
                     }
                 }
@@ -337,6 +338,8 @@ private struct SearchCard<Content: View>: View {
     let stamp: String
     /// Прошедший день — края затёрты, как у его страницы (P722).
     var past = true
+    /// Номер дня — у каждой карточки свой износ (P723).
+    var seed = 0
     @ViewBuilder let content: () -> Content
 
     var body: some View {
@@ -366,12 +369,18 @@ private struct SearchCard<Content: View>: View {
                 PaintedShadow(radius: 5, corner: 12, x: 2, y: 3,
                               opacity: scheme == .dark ? 0.5 : 0.3)
                     .padding(.top, Search.tabHeight)
-                paper.clipShape(FolderShape(tabHeight: Search.tabHeight))
-                if past {
-                    AgedFrame(band: 12).clipShape(FolderShape(tabHeight: Search.tabHeight))
+                ZStack {
+                    paper.clipShape(FolderShape(tabHeight: Search.tabHeight))
+                    if past {
+                        AgedFrame(band: 12, seed: seed).clipShape(FolderShape(tabHeight: Search.tabHeight))
+                    }
+                    FolderShape(tabHeight: Search.tabHeight)
+                        .stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
                 }
-                FolderShape(tabHeight: Search.tabHeight)
-                    .stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
+                // Травмы края прошедшего дня вырезаны насквозь (P723).
+                .mask {
+                    if past { AgedFrame(band: 12, seed: seed, cut: true) } else { Rectangle() }
+                }
             }
         }
     }

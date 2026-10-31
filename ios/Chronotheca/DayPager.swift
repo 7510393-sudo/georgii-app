@@ -411,21 +411,41 @@ struct DayPage: View {
 
 /// Бумага прошедшего дня для мелких мест — клетки календаря, строки списка,
 /// панельки месяцев (P684): тот же рельеф и те же крапинки, что у страницы
-/// (`PageTexture.paper`), без краёв. Кладётся поверх цвета прошлого и
-/// обрезается фигурой самой клетки; касаний не ловит.
+/// (`PageTexture.paper`), и затёртые края. У каждой клетки свой износ и свои
+/// травмы края (P723): картинка рисуется под её размер по номеру дня, ничего
+/// не повторяется плиткой. `base` — цвет бумаги под рельефом: он вырезается
+/// вместе с ним, и выщербины по краю видны насквозь. Касаний не ловит.
 struct OldPaper: View {
     @Environment(\.colorScheme) private var scheme
     /// Ширина затёртой полосы по краю (P722): у клеток — узкая.
     var band: CGFloat = 7
+    /// Чей износ — номер дня (`PageTexture.seed`): у соседних клеток разный.
+    var seed: Int = 0
+    var base: Color? = nil
 
     var body: some View {
-        ZStack {
-            Image(uiImage: PageTexture.paper)
-                .resizable(resizingMode: .tile)
-                // Вдвое слабее, чем на странице (P685): рельеф подобран под
-                // лист во весь экран, на мелких клетках он выходил «пухлым».
-                .opacity(scheme == .dark ? 0.22 : 0.5)
-            AgedFrame(band: band)
+        GeometryReader { geo in
+            let art = PageTexture.aged(size: geo.size, band: band, seed: seed)
+            let tile = PageTexture.paper.size
+            // Рельеф сдвинут по номеру дня — соседние клетки не одинаковы.
+            let dx = CGFloat(abs(seed &* 97) % Int(tile.width))
+            let dy = CGFloat(abs(seed &* 61) % Int(tile.height))
+            ZStack(alignment: .topLeading) {
+                if let base { base }
+                Image(uiImage: PageTexture.paper)
+                    .resizable(resizingMode: .tile)
+                    .frame(width: geo.size.width + tile.width, height: geo.size.height + tile.height)
+                    .offset(x: -dx, y: -dy)
+                    // Вдвое слабее, чем на странице (P685): рельеф подобран под
+                    // лист во весь экран, на мелких клетках он выходил «пухлым».
+                    .opacity(scheme == .dark ? 0.22 : 0.5)
+                Image(uiImage: art.frame)
+                    .resizable()
+                    .opacity(scheme == .dark ? 0.35 : 1)
+            }
+            .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
+            .clipped()
+            .mask(Image(uiImage: art.cut).resizable())
         }
         .allowsHitTesting(false)
         .accessibilityHidden(true)
@@ -434,21 +454,25 @@ struct OldPaper: View {
 
 /// Затёртые края старой бумаги (P722, по образцу автора): к краю бумага
 /// темнеет из сливочной в охру и рыжевато-бурую, будто захватана руками и
-/// подпалена временем; по самому краю — мелкие тёмные щербинки. Картинка
-/// рамки нарисована заранее и тянется на любой размер: углы на месте, края
-/// повторяются плиткой.
+/// подпалена временем. С P723 — своя картинка под размер и номер дня, без
+/// плитки: где край почти чистый, где тёмный, пятна и травмы в случайных
+/// местах. `cut` — вместо краёв отдаёт маску с выщербинами, чтобы вырезать
+/// их из всей карточки.
 struct AgedFrame: View {
     var band: CGFloat
+    var seed: Int
+    var cut = false
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        let inset = PageTexture.frameInset(band)
-        Image(uiImage: PageTexture.frame(band: band))
-            .resizable(capInsets: EdgeInsets(top: inset, leading: inset, bottom: inset, trailing: inset),
-                       resizingMode: .tile)
-            .opacity(scheme == .dark ? 0.35 : 1)
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
+        GeometryReader { geo in
+            let art = PageTexture.aged(size: geo.size, band: band, seed: seed)
+            Image(uiImage: cut ? art.cut : art.frame)
+                .resizable()
+                .opacity(cut || scheme != .dark ? 1 : 0.35)
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 
@@ -561,12 +585,12 @@ struct PageTexture: View {
     /// те же картинки, отражённые.
     private var edges: some View {
         ZStack {
+            // Бока идут от верха всей страницы, а не от каждого её куска
+            // (P723): на стыке плана и дневника край не обрывается.
             HStack(spacing: 0) {
-                Image(uiImage: PageTexture.sideEdge).resizable(resizingMode: .tile)
-                    .frame(width: PageTexture.sideDepth)
+                sideStrip(PageTexture.sideEdge)
                 Spacer(minLength: 0)
-                Image(uiImage: PageTexture.sideEdge).resizable(resizingMode: .tile)
-                    .frame(width: PageTexture.sideDepth)
+                sideStrip(PageTexture.sideEdgeRight)
                     .scaleEffect(x: -1)
             }
             VStack(spacing: 0) {
@@ -597,6 +621,20 @@ struct PageTexture: View {
                 }
             }
         }
+    }
+
+    private func sideStrip(_ picture: UIImage) -> some View {
+        let length = picture.size.height
+        return GeometryReader { geo in
+            let at = geo.frame(in: .named(space)).origin.y + shift
+            let dy = at.truncatingRemainder(dividingBy: length)
+            Image(uiImage: picture)
+                .resizable(resizingMode: .tile)
+                .frame(width: PageTexture.sideDepth, height: geo.size.height + length * 2)
+                .offset(y: -dy - length)
+        }
+        .frame(width: PageTexture.sideDepth)
+        .clipped()
     }
 
     private func thumbSmudge(radius: CGFloat, opacity: Double) -> some View {
@@ -666,9 +704,8 @@ struct PageTexture: View {
         DispatchQueue.global(qos: .utility).async {
             _ = paper
             _ = sideEdge
+            _ = sideEdgeRight
             _ = footEdge
-            _ = frame(band: 7)
-            _ = frame(band: 12)
         }
     }
 
@@ -733,23 +770,29 @@ struct PageTexture: View {
     static let sideDepth: CGFloat = 96
     static let footDepth: CGFloat = 110
 
-    /// Бок: у края глубже всего, дальше затухает; глубина гуляет по длине.
-    /// Сильнее прежнего (P722, по образцу автора: 0,17 → 0,40) — переход
-    /// к тёмному краю виден сразу.
-    static let sideEdge: UIImage = edgeImage(depthPoints: sideDepth, falloff: 22, peak: 0.40, vertical: true)
+    /// Бок: у края глубже всего, дальше затухает; глубина и сила гуляют по
+    /// длине. Длина куска — 1200 точек (P723): на странице он почти не
+    /// повторяется. Левый и правый — разные куски, не зеркало одного.
+    static let sideEdge: UIImage = edgeImage(depthPoints: sideDepth, alongPoints: 1200, falloff: 22, peak: 0.40,
+                                             vertical: true, seed: 0xED6E1)
+    static let sideEdgeRight: UIImage = edgeImage(depthPoints: sideDepth, alongPoints: 1200, falloff: 22, peak: 0.40,
+                                                  vertical: true, seed: 0xED6E3)
     /// Низ: темнее и шире боков.
-    static let footEdge: UIImage = edgeImage(depthPoints: footDepth, falloff: 30, peak: 0.42, vertical: false)
+    static let footEdge: UIImage = edgeImage(depthPoints: footDepth, alongPoints: 480, falloff: 30, peak: 0.42,
+                                             vertical: false, seed: 0xED6E2)
 
-    /// Полоска вдоль края, 2 пикселя на точку, 480 точек вдоль. Вертикальная —
-    /// край слева; горизонтальная — край внизу.
-    private static func edgeImage(depthPoints: CGFloat, falloff: Float, peak: Float, vertical: Bool) -> UIImage {
-        let along = 480 * 2, depth = Int(depthPoints) * 2
-        var seed: UInt64 = vertical ? 0xED6E1 : 0xED6E2
+    /// Полоска вдоль края, 2 пикселя на точку. Вертикальная — край слева;
+    /// горизонтальная — край внизу. К внутренней границе картинки износ
+    /// плавно сходит на нет (P723: прежде он обрывался ступенькой, и на
+    /// странице проступали прямоугольники).
+    private static func edgeImage(depthPoints: CGFloat, alongPoints: CGFloat, falloff: Float, peak: Float,
+                                  vertical: Bool, seed start: UInt64) -> UIImage {
+        let along = Int(alongPoints) * 2, depth = Int(depthPoints) * 2
+        var seed = start
         func next() -> Float {
             seed = seed &* 6364136223846793005 &+ 1442695040888963407
             return Float(seed >> 40) / Float(1 << 24) - 0.5
         }
-        // Гуляющая глубина: круговая одномерная размытая случайность.
         // Глубина края гуляет вдоль него крупными пятнами и мелкой рябью
         // (P681): край — не ровная полоса, а несколько потемнений разной
         // ширины, как у страницы, которую брали руками.
@@ -758,101 +801,287 @@ struct PageTexture: View {
         let quick = normalised(wrapBlur1D((0..<along).map { _ in next() }, radius: 14, passes: 3))
             .map { max(-1.5, min(1.5, $0)) }
         let wn = zip(slow, quick).map { $0 * 0.75 + $1 * 0.3 }
-        // Щербинки (P722): местами у самого края бумага темнеет пятнышком
-        // в одну-три точки — край обтрёпан.
-        let nicks = normalised(wrapBlur1D((0..<along).map { _ in next() }, radius: 3, passes: 2))
+        // Сила износа гуляет ещё крупнее (P723): местами край почти чистый,
+        // местами затёрт до бурого — не равномерно по всей длине.
+        let power = normalised(wrapBlur1D((0..<along).map { _ in next() }, radius: 170, passes: 4))
+            .map { max(0.2, 1 + 0.6 * $0) }
         let width = vertical ? depth : along, height = vertical ? along : depth
         var bytes = [UInt8](repeating: 0, count: width * height * 4)
         let k = Float(wearStrength)
+        let fadeFrom = Float(depth) * 0.45
         for a in 0..<along {
             for d in 0..<depth {
                 // d — расстояние от края в пикселях; в точках вдвое меньше.
                 let distance = Float(d) / 2
-                let worn = min(peak * k * exp(-distance / (falloff * max(0.35, 1 + wn[a]))), 0.7)
-                let nick: Float = nicks[a] > 1.6 && distance < 1 + (nicks[a] - 1.6) * 2.5 ? 0.55 : 0
+                var worn = min(peak * k * power[a] * exp(-distance / (falloff * max(0.35, 1 + wn[a]))), 0.7)
+                if Float(d) > fadeFrom {
+                    let q = (Float(depth) - Float(d)) / (Float(depth) - fadeFrom)
+                    worn *= q * q * (3 - 2 * q)
+                }
                 let rim: Float = distance < 0.8 ? 0.25 : 0
-                let alpha = min(1 - (1 - worn) * (1 - nick) * (1 - rim), 0.85)
-                // К краю — из охры в подпалину.
-                let t = min(max((alpha - 0.2) / 0.4, 0), 1)
-                let r = amber.r + (burnt.r - amber.r) * t
-                let g = amber.g + (burnt.g - amber.g) * t
-                let b = amber.b + (burnt.b - amber.b) * t
-                let x = vertical ? d : a
-                let y = vertical ? a : depth - 1 - d     // низ: край — последняя строка
-                let i = (y * width + x) * 4
-                bytes[i] = UInt8(r * alpha * 255)
-                bytes[i + 1] = UInt8(g * alpha * 255)
-                bytes[i + 2] = UInt8(b * alpha * 255)
-                bytes[i + 3] = UInt8(alpha * 255)
+                let alpha = min(1 - (1 - worn) * (1 - rim), 0.85)
+                if alpha < 0.002 { continue }
+                let i = (((vertical ? a : depth - 1 - d) * width) + (vertical ? d : a)) * 4
+                paint(&bytes, i, alpha)
             }
         }
-        return picture(bytes, width: width, height: height, scale: 2)
+        let plain = picture(bytes, width: width, height: height, scale: 2)
+        // Травмы края (P723): редкие надрывы, выщербины и щербинки в
+        // случайных местах — подальше от концов куска, чтобы шов плитки
+        // не разрезал их.
+        var hurts: [(CGFloat, Hurt)] = []
+        var s: CGFloat = 20 + CGFloat(next() + 0.5) * 60
+        while s < alongPoints - 24 {
+            hurts.append((s, Hurt.random(&seed, small: false)))
+            s += 45 + CGFloat(next() + 0.5) * 190
+        }
+        let size = CGSize(width: CGFloat(width) / 2, height: CGFloat(height) / 2)
+        let format = UIGraphicsImageRendererFormat(); format.scale = 2
+        return UIGraphicsImageRenderer(size: size, format: format).image { ctx in
+            plain.draw(at: .zero)
+            let cg = ctx.cgContext
+            for (spot, hurt) in hurts {
+                cg.saveGState()
+                if vertical {
+                    cg.translateBy(x: 0, y: spot); cg.rotate(by: -.pi / 2)
+                } else {
+                    cg.translateBy(x: spot, y: depthPoints); cg.rotate(by: .pi)
+                }
+                hurt.drawMark(cg, missing: true)
+                cg.restoreGState()
+            }
+        }
     }
 
-    /// Сколько точек от края у рамки неизменно (углы) — дальше она
-    /// повторяется плиткой.
-    static func frameInset(_ band: CGFloat) -> CGFloat { (band * 2.4).rounded() }
+    /// Цвет износа в точке: к краю — из охры в подпалину.
+    private static func paint(_ bytes: inout [UInt8], _ i: Int, _ alpha: Float) {
+        let t = min(max((alpha - 0.2) / 0.4, 0), 1)
+        let r = amber.r + (burnt.r - amber.r) * t
+        let g = amber.g + (burnt.g - amber.g) * t
+        let b = amber.b + (burnt.b - amber.b) * t
+        bytes[i] = UInt8(r * alpha * 255)
+        bytes[i + 1] = UInt8(g * alpha * 255)
+        bytes[i + 2] = UInt8(b * alpha * 255)
+        bytes[i + 3] = UInt8(alpha * 255)
+    }
 
-    private static var frames: [CGFloat: UIImage] = [:]
-    private static let framesLock = NSLock()
+    /// Номер дня для износа мелкой бумаги: у каждого дня свой.
+    static func seed(_ date: Date) -> Int {
+        Int((date.timeIntervalSinceReferenceDate / 86400).rounded(.down))
+    }
 
-    /// Рамка затёртых краёв для мелкой бумаги (P722): клетки календаря,
-    /// строки списка, панельки месяцев, карточки поиска. `band` — на
-    /// сколько точек от края идёт потемнение. Квадрат: углы шириной
-    /// `frameInset`, посередине — кусок края длиной 48 точек, который
-    /// повторяется; неровность края на этом куске замкнута, шва нет.
-    static func frame(band: CGFloat) -> UIImage {
-        framesLock.lock(); defer { framesLock.unlock() }
-        if let made = frames[band] { return made }
-        let inset = frameInset(band)
-        let mid: CGFloat = 48
-        let sidePt = inset * 2 + mid
-        let n = Int(sidePt * 2), midPx = Int(mid * 2), insetPx = Int(inset * 2)
-        var seed: UInt64 = 0xA6ED0 &+ UInt64(band * 10)
+    /// Износ мелкой бумаги: края и маска с выщербинами.
+    final class AgedArt: NSObject {
+        let frame: UIImage
+        let cut: UIImage
+        init(frame: UIImage, cut: UIImage) { self.frame = frame; self.cut = cut }
+    }
+
+    private static let agedMade: NSCache<NSString, AgedArt> = {
+        let cache = NSCache<NSString, AgedArt>()
+        cache.countLimit = 600
+        return cache
+    }()
+
+    /// Затёртые края под размер клетки, строки или карточки (P723, отменяет
+    /// рамку-плитку P722): у каждого края своя сила — где почти чисто, где
+    /// бурое; одно-два пятна от пальцев в случайном месте у края; редкие
+    /// травмы — выщербины, надрывы, щербинки, — которые вырезаются маской
+    /// `cut`. Всё — по номеру `seed`, так что вид одного дня не меняется от
+    /// показа к показу. `band` — на сколько точек от края идёт потемнение.
+    static func aged(size: CGSize, band: CGFloat, seed number: Int) -> AgedArt {
+        let w = max(4, size.width.rounded()), h = max(4, size.height.rounded())
+        let key = "\(Int(w))x\(Int(h))b\(Int(band * 10))s\(number)" as NSString
+        if let made = agedMade.object(forKey: key) { return made }
+        var seed = UInt64(bitPattern: Int64(number)) &* 0x9E37_79B9_7F4A_7C15 &+ 0xA6ED0 &+ UInt64(band * 10)
         func next() -> Float {
             seed = seed &* 6364136223846793005 &+ 1442695040888963407
-            return Float(seed >> 40) / Float(1 << 24) - 0.5
+            return Float(seed >> 40) / Float(1 << 24)
         }
-        // Неровность и щербинки по каждому из четырёх краёв — замкнуты на
-        // кусок `mid`, чтобы плитка не давала шва.
-        func edgeNoise(_ radius: Int) -> [Float] {
-            normalised(wrapBlur1D((0..<midPx).map { _ in next() }, radius: radius, passes: 3))
+        let W = Int(w) * 2, H = Int(h) * 2
+        // Неровность вдоль края: мелкая — глубина, крупная — сила.
+        func line(_ n: Int, _ radius: Int) -> [Float] {
+            let r = max(1, min(radius, n / 2 - 1))
+            return normalised(wrapBlur1D((0..<n).map { _ in next() - 0.5 }, radius: r, passes: 3))
         }
-        let wobble = (0..<4).map { _ in edgeNoise(12) }
-        let chips = (0..<4).map { _ in edgeNoise(2) }
-        func at(_ e: Int, _ along: Int) -> Int { ((along - insetPx) % midPx + midPx) % midPx }
-        var bytes = [UInt8](repeating: 0, count: n * n * 4)
-        let peak: Float = 0.5, fall = Float(band) / 2.2
-        for y in 0..<n {
-            for x in 0..<n {
-                // Расстояния до краёв (в точках) и место вдоль края.
-                let edges = [(Float(x) / 2, y), (Float(n - 1 - x) / 2, y),
-                             (Float(y) / 2, x), (Float(n - 1 - y) / 2, x)]
-                var keep: Float = 1
-                for (e, edge) in edges.enumerated() {
-                    let (d, along) = edge
-                    guard d < Float(inset) else { continue }
-                    let w = wobble[e][at(e, along)], c = chips[e][at(e, along)]
-                    let worn = peak * exp(-d / (fall * max(0.4, 1 + 0.4 * w)))
-                    let nick: Float = c > 1.5 && d < 0.8 + (c - 1.5) * 1.6 ? 0.6 : 0
-                    let rim: Float = d < 0.6 ? 0.3 : 0
-                    keep *= (1 - worn) * (1 - nick) * (1 - rim)
+        let lengths = [W, W, H, H]                     // верх, низ, лево, право
+        let wobble = lengths.map { line($0, 10) }
+        let swell = lengths.map { line($0, 70) }
+        let power = (0..<4).map { _ in 0.45 + next() * 0.9 }
+        var keep = [Float](repeating: 1, count: W * H)
+        let fall = Float(band) * 2 / 2.2               // в пикселях
+        let peak: Float = 0.5
+        for e in 0..<4 {
+            let n = lengths[e]
+            let deepest = min(Int(band * 2 * 3.5), e < 2 ? H : W)
+            for a in 0..<n {
+                let strength = power[e] * max(0.15, 1 + 0.6 * swell[e][a])
+                let f = fall * max(0.4, 1 + 0.45 * wobble[e][a])
+                for d in 0..<deepest {
+                    let worn = min(peak * strength * exp(-Float(d) / f), 0.75)
+                    if worn < 0.004 { break }
+                    let x = e == 0 || e == 1 ? a : (e == 2 ? d : W - 1 - d)
+                    let y = e == 2 || e == 3 ? a : (e == 0 ? d : H - 1 - d)
+                    keep[y * W + x] *= 1 - worn
                 }
-                let alpha = min(1 - keep, 0.85)
-                let t = min(max((alpha - 0.2) / 0.4, 0), 1)
-                let r = amber.r + (burnt.r - amber.r) * t
-                let g = amber.g + (burnt.g - amber.g) * t
-                let b = amber.b + (burnt.b - amber.b) * t
-                let i = (y * n + x) * 4
-                bytes[i] = UInt8(r * alpha * 255)
-                bytes[i + 1] = UInt8(g * alpha * 255)
-                bytes[i + 2] = UInt8(b * alpha * 255)
-                bytes[i + 3] = UInt8(alpha * 255)
             }
         }
-        let made = picture(bytes, width: n, height: n, scale: 2)
-        frames[band] = made
+        // Пятна от пальцев: ноль, одно или два — у случайного места края.
+        for _ in 0..<Int(next() * 2.7) {
+            let e = Int(next() * 4) % 4
+            let t = next()
+            let cx = e == 0 || e == 1 ? Float(W) * t : (e == 2 ? 0 : Float(W))
+            let cy = e == 2 || e == 3 ? Float(H) * t : (e == 0 ? 0 : Float(H))
+            let radius = Float(band) * 2 * (1.6 + next() * 2.6)
+            let strength = 0.10 + next() * 0.16
+            let p1 = next() * 6.3, p2 = next() * 6.3
+            let x0 = max(0, Int(cx - radius * 1.4)), x1 = min(W - 1, Int(cx + radius * 1.4))
+            let y0 = max(0, Int(cy - radius * 1.4)), y1 = min(H - 1, Int(cy + radius * 1.4))
+            guard x0 <= x1, y0 <= y1 else { continue }
+            for y in y0...y1 {
+                for x in x0...x1 {
+                    let dx = Float(x) - cx, dy = Float(y) - cy
+                    let angle = atan2(dy, dx)
+                    let r = radius * (1 + 0.22 * sin(3 * angle + p1) + 0.12 * sin(5 * angle + p2))
+                    let q = (dx * dx + dy * dy).squareRoot() / r
+                    guard q < 1 else { continue }
+                    let v = strength * (1 - q * q) * (1 - q * q)
+                    keep[y * W + x] *= 1 - v
+                }
+            }
+        }
+        var bytes = [UInt8](repeating: 0, count: W * H * 4)
+        for i in 0..<W * H {
+            let alpha = min(1 - keep[i], 0.85)
+            if alpha < 0.002 { continue }
+            paint(&bytes, i * 4, alpha)
+        }
+        let plain = picture(bytes, width: W, height: H, scale: 2)
+        // Травмы: в среднем одна на 230 точек края, не у самых углов.
+        let perimeter = 2 * (w + h)
+        let count = Int(Float(perimeter / 230) + next() * 0.9)
+        var hurts: [(CGPoint, CGFloat, Hurt)] = []
+        for _ in 0..<min(count, 4) {
+            let e = Int(next() * 4) % 4
+            let length = e < 2 ? w : h
+            guard length > 24 else { continue }
+            let s = 9 + CGFloat(next()) * (length - 18)
+            var at = CGPoint(x: s, y: 0), turn: CGFloat = 0
+            switch e {
+            case 1: at = CGPoint(x: s, y: h); turn = .pi
+            case 2: at = CGPoint(x: 0, y: s); turn = -.pi / 2
+            case 3: at = CGPoint(x: w, y: s); turn = .pi / 2
+            default: break
+            }
+            hurts.append((at, turn, Hurt.random(&seed, small: true)))
+        }
+        let format = UIGraphicsImageRendererFormat(); format.scale = 2
+        let box = CGSize(width: w, height: h)
+        let frame = UIGraphicsImageRenderer(size: box, format: format).image { ctx in
+            plain.draw(at: .zero)
+            for (at, turn, hurt) in hurts {
+                ctx.cgContext.saveGState()
+                ctx.cgContext.translateBy(x: at.x, y: at.y); ctx.cgContext.rotate(by: turn)
+                hurt.drawMark(ctx.cgContext, missing: false)
+                ctx.cgContext.restoreGState()
+            }
+        }
+        let cut = UIGraphicsImageRenderer(size: box, format: format).image { ctx in
+            UIColor.black.setFill()
+            ctx.fill(CGRect(origin: .zero, size: box))
+            ctx.cgContext.setBlendMode(.clear)
+            for (at, turn, hurt) in hurts {
+                ctx.cgContext.saveGState()
+                ctx.cgContext.translateBy(x: at.x, y: at.y); ctx.cgContext.rotate(by: turn)
+                ctx.cgContext.addPath(hurt.path)
+                ctx.cgContext.fillPath()
+                ctx.cgContext.restoreGState()
+            }
+        }
+        let made = AgedArt(frame: frame, cut: cut)
+        agedMade.setObject(made, forKey: key)
         return made
+    }
+
+    /// Травма края (P723): выщербина — неровный полукруг, откуда бумага
+    /// выкрошилась; надрыв — узкий клин внутрь листа; щербинка — крошечная
+    /// выщербина. Рисуется в своих координатах: край — ось x, внутрь — +y.
+    struct Hurt {
+        enum Kind { case bite, tear, nick }
+        let kind: Kind
+        let path: CGPath
+        /// Линия разрыва надрыва — по ней светлая кромка.
+        let lip: CGPath?
+
+        static func random(_ seed: inout UInt64, small: Bool) -> Hurt {
+            func next() -> CGFloat {
+                seed = seed &* 6364136223846793005 &+ 1442695040888963407
+                return CGFloat(seed >> 40) / CGFloat(1 << 24)
+            }
+            let roll = next()
+            let kind: Kind = roll < 0.38 ? .nick : (roll < 0.7 ? .bite : .tear)
+            let path = CGMutablePath()
+            var lip: CGPath?
+            switch kind {
+            case .nick, .bite:
+                let r = kind == .nick ? 0.7 + next() * 0.9
+                                      : (small ? 1.4 + next() * 1.6 : 2 + next() * 3)
+                let stretch = 1.1 + next() * 0.7
+                path.move(to: CGPoint(x: -r * stretch, y: -1))
+                for i in 0...10 {
+                    let a = CGFloat.pi * CGFloat(i) / 10
+                    let jag = 0.75 + next() * 0.5
+                    path.addLine(to: CGPoint(x: -cos(a) * r * stretch * jag, y: sin(a) * r * jag))
+                }
+                path.addLine(to: CGPoint(x: r * stretch, y: -1))
+                path.closeSubpath()
+            case .tear:
+                let length = small ? 3 + next() * 4 : 5 + next() * 9
+                let lean = (next() - 0.5) * 0.9
+                let open = 0.5 + next() * 0.6
+                let bend = (next() - 0.5) * length * 0.3
+                let tip = CGPoint(x: lean * length, y: length)
+                let middle = CGPoint(x: lean * length / 2 + bend, y: length / 2)
+                path.move(to: CGPoint(x: -open, y: -1))
+                path.addLine(to: CGPoint(x: middle.x - open * 0.45, y: middle.y))
+                path.addLine(to: tip)
+                path.addLine(to: CGPoint(x: middle.x + open * 0.45, y: middle.y))
+                path.addLine(to: CGPoint(x: open, y: -1))
+                path.closeSubpath()
+                let edge = CGMutablePath()
+                edge.move(to: CGPoint(x: open + 0.5, y: 0))
+                edge.addLine(to: CGPoint(x: middle.x + open * 0.45 + 0.5, y: middle.y))
+                edge.addLine(to: tip)
+                lip = edge
+            }
+            return Hurt(kind: kind, path: path, lip: lip)
+        }
+
+        /// Опалённая кромка вокруг травмы. `missing` — вырезать нечем
+        /// (страница во весь экран): само место травмы закрашивается тёмным.
+        func drawMark(_ cg: CGContext, missing: Bool) {
+            let burnt = UIColor(red: 0.42, green: 0.23, blue: 0.09, alpha: 1)
+            cg.setLineJoin(.round)
+            cg.addPath(path)
+            cg.setStrokeColor(burnt.withAlphaComponent(0.16).cgColor)
+            cg.setLineWidth(3.2)
+            cg.strokePath()
+            if missing {
+                cg.addPath(path)
+                cg.setFillColor(burnt.withAlphaComponent(kind == .tear ? 0.7 : 0.5).cgColor)
+                cg.fillPath()
+            }
+            cg.addPath(path)
+            cg.setStrokeColor(burnt.withAlphaComponent(0.6).cgColor)
+            cg.setLineWidth(0.9)
+            cg.strokePath()
+            if let lip {
+                cg.addPath(lip)
+                cg.setStrokeColor(UIColor.white.withAlphaComponent(0.45).cgColor)
+                cg.setLineWidth(0.6)
+                cg.strokePath()
+            }
+        }
     }
 
     /// Рельеф шершавой бумаги (P676, отменяет пятна и волоски): впадинки и
