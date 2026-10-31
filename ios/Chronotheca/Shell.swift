@@ -366,7 +366,7 @@ final class Shell: ObservableObject {
         switch name {
         case "diary":     tab = .diary
         case "calendar":  screen = .calendar
-        case "search":    screen = .search
+        case "search", "searchdeep": screen = .search
         case "settings":  showingSettings = true
         case "map":       screen = .map
         case "remember":  tab = .diary; previewRemember += 1
