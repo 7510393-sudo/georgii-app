@@ -62,7 +62,7 @@ struct SearchView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 9)
-        // Полупрозрачная: под ней видна петля ленты находок (P716).
+        // Полупрозрачная: под ней видно, как лента уходит к горизонту (P718).
         .background(Look.chrome.opacity(0.55), in: RoundedRectangle(cornerRadius: 10))
         // Тот же отступ от уголков, что у строки поиска на карте.
         .padding(.leading, Corner.size + 8)
@@ -194,18 +194,6 @@ struct SearchView: View {
             // начинается клавиатура (решение P174).
             // Строки разделов над клавиатурой больше нет (P505).
             .padding(.bottom, keyboard > 0 ? keyboard + 4 : 0)
-            // Изнанка ленты (P715): за дальним концом лента заворачивается
-            // по невидимому валику и спускается обратно позади карточек.
-            // Рисуется под всеми карточками, на месте экрана, а не списка.
-            .background(alignment: .top) {
-                GeometryReader { g in
-                    let contentTop = g.frame(in: .named(Search.space)).minY
-                    RibbonBack(contentTop: contentTop, count: days.count,
-                               preview: Vault.isPreview && !Search.deep)
-                        .frame(width: g.size.width, height: Search.lift + 2 * Search.pitch)
-                        .offset(y: -contentTop)
-                }
-            }
         }
         .coordinateSpace(name: Search.space)
         // Второе нажатие на «Поиск» — список заново, с начала (P576).
@@ -323,134 +311,6 @@ private struct Ribbon: ViewModifier {
     }
 }
 
-/// Петля и изнанка ленты находок (P715–P717) — по рисунку автора. Дальний
-/// конец передней ленты под строкой поиска перекатывается петлёй до самого
-/// верха экрана, а изнанка выходит из неё правее и спускается полосой вдоль
-/// правого края передней ленты, пока не уйдёт за карточки. Между передней
-/// лентой и изнанкой — просвет петли (на рисунке — овал). Изнанка — старая
-/// бумага без текста, с тёмной границей у каждой карточки, чтобы было видно
-/// движение. Где идёт полоса, взято с рисунка (`Search.backTrack`).
-///
-/// Всё едет с той же скоростью, что передняя часть: петля забирает столько
-/// ленты, сколько прошло бы по экрану за то же время у дальнего конца, а
-/// место изнанки `d` точек за петлёй стоит на той высоте, где передняя лента
-/// на `d` точек не доходит до дальнего конца.
-private struct RibbonBack: View {
-    /// Верх содержимого прокрутки в системе списка (`Search.space`).
-    let contentTop: CGFloat
-    let count: Int
-    let preview: Bool
-    @Environment(\.colorScheme) private var scheme
-
-    var body: some View {
-        let paper = Scheme.current.past
-        let dark = scheme == .dark
-        let edge = Scheme.current.kraftEdge
-        return Canvas { ctx, size in
-            let lift = Search.lift, pitch = Search.pitch
-            let scrolled = preview ? 2 * pitch : max(0, -contentTop)
-            let (bend, horizon, r, f, roll) = Search.shape(scrolled: scrolled)
-            guard roll > 0 else { return }
-            let width = size.width
-            let half = (width - 20) / 2
-            // Холст начинается на `lift` выше верха списка; экран поиска —
-            // на `fieldHeight` выше верха списка.
-            let toCanvas = lift - Search.fieldHeight
-            let end = Search.curl(roll, bend: bend, horizon: horizon, r: r, f: f)
-            let endView = end.y + Search.fieldHeight
-            // Полоса изнанки по рисунку: середина и полуширина на высоте `y`.
-            func track(_ y: CGFloat) -> (x: CGFloat, w: CGFloat) {
-                let t = Search.backTrack
-                guard y > t[0].y else { return (t[0].x * width, t[0].w * width) }
-                for k in 1..<t.count where y <= t[k].y {
-                    let u = (y - t[k - 1].y) / (t[k].y - t[k - 1].y)
-                    return ((t[k - 1].x + (t[k].x - t[k - 1].x) * u) * width,
-                            (t[k - 1].w + (t[k].w - t[k - 1].w) * u) * width)
-                }
-                return (t[t.count - 1].x * width, t[t.count - 1].w * width)
-            }
-            let start = track(endView)
-            // Середина дальнего конца: лента сходится к `vanish`.
-            let vx = 10 + Search.vanish * (width - 20)
-            let endX = vx + (width / 2 - vx) * end.s
-            let a = (start.x - endX) / 2
-            let b = max(endView - Search.loopTopView, 4)
-            // Петля забирает столько ленты, сколько у дальнего конца проходит
-            // по экрану за её длину.
-            // Петля — `loopCards` карточек: на ней полосы идут чуть быстрее,
-            // чем у дальнего конца, зато она не съедает весь список.
-            let loop = Search.loopCards * pitch
-            // Место ленты `d` точек за дальним концом: высота на холсте,
-            // середина, полуширина, глубина (для порядка) и темнота.
-            func place(_ d: CGFloat) -> (y: CGFloat, x: CGFloat, w: CGFloat, z: CGFloat, dim: Double) {
-                if d < loop {
-                    let th = .pi * d / loop
-                    let u = (1 - cos(th)) / 2
-                    return (endView - b * sin(th) + toCanvas, endX + a * (1 - cos(th)),
-                            half * end.s + (start.w - half * end.s) * u, u,
-                            0.05 + 0.13 * Double(u))
-                }
-                let c = max(roll - (d - loop), 0)
-                let y = Search.curl(c, bend: bend, horizon: horizon, r: r, f: f).y
-                    + Search.fieldHeight
-                let q = track(y)
-                return (y + toCanvas, q.x, q.w, 2, 0.2)
-            }
-            let reach = loop + roll
-            // Куски ленты: дальние рисуются первыми.
-            var pieces: [(z: CGFloat, path: Path, dim: Double)] = []
-            var lines: [(z: CGFloat, path: Path, width: CGFloat)] = []
-            // Лента — замкнутая петля: на петле и изнанке едут и те
-            // карточки, что выше первой находки, — без текста их не
-            // отличить, а изнанка видна всегда, сколько ни листай.
-            guard count > 0 || preview else { return }
-            let first = max(-400, Int(((bend - roll - reach - contentTop - Search.restTop) / pitch)
-                .rounded(.down)) - 1)
-            guard first < max(count, 1) else { return }
-            for i in first..<max(count, 1) {
-                let y = contentTop + Search.restTop + CGFloat(i) * pitch
-                let top = bend - y - roll
-                guard top > 0 else { continue }
-                let near = max(top - pitch, 0)
-                let far = min(top, reach)
-                guard far > near else { continue }
-                let n = max(2, min(16, Int((far - near) / pitch * 10)))
-                var prev = place(near)
-                for j in 1...n {
-                    let q = place(near + (far - near) * CGFloat(j) / CGFloat(n))
-                    var p = Path()
-                    p.addLines([CGPoint(x: prev.x - prev.w, y: prev.y),
-                                CGPoint(x: prev.x + prev.w, y: prev.y),
-                                CGPoint(x: q.x + q.w, y: q.y),
-                                CGPoint(x: q.x - q.w, y: q.y)])
-                    p.closeSubpath()
-                    pieces.append(((prev.z + q.z) / 2, p, (prev.dim + q.dim) / 2))
-                    prev = q
-                }
-                // Граница карточки — у её верха (корешка).
-                if top <= reach {
-                    let q = place(top)
-                    var line = Path()
-                    line.move(to: CGPoint(x: q.x - q.w, y: q.y))
-                    line.addLine(to: CGPoint(x: q.x + q.w, y: q.y))
-                    lines.append((q.z, line, 0.8))
-                }
-            }
-            pieces.sort { $0.z > $1.z }
-            for piece in pieces {
-                // Обводка тем же цветом — без волосяных щелей между кусками.
-                ctx.fill(piece.path, with: .color(paper))
-                ctx.stroke(piece.path, with: .color(paper), lineWidth: 0.6)
-                ctx.fill(piece.path, with: .color(.black.opacity(piece.dim * (dark ? 2 : 1))))
-            }
-            for line in lines {
-                ctx.stroke(line.path, with: .color(edge), lineWidth: line.width)
-            }
-        }
-        .allowsHitTesting(false)
-    }
-}
-
 enum Search {
     /// Высота корешка карточки (P695).
     static let tabHeight: CGFloat = 22
@@ -469,39 +329,25 @@ enum Search {
     /// Где стоит первая находка, пока список не листали (от верха списка).
     static let restTop: CGFloat = 4
     /// Где лента начинает поворачивать (от верха списка), когда список
-    /// пролистан: за одну карточку до верха (P712, по согласию автора; прежде
-    /// за треть — поворот выходил слишком резким). Пока список в начале,
-    /// изгиба нет: он «вырастает» по мере листания (`bendNow`).
-    static var bendMax: CGFloat { pitch }
+    /// пролистан: на одну карточку ниже верха экрана поиска (P718; прежде —
+    /// на карточку ниже строки поиска). Пока список в начале, изгиба нет: он
+    /// «вырастает» по мере листания.
+    static var bendMax: CGFloat { pitch - fieldHeight }
     /// Высота строки поиска над списком (с отступами): до её верха лента
     /// видна (P716).
     static let fieldHeight: CGFloat = 56
-    /// Мерки с рисунка автора (P717), снятые с его контуров поверх снимка, в
-    /// точках от верха экрана поиска (верх строки поиска — 8). Передняя
-    /// лента уходит к горизонту чуть выше экрана: шириной 0,35 на высоте 44,
-    /// 0,53 — на 80, 0,69 — на 104, 0,79 — на 128.
-    static let horizonView: CGFloat = -18
-    /// Куда сходится лента — левее середины (на рисунке подъём уведён влево,
-    /// мы смотрим чуть справа): доля ширины карточки.
-    static let vanish: CGFloat = 0.366
+    /// Горизонт — в щёлочке между верхом экрана и строкой поиска (P718), в
+    /// точках от верха экрана поиска; лента сходится к нему симметрично.
+    static let horizonView: CGFloat = 4
     /// Горизонт в системе списка.
     static var horizon: CGFloat { horizonView - fieldHeight }
-    /// Верх петли — у самого верха экрана поиска (на рисунке 0).
-    static let loopTopView: CGFloat = 2
-    /// Изнанка с рисунка: высота (от верха экрана поиска), середина и
-    /// полуширина — доли ширины экрана. Выходит из петли правее передней
-    /// ленты и спускается вдоль её правого края, пока не уйдёт за карточки.
-    static let backTrack: [(y: CGFloat, x: CGFloat, w: CGFloat)] = [
-        (20, 0.726, 0.057), (44, 0.769, 0.075), (68, 0.791, 0.082), (80, 0.796, 0.087),
-        (104, 0.82, 0.075), (150, 0.86, 0.06),
-    ]
     /// Радиус поворота и расстояние до зрителя — доли высоты от изгиба до
-    /// горизонта; подобраны по рисунку (P717): поворот кончается шириной
-    /// 0,86 на высоте 105, карточки у дальнего конца — частые полосы.
-    static let radiusShare: CGFloat = 0.20
-    static let focalShare: CGFloat = 1.0
+    /// горизонта: поворот за полкарточки, дальше лента сужается до
+    /// двадцатой доли у горизонта (P718).
+    static let radiusShare: CGFloat = 0.50
+    static let focalShare: CGFloat = 0.5
     /// Сколько точек над верхом списка тоже рисуется: оттуда уходит «хвост»
-    /// ленты — семь карточек до дальнего конца (P712, P717).
+    /// ленты к горизонту (P712).
     static var lift: CGFloat { 7 * pitch }
 
     /// Лента (P712): от линии изгиба вверх — четверть цилиндра радиуса `r`
@@ -540,47 +386,34 @@ enum Search {
         // покое. В снимках CI — как пролистанный (в них три находки, листать
         // некуда), чтобы поворот был виден на снимке.
         let scrolled = preview ? 2 * pitch : max(0, restTop + CGFloat(index) * pitch - top)
-        let (bend, horizon, r, f, roll) = shape(scrolled: scrolled)
+        let (bend, horizon, r, f, far) = shape(scrolled: scrolled)
         let lower = curl(bend - (top + h), bend: bend, horizon: horizon, r: r, f: f)
         let shift = lower.y - (top + h)
         let inBend = top < bend
         let half = proxy.size.width / 2
-        let vx = vanish * proxy.size.width
-        // Карточка целиком за валиком — её место на изнанке (`RibbonBack`).
-        let gone = inBend && bend - (top + h) > roll
+        // Карточка целиком дальше конца ленты.
+        let gone = inBend && bend - (top + h) > far
         return view
             .distortionEffect(
                 ShaderLibrary.ribbon(.float2(proxy.size), .float(top), .float(shift),
                                      .float(bend), .float(horizon), .float(r), .float(f),
-                                     .float(roll), .float(vx)),
+                                     .float(far)),
                 // Выборка — в пределах самой карточки и чуть за её краем.
-                maxSampleOffset: CGSize(width: max(vx, 2 * half - vx) + 8, height: h + 8),
+                maxSampleOffset: CGSize(width: half + 8, height: h + 8),
                 isEnabled: inBend)
             .offset(y: inBend ? shift : 0)
             .opacity(gone ? 0 : 1)
     }
 
     /// Ход ленты для списка, пролистанного на `scrolled`: линия изгиба,
-    /// горизонт, радиус поворота, расстояние до зрителя и `roll` — где
-    /// дальний конец переходит в петлю (P715): там, где лента сузилась до
-    /// `rollShare` ширины, как на рисунке автора (P717).
+    /// горизонт, радиус поворота, расстояние до зрителя и `far` — докуда
+    /// лента рисуется (дальше карточек над списком нет).
     static func shape(scrolled: CGFloat)
-        -> (bend: CGFloat, horizon: CGFloat, r: CGFloat, f: CGFloat, roll: CGFloat) {
+        -> (bend: CGFloat, horizon: CGFloat, r: CGFloat, f: CGFloat, far: CGFloat) {
         let bend = min(bendMax, restTop + scrolled)
         let height = bend - horizon
-        let r = radiusShare * height
-        let f = focalShare * height
-        let z = f * (1 / rollShare - 1)
-        // Не дальше, чем рисуются карточки над списком (`lift`).
-        let roll = min(z - r + .pi / 2 * r, bend + lift - 8)
-        return (bend, horizon, r, f, roll)
+        return (bend, horizon, radiusShare * height, focalShare * height, bend + lift - 8)
     }
-
-    /// Ширина ленты у дальнего конца — доля прежней (с рисунка: 0,32 на
-    /// высоте 27, чуть выше — петля).
-    static let rollShare: CGFloat = 0.22
-    /// Сколько карточек ленты уходит на петлю.
-    static let loopCards: CGFloat = 10
 
     /// Снимок CI «лента поиска» (P717): находок много, список пролистан —
     /// как у человека на телефоне, чтобы сличить ленту с рисунком автора.
