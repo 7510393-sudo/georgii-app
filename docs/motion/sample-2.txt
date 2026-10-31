@@ -1,0 +1,29 @@
+    1173 Thread_27839   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 1173 start  (in dyld) + 6992  [0x100b444e4]
+    +   1173 start_sim  (in dyld_sim) + 20  [0x100a230e4]
+    +     1173 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x102932048]  ChronothecaApp.swift:0
+    +       1173 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x102931f9c]  /<compiler-generated>:0
+    +         1173 static App.main()  (in SwiftUI) + 132  [0x1d2c5f084]
+    +           1173 protocol witness for App.init() in conformance ChronothecaApp  (in Chronotheca.debug.dylib) + 12  [0x102932034]  /<compiler-generated>:0
+    +             1173 ChronothecaApp.init()  (in Chronotheca.debug.dylib) + 604  [0x10292e8d0]  ChronothecaApp.swift:30
+    +               1173 Vault.__allocating_init()  (in Chronotheca.debug.dylib) + 44  [0x102e84d40]  Vault.swift:0
+    +                 1173 Vault.init()  (in Chronotheca.debug.dylib) + 2036  [0x102e85540]  Vault.swift:227
+    +                   1173 Vault.usePreviewFolder()  (in Chronotheca.debug.dylib) + 904  [0x102e86024]  Vault.swift:259
+    +                     1173 Vault.seedPreview()  (in Chronotheca.debug.dylib) + 1028  [0x102e88eb4]  Vault.swift:284
+    +                       1173 Vault.write(_:to:for:)  (in Chronotheca.debug.dylib) + 316  [0x102e8a5bc]  Vault.swift:1266
+    +                         1173 static Vault.write(_:to:)  (in Chronotheca.debug.dylib) + 116  [0x102e8ee0c]  Vault.swift:1274
+    +                           1173 static Vault.write(data:to:)  (in Chronotheca.debug.dylib) + 796  [0x102e8ea0c]  Vault.swift:1290
+    +                             1173 -[NSFileCoordinator coordinateWritingItemAtURL:options:error:byAccessor:]  (in Foundation) + 84  [0x1811c78b4]
+    +                               1173 -[NSFileCoordinator(NSPrivate) _coordinateWritingItemAtURL:options:error:byAccessor:]  (in Foundation) + 540  [0x1811c9c3c]
+    +                                 1173 -[NSFileCoordinator(NSPrivate) _blockOnAccessClaim:withAccessArbiter:]  (in Foundation) + 320  [0x1811c8c0c]
+    +                                   1173 interposed_dispatch_semaphore_wait  (in libRPAC.dylib) + 124  [0x101020458]
+    +                                     1173 _dispatch_semaphore_wait_slow  (in libdispatch.dylib) + 128  [0x1801883c0]
+    +                                       1173 _dispatch_sema4_wait  (in libdispatch.dylib) + 24  [0x180187d60]
+    +                                         1173 semaphore_wait_trap  (in libsystem_kernel.dylib) + 8  [0x100c7caec]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        1173
+        semaphore_wait_trap  (in libsystem_kernel.dylib)        1173
+
+Binary images description not available
+
