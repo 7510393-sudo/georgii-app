@@ -349,7 +349,6 @@ struct PlanRowLine: View {
         // Строки подробностей — продолжение названия тем же шрифтом (P652;
         // прежде — бледными строками под делом, P408).
         PlanTitle(text: text ?? .constant(row.fullTitle),
-                  rowID: text == nil ? nil : row.id,
                   indent: Self.indent,
                   wrap: Self.wrap,
                   faded: faded,
@@ -1926,11 +1925,6 @@ struct PlanPointLine: View {
 /// дневника, чтобы не расходилась с ним.
 struct PointChipView: View {
     let point: GeoPoint
-
-    /// Ширина кнопочки — по ней крестик встаёт на угол.
-    static func width(_ point: GeoPoint) -> CGFloat {
-        PointChip.mark(glowing: false, title: point.title).size.width
-    }
 
     var body: some View {
         // Как в тексте дневника: булавка, у точки с названием — и название,

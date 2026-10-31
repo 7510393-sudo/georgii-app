@@ -934,8 +934,6 @@ struct DiaryEditor: UIViewRepresentable {
         var styledKey = ""
         /// Поле до переноса — чтобы вернуть его, если перенос отменили.
         private var before: NSAttributedString?
-        /// Где взятое стоит сейчас — в показанном поле.
-        private var now: Int?
         /// Запись, как она станет после переноса.
         private var result: String?
         /// Где начинались абзацы поля до переноса — верх каждого (P584).
@@ -1181,7 +1179,6 @@ struct DiaryEditor: UIViewRepresentable {
             ghost = shadow
             before = view.attributedText.copy() as? NSAttributedString
             measureParagraphs(view)
-            now = i
             result = nil
             previewing = true
             rowSlots = slots(around: i, in: view)
@@ -1236,14 +1233,12 @@ struct DiaryEditor: UIViewRepresentable {
                     guard next.0 != result else { return }
                     result = next.0
                     show(next.0, in: view)
-                    now = DiaryEditor.viewOffset(plain: next.1, in: view.attributedText)
                 } else if result != nil {
                     // Над своим же местом — ряд как был.
                     result = nil
                     view.attributedText = row.original
                     view.typingAttributes = DiaryEditor.body(parent.size, serif: parent.serif)
                     loadPhotos()
-                    now = i
                 }
                 return
             }
@@ -1275,14 +1270,12 @@ struct DiaryEditor: UIViewRepresentable {
                     view.attributedText = original
                     view.typingAttributes = DiaryEditor.body(parent.size, serif: parent.serif)
                     loadPhotos()
-                    now = taken
                 }
                 return
             }
             guard next.0 != result else { return }
             result = next.0
             show(next.0, in: view)
-            now = DiaryEditor.viewOffset(plain: next.1, in: view.attributedText)
         }
 
         // MARK: - Из полоски в текст (P380)
@@ -1337,7 +1330,6 @@ struct DiaryEditor: UIViewRepresentable {
             }
             before = nil
             result = nil
-            now = taken
             previewing = false
             shownSpot = nil
             carriedPiece = nil
