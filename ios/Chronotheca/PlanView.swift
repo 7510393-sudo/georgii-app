@@ -1262,7 +1262,6 @@ struct PlanView: View {
                 hideKeyboard()
                 typingIn = nil
             }
-            Feel.lift()
             armedLine = nil
             photoSpots = PlanZones.rows
             photoEventSpots = PlanZones.events
@@ -1272,10 +1271,12 @@ struct PlanView: View {
             photoBack = false
             photoSlot = nil
             photoSpot = spot
-            photoCarry = PhotoCarry(link: link, from: row)
             photoScroll = DiaryEditor.active?.pageOffset() ?? 0
             DiaryEditor.active?.holdPage(true)
         case .moved:
+            // Подержали — пока только крестик (P720); копия над пальцем —
+            // когда повели, как в тексте записи.
+            if photoCarry == nil { photoCarry = PhotoCarry(link: link, from: row) }
             guard photoCarry?.link == link else { return }
             photoSpot = spot
             // У края экрана страница едет навстречу, как при переносе из
@@ -1897,10 +1898,11 @@ struct PlanPointLine: View {
         }
         .padding(.horizontal, 14)
         .frame(height: PlanPhotoLine.height)
-        // Подержали и отпустили — крестик, как у всех вложений (P713):
-        // прежде у точки под делом он стоял справа в строке, другим рисунком.
+        // Подержали — крестик сразу, ещё под пальцем, как у всех вложений
+        // (P713, P720); повели — крестик уходит.
         .onChange(of: armed) { _, now in
-            guard now, let onDelete else { return }
+            guard now else { Cross.hide(); return }
+            guard let onDelete else { return }
             Cross.show(at: place, label: T("Удалить точку", "Delete place"),
                        onCross: onDelete, onDismiss: onDisarm)
         }
