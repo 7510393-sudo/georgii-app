@@ -415,13 +415,38 @@ struct DayPage: View {
 /// обрезается фигурой самой клетки; касаний не ловит.
 struct OldPaper: View {
     @Environment(\.colorScheme) private var scheme
+    /// Ширина затёртой полосы по краю (P722): у клеток — узкая.
+    var band: CGFloat = 7
 
     var body: some View {
-        Image(uiImage: PageTexture.paper)
-            .resizable(resizingMode: .tile)
-            // Вдвое слабее, чем на странице (P685): рельеф подобран под лист
-            // во весь экран, на мелких клетках он выходил «пухлым».
-            .opacity(scheme == .dark ? 0.22 : 0.5)
+        ZStack {
+            Image(uiImage: PageTexture.paper)
+                .resizable(resizingMode: .tile)
+                // Вдвое слабее, чем на странице (P685): рельеф подобран под
+                // лист во весь экран, на мелких клетках он выходил «пухлым».
+                .opacity(scheme == .dark ? 0.22 : 0.5)
+            AgedFrame(band: band)
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
+/// Затёртые края старой бумаги (P722, по образцу автора): к краю бумага
+/// темнеет из сливочной в охру и рыжевато-бурую, будто захватана руками и
+/// подпалена временем; по самому краю — мелкие тёмные щербинки. Картинка
+/// рамки нарисована заранее и тянется на любой размер: углы на месте, края
+/// повторяются плиткой.
+struct AgedFrame: View {
+    var band: CGFloat
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        let inset = PageTexture.frameInset(band)
+        Image(uiImage: PageTexture.frame(band: band))
+            .resizable(capInsets: EdgeInsets(top: inset, leading: inset, bottom: inset, trailing: inset),
+                       resizingMode: .tile)
+            .opacity(scheme == .dark ? 0.35 : 1)
             .allowsHitTesting(false)
             .accessibilityHidden(true)
     }
@@ -546,10 +571,11 @@ struct PageTexture: View {
             }
             VStack(spacing: 0) {
                 if edgeTop {
+                    // Верх страницы затёрт, как и низ (P722; прежде — едва).
                     Image(uiImage: PageTexture.footEdge).resizable(resizingMode: .tile)
                         .frame(height: PageTexture.footDepth)
                         .scaleEffect(y: -1)
-                        .opacity(0.3)
+                        .opacity(0.85)
                 }
                 Spacer(minLength: 0)
                 if edgeBottom {
@@ -584,7 +610,9 @@ struct PageTexture: View {
     /// эскиза `docs/paper/износ-по-образцу.png`); 1,7 — сильнее.
     static let wearStrength = CGFloat(1.05)
 
-    private static let amber: (r: Float, g: Float, b: Float) = (140 / 255, 97 / 255, 41 / 255)
+    private static let amber: (r: Float, g: Float, b: Float) = (150 / 255, 98 / 255, 42 / 255)
+    /// Подпалина у самого края (P722) — темнее и рыжее охры.
+    private static let burnt: (r: Float, g: Float, b: Float) = (112 / 255, 62 / 255, 24 / 255)
 
     /// Круговое размытие: края плитки сходятся. Бегущей суммой — работа не
     /// растёт с радиусом (P679: прежнее перебирание окна заново для каждой
@@ -639,6 +667,8 @@ struct PageTexture: View {
             _ = paper
             _ = sideEdge
             _ = footEdge
+            _ = frame(band: 7)
+            _ = frame(band: 12)
         }
     }
 
@@ -704,9 +734,11 @@ struct PageTexture: View {
     static let footDepth: CGFloat = 110
 
     /// Бок: у края глубже всего, дальше затухает; глубина гуляет по длине.
-    static let sideEdge: UIImage = edgeImage(depthPoints: sideDepth, falloff: 18, peak: 0.17, vertical: true)
+    /// Сильнее прежнего (P722, по образцу автора: 0,17 → 0,40) — переход
+    /// к тёмному краю виден сразу.
+    static let sideEdge: UIImage = edgeImage(depthPoints: sideDepth, falloff: 22, peak: 0.40, vertical: true)
     /// Низ: темнее и шире боков.
-    static let footEdge: UIImage = edgeImage(depthPoints: footDepth, falloff: 28, peak: 0.18, vertical: false)
+    static let footEdge: UIImage = edgeImage(depthPoints: footDepth, falloff: 30, peak: 0.42, vertical: false)
 
     /// Полоска вдоль края, 2 пикселя на точку, 480 точек вдоль. Вертикальная —
     /// край слева; горизонтальная — край внизу.
@@ -726,6 +758,9 @@ struct PageTexture: View {
         let quick = normalised(wrapBlur1D((0..<along).map { _ in next() }, radius: 14, passes: 3))
             .map { max(-1.5, min(1.5, $0)) }
         let wn = zip(slow, quick).map { $0 * 0.75 + $1 * 0.3 }
+        // Щербинки (P722): местами у самого края бумага темнеет пятнышком
+        // в одну-три точки — край обтрёпан.
+        let nicks = normalised(wrapBlur1D((0..<along).map { _ in next() }, radius: 3, passes: 2))
         let width = vertical ? depth : along, height = vertical ? along : depth
         var bytes = [UInt8](repeating: 0, count: width * height * 4)
         let k = Float(wearStrength)
@@ -733,17 +768,91 @@ struct PageTexture: View {
             for d in 0..<depth {
                 // d — расстояние от края в пикселях; в точках вдвое меньше.
                 let distance = Float(d) / 2
-                let alpha = min(peak * k * exp(-distance / (falloff * max(0.35, 1 + wn[a]))), 0.45)
+                let worn = min(peak * k * exp(-distance / (falloff * max(0.35, 1 + wn[a]))), 0.7)
+                let nick: Float = nicks[a] > 1.6 && distance < 1 + (nicks[a] - 1.6) * 2.5 ? 0.55 : 0
+                let rim: Float = distance < 0.8 ? 0.25 : 0
+                let alpha = min(1 - (1 - worn) * (1 - nick) * (1 - rim), 0.85)
+                // К краю — из охры в подпалину.
+                let t = min(max((alpha - 0.2) / 0.4, 0), 1)
+                let r = amber.r + (burnt.r - amber.r) * t
+                let g = amber.g + (burnt.g - amber.g) * t
+                let b = amber.b + (burnt.b - amber.b) * t
                 let x = vertical ? d : a
                 let y = vertical ? a : depth - 1 - d     // низ: край — последняя строка
                 let i = (y * width + x) * 4
-                bytes[i] = UInt8(amber.r * alpha * 255)
-                bytes[i + 1] = UInt8(amber.g * alpha * 255)
-                bytes[i + 2] = UInt8(amber.b * alpha * 255)
+                bytes[i] = UInt8(r * alpha * 255)
+                bytes[i + 1] = UInt8(g * alpha * 255)
+                bytes[i + 2] = UInt8(b * alpha * 255)
                 bytes[i + 3] = UInt8(alpha * 255)
             }
         }
         return picture(bytes, width: width, height: height, scale: 2)
+    }
+
+    /// Сколько точек от края у рамки неизменно (углы) — дальше она
+    /// повторяется плиткой.
+    static func frameInset(_ band: CGFloat) -> CGFloat { (band * 2.4).rounded() }
+
+    private static var frames: [CGFloat: UIImage] = [:]
+    private static let framesLock = NSLock()
+
+    /// Рамка затёртых краёв для мелкой бумаги (P722): клетки календаря,
+    /// строки списка, панельки месяцев, карточки поиска. `band` — на
+    /// сколько точек от края идёт потемнение. Квадрат: углы шириной
+    /// `frameInset`, посередине — кусок края длиной 48 точек, который
+    /// повторяется; неровность края на этом куске замкнута, шва нет.
+    static func frame(band: CGFloat) -> UIImage {
+        framesLock.lock(); defer { framesLock.unlock() }
+        if let made = frames[band] { return made }
+        let inset = frameInset(band)
+        let mid: CGFloat = 48
+        let sidePt = inset * 2 + mid
+        let n = Int(sidePt * 2), midPx = Int(mid * 2), insetPx = Int(inset * 2)
+        var seed: UInt64 = 0xA6ED0 &+ UInt64(band * 10)
+        func next() -> Float {
+            seed = seed &* 6364136223846793005 &+ 1442695040888963407
+            return Float(seed >> 40) / Float(1 << 24) - 0.5
+        }
+        // Неровность и щербинки по каждому из четырёх краёв — замкнуты на
+        // кусок `mid`, чтобы плитка не давала шва.
+        func edgeNoise(_ radius: Int) -> [Float] {
+            normalised(wrapBlur1D((0..<midPx).map { _ in next() }, radius: radius, passes: 3))
+        }
+        let wobble = (0..<4).map { _ in edgeNoise(12) }
+        let chips = (0..<4).map { _ in edgeNoise(2) }
+        func at(_ e: Int, _ along: Int) -> Int { ((along - insetPx) % midPx + midPx) % midPx }
+        var bytes = [UInt8](repeating: 0, count: n * n * 4)
+        let peak: Float = 0.5, fall = Float(band) / 2.2
+        for y in 0..<n {
+            for x in 0..<n {
+                // Расстояния до краёв (в точках) и место вдоль края.
+                let edges = [(Float(x) / 2, y), (Float(n - 1 - x) / 2, y),
+                             (Float(y) / 2, x), (Float(n - 1 - y) / 2, x)]
+                var keep: Float = 1
+                for (e, edge) in edges.enumerated() {
+                    let (d, along) = edge
+                    guard d < Float(inset) else { continue }
+                    let w = wobble[e][at(e, along)], c = chips[e][at(e, along)]
+                    let worn = peak * exp(-d / (fall * max(0.4, 1 + 0.4 * w)))
+                    let nick: Float = c > 1.5 && d < 0.8 + (c - 1.5) * 1.6 ? 0.6 : 0
+                    let rim: Float = d < 0.6 ? 0.3 : 0
+                    keep *= (1 - worn) * (1 - nick) * (1 - rim)
+                }
+                let alpha = min(1 - keep, 0.85)
+                let t = min(max((alpha - 0.2) / 0.4, 0), 1)
+                let r = amber.r + (burnt.r - amber.r) * t
+                let g = amber.g + (burnt.g - amber.g) * t
+                let b = amber.b + (burnt.b - amber.b) * t
+                let i = (y * n + x) * 4
+                bytes[i] = UInt8(r * alpha * 255)
+                bytes[i + 1] = UInt8(g * alpha * 255)
+                bytes[i + 2] = UInt8(b * alpha * 255)
+                bytes[i + 3] = UInt8(alpha * 255)
+            }
+        }
+        let made = picture(bytes, width: n, height: n, scale: 2)
+        frames[band] = made
+        return made
     }
 
     /// Рельеф шершавой бумаги (P676, отменяет пятна и волоски): впадинки и
