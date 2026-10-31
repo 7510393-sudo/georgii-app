@@ -63,7 +63,7 @@ struct SearchView: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 9)
         // Полупрозрачная: под ней видна петля ленты находок (P716).
-        .background(Look.chrome.opacity(0.72), in: RoundedRectangle(cornerRadius: 10))
+        .background(Look.chrome.opacity(0.55), in: RoundedRectangle(cornerRadius: 10))
         // Тот же отступ от уголков, что у строки поиска на карте.
         .padding(.leading, Corner.size + 8)
         .padding(.trailing, Corner.size + 8)
@@ -225,7 +225,7 @@ struct SearchView: View {
             VStack(spacing: 0) {
                 Color.clear.frame(height: Search.lift - Search.fieldHeight)
                 LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
-                    .frame(height: 8)
+                    .frame(height: 3)
                 Color.black
             }
         }
@@ -518,12 +518,12 @@ enum Search {
     }
 
     /// Искажение одной карточки — шейдером у всех карточек на ленте (P714):
-    /// прежде дальние, тоньше трети ширины, только равномерно сжимались — без
-    /// перспективы они читались маленькими, но стоящими, и на переходе лента
-    /// дёргалась. Чтобы шейдеру хватало немного памяти, карточка сперва
-    /// сжимается целиком до своей средней ширины и высоты на ленте и
-    /// сдвигается на своё место (`shift`), а шейдер лишь доводит перспективу
-    /// внутри неё — выборка рядом, на несколько точек.
+    /// карточка сдвигается на своё место на ленте (`shift`), а шейдер для
+    /// каждой точки находит, откуда в карточке взять цвет. Прежде карточка
+    /// сперва сжималась целиком до средней ширины, а шейдер лишь доводил
+    /// перспективу — но доводка не срабатывала: на снимке CI (P717) края
+    /// карточек шли ступеньками, каждая — прямоугольником своей средней
+    /// ширины. Теперь сжатия заранее нет — шейдер делает всё сам.
     static func bend(_ view: EmptyVisualEffect, _ proxy: GeometryProxy, index: Int,
                      preview: Bool) -> some VisualEffect {
         let top = proxy.frame(in: .named(space)).minY - lift
@@ -534,35 +534,18 @@ enum Search {
         let scrolled = preview ? 2 * pitch : max(0, restTop + CGFloat(index) * pitch - top)
         let (bend, horizon, r, f, roll) = shape(scrolled: scrolled)
         let lower = curl(bend - (top + h), bend: bend, horizon: horizon, r: r, f: f)
-        let upper = curl(bend - top, bend: bend, horizon: horizon, r: r, f: f)
         let shift = lower.y - (top + h)
         let inBend = top < bend
-        // Сжатие целиком: по ширине — средняя ширина карточки на ленте, по
-        // высоте — её высота на ленте; низ на месте.
-        let k = inBend ? (upper.s + lower.s) / 2 : 1
-        let q = inBend ? max((lower.y - upper.y) / h, 0.003) : 1
-        // Насколько перспектива внутри карточки отходит от простого сжатия —
-        // столько и нужно шейдеру выбирать по высоте.
-        var reachY: CGFloat = 0
-        if inBend {
-            for j in 0...8 {
-                let ys = h * CGFloat(j) / 8
-                let onRibbon = curl(bend - (top + ys), bend: bend, horizon: horizon,
-                                     r: r, f: f).y - top - shift
-                reachY = max(reachY, abs(h - (h - ys) * q - onRibbon))
-            }
-        }
         let half = proxy.size.width / 2
-        let reachX = half * max(k / max(upper.s, 0.01) - 1, 1 - k / max(lower.s, 0.01), 0)
         // Карточка целиком за валиком — её место на изнанке (`RibbonBack`).
         let gone = inBend && bend - (top + h) > roll
         return view
-            .scaleEffect(x: k, y: q, anchor: .bottom)
             .distortionEffect(
                 ShaderLibrary.ribbon(.float2(proxy.size), .float(top), .float(shift),
                                      .float(bend), .float(horizon), .float(r), .float(f),
-                                     .float(k), .float(q), .float(roll)),
-                maxSampleOffset: CGSize(width: reachX + 6, height: reachY + 6),
+                                     .float(roll)),
+                // Выборка — в пределах самой карточки и чуть за её краем.
+                maxSampleOffset: CGSize(width: half + 8, height: h + 8),
                 isEnabled: inBend)
             .offset(y: inBend ? shift : 0)
             .opacity(gone ? 0 : 1)

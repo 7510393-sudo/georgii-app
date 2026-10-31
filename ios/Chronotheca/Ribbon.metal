@@ -23,22 +23,20 @@ static float2 curl(float c, float bend, float horizon, float r, float f) {
     return float2(horizon + (bend - horizon - h) * s, s);
 }
 
-/// Лента находок поиска (P707, P712, P714, P715): искажает карточку так, будто
-/// весь список — одна лента, которая плавно поворачивает вдаль. Каждая
-/// карточка считает по той же формуле, поэтому края соседних совпадают.
+/// Лента находок поиска (P707, P712, P714, P715, P717): искажает карточку
+/// так, будто весь список — одна лента, которая плавно поворачивает вдаль.
+/// Каждая карточка считает по той же формуле, поэтому края соседних
+/// совпадают.
 ///
-/// Карточка уже сжата целиком — по ширине в `k` раз от середины, по высоте
-/// в `q` раз от низа — и после шейдера сдвигается на `shift` (низ — на своё
-/// место на ленте). Шейдер доводит перспективу: для точки итоговой картинки
-/// возвращает, откуда взять цвет в сжатой. `size` — размер карточки, `top` —
-/// её верх в системе списка (ноль — верх списка) до сдвига. Всё — в точках.
+/// После шейдера карточка сдвигается на `shift` (низ — на своё место на
+/// ленте). Шейдер для точки итоговой картинки возвращает, откуда взять цвет
+/// в самой карточке. `size` — размер карточки, `top` — её верх в системе
+/// списка (ноль — верх списка) до сдвига. Всё — в точках.
 [[ stitchable ]] float2 ribbon(float2 position, float2 size, float top, float shift,
-                               float bend, float horizon, float r, float f,
-                               float k, float q, float roll) {
+                               float bend, float horizon, float r, float f, float roll) {
     float centre = size.x * 0.5;
-    float half_ = size.x * 0.5;
-    // Верх сжатой картинки: выше — прозрачно.
-    float roof = size.y - size.y * q;
+    // Пусто: точка сразу за краем карточки сбоку — там прозрачно.
+    float2 empty = float2(position.x < centre ? -4.0 : size.x + 4.0, position.y);
     // Где эта точка на экране, в системе списка.
     float y = top + shift + position.y;
     float c;
@@ -50,7 +48,7 @@ static float2 curl(float c, float bend, float horizon, float r, float f) {
         // Точка ленты, которая легла сюда: место на экране с высотой ленты
         // только убывает, ищем делением пополам.
         if (y <= curl(4000.0, bend, horizon, r, f).x) {
-            return position;
+            return empty;
         }
         float lo = 0.0;
         float hi = 4000.0;
@@ -65,25 +63,20 @@ static float2 curl(float c, float bend, float horizon, float r, float f) {
         c = 0.5 * (lo + hi);
         s = curl(c, bend, horizon, r, f).y;
     }
-    // За валиком лента уходит на изнанку (P715, `RibbonBack`): здесь пусто.
+    // За дальним концом лента уходит в петлю (`RibbonBack`): здесь пусто.
     if (c > roll) {
-        return float2(position.x, min(position.y, roof - 1.0));
+        return empty;
     }
-    // Место в самой карточке, затем — в сжатой картинке.
+    // Место в самой карточке.
     float sourceY = bend - c - top;
-    if (sourceY < 0.0) {
-        // Это место другой, дальней карточки: здесь пусто. Над сжатой
-        // картинкой прозрачно — берём точку там, рядом.
-        return float2(position.x, min(position.y, roof - 1.0));
+    if (sourceY < 0.0 || sourceY > size.y) {
+        // Это место другой карточки: здесь пусто.
+        return empty;
     }
-    float pressedY = size.y - (size.y - sourceY) * q;
-    // Вне сжатой картинки по ширине — прозрачно, точка остаётся своей.
-    if (abs(position.x - centre) > k * half_ + 2.0) {
-        return position;
+    float sourceX = centre + (position.x - centre) / s;
+    // За краем ленты — пусто.
+    if (sourceX < 0.0 || sourceX > size.x) {
+        return empty;
     }
-    float pressedX = centre + (position.x - centre) * k / s;
-    // За краем ленты — пусто: точка сразу за краем сжатой картинки.
-    if (pressedX < centre - k * half_) { pressedX = centre - k * half_ - 2.0; }
-    if (pressedX > centre + k * half_) { pressedX = centre + k * half_ + 2.0; }
-    return float2(pressedX, pressedY);
+    return float2(sourceX, sourceY);
 }
