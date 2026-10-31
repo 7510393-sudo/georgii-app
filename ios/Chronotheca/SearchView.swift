@@ -374,8 +374,9 @@ private struct RibbonBack: View {
             let b = max(endView - Search.loopTopView, 4)
             // Петля забирает столько ленты, сколько у дальнего конца проходит
             // по экрану за её длину.
-            let speed = max((bend - horizon - r) * end.s * end.s / f, 0.01)
-            let loop = .pi * ((a * a + b * b) / 2).squareRoot() / speed
+            // Петля — `loopCards` карточек: на ней полосы идут чуть быстрее,
+            // чем у дальнего конца, зато она не съедает весь список.
+            let loop = Search.loopCards * pitch
             // Место ленты `d` точек за дальним концом: высота на холсте,
             // середина, полуширина, глубина (для порядка) и темнота.
             func place(_ d: CGFloat) -> (y: CGFloat, x: CGFloat, w: CGFloat, z: CGFloat, dim: Double) {
@@ -396,10 +397,13 @@ private struct RibbonBack: View {
             // Куски ленты: дальние рисуются первыми.
             var pieces: [(z: CGFloat, path: Path, dim: Double)] = []
             var lines: [(z: CGFloat, path: Path, width: CGFloat)] = []
-            // В снимках CI, где находок три, петля и изнанка видны по
-            // воображаемым прежним карточкам.
-            let first = preview ? -80 : 0
+            // Лента — замкнутая петля: на петле и изнанке едут и те
+            // карточки, что выше первой находки, — без текста их не
+            // отличить, а изнанка видна всегда, сколько ни листай.
             guard count > 0 || preview else { return }
+            let first = max(-400, Int(((bend - roll - reach - contentTop - Search.restTop) / pitch)
+                .rounded(.down)) - 1)
+            guard first < max(count, 1) else { return }
             for i in first..<max(count, 1) {
                 let y = contentTop + Search.restTop + CGFloat(i) * pitch
                 let top = bend - y - roll
@@ -583,6 +587,8 @@ enum Search {
     /// Ширина ленты у дальнего конца — доля прежней (с рисунка: 0,32 на
     /// высоте 27, чуть выше — петля).
     static let rollShare: CGFloat = 0.27
+    /// Сколько карточек ленты уходит на петлю.
+    static let loopCards: CGFloat = 10
 
     /// Снимок CI «лента поиска» (P717): находок много, список пролистан —
     /// как у человека на телефоне, чтобы сличить ленту с рисунком автора.
