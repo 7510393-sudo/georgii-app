@@ -308,7 +308,7 @@ struct PhotoStrip: View {
         onOpen?(i)
     }
 
-    /// Подержали и не повели — крестик, как везде (P713).
+    /// Подержали — крестик, как везде (P713, P720).
     private func arm(_ i: Int) {
         guard let onRemove, let frame = places[i] else { return }
         let label = point(i) != nil ? T("Удалить точку", "Delete place")
@@ -446,7 +446,7 @@ struct PlanPhotoRow: View {
         .onTapGesture { hideKeyboard() }
     }
 
-    /// Подержали и не повели — крестик, как везде (P713).
+    /// Подержали — крестик, как везде (P713, P720).
     private func arm(_ link: String) {
         guard let onRemove, let frame = frames[link] else { return }
         let label = Diary.isPoint(link) ? T("Удалить точку", "Delete place")
@@ -518,7 +518,8 @@ enum StripZones {
 /// на месте — за пальцем идёт его копия, нарисованная планом поверх всего.
 struct ThumbCarry: ViewModifier {
     let report: ((Lift, CGPoint) -> Void)?
-    /// Подержали и отпустили, не уводя пальца (P432).
+    /// Подержали — крестик сразу, ещё под пальцем; повели — он уходит
+    /// (P432, P713, P720).
     var stayed: (() -> Void)? = nil
     /// Жест вместе с прокруткой ряда (P539): лента внизу дневника листается
     /// вбок, а свой жест на каждом превью не давал ей сдвинуться.
@@ -538,17 +539,21 @@ struct ThumbCarry: ViewModifier {
         case .began:
             lifted = true
             away = false
+            stayed?()
             report(.began, spot)
         case .changed:
             guard lifted else { return }
-            if hypot(moved.width, moved.height) >= 10 { away = true }
+            if !away, hypot(moved.width, moved.height) >= 10 {
+                away = true
+                Cross.hide()
+            }
+            // Пока палец на месте — только крестик; несут, когда повели.
+            guard away else { return }
             report(.moved(moved), spot)
         case .ended:
             guard lifted else { return }
-            let still = !away
             lifted = false
             away = false
-            if still { stayed?() }
             report(.ended(.zero), spot)
         default:
             guard lifted else { return }
@@ -600,19 +605,22 @@ struct ThumbCarry: ViewModifier {
                         if !lifted {
                             lifted = true
                             away = false
+                            stayed?()
                             report(.began, drag?.location ?? .zero)
                         }
                         if let drag {
-                            if hypot(drag.translation.width, drag.translation.height) >= 10 { away = true }
+                            if !away, hypot(drag.translation.width, drag.translation.height) >= 10 {
+                                away = true
+                                Cross.hide()
+                            }
+                            guard away else { return }
                             report(.moved(drag.translation), drag.location)
                         }
                     }
                     .onEnded { value in
                         guard lifted else { return }
-                        let still = !away
                         lifted = false
                         away = false
-                        if still { stayed?() }
                         var spot = CGPoint.zero
                         if case .second(true, let drag) = value, let drag { spot = drag.location }
                         report(.ended(.zero), spot)

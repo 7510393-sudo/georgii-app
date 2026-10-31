@@ -164,12 +164,16 @@ extension DiaryView {
         }
         switch phase {
         case .began:
-            Feel.lift()
+            // Подержали — пока только крестик (P720); копия над пальцем —
+            // когда повели, как в тексте записи.
             DiaryEditor.active?.holdPage(true)
-            stripCarry = i
             stripSpot = spot
-            StripGhost.shared.show(store.stripLinks[i], at: spot)
         case .moved:
+            if stripCarry == nil {
+                Feel.lift()
+                stripCarry = i
+                StripGhost.shared.show(store.stripLinks[i], at: spot)
+            }
             stripSpot = spot
             StripGhost.shared.spot = spot
             follow()
@@ -706,10 +710,11 @@ private struct TitlePoint: View {
                     .onChange(of: frame) { _, now in place = now }
             })
             .offset(y: drop)
-            // Подержали и отпустили — крестик, как у всех вложений (P713):
-            // прежде у точки в заголовке был свой, другим рисунком.
+            // Подержали — крестик сразу, ещё под пальцем, как у всех вложений
+            // (P713, P720); повели — крестик уходит.
             .onChange(of: armed) { _, now in
-                guard now, let delete else { return }
+                guard now else { Cross.hide(); return }
+                guard let delete else { return }
                 Cross.show(at: place, chip: true, label: T("Удалить точку", "Delete place"),
                            onCross: delete, onDismiss: { arm?(false) })
             }
@@ -731,8 +736,10 @@ private struct TitlePoint: View {
                 if !lifted {
                     lifted = true
                     Feel.lift()
+                    arm?(true)
                 }
                 if let drag { drop = max(0, drag.translation.height) }
+                if drop > 10, armed { arm?(false) }
             }
             .onEnded { value in
                 lifted = false
@@ -744,8 +751,6 @@ private struct TitlePoint: View {
                     arm?(false)
                     Feel.light()
                     down?()
-                } else {
-                    arm?(true)
                 }
             }
     }

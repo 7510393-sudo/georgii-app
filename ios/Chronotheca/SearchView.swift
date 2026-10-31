@@ -170,7 +170,7 @@ struct SearchView: View {
         // листать (P717).
         let days = Search.deep ? Array(repeating: found, count: 12).flatMap { $0 } : found
         let items = days.enumerated().map { index, day in
-            Search.Item(id: Search.deep ? String(index) : day.id, index: index, day: day)
+            Search.Item(id: Search.deep ? String(index) : day.id, day: day)
         }
         return ScrollViewReader { proxy in ScrollView {
             // Находки — карточки картотеки, вид сверху: нижняя лежит поверх
@@ -178,24 +178,18 @@ struct SearchView: View {
             LazyVStack(spacing: -Search.overlap) {
                 ForEach(items) { item in
                     SearchCard(stamp: Search.stamp(item.day.date)) { row(item.day) }
-                        // Лента поворачивает вдаль, как по большому цилиндру
-                        // (P712): каждая карточка искажается той же общей
-                        // формулой по своему месту на экране, поэтому края
-                        // соседних сходятся точно и ступенек нет.
-                        .modifier(Ribbon(index: item.index, preview: Vault.isPreview && !Search.deep))
                 }
             }
             .padding(.horizontal, 10)
-            // `lift` — запас над списком: туда лента заходит и оттуда уходит
-            // к горизонту (P707, P712).
-            .padding(.top, Search.lift + Search.restTop)
+            // Список начинается под строкой поиска, а листаясь, уходит под
+            // неё — она полупрозрачная (P719).
+            .padding(.top, Search.fieldHeight + Search.restTop)
             // Место под клавиатуру. Без него последние находки лежат под
             // ней и не достаются прокруткой: список кончается там, где
             // начинается клавиатура (решение P174).
             // Строки разделов над клавиатурой больше нет (P505).
             .padding(.bottom, keyboard > 0 ? keyboard + 4 : 0)
         }
-        .coordinateSpace(name: Search.space)
         // Второе нажатие на «Поиск» — список заново, с начала (P576).
         .id(shell.searchHome)
         .scrollDismissesKeyboard(.interactively)
@@ -208,18 +202,9 @@ struct SearchView: View {
         }
         }
         .animation(.easeOut(duration: 0.25), value: keyboard)
-        // У самого горизонта лента тает.
-        .mask {
-            VStack(spacing: 0) {
-                Color.clear.frame(height: Search.lift - Search.fieldHeight)
-                LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
-                    .frame(height: 3)
-                Color.black
-            }
-        }
-        // Список продолжается вверх на `lift` — под строку поиска; строка
-        // лежит выше и принимает касания.
-        .padding(.top, -Search.lift)
+        // Список продолжается вверх под строку поиска; строка лежит выше и
+        // принимает касания.
+        .padding(.top, -Search.fieldHeight)
         .zIndex(-1)
     }
 
@@ -294,23 +279,6 @@ struct SearchView: View {
     }
 }
 
-/// Искажение карточки (P707, P712). Шейдер на весь список не годится:
-/// прокрутку рисует сама система, и шейдер получал пустую картинку (снимок CI
-/// 30.10). Карточка же рисуется целиком SwiftUI. `index` — место карточки в
-/// списке: по нему видно, на сколько список пролистан.
-private struct Ribbon: ViewModifier {
-    let index: Int
-    /// Снимки и проверки CI (`Vault.isPreview`).
-    let preview: Bool
-
-    func body(content: Content) -> some View {
-        let index = index, preview = preview
-        return content.visualEffect { view, proxy in
-            Search.bend(view, proxy, index: index, preview: preview)
-        }
-    }
-}
-
 enum Search {
     /// Высота корешка карточки (P695).
     static let tabHeight: CGFloat = 22
@@ -320,111 +288,20 @@ enum Search {
 
     static let lineGap: CGFloat = 3
 
-    /// Шаг карточек: сколько видно каждой до следующей — корешок, пять строк
-    /// и немного воздуха (P697).
-    static var pitch: CGFloat { tabHeight + 8 + body + 6 }
-
-    /// Система координат прокрутки: по ней карточка знает своё место.
-    static let space = "searchList"
     /// Где стоит первая находка, пока список не листали (от верха списка).
     static let restTop: CGFloat = 4
-    /// Где лента начинает поворачивать (от верха списка), когда список
-    /// пролистан: на одну карточку ниже верха экрана поиска (P718; прежде —
-    /// на карточку ниже строки поиска). Пока список в начале, изгиба нет: он
-    /// «вырастает» по мере листания.
-    static var bendMax: CGFloat { pitch - fieldHeight }
-    /// Высота строки поиска над списком (с отступами): до её верха лента
-    /// видна (P716).
+    /// Высота строки поиска над списком (с отступами): под неё уходит
+    /// список (P716, P719).
     static let fieldHeight: CGFloat = 56
-    /// Горизонт — в щёлочке между верхом экрана и строкой поиска (P718), в
-    /// точках от верха экрана поиска; лента сходится к нему симметрично.
-    static let horizonView: CGFloat = 4
-    /// Горизонт в системе списка.
-    static var horizon: CGFloat { horizonView - fieldHeight }
-    /// Радиус поворота и расстояние до зрителя — доли высоты от изгиба до
-    /// горизонта: поворот за полкарточки, дальше лента сужается до
-    /// двадцатой доли у горизонта (P718).
-    static let radiusShare: CGFloat = 0.50
-    static let focalShare: CGFloat = 0.5
-    /// Сколько точек над верхом списка тоже рисуется: оттуда уходит «хвост»
-    /// ленты к горизонту (P712).
-    static var lift: CGFloat { 7 * pitch }
-
-    /// Лента (P712): от линии изгиба вверх — четверть цилиндра радиуса `r`
-    /// (лента плавно ложится от вертикали в горизонталь), дальше — плоскость
-    /// к горизонту; вид с расстояния `f`. `c` — на сколько точек ленты место
-    /// выше линии изгиба. Возвращает место на экране и ширину (1 — прежняя).
-    /// Та же формула — в `Ribbon.metal`.
-    static func curl(_ c: CGFloat, bend: CGFloat, horizon: CGFloat, r: CGFloat,
-                     f: CGFloat) -> (y: CGFloat, s: CGFloat) {
-        guard c > 0 else { return (bend - c, 1) }
-        let arc = .pi / 2 * r
-        let h: CGFloat, z: CGFloat
-        if c < arc {
-            h = r * sin(c / r)
-            z = r * (1 - cos(c / r))
-        } else {
-            h = r
-            z = r + (c - arc)
-        }
-        let s = f / (f + z)
-        return (horizon + (bend - horizon - h) * s, s)
-    }
-
-    /// Искажение одной карточки — шейдером у всех карточек на ленте (P714):
-    /// карточка сдвигается на своё место на ленте (`shift`), а шейдер для
-    /// каждой точки находит, откуда в карточке взять цвет. Прежде карточка
-    /// сперва сжималась целиком до средней ширины, а шейдер лишь доводил
-    /// перспективу — но доводка не срабатывала: на снимке CI (P717) края
-    /// карточек шли ступеньками, каждая — прямоугольником своей средней
-    /// ширины. Теперь сжатия заранее нет — шейдер делает всё сам.
-    static func bend(_ view: EmptyVisualEffect, _ proxy: GeometryProxy, index: Int,
-                     preview: Bool) -> some VisualEffect {
-        let top = proxy.frame(in: .named(space)).minY - lift
-        let h = max(proxy.size.height, 1)
-        // На сколько список пролистан: где карточка стоит и где стояла бы в
-        // покое. В снимках CI — как пролистанный (в них три находки, листать
-        // некуда), чтобы поворот был виден на снимке.
-        let scrolled = preview ? 2 * pitch : max(0, restTop + CGFloat(index) * pitch - top)
-        let (bend, horizon, r, f, far) = shape(scrolled: scrolled)
-        let lower = curl(bend - (top + h), bend: bend, horizon: horizon, r: r, f: f)
-        let shift = lower.y - (top + h)
-        let inBend = top < bend
-        let half = proxy.size.width / 2
-        // Карточка целиком дальше конца ленты.
-        let gone = inBend && bend - (top + h) > far
-        return view
-            .distortionEffect(
-                ShaderLibrary.ribbon(.float2(proxy.size), .float(top), .float(shift),
-                                     .float(bend), .float(horizon), .float(r), .float(f),
-                                     .float(far)),
-                // Выборка — в пределах самой карточки и чуть за её краем.
-                maxSampleOffset: CGSize(width: half + 8, height: h + 8),
-                isEnabled: inBend)
-            .offset(y: inBend ? shift : 0)
-            .opacity(gone ? 0 : 1)
-    }
-
-    /// Ход ленты для списка, пролистанного на `scrolled`: линия изгиба,
-    /// горизонт, радиус поворота, расстояние до зрителя и `far` — докуда
-    /// лента рисуется (дальше карточек над списком нет).
-    static func shape(scrolled: CGFloat)
-        -> (bend: CGFloat, horizon: CGFloat, r: CGFloat, f: CGFloat, far: CGFloat) {
-        let bend = min(bendMax, restTop + scrolled)
-        let height = bend - horizon
-        return (bend, horizon, radiusShare * height, focalShare * height, bend + lift - 8)
-    }
-
-    /// Снимок CI «лента поиска» (P717): находок много, список пролистан —
-    /// как у человека на телефоне, чтобы сличить ленту с рисунком автора.
-    /// Находка в списке: место по порядку нужно ленте, а на снимке «лента
-    /// поиска» одни и те же дни повторяются — им нужен свой ключ.
+    /// Находка в списке: на снимке «лента поиска» одни и те же дни
+    /// повторяются — им нужен свой ключ.
     struct Item: Identifiable {
         let id: String
-        let index: Int
         let day: Archive.Day
     }
 
+    /// Снимок CI «лента поиска» (P717): находок много, список пролистан —
+    /// как у человека на телефоне.
     static let deep = Vault.isPreview
         && ProcessInfo.processInfo.environment["CHRONOTHECA_SCREEN"] == "searchdeep"
 
