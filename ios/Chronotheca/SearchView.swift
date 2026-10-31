@@ -177,7 +177,9 @@ struct SearchView: View {
             // верхней и своим корешком с датой закрывает её низ (P694, P695).
             LazyVStack(spacing: -Search.overlap) {
                 ForEach(items) { item in
-                    SearchCard(stamp: Search.stamp(item.day.date)) { row(item.day) }
+                    SearchCard(stamp: Search.stamp(item.day.date), past: Ru.isPast(item.day.date)) {
+                        row(item.day)
+                    }
                 }
             }
             .padding(.horizontal, 10)
@@ -333,6 +335,8 @@ enum Search {
 private struct SearchCard<Content: View>: View {
     @Environment(\.colorScheme) private var scheme
     let stamp: String
+    /// Прошедший день — края затёрты, как у его страницы (P722).
+    var past = true
     @ViewBuilder let content: () -> Content
 
     var body: some View {
@@ -363,6 +367,9 @@ private struct SearchCard<Content: View>: View {
                               opacity: scheme == .dark ? 0.5 : 0.3)
                     .padding(.top, Search.tabHeight)
                 paper.clipShape(FolderShape(tabHeight: Search.tabHeight))
+                if past {
+                    AgedFrame(band: 12).clipShape(FolderShape(tabHeight: Search.tabHeight))
+                }
                 FolderShape(tabHeight: Search.tabHeight)
                     .stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
             }
