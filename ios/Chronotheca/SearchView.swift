@@ -370,7 +370,10 @@ private struct RibbonBack: View {
                 return (t[t.count - 1].x * width, t[t.count - 1].w * width)
             }
             let start = track(endView)
-            let a = (start.x - width / 2) / 2
+            // Середина дальнего конца: лента сходится к `vanish`.
+            let vx = 10 + Search.vanish * (width - 20)
+            let endX = vx + (width / 2 - vx) * end.s
+            let a = (start.x - endX) / 2
             let b = max(endView - Search.loopTopView, 4)
             // Петля забирает столько ленты, сколько у дальнего конца проходит
             // по экрану за её длину.
@@ -383,7 +386,7 @@ private struct RibbonBack: View {
                 if d < loop {
                     let th = .pi * d / loop
                     let u = (1 - cos(th)) / 2
-                    return (endView - b * sin(th) + toCanvas, width / 2 + a * (1 - cos(th)),
+                    return (endView - b * sin(th) + toCanvas, endX + a * (1 - cos(th)),
                             half * end.s + (start.w - half * end.s) * u, u,
                             0.05 + 0.13 * Double(u))
                 }
@@ -473,10 +476,14 @@ enum Search {
     /// Высота строки поиска над списком (с отступами): до её верха лента
     /// видна (P716).
     static let fieldHeight: CGFloat = 56
-    /// Мерки с рисунка автора (P717), в точках от верха экрана поиска
-    /// (верх строки поиска — 8). Лента уходит вдаль к горизонту чуть выше
-    /// экрана: шириной 0,86 на высоте 105, 0,62 — на 63, 0,32 — на 27.
-    static let horizonView: CGFloat = -15
+    /// Мерки с рисунка автора (P717), снятые с его контуров поверх снимка, в
+    /// точках от верха экрана поиска (верх строки поиска — 8). Передняя
+    /// лента уходит к горизонту чуть выше экрана: шириной 0,35 на высоте 44,
+    /// 0,53 — на 80, 0,69 — на 104, 0,79 — на 128.
+    static let horizonView: CGFloat = -18
+    /// Куда сходится лента — левее середины (на рисунке подъём уведён влево,
+    /// мы смотрим чуть справа): доля ширины карточки.
+    static let vanish: CGFloat = 0.366
     /// Горизонт в системе списка.
     static var horizon: CGFloat { horizonView - fieldHeight }
     /// Верх петли — у самого верха экрана поиска (на рисунке 0).
@@ -485,13 +492,14 @@ enum Search {
     /// полуширина — доли ширины экрана. Выходит из петли правее передней
     /// ленты и спускается вдоль её правого края, пока не уйдёт за карточки.
     static let backTrack: [(y: CGFloat, x: CGFloat, w: CGFloat)] = [
-        (21, 0.754, 0.052), (63, 0.836, 0.060), (123, 0.918, 0.052), (190, 0.92, 0.05),
+        (20, 0.726, 0.057), (44, 0.769, 0.075), (68, 0.791, 0.082), (80, 0.796, 0.087),
+        (104, 0.82, 0.075), (150, 0.86, 0.06),
     ]
     /// Радиус поворота и расстояние до зрителя — доли высоты от изгиба до
     /// горизонта; подобраны по рисунку (P717): поворот кончается шириной
     /// 0,86 на высоте 105, карточки у дальнего конца — частые полосы.
-    static let radiusShare: CGFloat = 0.30
-    static let focalShare: CGFloat = 1.77
+    static let radiusShare: CGFloat = 0.20
+    static let focalShare: CGFloat = 1.0
     /// Сколько точек над верхом списка тоже рисуется: оттуда уходит «хвост»
     /// ленты — семь карточек до дальнего конца (P712, P717).
     static var lift: CGFloat { 7 * pitch }
@@ -537,15 +545,16 @@ enum Search {
         let shift = lower.y - (top + h)
         let inBend = top < bend
         let half = proxy.size.width / 2
+        let vx = vanish * proxy.size.width
         // Карточка целиком за валиком — её место на изнанке (`RibbonBack`).
         let gone = inBend && bend - (top + h) > roll
         return view
             .distortionEffect(
                 ShaderLibrary.ribbon(.float2(proxy.size), .float(top), .float(shift),
                                      .float(bend), .float(horizon), .float(r), .float(f),
-                                     .float(roll)),
+                                     .float(roll), .float(vx)),
                 // Выборка — в пределах самой карточки и чуть за её краем.
-                maxSampleOffset: CGSize(width: half + 8, height: h + 8),
+                maxSampleOffset: CGSize(width: max(vx, 2 * half - vx) + 8, height: h + 8),
                 isEnabled: inBend)
             .offset(y: inBend ? shift : 0)
             .opacity(gone ? 0 : 1)
@@ -569,7 +578,7 @@ enum Search {
 
     /// Ширина ленты у дальнего конца — доля прежней (с рисунка: 0,32 на
     /// высоте 27, чуть выше — петля).
-    static let rollShare: CGFloat = 0.27
+    static let rollShare: CGFloat = 0.22
     /// Сколько карточек ленты уходит на петлю.
     static let loopCards: CGFloat = 10
 
