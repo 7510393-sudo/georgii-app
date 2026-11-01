@@ -425,18 +425,22 @@ struct OldPaper: View {
     /// Старая бумага выключена в настройках (P730): только цвет прошлого.
     @AppStorage(Prefs.plainPast) private var plainPast = false
     /// Лист из пачки заготовок приходит следом (P732).
-    @ObservedObject private var shop = PaperShop.shared
+    @State private var art: PageTexture.AgedArt?
 
     var body: some View {
         if plainPast {
             if let base { base }
         } else {
             GeometryReader { geo in
-                if let art = PageTexture.aged(size: geo.size, band: band, seed: seed) {
-                    worn(art, geo.size)
-                } else if let base {
-                    base
+                let order = PageTexture.agedOrder(size: geo.size, band: band, seed: seed)
+                Group {
+                    if let art = art ?? PageTexture.agedReady(order) {
+                        worn(art, geo.size)
+                    } else if let base {
+                        base
+                    }
                 }
+                .task(id: order) { art = await PageTexture.aged(order) }
             }
             .allowsHitTesting(false)
             .accessibilityHidden(true)
@@ -502,19 +506,23 @@ struct AgedFrame: View {
     var light = false
     @Environment(\.colorScheme) private var scheme
     /// Лист из пачки заготовок приходит следом (P732).
-    @ObservedObject private var shop = PaperShop.shared
+    @State private var art: PageTexture.AgedArt?
 
     var body: some View {
         GeometryReader { geo in
-            if let art = PageTexture.aged(size: geo.size, band: band, seed: seed, openBottom: openBottom,
-                                          light: light) {
-                Image(uiImage: cut ? art.cut : art.frame)
-                    .resizable()
-                    .opacity(cut || scheme != .dark ? 1 : 0.35)
-            } else if cut {
-                // Пока листа нет — карточка целая.
-                Color.black
+            let order = PageTexture.agedOrder(size: geo.size, band: band, seed: seed, openBottom: openBottom,
+                                              light: light)
+            Group {
+                if let art = art ?? PageTexture.agedReady(order) {
+                    Image(uiImage: cut ? art.cut : art.frame)
+                        .resizable()
+                        .opacity(cut || scheme != .dark ? 1 : 0.35)
+                } else if cut {
+                    // Пока листа нет — карточка целая.
+                    Color.black
+                }
             }
+            .task(id: order) { art = await PageTexture.aged(order) }
         }
         .allowsHitTesting(false)
         .accessibilityHidden(true)
@@ -1103,17 +1111,31 @@ struct PageTexture: View {
     /// готов — `nil`: показывается просто цвет прошлого, бумага проступает
     /// следом. Размер округляется (у строк и клеток до 4 точек, у карточек
     /// до 20), лист тянется на свой размер — разница незаметна.
-    static func aged(size: CGSize, band: CGFloat, seed number: Int, openBottom: Bool = false,
-                     light: Bool = false) -> AgedArt? {
+    struct AgedOrder: Hashable {
+        let key: String, w: CGFloat, h: CGFloat, band: CGFloat, variant: Int, openBottom: Bool, light: Bool
+    }
+
+    static func agedOrder(size: CGSize, band: CGFloat, seed number: Int, openBottom: Bool = false,
+                          light: Bool = false) -> AgedOrder {
         let small = min(size.width, size.height) < 60
         let step: CGFloat = small ? 4 : 20
         let w = max(4, size.width.rounded())
         let h = max(step, (size.height / step).rounded() * step)
         let variant = abs(number) % (small ? 16 : 24)
         let key = "\(Int(w))x\(Int(h))b\(Int(band * 10))v\(variant)\(openBottom ? "o" : "")\(light ? "l" : "")"
-        return PaperShop.shared.art(key) {
-            makeAged(size: CGSize(width: w, height: h), band: band, seed: variant + 1,
-                     openBottom: openBottom, light: light)
+        return AgedOrder(key: key, w: w, h: h, band: band, variant: variant, openBottom: openBottom, light: light)
+    }
+
+    /// Готовый лист, если он уже в памяти, — сразу.
+    static func agedReady(_ order: AgedOrder) -> AgedArt? {
+        PaperShop.shared.readyArt(order.key)
+    }
+
+    /// Лист — когда будет готов (в стороне от экрана).
+    static func aged(_ order: AgedOrder) async -> AgedArt {
+        await PaperShop.shared.art(order.key) {
+            makeAged(size: CGSize(width: order.w, height: order.h), band: order.band, seed: order.variant + 1,
+                     openBottom: order.openBottom, light: order.light)
         }
     }
 

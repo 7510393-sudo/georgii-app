@@ -11,7 +11,8 @@ import UIKit
 final class PaperShop: ObservableObject {
     static let shared = PaperShop()
 
-    /// Растёт, когда готов очередной лист: на него подписаны виды с бумагой.
+    /// Растёт, когда готов очередной край страницы дня (их всего три): на
+    /// него подписаны только страницы.
     @Published private(set) var stock = 0
 
     /// Меняется, когда меняется рисунок бумаги, — старые заготовки не берутся.
@@ -35,23 +36,34 @@ final class PaperShop: ObservableObject {
         return dir
     }()
 
-    /// Лист износа (края и маска рваного края) по ключу; `build` рисует его,
-    /// если заготовки ещё нет ни в памяти, ни в служебной папке.
-    func art(_ key: String, build: @escaping () -> PageTexture.AgedArt) -> PageTexture.AgedArt? {
+    /// Готовый лист из памяти — сразу, без ожидания; нет — `nil`.
+    func readyArt(_ key: String) -> PageTexture.AgedArt? {
+        arts.object(forKey: key as NSString)
+    }
+
+    /// Лист износа (края и маска рваного края) по ключу: из памяти, из
+    /// служебной папки или нарисованный — всегда в стороне от экрана.
+    /// Отдаётся только тому, кто просил (P732: прежде о каждом готовом листе
+    /// узнавали все экраны и перерисовывались — на большом архиве карта
+    /// стояла по полминуты).
+    func art(_ key: String, build: @escaping () -> PageTexture.AgedArt) async -> PageTexture.AgedArt {
         if let made = arts.object(forKey: key as NSString) { return made }
-        order(key) { [weak self] in
-            guard let self else { return }
-            let art: PageTexture.AgedArt
-            if let frame = self.load(key + "-f"), let cut = self.load(key + "-c") {
-                art = PageTexture.AgedArt(frame: frame, cut: cut)
-            } else {
-                art = build()
-                self.save(art.frame, key + "-f")
-                self.save(art.cut, key + "-c")
+        return await withCheckedContinuation { done in
+            queue.async { [weak self] in
+                guard let self else { return done.resume(returning: build()) }
+                if let made = self.arts.object(forKey: key as NSString) { return done.resume(returning: made) }
+                let art: PageTexture.AgedArt
+                if let frame = self.load(key + "-f"), let cut = self.load(key + "-c") {
+                    art = PageTexture.AgedArt(frame: frame, cut: cut)
+                } else {
+                    art = build()
+                    self.save(art.frame, key + "-f")
+                    self.save(art.cut, key + "-c")
+                }
+                self.arts.setObject(art, forKey: key as NSString)
+                done.resume(returning: art)
             }
-            self.arts.setObject(art, forKey: key as NSString)
         }
-        return nil
     }
 
     /// Одна картинка (края страницы дня) по имени.
