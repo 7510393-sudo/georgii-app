@@ -28,7 +28,10 @@ struct CalendarView: View {
     /// возвращается в «Список», а не в чужой ему «Месяц».
     @AppStorage("calendar.kind") private var stored = Kind.month.rawValue
     private var kind: Kind { Kind(rawValue: stored) ?? .month }
-    @State private var shown: Date = DayStore.today()
+    @State private var shown: Date = CalendarView.previewStart ?? DayStore.today()
+    /// Для снимков CI (P723): месяц недельной давности — в первые дни
+    /// месяца на снимке иначе не было бы прошедших дней.
+    static var previewStart: Date?
     @State private var plan: [Int] = []
     @State private var selected: String? = Vault.stamp(DayStore.today())
 
