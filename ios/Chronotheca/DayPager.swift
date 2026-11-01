@@ -681,23 +681,6 @@ struct PageTexture: View {
         return src
     }
 
-    /// То же вдоль одной линии.
-    private static func wrapBlur1D(_ a: [Float], radius r: Int, passes: Int) -> [Float] {
-        let n = a.count
-        var src = a, dst = a
-        let w = Float(2 * r + 1)
-        for _ in 0..<passes {
-            var sum: Float = 0
-            for k in -r...r { sum += src[(k + n) % n] }
-            for x in 0..<n {
-                dst[x] = sum / w
-                sum += src[(x + r + 1) % n] - src[(x - r + n) % n]
-            }
-            swap(&src, &dst)
-        }
-        return src
-    }
-
     /// Всю бумагу — заранее, в стороне, пока приложение запускается (P679):
     /// первый показ прошедшего дня не должен ждать, пока она нарисуется.
     static func prepareSoon() {
@@ -793,27 +776,27 @@ struct PageTexture: View {
             seed = seed &* 6364136223846793005 &+ 1442695040888963407
             return Float(seed >> 40) / Float(1 << 24) - 0.5
         }
-        // Глубина края гуляет вдоль него крупными пятнами и мелкой рябью
-        // (P681): край — не ровная полоса, а несколько потемнений разной
-        // ширины, как у страницы, которую брали руками.
-        let slow = normalised(wrapBlur1D((0..<along).map { _ in next() }, radius: 60, passes: 4))
-            .map { max(-1.5, min(1.5, $0)) }
-        let quick = normalised(wrapBlur1D((0..<along).map { _ in next() }, radius: 14, passes: 3))
-            .map { max(-1.5, min(1.5, $0)) }
-        let wn = zip(slow, quick).map { $0 * 0.75 + $1 * 0.3 }
-        // Сила износа гуляет ещё крупнее (P723): местами край почти чистый,
-        // местами затёрт до бурого — не равномерно по всей длине.
-        let power = normalised(wrapBlur1D((0..<along).map { _ in next() }, radius: 170, passes: 4))
-            .map { max(0.2, 1 + 0.6 * $0) }
+        // Износ гуляет пятнами во все стороны, а не только вдоль края
+        // (P723, по замечанию автора: прежняя глубина менялась только вдоль
+        // края — снизу шли вертикальные мазки, «как валиком»). Глубина и
+        // сила — два плавных поля на плоскости; вдоль края они замкнуты,
+        // чтобы кусок повторялся без шва.
         let width = vertical ? depth : along, height = vertical ? along : depth
+        let reachBig = smoothField(width: width, height: height, cell: 140, wrapX: !vertical, wrapY: vertical, next: next)
+        let reachSmall = smoothField(width: width, height: height, cell: 56, wrapX: !vertical, wrapY: vertical, next: next)
+        let tone = smoothField(width: width, height: height, cell: 300, wrapX: !vertical, wrapY: vertical, next: next)
         var bytes = [UInt8](repeating: 0, count: width * height * 4)
         let k = Float(wearStrength)
         let fadeFrom = Float(depth) * 0.45
-        for a in 0..<along {
-            for d in 0..<depth {
+        for y in 0..<height {
+            for x in 0..<width {
                 // d — расстояние от края в пикселях; в точках вдвое меньше.
+                let d = vertical ? x : depth - 1 - y
                 let distance = Float(d) / 2
-                var worn = min(peak * k * power[a] * exp(-distance / (falloff * max(0.35, 1 + wn[a]))), 0.7)
+                let i = y * width + x
+                let reach = max(0.35, min(3, 1 + 0.4 * (reachBig[i] + 0.5 * reachSmall[i])))
+                let strength = max(0.15, 1 + 0.5 * tone[i])
+                var worn = min(peak * k * strength * exp(-distance / (falloff * reach)), 0.7)
                 if Float(d) > fadeFrom {
                     let q = (Float(depth) - Float(d)) / (Float(depth) - fadeFrom)
                     worn *= q * q * (3 - 2 * q)
@@ -821,8 +804,7 @@ struct PageTexture: View {
                 let rim: Float = distance < 0.8 ? 0.25 : 0
                 let alpha = min(1 - (1 - worn) * (1 - rim), 0.85)
                 if alpha < 0.002 { continue }
-                let i = (((vertical ? a : depth - 1 - d) * width) + (vertical ? d : a)) * 4
-                paint(&bytes, i, alpha)
+                paint(&bytes, i * 4, alpha)
             }
         }
         let plain = picture(bytes, width: width, height: height, scale: 2)
@@ -865,6 +847,37 @@ struct PageTexture: View {
         bytes[i + 3] = UInt8(alpha * 255)
     }
 
+    /// Плавное случайное поле на плоскости (P723): случайные значения в
+    /// узлах сетки с шагом `cell` пикселей, между ними — мягкий переход.
+    /// По `wrapX`/`wrapY` замкнуто по ширине или высоте. Среднее 0, разброс 1.
+    private static func smoothField(width: Int, height: Int, cell: Int, wrapX: Bool, wrapY: Bool,
+                                    next: () -> Float) -> [Float] {
+        let gx = max(1, width / cell) + (wrapX ? 0 : 2)
+        let gy = max(1, height / cell) + (wrapY ? 0 : 2)
+        let nodes = (0..<gx * gy).map { _ in next() }
+        let sx = wrapX ? Float(gx) / Float(width) : 1 / Float(cell)
+        let sy = wrapY ? Float(gy) / Float(height) : 1 / Float(cell)
+        var out = [Float](repeating: 0, count: width * height)
+        for y in 0..<height {
+            let fy = Float(y) * sy
+            let iy = Int(fy)
+            let ty = fy - Float(iy), uy = ty * ty * (3 - 2 * ty)
+            let y0 = wrapY ? iy % gy : min(iy, gy - 1)
+            let y1 = wrapY ? (iy + 1) % gy : min(iy + 1, gy - 1)
+            for x in 0..<width {
+                let fx = Float(x) * sx
+                let ix = Int(fx)
+                let tx = fx - Float(ix), ux = tx * tx * (3 - 2 * tx)
+                let x0 = wrapX ? ix % gx : min(ix, gx - 1)
+                let x1 = wrapX ? (ix + 1) % gx : min(ix + 1, gx - 1)
+                let top = nodes[y0 * gx + x0] + (nodes[y0 * gx + x1] - nodes[y0 * gx + x0]) * ux
+                let bottom = nodes[y1 * gx + x0] + (nodes[y1 * gx + x1] - nodes[y1 * gx + x0]) * ux
+                out[y * width + x] = top + (bottom - top) * uy
+            }
+        }
+        return normalised(out)
+    }
+
     /// Номер дня для износа мелкой бумаги: у каждого дня свой.
     static func seed(_ date: Date) -> Int {
         Int((date.timeIntervalSinceReferenceDate / 86400).rounded(.down))
@@ -902,33 +915,27 @@ struct PageTexture: View {
         // Мелкая бумага изнашивается уже (P723, по снимку CI: клетки месяца
         // и строки списка выходили бурыми целиком — четыре края сходились).
         let wear = min(band, min(w, h) * 0.14)
-        // Неровность вдоль края: мелкая — глубина, крупная — сила.
-        func line(_ n: Int, _ radius: Int) -> [Float] {
-            let r = max(1, min(radius, n / 2 - 1))
-            return normalised(wrapBlur1D((0..<n).map { _ in next() - 0.5 }, radius: r, passes: 3))
-        }
-        let lengths = [W, W, H, H]                     // верх, низ, лево, право
-        // Глубина гуляет плавно и в меру (P723: узкие всплески глубины в
-        // низкой строке списка сходились сверху и снизу тёмной «подковой»).
-        let wobble = lengths.map { line($0, 40).map { max(-1.5, min(1.5, $0)) } }
-        let swell = lengths.map { line($0, 70) }
-        let power = (0..<4).map { _ in 0.3 + next() * 0.6 }
+        // Глубина и сила износа — плавные поля на плоскости (P723): край
+        // темнеет облаками, без столбиков и полос.
+        let reachBig = smoothField(width: W, height: H, cell: 60, wrapX: false, wrapY: false, next: next)
+        let reachSmall = smoothField(width: W, height: H, cell: 24, wrapX: false, wrapY: false, next: next)
+        let tone = smoothField(width: W, height: H, cell: 120, wrapX: false, wrapY: false, next: next)
+        var power = (0..<4).map { _ in 0.3 + next() * 0.6 }          // верх, низ, лево, право
+        // Низкая строка (список): верх и низ почти чистые, иначе строки
+        // складываются в полосы — «полосатый матрас» (замечание автора).
+        if h < 40 { power[0] *= 0.25; power[1] *= 0.25 }
         var keep = [Float](repeating: 1, count: W * H)
         let fall = Float(wear) * 2 / 2.2               // в пикселях
         let peak: Float = 0.42
-        for e in 0..<4 {
-            let n = lengths[e]
-            let deepest = min(Int(wear * 2 * 3.5), e < 2 ? H : W)
-            for a in 0..<n {
-                let strength = power[e] * max(0.15, 1 + 0.6 * swell[e][a])
-                let f = fall * max(0.6, 1 + 0.3 * wobble[e][a])
-                for d in 0..<deepest {
-                    let worn = min(peak * strength * exp(-Float(d) / f), 0.75)
-                    if worn < 0.004 { break }
-                    let x = e == 0 || e == 1 ? a : (e == 2 ? d : W - 1 - d)
-                    let y = e == 2 || e == 3 ? a : (e == 0 ? d : H - 1 - d)
-                    keep[y * W + x] *= 1 - worn
+        for y in 0..<H {
+            for x in 0..<W {
+                let i = y * W + x
+                let reach = fall * max(0.35, min(3, 1 + 0.45 * (reachBig[i] + 0.5 * reachSmall[i])))
+                let strength = max(0.15, 1 + 0.5 * tone[i])
+                func kept(_ e: Int, _ d: Int) -> Float {
+                    1 - min(peak * power[e] * strength * exp(-Float(d) / reach), 0.75)
                 }
+                keep[i] = kept(0, y) * kept(1, H - 1 - y) * kept(2, x) * kept(3, W - 1 - x)
             }
         }
         // Пятна от пальцев: ноль, одно или два — у случайного места края.
