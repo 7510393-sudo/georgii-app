@@ -30,7 +30,8 @@ struct CalendarView: View {
     private var kind: Kind { Kind(rawValue: stored) ?? .month }
     @State private var shown: Date = CalendarView.previewStart ?? DayStore.today()
     /// Для снимков CI (P723): месяц недельной давности — в первые дни
-    /// месяца на снимке иначе не было бы прошедших дней.
+    /// месяца на снимке иначе не было бы прошедших дней. Календарь собран
+    /// заранее, поэтому месяц ставится, когда его открывают.
     static var previewStart: Date?
     @State private var plan: [Int] = []
     @State private var selected: String? = Vault.stamp(DayStore.today())
@@ -78,6 +79,11 @@ struct CalendarView: View {
         }
         .onAppear {
             DayEvents.forgetCache()
+        }
+        .onChange(of: shell.screen) { _, now in
+            guard now == .calendar, let start = CalendarView.previewStart else { return }
+            CalendarView.previewStart = nil
+            shown = start
         }
         // Просьба из меню календаря: та же дорога домой, что у кнопки вида.
         .onChange(of: shell.calendarHome) { _, want in
