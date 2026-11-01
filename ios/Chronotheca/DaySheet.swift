@@ -105,7 +105,8 @@ struct DaySheet<Plan: View, Diary: View>: View {
                     // обратно (видео автора).
                     .padding(.bottom, Self.stripRoom)
                     .frame(minHeight: outer.size.height, alignment: .top)
-                    .background(Ru.tint(date).overlay(PageTexture(tab: .diary, space: Self.space, aged: Ru.isPast(date), edgeBottom: true)))
+                    .background(Ru.tint(date).overlay(PageTexture(tab: .diary, space: Self.space, aged: Ru.isPast(date), edgeBottom: true,
+                                                                     seed: PageTexture.seed(date))))
                     // Клетка и волокно отсчитываются от самого листа, а не
                     // от экрана: тянешь план — клетка едет с текстом (P412).
                     .coordinateSpace(name: Self.space)

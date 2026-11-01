@@ -102,7 +102,7 @@ struct DayPage: View {
                 // P250): шапка — продолжение листа.
         }
         // Затёртые бока — на всю страницу разом, без шва под шапкой (P735).
-        .overlay(PageSides(aged: Ru.isPast(date)))
+        .overlay(PageSides(aged: Ru.isPast(date), seed: PageTexture.seed(date)))
         .background(background)
         // Фактура страницы и вкладок отсчитывается от одной точки — клетка
         // на вкладке продолжает клетку страницы (P246).
@@ -503,17 +503,27 @@ struct OldPaper: View {
 /// пересчитывается. Пока заготовки краёв не готовы — края не затёрты (P732).
 struct PageSides: View {
     let aged: Bool
+    /// Номер дня (P736): у каждого дня бока свои — кусок края берётся с
+    /// другого места, левый и правый меняются местами, край переворачивается.
+    /// Картинок столько же, сколько было, — памяти и работы не прибавилось.
+    let seed: Int
     @Environment(\.colorScheme) private var scheme
     @AppStorage(Prefs.plainPast) private var plainPast = false
     @ObservedObject private var shop = PaperShop.shared
 
     var body: some View {
         if aged && !plainPast && scheme != .dark {
+            let swap = seed & 1 == 1
+            let flip: CGFloat = (seed >> 1) & 1 == 1 ? -1 : 1
             HStack(spacing: 0) {
-                if let left = PageTexture.sideEdge { strip(left) }
+                if let left = swap ? PageTexture.sideEdgeRight : PageTexture.sideEdge {
+                    strip(left, from: seed &* 389)
+                        .scaleEffect(x: 1, y: flip)
+                }
                 Spacer(minLength: 0)
-                if let right = PageTexture.sideEdgeRight {
-                    strip(right).scaleEffect(x: -1)
+                if let right = swap ? PageTexture.sideEdge : PageTexture.sideEdgeRight {
+                    strip(right, from: seed &* 577 &+ 211)
+                        .scaleEffect(x: -1, y: flip)
                 }
             }
             .allowsHitTesting(false)
@@ -521,12 +531,18 @@ struct PageSides: View {
         }
     }
 
-    private func strip(_ picture: UIImage) -> some View {
-        Image(uiImage: picture)
-            .resizable(resizingMode: .tile)
-            .frame(width: PageTexture.sideDepth)
-            .frame(maxHeight: .infinity)
-            .clipped()
+    /// Кусок края — с места `from` (кусок замкнут сам на себя, шва нет).
+    private func strip(_ picture: UIImage, from: Int) -> some View {
+        let length = picture.size.height
+        let shift = CGFloat(abs(from) % max(1, Int(length)))
+        return GeometryReader { geo in
+            Image(uiImage: picture)
+                .resizable(resizingMode: .tile)
+                .frame(width: PageTexture.sideDepth, height: geo.size.height + length)
+                .offset(y: -shift)
+        }
+        .frame(width: PageTexture.sideDepth)
+        .clipped()
     }
 }
 
@@ -546,6 +562,9 @@ struct PageTexture: View {
     /// куска страницы, бока — у всех. Верх не затёрт (P726: верх плана —
     /// середина экрана под шапкой, затемнение ложилось на слово «План»).
     var edgeBottom = false
+    /// Номер дня (P736): низ страницы у каждого дня свой — кусок края с
+    /// другого места, иногда отражённый.
+    var seed = 0
     @Environment(\.colorScheme) private var scheme
     /// Старая бумага выключена в настройках (P730).
     @AppStorage(Prefs.plainPast) private var plainPast = false
@@ -649,8 +668,16 @@ struct PageTexture: View {
             VStack(spacing: 0) {
                 Spacer(minLength: 0)
                 if edgeBottom, let foot = PageTexture.footEdge {
-                    Image(uiImage: foot).resizable(resizingMode: .tile)
-                        .frame(height: PageTexture.footDepth)
+                    let length = foot.size.width
+                    let shift = CGFloat(abs(seed &* 263) % max(1, Int(length)))
+                    GeometryReader { geo in
+                        Image(uiImage: foot).resizable(resizingMode: .tile)
+                            .frame(width: geo.size.width + length, height: PageTexture.footDepth)
+                            .offset(x: -shift)
+                    }
+                    .frame(height: PageTexture.footDepth)
+                    .clipped()
+                    .scaleEffect(x: (seed >> 2) & 1 == 1 ? -1 : 1, y: 1)
                 }
             }
             // Следы рук (P680): страницу берут за нижний внешний угол и
