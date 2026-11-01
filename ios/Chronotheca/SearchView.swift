@@ -392,7 +392,7 @@ private struct SearchCard<Content: View>: View {
             Scheme.current.past
             Image(uiImage: PageTexture.paper)
                 .resizable(resizingMode: .tile)
-                .opacity(scheme == .dark ? 0.25 : 0.7)
+                .opacity(scheme == .dark ? 0.2 : 0.3)
         }
     }
 }
