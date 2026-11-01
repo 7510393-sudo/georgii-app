@@ -548,7 +548,9 @@ struct RootView: View {
             // Шторки «Подробности» больше нет (P408).
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .clipped()
+        // Обрезано сверху и по бокам; снизу открыто (P744): список поиска
+        // заходит под нижнюю строку, она лежит поверх.
+        .clipShape(OpenBelow())
     }
 
     // MARK: - Шапка
@@ -1153,5 +1155,13 @@ enum TouchDown {
         defer { pressed = nil }
         guard let pressed else { return true }
         return Date().timeIntervalSince(pressed) > 10
+    }
+}
+
+/// Рамка без нижней стороны (P744): всё, что ниже, может выходить под
+/// нижнюю строку.
+private struct OpenBelow: Shape {
+    func path(in r: CGRect) -> Path {
+        Path(CGRect(x: r.minX, y: r.minY, width: r.width, height: r.height + 400))
     }
 }

@@ -191,8 +191,12 @@ struct SearchView: View {
             // ней и не достаются прокруткой: список кончается там, где
             // начинается клавиатура (решение P174).
             // Строки разделов над клавиатурой больше нет (P505).
-            .padding(.bottom, keyboard > 0 ? keyboard + 4 : 0)
+            .padding(.bottom, Search.underBar + (keyboard > 0 ? keyboard + 4 : 0))
         }
+        // Список заходит под нижнюю строку (P744): карточки создаются ещё
+        // под ней и выезжают из-под неё вместе с корешком, а не появляются
+        // целиком, когда их место уже на экране (запись автора).
+        .padding(.bottom, -Search.underBar)
         // Второе нажатие на «Поиск» — список заново, с начала (P576).
         .id(shell.searchHome)
         .scrollDismissesKeyboard(.interactively)
@@ -285,6 +289,8 @@ struct SearchView: View {
 enum Search {
     /// Высота корешка карточки (P695).
     static let tabHeight: CGFloat = 22
+    /// Насколько список уходит под нижнюю строку (P744).
+    static let underBar: CGFloat = 110
     /// На сколько карточка заходит на предыдущую: корешок и ещё немного
     /// листа, чтобы нижний край предыдущей скрылся под ней (P696).
     static let overlap: CGFloat = tabHeight + 10
