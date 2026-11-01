@@ -940,15 +940,20 @@ struct PageTexture: View {
             let radius = Float(wear) * 2 * (1.6 + next() * 2.6)
             let strength = 0.06 + next() * 0.10
             let p1 = next() * 6.3, p2 = next() * 6.3
-            let x0 = max(0, Int(cx - radius * 1.4)), x1 = min(W - 1, Int(cx + radius * 1.4))
-            let y0 = max(0, Int(cy - radius * 1.4)), y1 = min(H - 1, Int(cy + radius * 1.4))
+            _ = p2
+            // Пятно вытянуто вдоль края и неглубоко (P723: круглое пятно с
+            // лопастями в низкой строке давало тёмную «подкову» во всю высоту).
+            let alongEdge = e < 2
+            let rx = alongEdge ? radius * 2.2 : min(radius * 0.8, Float(W) * 0.3)
+            let ry = alongEdge ? min(radius * 0.8, Float(H) * 0.3) : radius * 2.2
+            let x0 = max(0, Int(cx - rx)), x1 = min(W - 1, Int(cx + rx))
+            let y0 = max(0, Int(cy - ry)), y1 = min(H - 1, Int(cy + ry))
             guard x0 <= x1, y0 <= y1 else { continue }
             for y in y0...y1 {
                 for x in x0...x1 {
-                    let dx = Float(x) - cx, dy = Float(y) - cy
-                    let angle = atan2(dy, dx)
-                    let r = radius * (1 + 0.22 * sin(3 * angle + p1) + 0.12 * sin(5 * angle + p2))
-                    let q = (dx * dx + dy * dy).squareRoot() / r
+                    let dx = (Float(x) - cx) / rx, dy = (Float(y) - cy) / ry
+                    let wave = 1 + 0.1 * sin(3 * atan2(dy, dx) + p1)
+                    let q = (dx * dx + dy * dy).squareRoot() / wave
                     guard q < 1 else { continue }
                     let v = strength * (1 - q * q) * (1 - q * q)
                     keep[y * W + x] *= 1 - v
@@ -987,7 +992,9 @@ struct PageTexture: View {
         let box = CGSize(width: w, height: h)
         let frame = UIGraphicsImageRenderer(size: box, format: format).image { ctx in
             plain.draw(at: .zero)
-            for (at, turn, hurt) in hurts {
+            // Опалённая кромка у травм — только у крупной бумаги: в низкой
+            // строке списка она выходила тёмной «подковой» во всю высоту.
+            for (at, turn, hurt) in hurts where roomy {
                 ctx.cgContext.saveGState()
                 ctx.cgContext.translateBy(x: at.x, y: at.y); ctx.cgContext.rotate(by: turn)
                 hurt.drawMark(ctx.cgContext, missing: false)
