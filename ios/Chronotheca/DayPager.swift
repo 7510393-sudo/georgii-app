@@ -490,45 +490,6 @@ struct OldPaper: View {
     }
 }
 
-/// Затёртые края старой бумаги (P722, по образцу автора): к краю бумага
-/// темнеет из сливочной в охру и рыжевато-бурую, будто захватана руками и
-/// подпалена временем. С P723 — своя картинка под размер и номер дня, без
-/// плитки: где край почти чистый, где тёмный, пятна и травмы в случайных
-/// местах. `cut` — вместо краёв отдаёт маску с выщербинами, чтобы вырезать
-/// их из всей карточки.
-struct AgedFrame: View {
-    var band: CGFloat
-    var seed: Int
-    var cut = false
-    /// Низ уходит под следующую карточку (P725): не затёрт и без травм.
-    var openBottom = false
-    /// Слегка тронутая бумага (P728): сегодняшняя карточка поиска.
-    var light = false
-    @Environment(\.colorScheme) private var scheme
-    /// Лист из пачки заготовок приходит следом (P732).
-    @State private var art: PageTexture.AgedArt?
-
-    var body: some View {
-        GeometryReader { geo in
-            let order = PageTexture.agedOrder(size: geo.size, band: band, seed: seed, openBottom: openBottom,
-                                              light: light)
-            Group {
-                if let art = art ?? PageTexture.agedReady(order) {
-                    Image(uiImage: cut ? art.cut : art.frame)
-                        .resizable()
-                        .opacity(cut || scheme != .dark ? 1 : 0.35)
-                } else if cut {
-                    // Пока листа нет — карточка целая.
-                    Color.black
-                }
-            }
-            .task(id: order) { art = await PageTexture.aged(order) }
-        }
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
-    }
-}
-
 /// Фактура страницы: у плана — бледная клетка, как в тетради; у дневника —
 /// волокно бумаги (P245). Рисуется один раз и кладётся плиткой.
 struct PageTexture: View {
