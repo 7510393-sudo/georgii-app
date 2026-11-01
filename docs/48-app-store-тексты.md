@@ -73,7 +73,7 @@ Import from Day One, Diarium, Journey, Markdown and text files. Because your ent
 FAIR PRICE
 The first 30 days are the whole app for free. After that, one purchase — like a notebook. No subscription. What you wrote always stays readable, even without the purchase.
 
-Ten languages: English, Русский, Українська, Deutsch, Français, Español, Italiano, Português, Nederlands, 日本語.
+Eleven languages: English, Русский, Українська, Deutsch, Français, Español, Italiano, Português, Nederlands, 日本語, ქართული.
 
 **What’s New (первый выпуск):**
 First release.
@@ -123,7 +123,7 @@ Graphomanus — дневник и планировщик дня на одной 
 ЧЕСТНАЯ ЦЕНА
 Первые 30 дней — всё приложение бесплатно. Дальше разовая покупка, как блокнот. Без подписки. Написанное читается всегда, даже без покупки.
 
-Десять языков: English, Русский, Українська, Deutsch, Français, Español, Italiano, Português, Nederlands, 日本語.
+Одиннадцать языков: English, Русский, Українська, Deutsch, Français, Español, Italiano, Português, Nederlands, 日本語, ქართული.
 
 ## 4. Покупки (Monetization → In-App Purchases)
 
