@@ -809,10 +809,13 @@ struct PageTexture: View {
             return Float(seed >> 40) / Float(1 << 24)
         }
         let width = vertical ? depth : along, height = vertical ? along : depth
-        let reachBig = smoothField(width: width, height: height, cell: 480, wrapX: !vertical, wrapY: vertical, next: next)
-        let reachSmall = smoothField(width: width, height: height, cell: 180, wrapX: !vertical, wrapY: vertical, next: next)
-        let tone = smoothField(width: width, height: height, cell: 1050, wrapX: !vertical, wrapY: vertical, next: next)
-        let mottle = mottling(width: width, height: height, wrapX: !vertical, wrapY: vertical, next: next)
+        // Плавные поля — по точкам, а не по пикселям (P731): им чёткость не
+        // нужна, а считать их втрое подробнее — в девять раз дольше.
+        let cw = width / px, ch = height / px
+        let reachBig = smoothField(width: cw, height: ch, cell: 160, wrapX: !vertical, wrapY: vertical, next: next)
+        let reachSmall = smoothField(width: cw, height: ch, cell: 60, wrapX: !vertical, wrapY: vertical, next: next)
+        let tone = smoothField(width: cw, height: ch, cell: 350, wrapX: !vertical, wrapY: vertical, next: next)
+        let mottle = mottling(width: cw, height: ch, wrapX: !vertical, wrapY: vertical, next: next)
         let torn = tornLine(length: along, scale: Float(px), deep: 3.2, next: next)
         var bytes = [UInt8](repeating: 0, count: width * height * 4)
         let k = Float(wearStrength)
@@ -829,14 +832,17 @@ struct PageTexture: View {
                     continue
                 }
                 let distance = fromTear / Float(px)
-                let reach = max(0.5, min(2, 1 + 0.35 * (reachBig[i] + 0.4 * reachSmall[i])))
-                let strength = max(0.35, 1 + 0.4 * tone[i])
+                // Дальше 14 затуханий износа нет — не считаем (P731).
+                guard distance < falloff * 14 else { continue }
+                let c = (y / px) * cw + x / px
+                let reach = max(0.5, min(2, 1 + 0.35 * (reachBig[c] + 0.4 * reachSmall[c])))
+                let strength = max(0.35, 1 + 0.4 * tone[c])
                 var worn = min(peak * k * strength * exp(-distance / (falloff * reach)), 0.75)
                 if Float(d) > fadeFrom {
                     let q = (Float(depth) - Float(d)) / (Float(depth) - fadeFrom)
                     worn *= q * q * (3 - 2 * q)
                 }
-                paintAged(&bytes, i * 4, worn: worn, distance: distance, mottle: mottle[i])
+                paintAged(&bytes, i * 4, worn: worn, distance: distance, mottle: mottle[c])
             }
         }
         let plain = picture(bytes, width: width, height: height, scale: CGFloat(px))
@@ -951,8 +957,8 @@ struct PageTexture: View {
     /// Неровность тона (P727): мягкие пятна в несколько точек и мельче —
     /// как у образца, без рельефа.
     private static func mottling(width: Int, height: Int, wrapX: Bool, wrapY: Bool, next: () -> Float) -> [Float] {
-        let a = smoothField(width: width, height: height, cell: 14 * px, wrapX: wrapX, wrapY: wrapY, next: next)
-        let b = smoothField(width: width, height: height, cell: 4 * px, wrapX: wrapX, wrapY: wrapY, next: next)
+        let a = smoothField(width: width, height: height, cell: 14, wrapX: wrapX, wrapY: wrapY, next: next)
+        let b = smoothField(width: width, height: height, cell: 4, wrapX: wrapX, wrapY: wrapY, next: next)
         return normalised(zip(a, b).map { $0 * 0.6 + $1 * 0.8 })
     }
 
@@ -1081,9 +1087,11 @@ struct PageTexture: View {
         }
         let W = Int(w) * px, H = Int(h) * px
         let wear = min(band, min(w, h) * 0.18)
-        let reachField = smoothField(width: W, height: H, cell: 90, wrapX: false, wrapY: false, next: next)
-        let tone = smoothField(width: W, height: H, cell: 180, wrapX: false, wrapY: false, next: next)
-        let mottle = mottling(width: W, height: H, wrapX: false, wrapY: false, next: next)
+        // Плавные поля — по точкам (P731), рваный край и кромка — по пикселям.
+        let cw = Int(w), ch = Int(h)
+        let reachField = smoothField(width: cw, height: ch, cell: 30, wrapX: false, wrapY: false, next: next)
+        let tone = smoothField(width: cw, height: ch, cell: 60, wrapX: false, wrapY: false, next: next)
+        let mottle = mottling(width: cw, height: ch, wrapX: false, wrapY: false, next: next)
         // Рваный край по каждой стороне: мелкий — у клеток, крупнее — у карточек.
         // `light` — слегка тронутая бумага (P728: карточка сегодняшнего дня
         // в поиске не должна выглядеть совсем целой среди старых).
@@ -1109,15 +1117,19 @@ struct PageTexture: View {
                 let inside = max(0, min(1, nearest + 0.5))
                 cutBytes[i * 4 + 3] = UInt8(inside * 255)
                 guard inside > 0 else { continue }
-                let reach = fall * max(0.5, min(2, 1 + 0.35 * reachField[i]))
-                let strength = max(0.4, 1 + 0.3 * tone[i])
+                // Дальше восьми затуханий от края износа уже не видно —
+                // середину карточки не считаем (P731).
+                guard nearest < fall * 2 * 8 else { continue }
+                let c = (y / px) * cw + x / px
+                let reach = fall * max(0.5, min(2, 1 + 0.35 * reachField[c]))
+                let strength = max(0.4, 1 + 0.3 * tone[c])
                 func kept(_ e: Int, _ d: Float) -> Float {
                     1 - min(peak * power[e] * strength * exp(-max(0, d) / reach), 0.75)
                 }
                 let keep = kept(0, d0) * kept(1, d1) * kept(2, d2) * kept(3, d3)
                 // Кромка — только у рваных сторон (низ карточки поиска чистый).
                 let rimEdge = openBottom ? min(min(d0, d2), d3) : nearest
-                paintAged(&frameBytes, i * 4, worn: 1 - keep, distance: max(0, rimEdge) / Float(px), mottle: mottle[i])
+                paintAged(&frameBytes, i * 4, worn: 1 - keep, distance: max(0, rimEdge) / Float(px), mottle: mottle[c])
             }
         }
         var frame = picture(frameBytes, width: W, height: H, scale: CGFloat(px))
