@@ -430,17 +430,23 @@ struct OldPaper: View {
             // Рельеф сдвинут по номеру дня — соседние клетки не одинаковы.
             let dx = CGFloat(abs(seed &* 97) % Int(tile.width))
             let dy = CGFloat(abs(seed &* 61) % Int(tile.height))
+            // Каждый слой — ровно в размер клетки (P726: узор бумаги был
+            // больше клетки на 384 точки, и картинка износа растягивалась
+            // вместе с ним — отсюда «подковы», полосы и тёмные клетки).
             ZStack(alignment: .topLeading) {
                 if let base { base }
                 Image(uiImage: PageTexture.paper)
                     .resizable(resizingMode: .tile)
                     .frame(width: geo.size.width + tile.width, height: geo.size.height + tile.height)
                     .offset(x: -dx, y: -dy)
+                    .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
+                    .clipped()
                     // Вдвое слабее, чем на странице (P685): рельеф подобран под
                     // лист во весь экран, на мелких клетках он выходил «пухлым».
                     .opacity(scheme == .dark ? 0.22 : 0.5)
                 Image(uiImage: art.frame)
                     .resizable()
+                    .frame(width: geo.size.width, height: geo.size.height)
                     .opacity(scheme == .dark ? 0.35 : 1)
             }
             .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
