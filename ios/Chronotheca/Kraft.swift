@@ -1,112 +1,115 @@
 import SwiftUI
-import UIKit
 
-/// Крафт-картон нижней строки разделов (P297).
-///
-/// Строка — обложка блокнота: одна и та же во все дни, с волокнами
-/// картона и неровным, будто оторванным верхним краем. Рисованные значки
-/// на ней — как штампы тёмно-коричневыми чернилами.
-struct KraftPaper: View {
-    /// Гамма меняется — картон перекрашивается (P498).
-    @AppStorage(Prefs.calendarTint) private var scheme = "distance"
+/// Кожаный переплёт (P745, выбор автора; вместо крафта с оторванным краем
+/// P297): нижняя строка разделов — край обложки дневника, на которой лежат
+/// страницы. Тёмно-коричневая кожа с мелкой зернью, ровный край со
+/// скруглённой кромкой и строчкой-швом вдоль него; значки — тиснением
+/// светлым золотом. Рваные края остаются только у страниц: строка не лист,
+/// а то, на чём листы лежат.
+struct LeatherCover: View {
+    /// Строчка вдоль верхнего края — у нижней строки и у строки над
+    /// клавиатурой; у кнопки «＋» её нет.
+    var stitched = true
 
     var body: some View {
-        ZStack {
-            Look.kraft
-            Image(uiImage: KraftPaper.fibre)
+        ZStack(alignment: .top) {
+            LinearGradient(colors: [Leather.top, Leather.base, Leather.deep],
+                           startPoint: .top, endPoint: .bottom)
+            Image(uiImage: Leather.grain)
                 .resizable(resizingMode: .tile)
+            if stitched {
+                VStack(spacing: 0) {
+                    // Скруглённая кромка: тёмная черта по краю и светлый
+                    // блик под ней, как у подвёрнутой кожи.
+                    Rectangle().fill(Leather.rim).frame(height: 1)
+                    Rectangle().fill(Leather.sheen).frame(height: 1)
+                    // Тень от страниц, лежащих сверху.
+                    LinearGradient(colors: [.black.opacity(0.28), .clear],
+                                   startPoint: .top, endPoint: .bottom)
+                        .frame(height: 5)
+                    Spacer(minLength: 0)
+                }
+                Stitch()
+                    .stroke(Leather.thread, style: StrokeStyle(lineWidth: 1.2, lineCap: .round, dash: [4.5, 3.5]))
+                    .frame(height: 1)
+                    .padding(.horizontal, 8)
+                    .padding(.top, Leather.stitchInset)
+            }
         }
         .allowsHitTesting(false)
         .accessibilityHidden(true)
     }
+}
 
-    /// Волокна картона: крапины и короткие волоски, светлые и тёмные.
-    /// Узор один и тот же при каждом запуске — снимки не должны
-    /// различаться от раза к разу (P114).
-    static let fibre: UIImage = {
-        let side: CGFloat = 180
-        var seed: UInt64 = 0xC4AF_7297
+/// Цвета и зернь кожи переплёта (P745). Кожа одна во всех гаммах и в
+/// тёмной теме — она и так тёмная.
+enum Leather {
+    static let top = Color(red: 0.36, green: 0.24, blue: 0.15)
+    static let base = Color(red: 0.29, green: 0.19, blue: 0.12)
+    static let deep = Color(red: 0.22, green: 0.14, blue: 0.09)
+    static let rim = Color(red: 0.14, green: 0.09, blue: 0.05)
+    static let sheen = Color(red: 0.55, green: 0.40, blue: 0.27).opacity(0.55)
+    static let thread = Color(red: 0.84, green: 0.70, blue: 0.47).opacity(0.75)
+    /// Тиснение значков и надписей — светлое золото.
+    static let ink = Color(red: 0.88, green: 0.76, blue: 0.54)
+    /// Открытый раздел — ярче и на светлой подушке.
+    static let lit = Color(red: 0.98, green: 0.88, blue: 0.66)
+    static let pad = Color(red: 0.98, green: 0.88, blue: 0.66).opacity(0.14)
+    /// Насколько строчка ниже края.
+    static let stitchInset: CGFloat = 6
+    /// Высота полосы над разделами у строки над клавиатурой — место под
+    /// кромку и строчку (прежде — глубина зубцов рваного края, P517).
+    static let lip: CGFloat = 7
+    static let uiBase = UIColor(red: 0.29, green: 0.19, blue: 0.12, alpha: 1)
+
+    /// Зернь кожи: мелкие поры — тёмные точки неправильной формы — и редкие
+    /// светлые блики между ними. Узор один и тот же при каждом запуске —
+    /// снимки не должны различаться от раза к разу (P114).
+    static let grain: UIImage = {
+        let side: CGFloat = 160
+        var seed: UInt64 = 0x1EA7_4E12
         func next() -> CGFloat {
             seed = seed &* 6364136223846793005 &+ 1442695040888963407
             return CGFloat(seed >> 33) / CGFloat(UInt64(1) << 31)
         }
         return UIGraphicsImageRenderer(size: CGSize(width: side, height: side)).image { ctx in
-            for _ in 0..<900 {
+            let cg = ctx.cgContext
+            for _ in 0..<1400 {
                 let x = next() * side, y = next() * side
-                let r = 0.4 + next() * 0.9
-                let dark = next() < 0.55
-                (dark ? UIColor(red: 0.35, green: 0.24, blue: 0.12, alpha: 0.06 + next() * 0.06)
-                      : UIColor(white: 1, alpha: 0.10 + next() * 0.10)).setFill()
-                ctx.cgContext.fillEllipse(in: CGRect(x: x, y: y, width: r, height: r))
+                let w = 0.6 + next() * 1.6, h = 0.5 + next() * 1.2
+                UIColor(red: 0.08, green: 0.05, blue: 0.02, alpha: 0.10 + next() * 0.14).setFill()
+                cg.fillEllipse(in: CGRect(x: x, y: y, width: w, height: h))
             }
-            for _ in 0..<90 {
+            for _ in 0..<500 {
                 let x = next() * side, y = next() * side
-                let angle = (next() - 0.5) * 0.9
-                let length = 4 + next() * 10
-                let fibre = UIBezierPath()
-                fibre.move(to: CGPoint(x: x, y: y))
-                fibre.addQuadCurve(to: CGPoint(x: x + cos(angle) * length, y: y + sin(angle) * length),
-                                   controlPoint: CGPoint(x: x + cos(angle + 0.5) * length / 2,
-                                                         y: y + sin(angle + 0.5) * length / 2))
-                fibre.lineWidth = 0.5
-                (next() < 0.6 ? UIColor(red: 0.30, green: 0.20, blue: 0.10, alpha: 0.10)
-                              : UIColor(white: 1, alpha: 0.18)).setStroke()
-                fibre.stroke()
+                let r = 0.4 + next() * 0.8
+                UIColor(red: 0.80, green: 0.62, blue: 0.44, alpha: 0.05 + next() * 0.07).setFill()
+                cg.fillEllipse(in: CGRect(x: x, y: y, width: r, height: r))
+            }
+            // Мягкие морщинки кожи.
+            for _ in 0..<40 {
+                let x = next() * side, y = next() * side
+                let length = 6 + next() * 14
+                let angle = (next() - 0.5) * .pi
+                let crease = UIBezierPath()
+                crease.move(to: CGPoint(x: x, y: y))
+                crease.addQuadCurve(to: CGPoint(x: x + cos(angle) * length, y: y + sin(angle) * length),
+                                    controlPoint: CGPoint(x: x + cos(angle + 0.6) * length / 2,
+                                                          y: y + sin(angle + 0.6) * length / 2))
+                crease.lineWidth = 0.6
+                UIColor(red: 0.06, green: 0.04, blue: 0.02, alpha: 0.12).setStroke()
+                crease.stroke()
             }
         }
     }()
 }
 
-/// Неровный верхний край — картон оторван, а не отрезан (P297).
-///
-/// Зубцы мелкие и неправильные, но всегда одни и те же: край не должен
-/// меняться от поворота или перерисовки (P113).
-struct TornEdge: Shape {
-    /// Глубина зубцов (P517: вдвое больше прежних 3,5 — края стали заметнее).
-    static let depth: CGFloat = 7
-
-    /// Сами зубцы — общие для заливки и обводки, чтобы обе совпадали
-    /// точь-в-точь (P324).
-    static func teeth(in rect: CGRect) -> [CGPoint] {
-        var seed: UInt64 = 0x70_2E_ED_6E
-        func next() -> CGFloat {
-            seed = seed &* 6364136223846793005 &+ 1442695040888963407
-            return CGFloat(seed >> 33) / CGFloat(UInt64(1) << 31)
-        }
-        var points: [CGPoint] = [CGPoint(x: rect.minX, y: rect.minY + next() * depth)]
-        var x = rect.minX
-        while x < rect.maxX {
-            x += 3.5 + next() * 8
-            points.append(CGPoint(x: min(x, rect.maxX), y: rect.minY + next() * depth))
-        }
-        return points
-    }
-
-    func path(in rect: CGRect) -> Path {
+/// Строчка вдоль края переплёта — прямая через всю ширину.
+private struct Stitch: Shape {
+    func path(in r: CGRect) -> Path {
         var p = Path()
-        p.move(to: CGPoint(x: rect.minX, y: rect.maxY))
-        // По одной точке, не addLines: у неё своя, отдельная от уже
-        // начатого пути точка старта — «улица без начала» получала левый
-        // низ сама по себе, а зубцы съезжали в свой кусок, и закрытие пути
-        // тянуло между ними одну косую черту через всю строку (P328).
-        for point in Self.teeth(in: rect) { p.addLine(to: point) }
-        p.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        p.closeSubpath()
-        return p
-    }
-}
-
-/// Только сама рваная черта — без боков и низа. Обводка закрытой фигуры
-/// `TornEdge` рисовала ещё и прямую линию понизу: она дублировала
-/// неровный край серой чертой сразу под ним (P324).
-struct TornEdgeLine: Shape {
-    func path(in rect: CGRect) -> Path {
-        var p = Path()
-        let teeth = TornEdge.teeth(in: rect)
-        if let first = teeth.first {
-            p.move(to: first)
-            for point in teeth.dropFirst() { p.addLine(to: point) }
-        }
+        p.move(to: CGPoint(x: r.minX, y: r.midY))
+        p.addLine(to: CGPoint(x: r.maxX, y: r.midY))
         return p
     }
 }
