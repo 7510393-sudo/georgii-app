@@ -16,6 +16,8 @@ enum Prefs {
     static let noAsk = "prefs.noAsk"            // true — без «Как прошло?»
     static let ownKeyboardOnly = "prefs.ownKeyboardOnly" // true — только клавиатура iPhone (P633)
     static let calendarTint = "prefs.calendarTint" // "distance", "weekday", "none"
+    /// true — прошедшие дни без старой бумаги: просто цвет прошлого (P730).
+    static let plainPast = "prefs.plainPast"
 
     static var weatherOn: Bool { !UserDefaults.standard.bool(forKey: noWeather) }
     static var askOn: Bool { !UserDefaults.standard.bool(forKey: noAsk) }

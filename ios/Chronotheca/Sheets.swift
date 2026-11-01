@@ -405,6 +405,13 @@ struct SettingsSticker: View {
         NoteRow(title: T("Цветовая гамма", "Colour scheme")) {
             SchemeChoice(selection: $calendarTint)
         }
+        // Старую бумагу прошлого можно выключить (P730): тогда прошедшие
+        // дни — просто цвет прошлого, без износа и рваного края.
+        NoteRow(title: T("Старая бумага", "Old paper"),
+                detail: T("Прошедшие дни — на затёртой бумаге с рваным краем.",
+                          "Past days on worn paper with torn edges.")) {
+            Lever(isOn: Binding(get: { !plainPast }, set: { plainPast = !$0 }))
+        }
     }
 
     @ViewBuilder private var aboutPart: some View {
@@ -466,6 +473,7 @@ struct SettingsSticker: View {
     @AppStorage(Prefs.font) private var fontKey = "newyork"
     @AppStorage(Prefs.noWeather) private var noWeather = false
     @AppStorage(Prefs.noAsk) private var noAsk = false
+    @AppStorage(Prefs.plainPast) private var plainPast = false
     @AppStorage(DayEvents.onKey) private var calendarEvents = true
     @AppStorage(HealthDay.key) private var health = false
     /// iPhone не смог спросить разрешение на «Здоровье» — у сборки нет права

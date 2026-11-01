@@ -365,7 +365,7 @@ final class Shell: ObservableObject {
         hideCloud = !["remember", "diary"].contains(name)
         switch name {
         case "diary":     tab = .diary
-        case "calendar":  screen = .calendar
+        case "calendar":  CalendarView.previewStart = day(-7); screen = .calendar
         case "search", "searchdeep": screen = .search
         case "settings":  showingSettings = true
         case "map":       screen = .map
@@ -383,6 +383,7 @@ final class Shell: ObservableObject {
         case "list":
             // Вид календаря запоминается в настройках — оттуда его и берём.
             UserDefaults.standard.set(CalendarView.Kind.list.rawValue, forKey: "calendar.kind")
+            CalendarView.previewStart = day(-7)
             screen = .calendar
         default: break
         }

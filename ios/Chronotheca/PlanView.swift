@@ -386,25 +386,22 @@ struct Panel: ViewModifier {
     }
 }
 
-/// Черта конца недели: прямая, у которой концы загнуты вверх.
-///
-/// Так она выглядела в прототипе: там это был нижний край скруглённой рамки
-/// строки, и загиб получался сам собой. Здесь его приходится рисовать
-/// нарочно — но без него неделя не отбивается, а просто подчёркивается.
-struct WeekEnd: Shape {
-
-    /// Насколько концы уходят вверх. Чуть-чуть: это намёк, а не скоба.
-    var rise: CGFloat = 6
+/// Скоба выходных в «Списке» календаря (P731): черта под воскресеньем,
+/// её загибы поднимаются вертикально по бокам до верха субботы.
+struct WeekendBracket: Shape {
+    var rise: CGFloat = 9
 
     func path(in r: CGRect) -> Path {
         var p = Path()
-        let низ = r.maxY
-        p.move(to: CGPoint(x: r.minX, y: низ - rise))
-        p.addQuadCurve(to: CGPoint(x: r.minX + rise, y: низ),
-                       control: CGPoint(x: r.minX, y: низ))
-        p.addLine(to: CGPoint(x: r.maxX - rise, y: низ))
-        p.addQuadCurve(to: CGPoint(x: r.maxX, y: низ - rise),
-                       control: CGPoint(x: r.maxX, y: низ))
+        let bottom = r.maxY
+        p.move(to: CGPoint(x: r.minX, y: r.minY))
+        p.addLine(to: CGPoint(x: r.minX, y: bottom - rise))
+        p.addQuadCurve(to: CGPoint(x: r.minX + rise, y: bottom),
+                       control: CGPoint(x: r.minX, y: bottom))
+        p.addLine(to: CGPoint(x: r.maxX - rise, y: bottom))
+        p.addQuadCurve(to: CGPoint(x: r.maxX, y: bottom - rise),
+                       control: CGPoint(x: r.maxX, y: bottom))
+        p.addLine(to: CGPoint(x: r.maxX, y: r.minY))
         return p
     }
 }

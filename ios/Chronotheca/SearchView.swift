@@ -177,7 +177,8 @@ struct SearchView: View {
             // верхней и своим корешком с датой закрывает её низ (P694, P695).
             LazyVStack(spacing: -Search.overlap) {
                 ForEach(items) { item in
-                    SearchCard(stamp: Search.stamp(item.day.date), past: Ru.isPast(item.day.date)) {
+                    SearchCard(stamp: Search.stamp(item.day.date), past: Ru.isPast(item.day.date),
+                               seed: PageTexture.seed(item.day.date) &+ (Search.deep ? (Int(item.id) ?? 0) * 7 : 0)) {
                         row(item.day)
                     }
                 }
@@ -337,6 +338,10 @@ private struct SearchCard<Content: View>: View {
     let stamp: String
     /// Прошедший день — края затёрты, как у его страницы (P722).
     var past = true
+    /// Номер дня — у каждой карточки свой износ (P723).
+    var seed = 0
+    /// Старая бумага выключена в настройках (P730): карточки ровные.
+    @AppStorage(Prefs.plainPast) private var plainPast = false
     @ViewBuilder let content: () -> Content
 
     var body: some View {
@@ -366,12 +371,23 @@ private struct SearchCard<Content: View>: View {
                 PaintedShadow(radius: 5, corner: 12, x: 2, y: 3,
                               opacity: scheme == .dark ? 0.5 : 0.3)
                     .padding(.top, Search.tabHeight)
-                paper.clipShape(FolderShape(tabHeight: Search.tabHeight))
-                if past {
-                    AgedFrame(band: 12).clipShape(FolderShape(tabHeight: Search.tabHeight))
+                ZStack {
+                    paper.clipShape(FolderShape(tabHeight: Search.tabHeight))
+                    // Прошедший день — затёрт и порван; сегодняшний — слегка
+                    // тронут, чтобы не выбивался среди старых (P728).
+                    if !plainPast {
+                        AgedFrame(band: 12, seed: seed, openBottom: true, light: !past)
+                            .clipShape(FolderShape(tabHeight: Search.tabHeight))
+                    }
+                    FolderShape(tabHeight: Search.tabHeight)
+                        .stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
                 }
-                FolderShape(tabHeight: Search.tabHeight)
-                    .stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
+                // Травмы края прошедшего дня вырезаны насквозь (P723).
+                .mask {
+                    if plainPast { Rectangle() } else {
+                        AgedFrame(band: 12, seed: seed, cut: true, openBottom: true, light: !past)
+                    }
+                }
             }
         }
     }
@@ -383,7 +399,7 @@ private struct SearchCard<Content: View>: View {
             Scheme.current.past
             Image(uiImage: PageTexture.paper)
                 .resizable(resizingMode: .tile)
-                .opacity(scheme == .dark ? 0.25 : 0.7)
+                .opacity(scheme == .dark ? 0.2 : 0.3)
         }
     }
 }
@@ -408,12 +424,10 @@ private struct FolderShape: Shape {
         p.addLine(to: CGPoint(x: r.maxX - bodyR, y: r.minY + tabHeight))
         p.addArc(tangent1End: CGPoint(x: r.maxX, y: r.minY + tabHeight),
                  tangent2End: CGPoint(x: r.maxX, y: r.minY + tabHeight + bodyR), radius: bodyR)
-        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY - bodyR))
-        p.addArc(tangent1End: CGPoint(x: r.maxX, y: r.maxY),
-                 tangent2End: CGPoint(x: r.maxX - bodyR, y: r.maxY), radius: bodyR)
-        p.addLine(to: CGPoint(x: r.minX + bodyR, y: r.maxY))
-        p.addArc(tangent1End: CGPoint(x: r.minX, y: r.maxY),
-                 tangent2End: CGPoint(x: r.minX, y: r.maxY - bodyR), radius: bodyR)
+        // Низ прямой, без скругления (P725): карточка уходит под следующую,
+        // и видно, что она выше видимой части.
+        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
+        p.addLine(to: CGPoint(x: r.minX, y: r.maxY))
         p.closeSubpath()
         return p
     }

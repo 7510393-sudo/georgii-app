@@ -28,7 +28,11 @@ struct CalendarView: View {
     /// возвращается в «Список», а не в чужой ему «Месяц».
     @AppStorage("calendar.kind") private var stored = Kind.month.rawValue
     private var kind: Kind { Kind(rawValue: stored) ?? .month }
-    @State private var shown: Date = DayStore.today()
+    @State private var shown: Date = CalendarView.previewStart ?? DayStore.today()
+    /// Для снимков CI (P723): месяц недельной давности — в первые дни
+    /// месяца на снимке иначе не было бы прошедших дней. Календарь собран
+    /// заранее, поэтому месяц ставится, когда его открывают.
+    static var previewStart: Date?
     @State private var plan: [Int] = []
     @State private var selected: String? = Vault.stamp(DayStore.today())
 
@@ -75,6 +79,11 @@ struct CalendarView: View {
         }
         .onAppear {
             DayEvents.forgetCache()
+        }
+        .onChange(of: shell.screen) { _, now in
+            guard now == .calendar, let start = CalendarView.previewStart else { return }
+            CalendarView.previewStart = nil
+            shown = start
         }
         // Просьба из меню календаря: та же дорога домой, что у кнопки вида.
         .onChange(of: shell.calendarHome) { _, want in
@@ -245,13 +254,13 @@ struct CalendarView: View {
                     // Прошедший месяц — на бумаге прошлого с рельефом (P684).
                     .background {
                         if monthIsPast(year: year, month: m) {
+                            // Кромка — у целого листа под рваным (P728).
                             ZStack {
-                                Ru.pastTint
-                                OldPaper()
+                                OldPaper(seed: year * 12 + m, base: Ru.pastTint)
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .strokeBorder(Look.stickerEdge, lineWidth: 1)
                             }
                             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .strokeBorder(Look.stickerEdge, lineWidth: 1))
                         }
                     }
                 }
@@ -395,11 +404,14 @@ struct CalendarView: View {
             .frame(height: 32)
             // Клетка — того же цвета, что страница этого дня: сегодня
             // абрикосовое, прошлое голубеет, будущее зеленеет (P245).
-            .background(isToday ? Look.accent : tint(date), in: RoundedRectangle(cornerRadius: 8))
-            // Прошедший день — на бумаге с рельефом, как его страница (P684).
-            .overlay {
+            // Прошедший день — на бумаге с рельефом, как его страница (P684),
+            // со своим износом и травмами края (P723).
+            .background {
                 if !isToday && Ru.isPast(date) {
-                    OldPaper().clipShape(RoundedRectangle(cornerRadius: 8))
+                    OldPaper(seed: PageTexture.seed(date), base: tint(date))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                } else {
+                    RoundedRectangle(cornerRadius: 8).fill(isToday ? Look.accent : tint(date))
                 }
             }
             .overlay(RoundedRectangle(cornerRadius: 8)
@@ -511,11 +523,28 @@ struct CalendarView: View {
         // Не «ленивый» столбец (P456): в нём строки, ещё не нарисованные,
         // стоят наугад, и прокрутка к дню промахивалась на день-два. Дней в
         // месяце не больше 31 — рисовать их сразу ничего не стоит.
+        // Суббота с воскресеньем — одна связка (P731): их обнимает скоба —
+        // черта под воскресеньем, концы которой поднимаются до верха субботы.
+        let groups = weekendGroups(cells)
         return VStack(spacing: 0) {
-            ForEach(Array(cells.enumerated()), id: \.offset) { _, day in
-                row(day, today: today)
-                    .id(Vault.stamp(day))
-                weekRule(after: day)
+            ForEach(Array(groups.enumerated()), id: \.offset) { _, group in
+                if group.count > 1 || cal.component(.weekday, from: group[0]) == 1 {
+                    VStack(spacing: 0) {
+                        ForEach(group, id: \.self) { day in
+                            row(day, today: today)
+                                .id(Vault.stamp(day))
+                            if day != group.last { dayRule }
+                        }
+                        Color.clear.frame(height: 3)
+                    }
+                    .overlay(WeekendBracket(rise: 9)
+                        .stroke(Look.inkSoft, style: StrokeStyle(lineWidth: 2.6, lineCap: .round))
+                        .padding(.horizontal, -2))
+                } else {
+                    row(group[0], today: today)
+                        .id(Vault.stamp(group[0]))
+                    dayRule
+                }
             }
         }
         .padding(.horizontal, 12)
@@ -585,9 +614,15 @@ struct CalendarView: View {
             .padding(.vertical, quiet ? 4 : 9)
             .opacity(quiet ? 0.75 : 1)
             // Строка дня — цвета его страницы (P245); выбранная обведена.
-            .background(tint(date))
-            // Прошедший день — на бумаге с рельефом (P684).
-            .overlay { if Ru.isPast(date) { OldPaper() } }
+            // Прошедший день — на бумаге с рельефом (P684), со своим износом
+            // и травмами края (P723).
+            .background {
+                if Ru.isPast(date) {
+                    OldPaper(seed: PageTexture.seed(date), base: tint(date))
+                } else {
+                    tint(date)
+                }
+            }
             .clipShape(RoundedRectangle(cornerRadius: 6))
             .overlay(RoundedRectangle(cornerRadius: 6)
                 .strokeBorder(open ? Look.accent.opacity(0.6) : .clear, lineWidth: 1.5))
@@ -595,26 +630,25 @@ struct CalendarView: View {
         .buttonStyle(.plain)
     }
 
-    /// Разделение недель: воскресенье отбивается жирной чертой — это конец
-    /// недели; пятница тонкой — за ней начинаются выходные. Так месяц
-    /// читается ритмом, а не сплошным столбцом.
-    ///
-    /// Черта воскресенья загибается на концах вверх: она не сама по себе, а
-    /// нижний край рамки вокруг недели, и этот загиб её и замыкает (P143).
-    @ViewBuilder private func weekRule(after date: Date) -> some View {
-        let weekday = cal.component(.weekday, from: date)
-        // Черты обнимают выходные — субботу и воскресенье, — с какого бы дня
-        // ни начиналась неделя (P456; прежде при неделе с воскресенья жирная
-        // черта вставала после субботы, и выделенными выглядели пятница и
-        // суббота). Нижняя — заметнее, с явными загибами.
-        if weekday == 1 {
-            WeekEnd(rise: 9).stroke(Look.inkSoft, style: StrokeStyle(lineWidth: 2.6, lineCap: .round))
-                .frame(height: 3)
-        } else if weekday == 6 {
-            Rectangle().fill(Look.inkFaint).opacity(0.55).frame(height: 1)
-        } else {
-            Rectangle().fill(Look.ruleSoft).frame(height: 1)
+    /// Дни месяца по порядку; суббота и следующее за ней воскресенье — в
+    /// одной связке, а воскресенье без субботы (первое число) — одно.
+    private func weekendGroups(_ days: [Date]) -> [[Date]] {
+        var out: [[Date]] = []
+        for day in days {
+            if cal.component(.weekday, from: day) == 1, let last = out.last, last.count == 1,
+               cal.component(.weekday, from: last[0]) == 7 {
+                out[out.count - 1].append(day)
+            } else {
+                out.append([day])
+            }
         }
+        return out
+    }
+
+    /// Тонкая черта между днями; черты после пятницы больше нет (P731) —
+    /// выходные отделяет скоба `WeekendBracket`.
+    private var dayRule: some View {
+        Rectangle().fill(Look.ruleSoft).frame(height: 1)
     }
 
     // MARK: - Касания
