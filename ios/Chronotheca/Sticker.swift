@@ -13,6 +13,8 @@ enum StickerSide { case leading, trailing }
 struct Sticker<Content: View>: View {
 
     @EnvironmentObject private var shell: Shell
+    /// «Ретро» выключено (P737): прежний белый листок.
+    @AppStorage(Prefs.plainPast) private var plainPast = false
 
     let side: StickerSide
     let title: String
@@ -67,10 +69,16 @@ struct Sticker<Content: View>: View {
         // содержимого (P428): тень по сложному содержимому считается
         // заново на каждом кадре выезда, и длинный листок настроек
         // дёргался. Вид тот же.
-        .background(shape.fill(paper))
+        .background {
+            // «Ретро» (P737): листок — старая бумага, как уголок, за который
+            // его тянут; иначе — прежний белый лист.
+            if plainPast { shape.fill(paper) } else { OldSheet(seed: 9) }
+        }
         // Тень — заранее нарисованная картинка (P675), не размытие на ходу.
         .background(PaintedShadow(radius: 14, corner: 12, x: 6, y: 6, opacity: 0.32))
-        .overlay(StickerBorder(radius: 12, side: side).stroke(edge, lineWidth: 1))
+        .overlay {
+            if plainPast { StickerBorder(radius: 12, side: side).stroke(edge, lineWidth: 1) }
+        }
         // Спрятанный листок стоит так, что его нижний угол — ровно уголок
         // над экраном; вытягивают его за этот угол (P237).
         .visualEffect { [amount, side] content, geo in
@@ -171,5 +179,42 @@ struct StickerBorder: Shape {
             p.addLine(to: CGPoint(x: r.minX, y: r.maxY))
         }
         return p
+    }
+}
+
+/// Листок старой бумаги (P737): цвет прошлого, рельеф, затёртые края и
+/// рваный край — один лист из пачки заготовок (P732); пока его нет —
+/// ровная бумага. Сведён в одну картинку (`drawingGroup`): листок едет
+/// за пальцем, и рваный край не должен вырезаться заново на каждом кадре
+/// (P497: обрезка по фигуре на ходу давала ступеньки).
+struct OldSheet: View {
+    let seed: Int
+    @Environment(\.colorScheme) private var scheme
+    @State private var art: PageTexture.AgedArt?
+
+    var body: some View {
+        GeometryReader { geo in
+            let order = PageTexture.agedOrder(size: geo.size, band: 20, seed: seed)
+            let ready = art ?? PageTexture.agedReady(order)
+            ZStack {
+                Scheme.current.past
+                Image(uiImage: PageTexture.paper)
+                    .resizable(resizingMode: .tile)
+                    .opacity(scheme == .dark ? 0.2 : 0.3)
+                if let ready {
+                    Image(uiImage: ready.frame)
+                        .resizable()
+                        .opacity(scheme == .dark ? 0.35 : 1)
+                }
+            }
+            .frame(width: geo.size.width, height: geo.size.height)
+            .mask {
+                if let ready { Image(uiImage: ready.cut).resizable() } else { Rectangle() }
+            }
+            .drawingGroup()
+            .task(id: order) { art = await PageTexture.aged(order) }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }

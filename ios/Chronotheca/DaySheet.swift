@@ -14,6 +14,9 @@ import UIKit
 /// разойтись хоть на строку — и при перелистывании текст прыгает (P114).
 struct DaySheet<Plan: View, Diary: View>: View {
 
+    /// Куда сдвинут лист — бокам страницы (P737).
+    @Environment(\.pageScroll) private var pageScroll
+
     let date: Date
     /// Приложение открыли заново или вернулись после паузы (P346):
     /// меняется — страница встаёт на своё место. У соседних не меняется.
@@ -105,7 +108,8 @@ struct DaySheet<Plan: View, Diary: View>: View {
                     // обратно (видео автора).
                     .padding(.bottom, Self.stripRoom)
                     .frame(minHeight: outer.size.height, alignment: .top)
-                    .background(Ru.tint(date).overlay(PageTexture(tab: .diary, space: Self.space, aged: Ru.isPast(date), edgeBottom: true)))
+                    .background(Ru.tint(date).overlay(PageTexture(tab: .diary, space: Self.space, aged: Ru.isPast(date), edgeBottom: true,
+                                                                     seed: PageTexture.seed(date))))
                     // Клетка и волокно отсчитываются от самого листа, а не
                     // от экрана: тянешь план — клетка едет с текстом (P412).
                     .coordinateSpace(name: Self.space)
@@ -119,6 +123,11 @@ struct DaySheet<Plan: View, Diary: View>: View {
                     // по ним место отпускается, когда клавиатура ушла (P446).
                     .background(GeometryReader { g in
                         Color.clear.preference(key: SheetBox.self, value: g.frame(in: .named(Self.window)))
+                            // Где верх листа — бокам страницы (P737): они
+                            // едут вместе с листом.
+                            .onChange(of: g.frame(in: .named(Self.window)).minY, initial: true) { _, y in
+                                pageScroll?.y = y
+                            }
                     })
                     // Место под клавиатуру: без него строку, в которой пишут,
                     // некуда поднять (P166, P175). Ровно столько, сколько

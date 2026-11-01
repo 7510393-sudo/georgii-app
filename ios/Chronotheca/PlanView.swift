@@ -386,27 +386,6 @@ struct Panel: ViewModifier {
     }
 }
 
-/// Скоба выходных в «Списке» календаря (P731): черта под воскресеньем,
-/// её загибы поднимаются вертикально по бокам до верха субботы.
-struct WeekendBracket: Shape {
-    var rise: CGFloat = 9
-
-    func path(in r: CGRect) -> Path {
-        var p = Path()
-        let bottom = r.maxY
-        p.move(to: CGPoint(x: r.minX, y: r.minY))
-        p.addLine(to: CGPoint(x: r.minX, y: bottom - rise))
-        p.addQuadCurve(to: CGPoint(x: r.minX + rise, y: bottom),
-                       control: CGPoint(x: r.minX, y: bottom))
-        p.addLine(to: CGPoint(x: r.maxX - rise, y: bottom))
-        p.addQuadCurve(to: CGPoint(x: r.maxX, y: bottom - rise),
-                       control: CGPoint(x: r.maxX, y: bottom))
-        p.addLine(to: CGPoint(x: r.maxX, y: r.minY))
-        return p
-    }
-}
-
-
 // MARK: - Открытая страница
 
 /// Вкладка «План»: дела на день.

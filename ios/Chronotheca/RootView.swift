@@ -568,7 +568,7 @@ struct RootView: View {
                 hideKeyboard()
                 shell.pullOut()
             } label: {
-                Corner(leading: true, paper: Look.planBg, edge: Look.rule, icon: "gearshape",
+                Corner(icon: "gearshape",
                        tint: shell.showingSettings ? Look.accent : Look.inkSoft)
                     // Пока листок вытянут, его угол — это и есть уголок.
                     .opacity(shell.showingSettings ? 0 : 1)
@@ -941,96 +941,90 @@ struct RootView: View {
     }
 }
 
-/// Уголок стикера, наклеенного выше экрана: слева торчит правый нижний
-/// угол голубого стикера, справа — левый нижний угол желтоватого. Стикер
-/// наклеен ровно, по вертикали; у него тень — он лежит поверх страницы
-/// (P229, P231, P236).
+/// Уголок листка, заложенного выше экрана: слева торчит его правый нижний
+/// угол с шестерёнкой (P229, P236); у него тень — он лежит поверх
+/// страницы. С P735 — старая бумага, как прошлое.
 struct Corner: View {
     static let size: CGFloat = 58
     /// Насколько верх уголка спрятан за верхним краем (P496).
     static let lift: CGFloat = 2
+    /// Листок заходит за левый край экрана и под верх: рваными видны только
+    /// правый и нижний края (P735).
+    private static let hidden: CGFloat = 10
 
-    let leading: Bool
-    let paper: Color
-    let edge: Color
     let icon: String
     let tint: Color
+    @Environment(\.colorScheme) private var scheme
+    @AppStorage(Prefs.plainPast) private var plainPast = false
+    @State private var art: PageTexture.AgedArt?
 
     var body: some View {
-        ZStack(alignment: leading ? .topLeading : .topTrailing) {
-            // Сверху стикер растворяется в подложке — ни черты, ни резкого
-            // края; черта — только сбоку и снизу, тень явнее (P416).
-            // Растворяется выше значка (P425): значок стоит на чистой
-            // бумаге, а не на переходе.
-            // Тень — только от плотной части листка (P459): прежде её
-            // отбрасывал и растворяющийся верх, и сквозь прозрачную бумагу
-            // над листком проступала серая полоса — «неаккуратный верх».
-            CornerShape(leading: leading, top: 0.2)
-                .fill(paper)
-                .shadow(color: .black.opacity(0.4), radius: 4, x: 3, y: 3.5)
-            CornerShape(leading: leading)
-                .fill(LinearGradient(stops: [.init(color: paper.opacity(0), location: 0),
-                                             .init(color: paper, location: 0.11)],
-                                     startPoint: .top, endPoint: .bottom))
-            CornerEdge(leading: leading)
-                .stroke(LinearGradient(stops: [.init(color: edge.opacity(0), location: 0),
-                                               .init(color: edge, location: 0.14)],
-                                       startPoint: .top, endPoint: .bottom),
-                        lineWidth: 1)
+        ZStack(alignment: .topLeading) {
+            sticker
             Image(systemName: icon)
                 .font(.system(size: 18))
                 .foregroundStyle(tint)
                 .frame(width: 30, height: 26)
-                .padding(leading ? .leading : .trailing, 9)
+                .padding(.leading, 9)
                 .padding(.top, 7)
         }
-        .frame(width: Corner.size, height: Corner.size)
-        .contentShape(CornerShape(leading: leading))
+        .frame(width: Corner.size, height: Corner.size, alignment: .topLeading)
+        // Сверху листок уходит под край ровно — без растворения (P735:
+        // переход цвета сверху выбивался из старой бумаги).
+        .clipShape(BelowTop())
+        .contentShape(CornerShape())
     }
-}
 
-/// Видимая часть стикера: от края экрана его нижняя сторона идёт вниз к
-/// острому углу, от угла боковая сторона уходит вверх за край экрана.
-struct CornerShape: Shape {
-    let leading: Bool
-    /// Откуда сверху начинается листок, доля высоты: тень берётся только с
-    /// плотной части (P459).
-    var top: CGFloat = 0
-
-    func path(in r: CGRect) -> Path {
-        // Точки для левого уголка; правый — зеркально.
-        // Стикер наклеен ровно, без наклона: видна его нижняя сторона и
-        // боковая, угол между ними прямой (P236).
-        let points: [CGPoint] = [
-            CGPoint(x: 0, y: top),
-            CGPoint(x: 0.86, y: top),            // боковая сторона уходит за верх
-            CGPoint(x: 0.86, y: 0.80),           // прямой угол
-            CGPoint(x: 0, y: 0.80),              // нижняя сторона уходит за край
-        ]
-        var p = Path()
-        for (i, pt) in points.enumerated() {
-            let x = leading ? r.minX + pt.x * r.width : r.maxX - pt.x * r.width
-            let at = CGPoint(x: x, y: r.minY + pt.y * r.height)
-            if i == 0 { p.move(to: at) } else { p.addLine(to: at) }
+    /// Старая бумага, потрёпанная сильнее карточек — за уголок берутся
+    /// часто (P735, по слову автора): шире охра и подпалина, рваный край.
+    /// Лист — из пачки заготовок (P732); пока его нет — ровная бумага.
+    private var sticker: some View {
+        let w = (Corner.size * 0.86 + Corner.hidden).rounded()
+        let h = (Corner.size * 0.80 + Corner.hidden).rounded()
+        let order = PageTexture.agedOrder(size: CGSize(width: w, height: h), band: 16, seed: 5)
+        let ready = plainPast ? nil : (art ?? PageTexture.agedReady(order))
+        return ZStack {
+            // Без «Ретро» (P737) — прежняя белая бумага листков, ровная.
+            if plainPast {
+                Look.planBg
+            } else {
+                Scheme.current.past
+                Image(uiImage: PageTexture.paper)
+                    .resizable(resizingMode: .tile)
+                    .opacity(scheme == .dark ? 0.2 : 0.3)
+            }
+            if let ready {
+                Image(uiImage: ready.frame)
+                    .resizable()
+                    .opacity(scheme == .dark ? 0.35 : 1)
+            }
         }
-        p.closeSubpath()
-        return p
+        .frame(width: w, height: h)
+        .mask {
+            if let ready { Image(uiImage: ready.cut).resizable() } else { Rectangle() }
+        }
+        .compositingGroup()
+        .shadow(color: .black.opacity(0.4), radius: 4, x: 3, y: 3.5)
+        .offset(x: -Corner.hidden, y: -Corner.hidden)
+        .task(id: order) {
+            guard !plainPast else { return }
+            art = await PageTexture.aged(order)
+        }
     }
 }
 
-/// Кромка стикера-уголка (P416): только боковая сторона и нижняя, без
-/// верхней — сверху он растворяется в подложке.
-struct CornerEdge: Shape {
-    let leading: Bool
-
+/// Всё, что ниже верхнего края уголка: тень и бумага справа и снизу не
+/// обрезаются, сверху листок уходит под край.
+private struct BelowTop: Shape {
     func path(in r: CGRect) -> Path {
-        let side = leading ? r.minX + 0.86 * r.width : r.maxX - 0.86 * r.width
-        let edge = leading ? r.minX : r.maxX
-        var p = Path()
-        p.move(to: CGPoint(x: side, y: r.minY))
-        p.addLine(to: CGPoint(x: side, y: r.minY + 0.8 * r.height))
-        p.addLine(to: CGPoint(x: edge, y: r.minY + 0.8 * r.height))
-        return p
+        Path(CGRect(x: r.minX - 40, y: r.minY, width: r.width + 80, height: r.height + 40))
+    }
+}
+
+/// Видимая часть уголка — для касаний.
+struct CornerShape: Shape {
+    func path(in r: CGRect) -> Path {
+        Path(CGRect(x: r.minX, y: r.minY, width: r.width * 0.86, height: r.height * 0.80))
     }
 }
 
