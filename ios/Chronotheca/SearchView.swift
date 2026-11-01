@@ -401,7 +401,18 @@ private struct CardPaper: View {
                         .opacity(scheme == .dark ? 0.35 : 1)
                         .clipShape(FolderShape(tabHeight: Search.tabHeight))
                 }
-                topShade.clipShape(FolderShape(tabHeight: Search.tabHeight))
+                if let ready {
+                    // Плечо карточки (P738) — справа от корешка, где лист
+                    // ступенькой ниже корешка, — затёрто той же полосой, что
+                    // верх корешка: та же картинка, опущенная на высоту
+                    // корешка, видна только вдоль плеча и сходит на нет.
+                    Image(uiImage: ready.frame)
+                        .resizable()
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        .offset(y: Search.tabHeight)
+                        .mask(alignment: .topLeading) { shoulder(geo.size) }
+                        .opacity(scheme == .dark ? 0.35 : 1)
+                }
                 FolderShape(tabHeight: Search.tabHeight)
                     .stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
             }
@@ -417,18 +428,15 @@ private struct CardPaper: View {
         .allowsHitTesting(false)
     }
 
-    /// Потемнение верха карточки (P734): корешок и полоса под ним темнее,
-    /// к тексту сходит на нет — карточки отделяются друг от друга.
-    private var topShade: some View {
-        let tone = scheme == .dark ? Color.black : Color(red: 110 / 255, green: 58 / 255, blue: 22 / 255)
-        return VStack(spacing: 0) {
-            LinearGradient(stops: [.init(color: tone.opacity(scheme == .dark ? 0.55 : 0.5), location: 0),
-                                   .init(color: tone.opacity(scheme == .dark ? 0.3 : 0.25), location: 0.4),
-                                   .init(color: tone.opacity(0), location: 1)],
-                           startPoint: .top, endPoint: .bottom)
-                .frame(height: Search.tabHeight + 40)
-            Spacer(minLength: 0)
-        }
+    /// Полоса вдоль плеча: от корешка до правого края, книзу и к правому
+    /// краю тает (правый край затёрт и так).
+    private func shoulder(_ size: CGSize) -> some View {
+        let from = size.width / 3 + 6
+        return LinearGradient(colors: [.black, .black, .clear], startPoint: .top, endPoint: .bottom)
+            .frame(width: max(0, size.width - from - 10), height: 30)
+            .mask(LinearGradient(colors: [.black, .black, .black, .clear],
+                                 startPoint: .leading, endPoint: .trailing))
+            .offset(x: from, y: Search.tabHeight)
     }
 
     /// Старая бумага: цвет прошлого и рельеф плиткой — непрозрачная, иначе

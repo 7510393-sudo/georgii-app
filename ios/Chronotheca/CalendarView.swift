@@ -27,8 +27,6 @@ struct CalendarView: View {
     /// Вид запоминается между заходами: человек, оставивший «Список»,
     /// возвращается в «Список», а не в чужой ему «Месяц».
     @AppStorage("calendar.kind") private var stored = Kind.month.rawValue
-    /// «Ретро» выключено (P737): без латунного зажима у выходных.
-    @AppStorage(Prefs.plainPast) private var plainPast = false
     private var kind: Kind { Kind(rawValue: stored) ?? .month }
     @State private var shown: Date = CalendarView.previewStart ?? DayStore.today()
     /// Для снимков CI (P723): месяц недельной давности — в первые дни
@@ -525,10 +523,9 @@ struct CalendarView: View {
         // Не «ленивый» столбец (P456): в нём строки, ещё не нарисованные,
         // стоят наугад, и прокрутка к дню промахивалась на день-два. Дней в
         // месяце не больше 31 — рисовать их сразу ничего не стоит.
-        // Суббота с воскресеньем — одна связка (P731): их скрепляет
-        // латунный зажим на левом краю (P735, вместо скобы — она была
-        // слишком нынешней для старой бумаги); после воскресенья — зазор,
-        // им недели и отделяются.
+        // Суббота с воскресеньем — одна связка (P731); недели отделяет
+        // зазор после воскресенья (P735). Латунный зажим (P735) убран (P738:
+        // «похож на пивную кружку») — чем отметить выходные, решает автор.
         let groups = weekendGroups(cells)
         return VStack(spacing: 0) {
             ForEach(Array(groups.enumerated()), id: \.offset) { _, group in
@@ -537,14 +534,6 @@ struct CalendarView: View {
                         ForEach(group, id: \.self) { day in
                             row(day, today: today)
                                 .id(Vault.stamp(day))
-                                // Зажим — на стыке субботы и воскресенья,
-                                // поверх обоих листков.
-                                .overlay(alignment: .bottomLeading) {
-                                    if !plainPast && group.count > 1 && day == group.first {
-                                        BrassClip().offset(x: -4, y: 14)
-                                    }
-                                }
-                                .zIndex(day == group.first ? 1 : 0)
                             if day != group.last { dayRule }
                         }
                         Color.clear.frame(height: 12)
@@ -655,7 +644,7 @@ struct CalendarView: View {
     }
 
     /// Тонкая черта между днями; черты после пятницы больше нет (P731) —
-    /// выходные скрепляет зажим `BrassClip`, недели разделяет зазор (P735).
+    /// недели разделяет зазор после воскресенья (P735).
     private var dayRule: some View {
         Rectangle().fill(Look.ruleSoft).frame(height: 1)
     }
