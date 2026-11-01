@@ -424,18 +424,27 @@ struct OldPaper: View {
     var base: Color? = nil
     /// Старая бумага выключена в настройках (P730): только цвет прошлого.
     @AppStorage(Prefs.plainPast) private var plainPast = false
+    /// Лист из пачки заготовок приходит следом (P732).
+    @ObservedObject private var shop = PaperShop.shared
 
     var body: some View {
         if plainPast {
             if let base { base }
         } else {
-            worn
+            GeometryReader { geo in
+                if let art = PageTexture.aged(size: geo.size, band: band, seed: seed) {
+                    worn(art, geo.size)
+                } else if let base {
+                    base
+                }
+            }
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
         }
     }
 
-    private var worn: some View {
-        GeometryReader { geo in
-            let art = PageTexture.aged(size: geo.size, band: band, seed: seed)
+    private func worn(_ art: PageTexture.AgedArt, _ size: CGSize) -> some View {
+        return Group {
             let tile = PageTexture.paper.size
             // Рельеф сдвинут по номеру дня — соседние клетки не одинаковы.
             let dx = CGFloat(abs(seed &* 97) % Int(tile.width))
@@ -453,19 +462,19 @@ struct OldPaper: View {
                 if let base { base }
                 Image(uiImage: PageTexture.paper)
                     .resizable(resizingMode: .tile)
-                    .frame(width: geo.size.width + tile.width, height: geo.size.height + tile.height)
+                    .frame(width: size.width + tile.width, height: size.height + tile.height)
                     .offset(x: -dx, y: -dy)
-                    .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
+                    .frame(width: size.width, height: size.height, alignment: .topLeading)
                     .clipped()
                     // Вдвое слабее, чем на странице (P685): рельеф подобран под
                     // лист во весь экран, на мелких клетках он выходил «пухлым».
                     .opacity(scheme == .dark ? 0.15 : 0.25)
                 Image(uiImage: art.frame)
                     .resizable()
-                    .frame(width: geo.size.width, height: geo.size.height)
+                    .frame(width: size.width, height: size.height)
                     .opacity(scheme == .dark ? 0.35 : 1)
             }
-            .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
+            .frame(width: size.width, height: size.height, alignment: .topLeading)
             .clipped()
             .mask(Image(uiImage: art.cut).resizable())
             // Рваный край отбрасывает тонкую тень на лист под ним.
@@ -492,13 +501,20 @@ struct AgedFrame: View {
     /// Слегка тронутая бумага (P728): сегодняшняя карточка поиска.
     var light = false
     @Environment(\.colorScheme) private var scheme
+    /// Лист из пачки заготовок приходит следом (P732).
+    @ObservedObject private var shop = PaperShop.shared
 
     var body: some View {
         GeometryReader { geo in
-            let art = PageTexture.aged(size: geo.size, band: band, seed: seed, openBottom: openBottom, light: light)
-            Image(uiImage: cut ? art.cut : art.frame)
-                .resizable()
-                .opacity(cut || scheme != .dark ? 1 : 0.35)
+            if let art = PageTexture.aged(size: geo.size, band: band, seed: seed, openBottom: openBottom,
+                                          light: light) {
+                Image(uiImage: cut ? art.cut : art.frame)
+                    .resizable()
+                    .opacity(cut || scheme != .dark ? 1 : 0.35)
+            } else if cut {
+                // Пока листа нет — карточка целая.
+                Color.black
+            }
         }
         .allowsHitTesting(false)
         .accessibilityHidden(true)
@@ -524,6 +540,8 @@ struct PageTexture: View {
     @Environment(\.colorScheme) private var scheme
     /// Старая бумага выключена в настройках (P730).
     @AppStorage(Prefs.plainPast) private var plainPast = false
+    /// Готовые заготовки краёв приходят следом (P732).
+    @ObservedObject private var shop = PaperShop.shared
     private var dark: Bool { scheme == .dark }
 
     /// Общая точка отсчёта фактуры — вся страница дня.
@@ -619,16 +637,19 @@ struct PageTexture: View {
         ZStack {
             // Бока идут от верха всей страницы, а не от каждого её куска
             // (P723): на стыке плана и дневника край не обрывается.
+            // Пока заготовки краёв не готовы — края не затёрты (P732).
             HStack(spacing: 0) {
-                sideStrip(PageTexture.sideEdge)
+                if let left = PageTexture.sideEdge { sideStrip(left) }
                 Spacer(minLength: 0)
-                sideStrip(PageTexture.sideEdgeRight)
-                    .scaleEffect(x: -1)
+                if let right = PageTexture.sideEdgeRight {
+                    sideStrip(right)
+                        .scaleEffect(x: -1)
+                }
             }
             VStack(spacing: 0) {
                 Spacer(minLength: 0)
-                if edgeBottom {
-                    Image(uiImage: PageTexture.footEdge).resizable(resizingMode: .tile)
+                if edgeBottom, let foot = PageTexture.footEdge {
+                    Image(uiImage: foot).resizable(resizingMode: .tile)
                         .frame(height: PageTexture.footDepth)
                 }
             }
@@ -711,6 +732,10 @@ struct PageTexture: View {
     static func prepareSoon() {
         DispatchQueue.global(qos: .utility).async {
             _ = paper
+        }
+        // Края страницы — в пачку заготовок: нарисуются в стороне или
+        // достанутся из служебной памяти (P732).
+        DispatchQueue.main.async {
             _ = sideEdge
             _ = sideEdgeRight
             _ = footEdge
@@ -785,13 +810,22 @@ struct PageTexture: View {
     /// Бок: широкая тёплая полоса к краю, глубина и сила гуляют пятнами;
     /// сам край рваный. Длина куска — 1200 точек (P723): на странице он
     /// почти не повторяется. Левый и правый — разные куски, не зеркало.
-    static let sideEdge: UIImage = edgeImage(depthPoints: sideDepth, alongPoints: 1200, falloff: 28, peak: 0.5,
-                                             vertical: true, seed: 0xED6E1)
-    static let sideEdgeRight: UIImage = edgeImage(depthPoints: sideDepth, alongPoints: 1200, falloff: 28, peak: 0.5,
-                                                  vertical: true, seed: 0xED6E3)
+    static var sideEdge: UIImage? {
+        PaperShop.shared.picture("side-left") {
+            edgeImage(depthPoints: sideDepth, alongPoints: 1200, falloff: 28, peak: 0.5, vertical: true, seed: 0xED6E1)
+        }
+    }
+    static var sideEdgeRight: UIImage? {
+        PaperShop.shared.picture("side-right") {
+            edgeImage(depthPoints: sideDepth, alongPoints: 1200, falloff: 28, peak: 0.5, vertical: true, seed: 0xED6E3)
+        }
+    }
     /// Низ: темнее и шире боков.
-    static let footEdge: UIImage = edgeImage(depthPoints: footDepth, alongPoints: 480, falloff: 34, peak: 0.55,
-                                             vertical: false, seed: 0xED6E2)
+    static var footEdge: UIImage? {
+        PaperShop.shared.picture("foot") {
+            edgeImage(depthPoints: footDepth, alongPoints: 480, falloff: 34, peak: 0.55, vertical: false, seed: 0xED6E2)
+        }
+    }
 
     /// Полоска вдоль края, 2 пикселя на точку. Вертикальная — край слева;
     /// горизонтальная — край внизу. По образцу автора (P727): бумага к краю
@@ -1062,11 +1096,26 @@ struct PageTexture: View {
         init(frame: UIImage, cut: UIImage) { self.frame = frame; self.cut = cut }
     }
 
-    private static let agedMade: NSCache<NSString, AgedArt> = {
-        let cache = NSCache<NSString, AgedArt>()
-        cache.countLimit = 600
-        return cache
-    }()
+    /// Готовый лист из пачки заготовок (P732, по слову автора «заготовить
+    /// листы заранее и раскладывать готовые»): листов немного — 16 клеток и
+    /// строк, 24 карточки на размер, — день берёт свой по номеру; рисуются
+    /// в стороне, хранятся в служебной памяти (`PaperShop`). Пока лист не
+    /// готов — `nil`: показывается просто цвет прошлого, бумага проступает
+    /// следом. Размер округляется (у строк и клеток до 4 точек, у карточек
+    /// до 20), лист тянется на свой размер — разница незаметна.
+    static func aged(size: CGSize, band: CGFloat, seed number: Int, openBottom: Bool = false,
+                     light: Bool = false) -> AgedArt? {
+        let small = min(size.width, size.height) < 60
+        let step: CGFloat = small ? 4 : 20
+        let w = max(4, size.width.rounded())
+        let h = max(step, (size.height / step).rounded() * step)
+        let variant = abs(number) % (small ? 16 : 24)
+        let key = "\(Int(w))x\(Int(h))b\(Int(band * 10))v\(variant)\(openBottom ? "o" : "")\(light ? "l" : "")"
+        return PaperShop.shared.art(key) {
+            makeAged(size: CGSize(width: w, height: h), band: band, seed: variant + 1,
+                     openBottom: openBottom, light: light)
+        }
+    }
 
     /// Старая бумага под размер клетки, строки или карточки (P727, по
     /// образцу автора; отменяет отдельные травмы, загнутые уголки и
@@ -1075,11 +1124,9 @@ struct PageTexture: View {
     /// внутрь тёплая охра сходит на нет, тон чуть неровный. Всё — по номеру
     /// `seed`: вид одного дня не меняется. `band` — ширина потемнения.
     /// `openBottom` — низ уходит под следующую карточку: ровный и чистый.
-    static func aged(size: CGSize, band: CGFloat, seed number: Int, openBottom: Bool = false,
-                     light: Bool = false) -> AgedArt {
-        let w = max(4, size.width.rounded()), h = max(4, size.height.rounded())
-        let key = "\(Int(w))x\(Int(h))b\(Int(band * 10))s\(number)\(openBottom ? "o" : "")\(light ? "l" : "")" as NSString
-        if let made = agedMade.object(forKey: key) { return made }
+    fileprivate static func makeAged(size: CGSize, band: CGFloat, seed number: Int, openBottom: Bool,
+                                     light: Bool) -> AgedArt {
+        let w = size.width, h = size.height
         var seed = UInt64(bitPattern: Int64(number)) &* 0x9E37_79B9_7F4A_7C15 &+ 0xA6ED0 &+ UInt64(band * 10)
         func next() -> Float {
             seed = seed &* 6364136223846793005 &+ 1442695040888963407
@@ -1147,9 +1194,7 @@ struct PageTexture: View {
                              amount: amount, inward: .pi, next: next)
             }
         }
-        let made = AgedArt(frame: frame, cut: picture(cutBytes, width: W, height: H, scale: CGFloat(px)))
-        agedMade.setObject(made, forKey: key)
-        return made
+        return AgedArt(frame: frame, cut: picture(cutBytes, width: W, height: H, scale: CGFloat(px)))
     }
 
     /// Рельеф шершавой бумаги (P676, отменяет пятна и волоски): впадинки и
