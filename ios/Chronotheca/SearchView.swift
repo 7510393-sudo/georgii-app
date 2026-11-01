@@ -340,8 +340,6 @@ private struct SearchCard<Content: View>: View {
     var past = true
     /// Номер дня — у каждой карточки свой износ (P723).
     var seed = 0
-    /// Старая бумага выключена в настройках (P730): карточки ровные.
-    @AppStorage(Prefs.plainPast) private var plainPast = false
     @ViewBuilder let content: () -> Content
 
     var body: some View {
@@ -371,25 +369,51 @@ private struct SearchCard<Content: View>: View {
                 PaintedShadow(radius: 5, corner: 12, x: 2, y: 3,
                               opacity: scheme == .dark ? 0.5 : 0.3)
                     .padding(.top, Search.tabHeight)
-                ZStack {
-                    paper.clipShape(FolderShape(tabHeight: Search.tabHeight))
-                    // Прошедший день — затёрт и порван; сегодняшний — слегка
-                    // тронут, чтобы не выбивался среди старых (P728).
-                    if !plainPast {
-                        AgedFrame(band: 12, seed: seed, openBottom: true, light: !past)
-                            .clipShape(FolderShape(tabHeight: Search.tabHeight))
-                    }
-                    FolderShape(tabHeight: Search.tabHeight)
-                        .stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
-                }
-                // Травмы края прошедшего дня вырезаны насквозь (P723).
-                .mask {
-                    if plainPast { Rectangle() } else {
-                        AgedFrame(band: 12, seed: seed, cut: true, openBottom: true, light: !past)
-                    }
-                }
+                // Бумага карточки, затёртые края и рваный край — одним листом
+                // из пачки заготовок (P732, как у клеток месяца: прежде края
+                // и маска были двумя отдельными листами, и края не доходили).
+                CardPaper(seed: seed, past: past)
             }
         }
+    }
+}
+
+/// Лист карточки поиска (P732): старая бумага, затёртые края и рваный край —
+/// один лист из пачки заготовок; пока его нет — ровная бумага. Сегодняшний
+/// день слегка тронут (P728), без «Старой бумаги» (P730) — ровная бумага.
+private struct CardPaper: View {
+    let seed: Int
+    let past: Bool
+    @Environment(\.colorScheme) private var scheme
+    @AppStorage(Prefs.plainPast) private var plainPast = false
+    @State private var art: PageTexture.AgedArt?
+
+    var body: some View {
+        GeometryReader { geo in
+            let order = PageTexture.agedOrder(size: geo.size, band: 12, seed: seed, openBottom: true,
+                                              light: !past)
+            let ready = plainPast ? nil : (art ?? PageTexture.agedReady(order))
+            ZStack {
+                paper.clipShape(FolderShape(tabHeight: Search.tabHeight))
+                if let ready {
+                    Image(uiImage: ready.frame)
+                        .resizable()
+                        .opacity(scheme == .dark ? 0.35 : 1)
+                        .clipShape(FolderShape(tabHeight: Search.tabHeight))
+                }
+                FolderShape(tabHeight: Search.tabHeight)
+                    .stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
+            }
+            .frame(width: geo.size.width, height: geo.size.height)
+            .mask {
+                if let ready { Image(uiImage: ready.cut).resizable() } else { Rectangle() }
+            }
+            .task(id: order) {
+                guard !plainPast else { return }
+                art = await PageTexture.aged(order)
+            }
+        }
+        .allowsHitTesting(false)
     }
 
     /// Старая бумага: цвет прошлого и рельеф плиткой — непрозрачная, иначе
