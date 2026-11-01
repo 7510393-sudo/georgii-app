@@ -67,24 +67,29 @@ struct RememberCloud: View {
     private static let footEnd: CGFloat = 321.0 / 715
 
     /// Бумага облачка (P743): контура нет, края размыты и полупрозрачны,
-    /// как у настоящего облака; чёткий только прямой низ. Под низом —
-    /// подложка, чтобы размытие его не съело, а лишнее ниже черты срезается.
+    /// как у настоящего облака; чёткий только прямой низ. Размытая бумага
+    /// ниже черты срезается; у самой черты поверх лежит чёткая полоска той же
+    /// бумаги, тающая кверху, — низ не просвечивает.
     private func paper(height: CGFloat) -> some View {
         let blur = width * 0.035
-        return ZStack(alignment: .topLeading) {
-            Image("облачко-бумага")
-                .renderingMode(.template)
-                .resizable()
-                .frame(width: width, height: height)
-            Rectangle()
-                .frame(width: width * (296.0 / 715), height: height * (40.0 / 407))
-                .offset(x: width * (24.0 / 715), y: height * (334.0 / 407))
+        let band = height * 0.12
+        let sheet = Image("облачко-бумага")
+            .renderingMode(.template)
+            .resizable()
+            .foregroundStyle(Look.cloudPaper)
+            .frame(width: width, height: height)
+        return ZStack {
+            sheet
+                .blur(radius: blur)
+                .clipShape(FlatFoot(footY: Self.footY, footEnd: Self.footEnd, spill: blur * 3))
+            sheet
+                .mask(alignment: .topLeading) {
+                    LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
+                        .frame(width: width * Self.footEnd, height: band)
+                        .offset(y: height * Self.footY - band)
+                }
         }
-        .foregroundStyle(Look.cloudPaper)
-        .frame(width: width, height: height, alignment: .topLeading)
-        .compositingGroup()
-        .blur(radius: blur)
-        .mask(FlatFoot(footY: Self.footY, footEnd: Self.footEnd, spill: blur * 3))
+        .frame(width: width, height: height)
         .allowsHitTesting(false)
     }
 }
