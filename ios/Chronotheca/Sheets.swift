@@ -405,11 +405,13 @@ struct SettingsSticker: View {
         NoteRow(title: T("Цветовая гамма", "Colour scheme")) {
             SchemeChoice(selection: $calendarTint)
         }
-        // Старую бумагу прошлого можно выключить (P730): тогда прошедшие
-        // дни — просто цвет прошлого, без износа и рваного края.
-        NoteRow(title: T("Старая бумага", "Old paper"),
-                detail: T("Прошедшие дни — на затёртой бумаге с рваным краем.",
-                          "Past days on worn paper with torn edges.")) {
+        // «Ретро» (P737, вместо «Старой бумаги» P730): одним рычажком —
+        // старая бумага прошлого, уголок и листок настроек, латунный зажим
+        // выходных. Выключено — прошедшие дни просто цвета прошлого, листки
+        // белые, без износа и рваного края.
+        NoteRow(title: T("Ретро", "Retro"),
+                detail: T("Старая бумага с рваным краем у прошедших дней, уголка и настроек, латунный зажим выходных.",
+                          "Old paper with torn edges for past days, the corner and settings; a brass clip on weekends.")) {
             Lever(isOn: Binding(get: { !plainPast }, set: { plainPast = !$0 }))
         }
     }

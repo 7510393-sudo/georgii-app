@@ -72,6 +72,8 @@ struct DayPage: View {
     @EnvironmentObject private var archive: Archive
 
     @State private var remembering = false
+    /// Куда прокручен лист — для боков страницы (P737).
+    @StateObject private var scroll = PageScroll()
 
     /// Дни, чьи облачка уже прочитаны (решение P136).
     @AppStorage(Remembered.key) private var read = ""
@@ -102,7 +104,7 @@ struct DayPage: View {
                 // P250): шапка — продолжение листа.
         }
         // Затёртые бока — на всю страницу разом, без шва под шапкой (P735).
-        .overlay(PageSides(aged: Ru.isPast(date), seed: PageTexture.seed(date)))
+        .overlay(PageSides(aged: Ru.isPast(date), seed: PageTexture.seed(date), scroll: scroll))
         .background(background)
         // Фактура страницы и вкладок отсчитывается от одной точки — клетка
         // на вкладке продолжает клетку страницы (P246).
@@ -408,6 +410,7 @@ struct DayPage: View {
             } diary: {
                 DiaryView()
             }
+            .environment(\.pageScroll, scroll)
         } else {
             SideDay(date: date)
         }
@@ -495,18 +498,36 @@ struct OldPaper: View {
     }
 }
 
-/// Затёртые бока страницы дня (P735): один раз на всю страницу — от верха
-/// шапки до низа экрана, поверх плана и дневника, и стоят на месте, когда
-/// страницу прокручивают. Прежде бока были у каждого куска страницы и
-/// ехали с текстом (P723) — под шапкой выходил шов между неподвижной и
-/// подвижной частью листа. Так и легче: при прокрутке ничего не
-/// пересчитывается. Пока заготовки краёв не готовы — края не затёрты (P732).
+/// Куда прокручен лист дня (P737): бока страницы едут вместе с ним.
+/// Отдельная коробочка — при прокрутке перерисовываются только бока, а не
+/// вся страница.
+final class PageScroll: ObservableObject {
+    @Published var y: CGFloat = 0
+}
+
+private struct PageScrollKey: EnvironmentKey {
+    static let defaultValue: PageScroll? = nil
+}
+
+extension EnvironmentValues {
+    var pageScroll: PageScroll? {
+        get { self[PageScrollKey.self] }
+        set { self[PageScrollKey.self] = newValue }
+    }
+}
+
+/// Затёртые бока страницы дня (P735): одной полосой на всю страницу — от
+/// верха шапки до низа, без шва под шапкой. Едут вместе с листом (P737:
+/// «страница и текст — единое целое»; в P735 они стояли на месте) — сдвиг
+/// берётся из `PageScroll`, при прокрутке меняется только он.
+/// Пока заготовки краёв не готовы — края не затёрты (P732).
 struct PageSides: View {
     let aged: Bool
     /// Номер дня (P736): у каждого дня бока свои — кусок края берётся с
     /// другого места, левый и правый меняются местами, край переворачивается.
     /// Картинок столько же, сколько было, — памяти и работы не прибавилось.
     let seed: Int
+    @ObservedObject var scroll: PageScroll
     @Environment(\.colorScheme) private var scheme
     @AppStorage(Prefs.plainPast) private var plainPast = false
     @ObservedObject private var shop = PaperShop.shared
@@ -517,13 +538,12 @@ struct PageSides: View {
             let flip: CGFloat = (seed >> 1) & 1 == 1 ? -1 : 1
             HStack(spacing: 0) {
                 if let left = swap ? PageTexture.sideEdgeRight : PageTexture.sideEdge {
-                    strip(left, from: seed &* 389)
-                        .scaleEffect(x: 1, y: flip)
+                    strip(left, from: seed &* 389, flip: flip)
                 }
                 Spacer(minLength: 0)
                 if let right = swap ? PageTexture.sideEdge : PageTexture.sideEdgeRight {
-                    strip(right, from: seed &* 577 &+ 211)
-                        .scaleEffect(x: -1, y: flip)
+                    strip(right, from: seed &* 577 &+ 211, flip: flip)
+                        .scaleEffect(x: -1)
                 }
             }
             .allowsHitTesting(false)
@@ -531,15 +551,24 @@ struct PageSides: View {
         }
     }
 
-    /// Кусок края — с места `from` (кусок замкнут сам на себя, шва нет).
-    private func strip(_ picture: UIImage, from: Int) -> some View {
+    /// Кусок края — с места `from` (кусок замкнут сам на себя, шва нет),
+    /// сдвинутый вместе с листом. Переворот — у самой картинки, чтобы край
+    /// ехал в ту же сторону, что и лист.
+    private func strip(_ picture: UIImage, from: Int, flip: CGFloat) -> some View {
         let length = picture.size.height
-        let shift = CGFloat(abs(from) % max(1, Int(length)))
+        let start = CGFloat(abs(from) % max(1, Int(length)))
+        let dy = (scroll.y - start).truncatingRemainder(dividingBy: length)
         return GeometryReader { geo in
-            Image(uiImage: picture)
-                .resizable(resizingMode: .tile)
-                .frame(width: PageTexture.sideDepth, height: geo.size.height + length)
-                .offset(y: -shift)
+            // Кусок повторяется столбиком: на любой сдвиг хватает.
+            VStack(spacing: 0) {
+                ForEach(0..<Int((geo.size.height / length).rounded(.up)) + 2, id: \.self) { _ in
+                    Image(uiImage: picture)
+                        .resizable()
+                        .frame(width: PageTexture.sideDepth, height: length)
+                        .scaleEffect(x: 1, y: flip)
+                }
+            }
+            .offset(y: dy - length)
         }
         .frame(width: PageTexture.sideDepth)
         .clipped()

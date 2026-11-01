@@ -27,6 +27,8 @@ struct CalendarView: View {
     /// Вид запоминается между заходами: человек, оставивший «Список»,
     /// возвращается в «Список», а не в чужой ему «Месяц».
     @AppStorage("calendar.kind") private var stored = Kind.month.rawValue
+    /// «Ретро» выключено (P737): без латунного зажима у выходных.
+    @AppStorage(Prefs.plainPast) private var plainPast = false
     private var kind: Kind { Kind(rawValue: stored) ?? .month }
     @State private var shown: Date = CalendarView.previewStart ?? DayStore.today()
     /// Для снимков CI (P723): месяц недельной давности — в первые дни
@@ -538,7 +540,7 @@ struct CalendarView: View {
                                 // Зажим — на стыке субботы и воскресенья,
                                 // поверх обоих листков.
                                 .overlay(alignment: .bottomLeading) {
-                                    if group.count > 1 && day == group.first {
+                                    if !plainPast && group.count > 1 && day == group.first {
                                         BrassClip().offset(x: -4, y: 14)
                                     }
                                 }

@@ -984,10 +984,15 @@ struct Corner: View {
         let order = PageTexture.agedOrder(size: CGSize(width: w, height: h), band: 16, seed: 5)
         let ready = plainPast ? nil : (art ?? PageTexture.agedReady(order))
         return ZStack {
-            Scheme.current.past
-            Image(uiImage: PageTexture.paper)
-                .resizable(resizingMode: .tile)
-                .opacity(scheme == .dark ? 0.2 : 0.3)
+            // Без «Ретро» (P737) — прежняя белая бумага листков, ровная.
+            if plainPast {
+                Look.planBg
+            } else {
+                Scheme.current.past
+                Image(uiImage: PageTexture.paper)
+                    .resizable(resizingMode: .tile)
+                    .opacity(scheme == .dark ? 0.2 : 0.3)
+            }
             if let ready {
                 Image(uiImage: ready.frame)
                     .resizable()
