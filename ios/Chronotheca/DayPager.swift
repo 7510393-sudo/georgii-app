@@ -433,6 +433,12 @@ struct OldPaper: View {
             // Каждый слой — ровно в размер клетки (P726: узор бумаги был
             // больше клетки на 384 точки, и картинка износа растягивалась
             // вместе с ним — отсюда «подковы», полосы и тёмные клетки).
+            ZStack {
+            // Под рваным листком — целый лист того же цвета (P728, по
+            // образцу автора: под повреждением не пустота, а следующий лист).
+            if let base {
+                base.overlay(Color.black.opacity(scheme == .dark ? 0.12 : 0.06))
+            }
             ZStack(alignment: .topLeading) {
                 if let base { base }
                 Image(uiImage: PageTexture.paper)
@@ -452,6 +458,9 @@ struct OldPaper: View {
             .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
             .clipped()
             .mask(Image(uiImage: art.cut).resizable())
+            // Рваный край отбрасывает тонкую тень на лист под ним.
+            .shadow(color: .black.opacity(0.28), radius: 0.8, x: 0.4, y: 0.6)
+            }
         }
         .allowsHitTesting(false)
         .accessibilityHidden(true)
@@ -470,11 +479,13 @@ struct AgedFrame: View {
     var cut = false
     /// Низ уходит под следующую карточку (P725): не затёрт и без травм.
     var openBottom = false
+    /// Слегка тронутая бумага (P728): сегодняшняя карточка поиска.
+    var light = false
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         GeometryReader { geo in
-            let art = PageTexture.aged(size: geo.size, band: band, seed: seed, openBottom: openBottom)
+            let art = PageTexture.aged(size: geo.size, band: band, seed: seed, openBottom: openBottom, light: light)
             Image(uiImage: cut ? art.cut : art.frame)
                 .resizable()
                 .opacity(cut || scheme != .dark ? 1 : 0.35)
@@ -844,13 +855,17 @@ struct PageTexture: View {
         return normalised(zip(a, b).map { $0 * 0.6 + $1 * 0.8 })
     }
 
-    /// Рваный край (P727): насколько бумага вырвана вглубь от ровного края,
-    /// в пикселях, по длине края. Волна крупная и мелкая, мельчайшая
-    /// зубчатость и редкие глубокие вырывы. Замкнута по длине — кусок края
+    /// Рваный край (P727; с P728 у каждого края свой характер и каждая
+    /// выщербина своя): насколько бумага вырвана вглубь от ровного края,
+    /// в пикселях, по длине края. Волна крупная, средняя и мелкая — их сила
+    /// и шаг у каждого края свои: один край ровнее, другой лохматее.
+    /// Выщербины собраны из нескольких кусков разной ширины и глубины, с
+    /// разной крутизной слева и справа — от острого клина до плоской
+    /// ямки, — и с рваной кромкой внутри. Замкнута по длине — кусок края
     /// повторяется без шва. `deep` — средняя глубина в точках.
     private static func tornLine(length n: Int, scale: Float, deep: Float, next: () -> Float) -> [Float] {
         func wave(_ cell: Int) -> [Float] {
-            let count = max(2, n / cell)
+            let count = max(2, n / max(1, cell))
             let nodes = (0..<count).map { _ in next() }
             return (0..<n).map { p in
                 let f = Float(p) * Float(count) / Float(n)
@@ -859,18 +874,39 @@ struct PageTexture: View {
                 return nodes[i] + (nodes[j] - nodes[i]) * u
             }
         }
-        let big = wave(Int(70 * scale)), mid = wave(Int(14 * scale)), fine = wave(Int(3 * scale))
-        var out = (0..<n).map { p in (big[p] * 0.5 + mid[p] * 0.35 + fine[p] * 0.25) * deep * scale }
-        // Редкие глубокие вырывы: в среднем один на 120 точек края.
-        let bites = Int(Float(n) / (120 * scale) + next())
+        let aBig = 0.25 + next() * 0.6, aMid = 0.15 + next() * 0.45, aFine = 0.1 + next() * 0.35
+        let big = wave(Int((50 + next() * 50) * scale))
+        let mid = wave(Int((8 + next() * 10) * scale))
+        let fine = wave(Int((2 + next() * 2.5) * scale))
+        let grit = wave(Int(1.5 * scale))
+        var out = (0..<n).map { p in (big[p] * aBig + mid[p] * aMid + fine[p] * aFine) * deep * scale }
+        let density = 0.3 + next() * 1.4
+        let bites = Int(Float(n) / (120 * scale) * density + next())
+        let half = Float(n) / 2
         for _ in 0..<bites {
             let at = Float(n) * next()
-            let wide = (3 + next() * 6) * scale
-            let depth = (2 + next() * 3) * deep * scale * 0.6
+            let size = (3 + next() * 9) * scale                     // полуширина
+            let depth = (1.2 + next() * 3.5) * deep * scale * 0.6
+            // Куски выщербины: сдвиг, ширина слева и справа, глубина,
+            // крутизна (1 — острый клин, 4 — плоская ямка).
+            var parts: [(off: Float, left: Float, right: Float, d: Float, p: Float)] = []
+            for _ in 0..<(1 + Int(next() * 4)) {
+                parts.append(((next() - 0.5) * size * 1.4,
+                              size * (0.25 + next() * 0.8), size * (0.25 + next() * 0.8),
+                              depth * (0.35 + next() * 0.65), 1.1 + next() * 2.9))
+            }
+            let ragged = 0.15 + next() * 0.5
             for p in 0..<n {
-                var dp = abs(Float(p) - at)
-                dp = min(dp, Float(n) - dp)
-                if dp < wide * 2 { out[p] += depth * exp(-(dp * dp) / (wide * wide)) }
+                var dp = Float(p) - at
+                if dp > half { dp -= Float(n) } else if dp < -half { dp += Float(n) }
+                guard abs(dp) < size * 3 else { continue }
+                var cut: Float = 0
+                for part in parts {
+                    let x = dp - part.off
+                    let w = x < 0 ? part.left : part.right
+                    cut = max(cut, part.d * exp(-pow(abs(x) / w, part.p)))
+                }
+                if cut > 0.01 { out[p] += cut * (1 + ragged * (grit[p] * 2 - 1)) }
             }
         }
         return out
@@ -932,9 +968,10 @@ struct PageTexture: View {
     /// внутрь тёплая охра сходит на нет, тон чуть неровный. Всё — по номеру
     /// `seed`: вид одного дня не меняется. `band` — ширина потемнения.
     /// `openBottom` — низ уходит под следующую карточку: ровный и чистый.
-    static func aged(size: CGSize, band: CGFloat, seed number: Int, openBottom: Bool = false) -> AgedArt {
+    static func aged(size: CGSize, band: CGFloat, seed number: Int, openBottom: Bool = false,
+                     light: Bool = false) -> AgedArt {
         let w = max(4, size.width.rounded()), h = max(4, size.height.rounded())
-        let key = "\(Int(w))x\(Int(h))b\(Int(band * 10))s\(number)\(openBottom ? "o" : "")" as NSString
+        let key = "\(Int(w))x\(Int(h))b\(Int(band * 10))s\(number)\(openBottom ? "o" : "")\(light ? "l" : "")" as NSString
         if let made = agedMade.object(forKey: key) { return made }
         var seed = UInt64(bitPattern: Int64(number)) &* 0x9E37_79B9_7F4A_7C15 &+ 0xA6ED0 &+ UInt64(band * 10)
         func next() -> Float {
@@ -947,13 +984,16 @@ struct PageTexture: View {
         let tone = smoothField(width: W, height: H, cell: 120, wrapX: false, wrapY: false, next: next)
         let mottle = mottling(width: W, height: H, wrapX: false, wrapY: false, next: next)
         // Рваный край по каждой стороне: мелкий — у клеток, крупнее — у карточек.
-        let deep: Float = min(w, h) < 60 ? 0.9 : 1.6
+        // `light` — слегка тронутая бумага (P728: карточка сегодняшнего дня
+        // в поиске не должна выглядеть совсем целой среди старых).
+        let deep: Float = (min(w, h) < 60 ? 0.9 : 1.6) * (light ? 0.45 : 1)
         let torn = [W, W, H, H].enumerated().map { e, n -> [Float] in
             if openBottom && e == 1 { return [Float](repeating: 0, count: n) }
             return tornLine(length: n, scale: 2, deep: deep, next: next)
         }
         var power = (0..<4).map { _ in 0.75 + next() * 0.3 }        // верх, низ, лево, право
         if openBottom { power[1] = 0 }
+        if light { power = power.map { $0 * 0.3 } }
         let fall = Float(wear) * 2 / 1.6                             // в пикселях
         let peak: Float = 0.45
         var frameBytes = [UInt8](repeating: 0, count: W * H * 4)

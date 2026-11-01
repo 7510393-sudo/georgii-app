@@ -254,12 +254,11 @@ struct CalendarView: View {
                     // Прошедший месяц — на бумаге прошлого с рельефом (P684).
                     .background {
                         if monthIsPast(year: year, month: m) {
-                            // Кромка — под маской с травмами края (P723).
+                            // Кромка — у целого листа под рваным (P728).
                             ZStack {
                                 OldPaper(seed: year * 12 + m, base: Ru.pastTint)
                                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                                     .strokeBorder(Look.stickerEdge, lineWidth: 1)
-                                    .mask(AgedFrame(band: 7, seed: year * 12 + m, cut: true))
                             }
                             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                         }

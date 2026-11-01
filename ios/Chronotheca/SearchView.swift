@@ -371,16 +371,15 @@ private struct SearchCard<Content: View>: View {
                     .padding(.top, Search.tabHeight)
                 ZStack {
                     paper.clipShape(FolderShape(tabHeight: Search.tabHeight))
-                    if past {
-                        AgedFrame(band: 12, seed: seed, openBottom: true).clipShape(FolderShape(tabHeight: Search.tabHeight))
-                    }
+                    // Прошедший день — затёрт и порван; сегодняшний — слегка
+                    // тронут, чтобы не выбивался среди старых (P728).
+                    AgedFrame(band: 12, seed: seed, openBottom: true, light: !past)
+                        .clipShape(FolderShape(tabHeight: Search.tabHeight))
                     FolderShape(tabHeight: Search.tabHeight)
                         .stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
                 }
                 // Травмы края прошедшего дня вырезаны насквозь (P723).
-                .mask {
-                    if past { AgedFrame(band: 12, seed: seed, cut: true, openBottom: true) } else { Rectangle() }
-                }
+                .mask { AgedFrame(band: 12, seed: seed, cut: true, openBottom: true, light: !past) }
             }
         }
     }
