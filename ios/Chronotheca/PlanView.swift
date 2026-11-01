@@ -386,23 +386,39 @@ struct Panel: ViewModifier {
     }
 }
 
-/// Скоба выходных в «Списке» календаря (P731): черта под воскресеньем,
-/// её загибы поднимаются вертикально по бокам до верха субботы.
-struct WeekendBracket: Shape {
-    var rise: CGFloat = 9
-
-    func path(in r: CGRect) -> Path {
-        var p = Path()
-        let bottom = r.maxY
-        p.move(to: CGPoint(x: r.minX, y: r.minY))
-        p.addLine(to: CGPoint(x: r.minX, y: bottom - rise))
-        p.addQuadCurve(to: CGPoint(x: r.minX + rise, y: bottom),
-                       control: CGPoint(x: r.minX, y: bottom))
-        p.addLine(to: CGPoint(x: r.maxX - rise, y: bottom))
-        p.addQuadCurve(to: CGPoint(x: r.maxX, y: bottom - rise),
-                       control: CGPoint(x: r.maxX, y: bottom))
-        p.addLine(to: CGPoint(x: r.maxX, y: r.minY))
-        return p
+/// Латунный зажим выходных в «Списке» календаря (P735, вместо скобы
+/// P731): скрепляет листки субботы и воскресенья на левом краю, проволочное
+/// ушко торчит за край. Латунь — с бликом слева сверху, как весь свет (P670).
+struct BrassClip: View {
+    var body: some View {
+        let dark = Color(red: 0.38, green: 0.25, blue: 0.10)
+        let brass = LinearGradient(colors: [Color(red: 0.95, green: 0.83, blue: 0.54),
+                                            Color(red: 0.74, green: 0.55, blue: 0.25),
+                                            Color(red: 0.52, green: 0.35, blue: 0.13)],
+                                   startPoint: .topLeading, endPoint: .bottomTrailing)
+        ZStack {
+            // Ушко из проволоки: половина под зажимом, половина за краем.
+            Capsule()
+                .stroke(dark.opacity(0.85), lineWidth: 1.4)
+                .frame(width: 12, height: 18)
+                .offset(x: -7)
+            RoundedRectangle(cornerRadius: 2.5, style: .continuous)
+                .fill(brass)
+                .overlay(RoundedRectangle(cornerRadius: 2.5, style: .continuous)
+                    .stroke(dark, lineWidth: 0.7))
+                // Загиб губки — светлая черта вдоль зажима.
+                .overlay(alignment: .leading) {
+                    Rectangle().fill(Color.white.opacity(0.4))
+                        .frame(width: 1.2)
+                        .padding(.vertical, 4)
+                        .offset(x: 3)
+                }
+                .frame(width: 13, height: 28)
+        }
+        .frame(width: 13, height: 28)
+        .shadow(color: .black.opacity(0.3), radius: 1.5, x: 1.5, y: 1.5)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 

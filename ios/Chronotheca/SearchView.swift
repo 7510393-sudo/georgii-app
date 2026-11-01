@@ -422,11 +422,11 @@ private struct CardPaper: View {
     private var topShade: some View {
         let tone = scheme == .dark ? Color.black : Color(red: 110 / 255, green: 58 / 255, blue: 22 / 255)
         return VStack(spacing: 0) {
-            LinearGradient(stops: [.init(color: tone.opacity(scheme == .dark ? 0.35 : 0.22), location: 0),
-                                   .init(color: tone.opacity(scheme == .dark ? 0.18 : 0.10), location: 0.45),
+            LinearGradient(stops: [.init(color: tone.opacity(scheme == .dark ? 0.45 : 0.36), location: 0),
+                                   .init(color: tone.opacity(scheme == .dark ? 0.25 : 0.18), location: 0.4),
                                    .init(color: tone.opacity(0), location: 1)],
                            startPoint: .top, endPoint: .bottom)
-                .frame(height: Search.tabHeight + 34)
+                .frame(height: Search.tabHeight + 40)
             Spacer(minLength: 0)
         }
     }

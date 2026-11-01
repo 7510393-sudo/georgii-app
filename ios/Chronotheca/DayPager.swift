@@ -87,8 +87,11 @@ struct DayPage: View {
                 // верхнего края страницы — полоса её цвета, прозрачная
                 // книзу. Касания проходят насквозь.
                 .overlay(alignment: .top) {
-                    LinearGradient(colors: [Ru.tint(date), Ru.tint(date).opacity(0)],
-                                   startPoint: .top, endPoint: .bottom)
+                    // Дымка — та же бумага, что у шапки (P735): прежде она
+                    // была ровного цвета, и под шапкой проступала полоса.
+                    background
+                        .mask(LinearGradient(colors: [.black, .black.opacity(0)],
+                                             startPoint: .top, endPoint: .bottom))
                         // Короче прежних 22 точек: слово «План» вверху
                         // страницы больше не тонет в дымке (P441).
                         .frame(height: 14)
@@ -98,6 +101,8 @@ struct DayPage: View {
                 // Черты между шапкой и страницей больше нет (P434, прежде
                 // P250): шапка — продолжение листа.
         }
+        // Затёртые бока — на всю страницу разом, без шва под шапкой (P735).
+        .overlay(PageSides(aged: Ru.isPast(date)))
         .background(background)
         // Фактура страницы и вкладок отсчитывается от одной точки — клетка
         // на вкладке продолжает клетку страницы (P246).
@@ -490,6 +495,41 @@ struct OldPaper: View {
     }
 }
 
+/// Затёртые бока страницы дня (P735): один раз на всю страницу — от верха
+/// шапки до низа экрана, поверх плана и дневника, и стоят на месте, когда
+/// страницу прокручивают. Прежде бока были у каждого куска страницы и
+/// ехали с текстом (P723) — под шапкой выходил шов между неподвижной и
+/// подвижной частью листа. Так и легче: при прокрутке ничего не
+/// пересчитывается. Пока заготовки краёв не готовы — края не затёрты (P732).
+struct PageSides: View {
+    let aged: Bool
+    @Environment(\.colorScheme) private var scheme
+    @AppStorage(Prefs.plainPast) private var plainPast = false
+    @ObservedObject private var shop = PaperShop.shared
+
+    var body: some View {
+        if aged && !plainPast && scheme != .dark {
+            HStack(spacing: 0) {
+                if let left = PageTexture.sideEdge { strip(left) }
+                Spacer(minLength: 0)
+                if let right = PageTexture.sideEdgeRight {
+                    strip(right).scaleEffect(x: -1)
+                }
+            }
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+        }
+    }
+
+    private func strip(_ picture: UIImage) -> some View {
+        Image(uiImage: picture)
+            .resizable(resizingMode: .tile)
+            .frame(width: PageTexture.sideDepth)
+            .frame(maxHeight: .infinity)
+            .clipped()
+    }
+}
+
 /// Фактура страницы: у плана — бледная клетка, как в тетради; у дневника —
 /// волокно бумаги (P245). Рисуется один раз и кладётся плиткой.
 struct PageTexture: View {
@@ -604,17 +644,8 @@ struct PageTexture: View {
     /// те же картинки, отражённые.
     private var edges: some View {
         ZStack {
-            // Бока идут от верха всей страницы, а не от каждого её куска
-            // (P723): на стыке плана и дневника край не обрывается.
-            // Пока заготовки краёв не готовы — края не затёрты (P732).
-            HStack(spacing: 0) {
-                if let left = PageTexture.sideEdge { sideStrip(left) }
-                Spacer(minLength: 0)
-                if let right = PageTexture.sideEdgeRight {
-                    sideStrip(right)
-                        .scaleEffect(x: -1)
-                }
-            }
+            // Бока — не здесь, а один раз на всю страницу дня (`PageSides`,
+            // P735): у каждого куска свои бока давали шов под шапкой.
             VStack(spacing: 0) {
                 Spacer(minLength: 0)
                 if edgeBottom, let foot = PageTexture.footEdge {
@@ -636,20 +667,6 @@ struct PageTexture: View {
                 }
             }
         }
-    }
-
-    private func sideStrip(_ picture: UIImage) -> some View {
-        let length = picture.size.height
-        return GeometryReader { geo in
-            let at = geo.frame(in: .named(space)).origin.y + shift
-            let dy = at.truncatingRemainder(dividingBy: length)
-            Image(uiImage: picture)
-                .resizable(resizingMode: .tile)
-                .frame(width: PageTexture.sideDepth, height: geo.size.height + length * 2)
-                .offset(y: -dy - length)
-        }
-        .frame(width: PageTexture.sideDepth)
-        .clipped()
     }
 
     private func thumbSmudge(radius: CGFloat, opacity: Double) -> some View {

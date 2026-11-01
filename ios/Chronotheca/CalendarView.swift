@@ -523,8 +523,10 @@ struct CalendarView: View {
         // Не «ленивый» столбец (P456): в нём строки, ещё не нарисованные,
         // стоят наугад, и прокрутка к дню промахивалась на день-два. Дней в
         // месяце не больше 31 — рисовать их сразу ничего не стоит.
-        // Суббота с воскресеньем — одна связка (P731): их обнимает скоба —
-        // черта под воскресеньем, концы которой поднимаются до верха субботы.
+        // Суббота с воскресеньем — одна связка (P731): их скрепляет
+        // латунный зажим на левом краю (P735, вместо скобы — она была
+        // слишком нынешней для старой бумаги); после воскресенья — зазор,
+        // им недели и отделяются.
         let groups = weekendGroups(cells)
         return VStack(spacing: 0) {
             ForEach(Array(groups.enumerated()), id: \.offset) { _, group in
@@ -533,13 +535,18 @@ struct CalendarView: View {
                         ForEach(group, id: \.self) { day in
                             row(day, today: today)
                                 .id(Vault.stamp(day))
+                                // Зажим — на стыке субботы и воскресенья,
+                                // поверх обоих листков.
+                                .overlay(alignment: .bottomLeading) {
+                                    if group.count > 1 && day == group.first {
+                                        BrassClip().offset(x: -4, y: 14)
+                                    }
+                                }
+                                .zIndex(day == group.first ? 1 : 0)
                             if day != group.last { dayRule }
                         }
-                        Color.clear.frame(height: 3)
+                        Color.clear.frame(height: 12)
                     }
-                    .overlay(WeekendBracket(rise: 9)
-                        .stroke(Look.inkSoft, style: StrokeStyle(lineWidth: 2.6, lineCap: .round))
-                        .padding(.horizontal, -2))
                 } else {
                     row(group[0], today: today)
                         .id(Vault.stamp(group[0]))
@@ -646,7 +653,7 @@ struct CalendarView: View {
     }
 
     /// Тонкая черта между днями; черты после пятницы больше нет (P731) —
-    /// выходные отделяет скоба `WeekendBracket`.
+    /// выходные скрепляет зажим `BrassClip`, недели разделяет зазор (P735).
     private var dayRule: some View {
         Rectangle().fill(Look.ruleSoft).frame(height: 1)
     }
