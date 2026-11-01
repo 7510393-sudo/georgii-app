@@ -927,7 +927,10 @@ struct PageTexture: View {
         let tone = smoothField(width: W, height: H, cell: 120, wrapX: false, wrapY: false, next: next)
         // Разброс между клетками меньше (P725: тёмные клетки месяца
         // выглядели отмеченными).
-        var power = (0..<4).map { _ in 0.4 + next() * 0.3 }          // верх, низ, лево, право
+        // У клеток месяца (невысоких и узких) края почти одинаковые: иначе
+        // тёмные клетки выглядели отмеченными (P725, второй заход).
+        let even = min(w, h) < 40 && w < 80
+        var power = (0..<4).map { _ in even ? 0.5 + next() * 0.1 : 0.4 + next() * 0.3 }   // верх, низ, лево, право
         // Карточка поиска уходит низом под следующую (P725): низ не затёрт.
         if openBottom { power[1] = 0 }
         // Низкая строка (список): верх и низ почти чистые, иначе строки
@@ -940,7 +943,7 @@ struct PageTexture: View {
             for x in 0..<W {
                 let i = y * W + x
                 let reach = fall * max(0.35, min(3, 1 + 0.45 * (reachBig[i] + 0.5 * reachSmall[i])))
-                let strength = max(0.3, 1 + 0.3 * tone[i])
+                let strength = max(0.3, 1 + (even ? 0.12 : 0.3) * tone[i])
                 func kept(_ e: Int, _ d: Int) -> Float {
                     1 - min(peak * power[e] * strength * exp(-Float(d) / reach), 0.75)
                 }
@@ -948,7 +951,8 @@ struct PageTexture: View {
             }
         }
         // Пятна от пальцев: ноль, одно или два — у случайного места края.
-        for _ in 0..<Int(next() * 2.7) {
+        let stains = Int(next() * 2.7)
+        for _ in 0..<(even ? 0 : stains) {
             let e = Int(next() * 4) % 4
             let t = next()
             let cx = e == 0 || e == 1 ? Float(W) * t : (e == 2 ? 0 : Float(W))
