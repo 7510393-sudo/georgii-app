@@ -823,7 +823,92 @@ struct PageTexture: View {
                 paintAged(&bytes, i * 4, worn: worn, distance: distance, mottle: mottle[i])
             }
         }
-        return picture(bytes, width: width, height: height, scale: 2)
+        let plain = picture(bytes, width: width, height: height, scale: 2)
+        // Мелкие изъяны на полях (P729): только у самого края, где нет
+        // текста, — бок до 14 точек, низ — нижние 36 точек; подальше от
+        // концов куска, чтобы шов плитки их не резал.
+        let size = CGSize(width: CGFloat(width) / 2, height: CGFloat(height) / 2)
+        let margin = vertical
+            ? CGRect(x: 2, y: 12, width: 12, height: size.height - 24)
+            : CGRect(x: 12, y: size.height - 36, width: size.width - 24, height: 34)
+        let scaleOfFlaws = Float(vertical ? size.height : size.width) / 480
+        let format = UIGraphicsImageRendererFormat(); format.scale = 2
+        return UIGraphicsImageRenderer(size: size, format: format).image { ctx in
+            plain.draw(at: .zero)
+            scatterFlaws(ctx.cgContext, in: margin, amount: scaleOfFlaws,
+                         inward: vertical ? 0 : -.pi / 2, next: next)
+        }
+    }
+
+    /// Мелкие изъяны бумаги на полях (P729): волоски, крошечные щербинки и
+    /// крапинки (иногда кучкой), бледные складочки — следы замятости, идут
+    /// от края внутрь (`inward` — направление внутрь листа). Всё бледное,
+    /// без бликов, чтобы не мешать читать. `amount` — на сколько кусков по
+    /// 480 точек края рассчитано.
+    private static func scatterFlaws(_ cg: CGContext, in area: CGRect, amount: Float, inward: CGFloat,
+                                     next: () -> Float) {
+        func r() -> CGFloat { CGFloat(next()) }
+        func spot() -> CGPoint { CGPoint(x: area.minX + r() * area.width, y: area.minY + r() * area.height) }
+        let ink = UIColor(red: 0.36, green: 0.24, blue: 0.13, alpha: 1)
+        cg.saveGState()
+        cg.clip(to: area.insetBy(dx: -2, dy: -2))
+        cg.setLineCap(.round)
+        // Волоски: тонкие изогнутые, разной длины.
+        for _ in 0..<Int(amount * (2 + next() * 3)) {
+            let a = spot()
+            let length = 3 + r() * 8
+            let turn = r() * .pi * 2
+            let b = CGPoint(x: a.x + cos(turn) * length, y: a.y + sin(turn) * length)
+            let bend = CGPoint(x: (a.x + b.x) / 2 + (r() - 0.5) * length * 0.6,
+                               y: (a.y + b.y) / 2 + (r() - 0.5) * length * 0.6)
+            cg.move(to: a); cg.addQuadCurve(to: b, control: bend)
+            cg.setStrokeColor(ink.withAlphaComponent(0.18 + r() * 0.14).cgColor)
+            cg.setLineWidth(0.3 + r() * 0.25)
+            cg.strokePath()
+        }
+        // Щербинки и крапинки: неровные, где по одной, где кучкой.
+        for _ in 0..<Int(amount * (6 + next() * 8)) {
+            let centre = spot()
+            let cluster = next() < 0.3 ? 2 + Int(next() * 4) : 1
+            for _ in 0..<cluster {
+                let at = CGPoint(x: centre.x + (r() - 0.5) * 3, y: centre.y + (r() - 0.5) * 3)
+                let rad = 0.25 + r() * 0.6
+                let pit = CGMutablePath()
+                for k in 0..<7 {
+                    let ang = CGFloat(k) / 7 * .pi * 2
+                    let rr = rad * (0.6 + r() * 0.7)
+                    let pt = CGPoint(x: at.x + cos(ang) * rr, y: at.y + sin(ang) * rr * (0.6 + r() * 0.6))
+                    if k == 0 { pit.move(to: pt) } else { pit.addLine(to: pt) }
+                }
+                pit.closeSubpath()
+                cg.addPath(pit)
+                cg.setFillColor(ink.withAlphaComponent(0.16 + r() * 0.2).cgColor)
+                cg.fillPath()
+            }
+        }
+        // Следы замятости: бледная складочка — тёмная ложбинка и светлый
+        // гребень рядом, от края внутрь листа под разным углом.
+        for _ in 0..<Int(amount * (1 + next() * 2.5)) {
+            let a = spot()
+            let length = 8 + r() * 18
+            let turn = inward + (r() - 0.5) * 1.2
+            let b = CGPoint(x: a.x + cos(turn) * length, y: a.y + sin(turn) * length)
+            let bend = CGPoint(x: (a.x + b.x) / 2 + (r() - 0.5) * 4, y: (a.y + b.y) / 2 + (r() - 0.5) * 4)
+            let fold = CGMutablePath()
+            fold.move(to: a); fold.addQuadCurve(to: b, control: bend)
+            cg.addPath(fold)
+            cg.setStrokeColor(ink.withAlphaComponent(0.13).cgColor)
+            cg.setLineWidth(0.5)
+            cg.strokePath()
+            cg.saveGState()
+            cg.translateBy(x: 0.6, y: 0.6)
+            cg.addPath(fold)
+            cg.setStrokeColor(UIColor.white.withAlphaComponent(0.25).cgColor)
+            cg.setLineWidth(0.45)
+            cg.strokePath()
+            cg.restoreGState()
+        }
+        cg.restoreGState()
     }
 
     /// Цвет старой бумаги в точке (P727, по образцу автора): к краю — из
@@ -1019,8 +1104,22 @@ struct PageTexture: View {
                 paintAged(&frameBytes, i * 4, worn: 1 - keep, distance: max(0, rimEdge) / 2, mottle: mottle[i])
             }
         }
-        let made = AgedArt(frame: picture(frameBytes, width: W, height: H, scale: 2),
-                           cut: picture(cutBytes, width: W, height: H, scale: 2))
+        var frame = picture(frameBytes, width: W, height: H, scale: 2)
+        // Мелкие изъяны на боковых полях крупной бумаги — карточек поиска
+        // (P729); у клеток и строк полей нет.
+        if min(w, h) > 60 && !light {
+            let format = UIGraphicsImageRendererFormat(); format.scale = 2
+            let plain = frame
+            let amount = Float(h) / 480
+            frame = UIGraphicsImageRenderer(size: CGSize(width: w, height: h), format: format).image { ctx in
+                plain.draw(at: .zero)
+                scatterFlaws(ctx.cgContext, in: CGRect(x: 3, y: 30, width: 10, height: h - 40),
+                             amount: amount, inward: 0, next: next)
+                scatterFlaws(ctx.cgContext, in: CGRect(x: w - 13, y: 30, width: 10, height: h - 40),
+                             amount: amount, inward: .pi, next: next)
+            }
+        }
+        let made = AgedArt(frame: frame, cut: picture(cutBytes, width: W, height: H, scale: 2))
         agedMade.setObject(made, forKey: key)
         return made
     }
