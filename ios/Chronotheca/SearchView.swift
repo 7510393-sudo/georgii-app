@@ -401,6 +401,7 @@ private struct CardPaper: View {
                         .opacity(scheme == .dark ? 0.35 : 1)
                         .clipShape(FolderShape(tabHeight: Search.tabHeight))
                 }
+                topShade.clipShape(FolderShape(tabHeight: Search.tabHeight))
                 FolderShape(tabHeight: Search.tabHeight)
                     .stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
             }
@@ -414,6 +415,20 @@ private struct CardPaper: View {
             }
         }
         .allowsHitTesting(false)
+    }
+
+    /// Потемнение верха карточки (P734): корешок и полоса под ним темнее,
+    /// к тексту сходит на нет — карточки отделяются друг от друга.
+    private var topShade: some View {
+        let tone = scheme == .dark ? Color.black : Color(red: 110 / 255, green: 58 / 255, blue: 22 / 255)
+        return VStack(spacing: 0) {
+            LinearGradient(stops: [.init(color: tone.opacity(scheme == .dark ? 0.35 : 0.22), location: 0),
+                                   .init(color: tone.opacity(scheme == .dark ? 0.18 : 0.10), location: 0.45),
+                                   .init(color: tone.opacity(0), location: 1)],
+                           startPoint: .top, endPoint: .bottom)
+                .frame(height: Search.tabHeight + 34)
+            Spacer(minLength: 0)
+        }
     }
 
     /// Старая бумага: цвет прошлого и рельеф плиткой — непрозрачная, иначе
