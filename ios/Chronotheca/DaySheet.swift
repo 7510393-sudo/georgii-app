@@ -68,7 +68,7 @@ struct DaySheet<Plan: View, Diary: View>: View {
                         }
                         // Под планом — клетка, она закрывает гладкую бумагу
                         // дневника, лежащую под всей страницей.
-                        .background(Ru.tint(date).overlay(PageTexture(tab: .plan, space: Self.space, aged: Ru.isPast(date), edgeTop: true)))
+                        .background(Ru.tint(date).overlay(PageTexture(tab: .plan, space: Self.space, aged: Ru.isPast(date))))
                         VStack(alignment: .leading, spacing: 0) {
                             SheetHeading(title: T("Дневник", "Diary"), faint: !diaryOpen)
                                 .id(Self.diaryTop)

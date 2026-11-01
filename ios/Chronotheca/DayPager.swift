@@ -490,9 +490,9 @@ struct PageTexture: View {
     var space: String = PageTexture.space
     /// Прошедший день: поверх обычной фактуры — старая бумага (P676).
     var aged = false
-    /// У прошедшего дня края темнеют янтарём (P676): верх — у верхнего
-    /// куска страницы, низ — у нижнего; бока — у всех.
-    var edgeTop = false
+    /// У прошедшего дня края темнеют янтарём (P676): низ — у нижнего
+    /// куска страницы, бока — у всех. Верх не затёрт (P726: верх плана —
+    /// середина экрана под шапкой, затемнение ложилось на слово «План»).
     var edgeBottom = false
     @Environment(\.colorScheme) private var scheme
     private var dark: Bool { scheme == .dark }
@@ -596,13 +596,6 @@ struct PageTexture: View {
                     .scaleEffect(x: -1)
             }
             VStack(spacing: 0) {
-                if edgeTop {
-                    // Верх страницы затёрт, как и низ (P722; прежде — едва).
-                    Image(uiImage: PageTexture.footEdge).resizable(resizingMode: .tile)
-                        .frame(height: PageTexture.footDepth)
-                        .scaleEffect(y: -1)
-                        .opacity(0.85)
-                }
                 Spacer(minLength: 0)
                 if edgeBottom {
                     Image(uiImage: PageTexture.footEdge).resizable(resizingMode: .tile)
@@ -790,6 +783,7 @@ struct PageTexture: View {
         let reachBig = smoothField(width: width, height: height, cell: 320, wrapX: !vertical, wrapY: vertical, next: next)
         let reachSmall = smoothField(width: width, height: height, cell: 120, wrapX: !vertical, wrapY: vertical, next: next)
         let tone = smoothField(width: width, height: height, cell: 700, wrapX: !vertical, wrapY: vertical, next: next)
+        let bumps = crinkle(width: width, height: height, wrapX: !vertical, wrapY: vertical, next: next)
         var bytes = [UInt8](repeating: 0, count: width * height * 4)
         let k = Float(wearStrength)
         let fadeFrom = Float(depth) * 0.45
@@ -809,7 +803,9 @@ struct PageTexture: View {
                 let rim: Float = distance < 0.8 ? 0.25 : 0
                 let alpha = min(1 - (1 - worn) * (1 - rim), 0.85)
                 if alpha < 0.002 { continue }
-                paint(&bytes, i * 4, alpha)
+                // Рельеф проступает с износом, где-то сильнее, где-то слабее.
+                let amount = min(1, worn / 0.3) * max(0.3, 1 + 0.45 * tone[i])
+                paintWorn(&bytes, i * 4, alpha, bump: bumps[i], amount: amount)
             }
         }
         let plain = picture(bytes, width: width, height: height, scale: 2)
@@ -840,16 +836,44 @@ struct PageTexture: View {
         }
     }
 
-    /// Цвет износа в точке: к краю — из охры в подпалину.
-    private static func paint(_ bytes: inout [UInt8], _ i: Int, _ alpha: Float) {
+    /// Цвет износа: к краю — из охры в подпалину. С рельефом (P726, по замечанию автора: одного цвета мало): где
+    /// бумага затёрта, она и шершавее — поверх бурого цвета мелкие бугорки
+    /// светлеют, впадинки темнеют. `bump` — освещённость рельефа в точке,
+    /// `amount` — насколько он проступает (0 — нет).
+    private static func paintWorn(_ bytes: inout [UInt8], _ i: Int, _ alpha: Float, bump: Float, amount: Float) {
         let t = min(max((alpha - 0.2) / 0.4, 0), 1)
-        let r = amber.r + (burnt.r - amber.r) * t
-        let g = amber.g + (burnt.g - amber.g) * t
-        let b = amber.b + (burnt.b - amber.b) * t
-        bytes[i] = UInt8(r * alpha * 255)
-        bytes[i + 1] = UInt8(g * alpha * 255)
-        bytes[i + 2] = UInt8(b * alpha * 255)
-        bytes[i + 3] = UInt8(alpha * 255)
+        var r = (amber.r + (burnt.r - amber.r) * t) * alpha
+        var g = (amber.g + (burnt.g - amber.g) * t) * alpha
+        var b = (amber.b + (burnt.b - amber.b) * t) * alpha
+        var a = alpha
+        let shade = min(max(-bump, 0) * 0.13 * amount, 0.4)
+        r *= 1 - shade; g *= 1 - shade; b *= 1 - shade; a = shade + a * (1 - shade)
+        let light = min(max(bump, 0) * 0.2 * amount, 0.45)
+        r = light + r * (1 - light); g = light + g * (1 - light); b = light + b * (1 - light)
+        a = light + a * (1 - light)
+        bytes[i] = UInt8(min(r, 1) * 255)
+        bytes[i + 1] = UInt8(min(g, 1) * 255)
+        bytes[i + 2] = UInt8(min(b, 1) * 255)
+        bytes[i + 3] = UInt8(min(a, 1) * 255)
+    }
+
+    /// Освещённость мелкого рельефа (P726): бугорки в несколько точек,
+    /// свет слева сверху, как у всей бумаги (P670). Замкнуто, как поле.
+    private static func crinkle(width: Int, height: Int, wrapX: Bool, wrapY: Bool, next: () -> Float) -> [Float] {
+        let big = smoothField(width: width, height: height, cell: 9, wrapX: wrapX, wrapY: wrapY, next: next)
+        let small = smoothField(width: width, height: height, cell: 4, wrapX: wrapX, wrapY: wrapY, next: next)
+        var lit = [Float](repeating: 0, count: width * height)
+        for y in 0..<height {
+            let y1 = wrapY ? (y + 1) % height : min(y + 1, height - 1)
+            for x in 0..<width {
+                let x1 = wrapX ? (x + 1) % width : min(x + 1, width - 1)
+                let h = big[y * width + x] + 0.5 * small[y * width + x]
+                let dx = big[y * width + x1] + 0.5 * small[y * width + x1] - h
+                let dy = big[y1 * width + x] + 0.5 * small[y1 * width + x] - h
+                lit[y * width + x] = -(dx + dy)
+            }
+        }
+        return normalised(lit)
     }
 
     /// Плавное случайное поле на плоскости (P723): случайные значения в
@@ -980,11 +1004,13 @@ struct PageTexture: View {
                 }
             }
         }
+        let bumps = crinkle(width: W, height: H, wrapX: false, wrapY: false, next: next)
         var bytes = [UInt8](repeating: 0, count: W * H * 4)
         for i in 0..<W * H {
             let alpha = min(1 - keep[i], 0.85)
             if alpha < 0.002 { continue }
-            paint(&bytes, i * 4, alpha)
+            let amount = min(1, alpha / 0.3) * max(0.3, 1 + 0.4 * tone[i])
+            paintWorn(&bytes, i * 4, alpha, bump: bumps[i], amount: amount)
         }
         let plain = picture(bytes, width: W, height: H, scale: 2)
         // Травмы: в среднем одна на 230 точек края, не у самых углов.
@@ -1008,16 +1034,50 @@ struct PageTexture: View {
             }
             hurts.append((at, turn, Hurt.random(&seed, small: true, tears: roomy)))
         }
+        // Загнутый уголок (P726): у части листков один угол загнут на лист.
+        // Карточка поиска — только у корешка слева сверху (справа сверху у
+        // неё пусто, низ уходит под следующую).
+        var dogEar: [CGPoint] = []                 // угол, две точки сгиба
+        if next() < 0.3 {
+            let corners = openBottom ? [0] : [0, 1, 2, 3]
+            let c = corners[Int(next() * Float(corners.count)) % corners.count]
+            let size = min(min(w, h) * CGFloat(0.18 + next() * 0.14), 14)
+            let cx: CGFloat = c % 2 == 0 ? 0 : w, cy: CGFloat = c < 2 ? 0 : h
+            let sx: CGFloat = c % 2 == 0 ? 1 : -1, sy: CGFloat = c < 2 ? 1 : -1
+            dogEar = [CGPoint(x: cx, y: cy), CGPoint(x: cx + sx * size, y: cy), CGPoint(x: cx, y: cy + sy * size)]
+        }
         let format = UIGraphicsImageRendererFormat(); format.scale = 2
         let box = CGSize(width: w, height: h)
         let frame = UIGraphicsImageRenderer(size: box, format: format).image { ctx in
             plain.draw(at: .zero)
+            if dogEar.count == 3 {
+                // Отогнутый треугольник ложится на лист: угол отражается
+                // через линию сгиба.
+                let a = dogEar[1], b = dogEar[2]
+                let tip = CGPoint(x: a.x + b.x - dogEar[0].x, y: a.y + b.y - dogEar[0].y)
+                let flap = CGMutablePath()
+                flap.addLines(between: [a, b, tip]); flap.closeSubpath()
+                let cg = ctx.cgContext
+                cg.saveGState()
+                cg.translateBy(x: 0.8, y: 0.9)
+                cg.addPath(flap)
+                cg.setFillColor(UIColor.black.withAlphaComponent(0.13).cgColor)
+                cg.fillPath()
+                cg.restoreGState()
+                cg.addPath(flap)
+                cg.setFillColor(UIColor(red: 0.94, green: 0.89, blue: 0.77, alpha: 0.97).cgColor)
+                cg.fillPath()
+                cg.addPath(flap)
+                cg.setStrokeColor(UIColor(red: 0.42, green: 0.23, blue: 0.09, alpha: 0.3).cgColor)
+                cg.setLineWidth(0.5)
+                cg.strokePath()
+            }
             // Опалённая кромка у травм — только у крупной бумаги: в низкой
             // строке списка она выходила тёмной «подковой» во всю высоту.
-            for (at, turn, hurt) in hurts where roomy {
+            for (at, turn, hurt) in hurts {
                 ctx.cgContext.saveGState()
                 ctx.cgContext.translateBy(x: at.x, y: at.y); ctx.cgContext.rotate(by: turn)
-                hurt.drawMark(ctx.cgContext, missing: false)
+                hurt.drawMark(ctx.cgContext, missing: false, light: !roomy)
                 ctx.cgContext.restoreGState()
             }
         }
@@ -1025,6 +1085,11 @@ struct PageTexture: View {
             UIColor.black.setFill()
             ctx.fill(CGRect(origin: .zero, size: box))
             ctx.cgContext.setBlendMode(.clear)
+            if dogEar.count == 3 {
+                ctx.cgContext.addLines(between: dogEar)
+                ctx.cgContext.closePath()
+                ctx.cgContext.fillPath()
+            }
             for (at, turn, hurt) in hurts {
                 ctx.cgContext.saveGState()
                 ctx.cgContext.translateBy(x: at.x, y: at.y); ctx.cgContext.rotate(by: turn)
@@ -1038,15 +1103,21 @@ struct PageTexture: View {
         return made
     }
 
-    /// Травма края (P723): выщербина — неровный полукруг, откуда бумага
-    /// выкрошилась; надрыв — узкий клин внутрь листа; щербинка — крошечная
-    /// выщербина. Рисуется в своих координатах: край — ось x, внутрь — +y.
+    /// Травма края (P723, разнообразнее с P726): выщербина — неровный
+    /// полукруг, откуда бумага выкрошилась; надрыв — узкий клин внутрь листа;
+    /// щербинка — крошечная выщербина; вырванный кусок — лохматая ямка с
+    /// волокнами по краю; обтрёпанный участок — цепочка мелких щербинок;
+    /// залом — короткая складка от края внутрь листа. Рисуется в своих
+    /// координатах: край — ось x, внутрь — +y.
     struct Hurt {
-        enum Kind { case bite, tear, nick }
+        enum Kind { case bite, tear, nick, chunk, fray, crease }
         let kind: Kind
+        /// Чего нет — вырезается маской (на странице закрашивается тёмным).
         let path: CGPath
         /// Линия разрыва надрыва — по ней светлая кромка.
         let lip: CGPath?
+        /// Волокна по краю вырванного куска и линия залома.
+        let fibres: CGPath?
 
         static func random(_ seed: inout UInt64, small: Bool, tears: Bool = true) -> Hurt {
             func next() -> CGFloat {
@@ -1054,13 +1125,22 @@ struct PageTexture: View {
                 return CGFloat(seed >> 40) / CGFloat(1 << 24)
             }
             let roll = next()
-            let kind: Kind = roll < 0.38 ? .nick : (roll < 0.7 || !tears ? .bite : .tear)
+            let kind: Kind
+            switch roll {
+            case ..<0.2: kind = .nick
+            case ..<0.38: kind = .bite
+            case ..<0.56: kind = .chunk
+            case ..<0.72: kind = .fray
+            case ..<0.86: kind = .crease
+            default: kind = tears ? .tear : .bite
+            }
+            let scale: CGFloat = small ? 1 : 1.8
             let path = CGMutablePath()
             var lip: CGPath?
+            var fibres: CGPath?
             switch kind {
             case .nick, .bite:
-                let r = kind == .nick ? 0.6 + next() * 0.7
-                                      : (small ? 1.0 + next() * 1.1 : 2 + next() * 3)
+                let r = kind == .nick ? 0.6 + next() * 0.7 : (1.0 + next() * 1.3) * scale
                 let stretch = 1.1 + next() * 0.7
                 path.move(to: CGPoint(x: -r * stretch, y: -1))
                 for i in 0...10 {
@@ -1070,6 +1150,51 @@ struct PageTexture: View {
                 }
                 path.addLine(to: CGPoint(x: r * stretch, y: -1))
                 path.closeSubpath()
+            case .chunk:
+                // Неровная ямка, глубже с одного боку, и волокна по краю.
+                let half = (2.5 + next() * 2.5) * scale
+                let deep = half * (0.5 + next() * 0.5)
+                let skew = (next() - 0.5) * 0.8
+                let hairs = CGMutablePath()
+                path.move(to: CGPoint(x: -half, y: -1))
+                let steps = 16
+                for i in 0...steps {
+                    let t = CGFloat(i) / CGFloat(steps)
+                    let x = -half + 2 * half * t
+                    let bell = sin(t * .pi) * (1 + skew * (t - 0.5) * 2)
+                    let y = max(0, deep * bell * (0.7 + next() * 0.6))
+                    path.addLine(to: CGPoint(x: x, y: y))
+                    if i > 0 && i < steps && next() < 0.6 {
+                        let len = 0.5 + next() * 1.2
+                        let tilt = (next() - 0.5) * 1.2
+                        hairs.move(to: CGPoint(x: x, y: y))
+                        hairs.addLine(to: CGPoint(x: x + tilt * len, y: y + len))
+                    }
+                }
+                path.addLine(to: CGPoint(x: half, y: -1))
+                path.closeSubpath()
+                fibres = hairs
+            case .fray:
+                // Обтрёпанный участок: цепочка мелких щербинок разной глубины.
+                let half = (4 + next() * 6) * scale
+                var x = -half
+                while x < half {
+                    let r = 0.35 + next() * 0.8
+                    path.addEllipse(in: CGRect(x: x - r, y: -r * 0.6, width: r * 2, height: r * (1.4 + next())))
+                    x += r * 1.2 + next() * 1.8
+                }
+            case .crease:
+                // Залом: крошечная щербинка у края и складка внутрь листа.
+                let r = 0.5 + next() * 0.5
+                path.addEllipse(in: CGRect(x: -r, y: -r, width: r * 2, height: r * 2))
+                let length = (5 + next() * 9) * scale
+                let lean = (next() - 0.5) * 1.1
+                let bend = (next() - 0.5) * length * 0.25
+                let fold = CGMutablePath()
+                fold.move(to: .zero)
+                fold.addQuadCurve(to: CGPoint(x: lean * length, y: length),
+                                  control: CGPoint(x: lean * length / 2 + bend, y: length / 2))
+                fibres = fold
             case .tear:
                 let length = small ? 3 + next() * 4 : 5 + next() * 9
                 let lean = (next() - 0.5) * 0.9
@@ -1089,32 +1214,58 @@ struct PageTexture: View {
                 edge.addLine(to: tip)
                 lip = edge
             }
-            return Hurt(kind: kind, path: path, lip: lip)
+            return Hurt(kind: kind, path: path, lip: lip, fibres: fibres)
         }
 
         /// Опалённая кромка вокруг травмы. `missing` — вырезать нечем
         /// (страница во весь экран): само место травмы закрашивается тёмным.
-        func drawMark(_ cg: CGContext, missing: Bool) {
+        /// `light` — у мелкой бумаги только тонкие линии: волокна и залом.
+        func drawMark(_ cg: CGContext, missing: Bool, light: Bool = false) {
             let burnt = UIColor(red: 0.42, green: 0.23, blue: 0.09, alpha: 1)
             cg.setLineJoin(.round)
-            cg.addPath(path)
-            cg.setStrokeColor(burnt.withAlphaComponent(0.16).cgColor)
-            cg.setLineWidth(missing ? 3.2 : 1.8)
-            cg.strokePath()
-            if missing {
+            cg.setLineCap(.round)
+            if !light {
                 cg.addPath(path)
-                cg.setFillColor(burnt.withAlphaComponent(kind == .tear ? 0.7 : 0.5).cgColor)
-                cg.fillPath()
+                cg.setStrokeColor(burnt.withAlphaComponent(0.14).cgColor)
+                cg.setLineWidth(missing ? 3.2 : 1.8)
+                cg.strokePath()
+                if missing {
+                    cg.addPath(path)
+                    cg.setFillColor(burnt.withAlphaComponent(kind == .tear ? 0.7 : 0.5).cgColor)
+                    cg.fillPath()
+                }
+                cg.addPath(path)
+                cg.setStrokeColor(burnt.withAlphaComponent(0.55).cgColor)
+                cg.setLineWidth(0.8)
+                cg.strokePath()
             }
-            cg.addPath(path)
-            cg.setStrokeColor(burnt.withAlphaComponent(0.6).cgColor)
-            cg.setLineWidth(0.9)
-            cg.strokePath()
             if let lip {
                 cg.addPath(lip)
                 cg.setStrokeColor(UIColor.white.withAlphaComponent(0.45).cgColor)
                 cg.setLineWidth(0.6)
                 cg.strokePath()
+            }
+            if let fibres {
+                if kind == .crease {
+                    // Складка: тёмная ложбинка и светлый гребень рядом.
+                    cg.addPath(fibres)
+                    cg.setStrokeColor(burnt.withAlphaComponent(0.32).cgColor)
+                    cg.setLineWidth(0.55)
+                    cg.strokePath()
+                    cg.saveGState()
+                    cg.translateBy(x: 0.7, y: 0)
+                    cg.addPath(fibres)
+                    cg.setStrokeColor(UIColor.white.withAlphaComponent(0.5).cgColor)
+                    cg.setLineWidth(0.5)
+                    cg.strokePath()
+                    cg.restoreGState()
+                } else {
+                    // Волокна разрыва светлее бумаги.
+                    cg.addPath(fibres)
+                    cg.setStrokeColor(UIColor(red: 0.96, green: 0.92, blue: 0.82, alpha: 0.8).cgColor)
+                    cg.setLineWidth(0.35)
+                    cg.strokePath()
+                }
             }
         }
     }
