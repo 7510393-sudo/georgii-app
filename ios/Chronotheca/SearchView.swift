@@ -411,7 +411,7 @@ private struct CardPaper: View {
                         .frame(width: geo.size.width, height: geo.size.height)
                         .offset(y: Search.tabHeight)
                         .mask(alignment: .topLeading) { shoulder(geo.size) }
-                        .opacity(scheme == .dark ? 0.35 : 1)
+                        .opacity(scheme == .dark ? 0.25 : 0.6)
                 }
                 FolderShape(tabHeight: Search.tabHeight)
                     .stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
@@ -434,7 +434,9 @@ private struct CardPaper: View {
         let from = size.width / 3 + 6
         return LinearGradient(colors: [.black, .black, .clear], startPoint: .top, endPoint: .bottom)
             .frame(width: max(0, size.width - from - 10), height: 30)
-            .mask(LinearGradient(colors: [.black, .black, .black, .clear],
+            // С обоих концов тает (P742): на снимке автора начало и конец
+            // полосы читались чёрточками.
+            .mask(LinearGradient(colors: [.clear, .black, .black, .clear],
                                  startPoint: .leading, endPoint: .trailing))
             .offset(x: from, y: Search.tabHeight)
     }

@@ -198,7 +198,12 @@ final class Archive: ObservableObject {
             let copy = self
             DispatchQueue.global(qos: .utility).async {
                 guard let url = Memo.place(for: root), let data = try? JSONEncoder().encode(copy) else { return }
-                try? data.write(to: url, options: .atomic)
+                // Опись читается, только пока телефон разблокирован (P740,
+                // `50-безопасность.md`): в ней начала всех записей. Записать
+                // новую можно и при запертом — файл создаётся заново; не
+                // прочиталась — опись соберётся из самих файлов, только
+                // медленнее.
+                try? data.write(to: url, options: [.atomic, .completeFileProtectionUnlessOpen])
             }
         }
     }

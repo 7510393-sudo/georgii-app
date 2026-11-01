@@ -2,7 +2,8 @@ import SwiftUI
 
 /// Облачко «…помнишь?».
 ///
-/// Нарисовано автором от руки и обведено в вектор. Лежит за вкладкой
+/// Нарисовано автором от руки и обведено в вектор; с P743 — без контура,
+/// с размытыми краями, только лицо и подпись. Лежит за вкладкой
 /// «Дневник», расслабленно опершись на неё левым локтем: низ облачка
 /// стоит на верхнем крае вкладки, а локоть заходит на саму вкладку и
 /// накрывает её край. Так видно объём, и у приложения появляется свой
@@ -30,16 +31,14 @@ struct RememberCloud: View {
         let height = width / Self.ratio
         Button(action: open) {
             ZStack {
-                Image("облачко-бумага")
-                    .renderingMode(.template)
-                    .resizable()
-                    .foregroundStyle(Look.cloudPaper)
+                paper(height: height)
                 // Подпись нарисована по-русски (P230). На других языках —
                 // рисунок без слов, а подпись своим языком ложится поверх
                 // тем же наклоном и на то же место, рукописным шрифтом (P397).
                 // «А вот когда-то…» вместо «…а помнишь?» (P452): рисунка с
                 // новой подписью нет — подпись на всех языках шрифтом.
-                Image("облачко-без-слов")
+                // Без контура (P743): только лицо и подпись.
+                Image("облачко-лицо")
                     .renderingMode(.template)
                     .resizable()
                     .foregroundStyle(Look.ink)
@@ -60,6 +59,56 @@ struct RememberCloud: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(T("А вот когда-то… Запись этого же числа в прошлые годы", "Back then… The entry from this date in past years"))
+    }
+
+    /// Прямой низ рисунка, которым облачко стоит на вкладке: от 23 до 321
+    /// по ширине, на высоте 336,5 (из 715 × 407).
+    private static let footY: CGFloat = 336.5 / 407
+    private static let footEnd: CGFloat = 321.0 / 715
+
+    /// Бумага облачка (P743): контура нет, края размыты и полупрозрачны,
+    /// как у настоящего облака; чёткий только прямой низ. Размытая бумага
+    /// ниже черты срезается; у самой черты поверх лежит чёткая полоска той же
+    /// бумаги, тающая кверху, — низ не просвечивает.
+    private func paper(height: CGFloat) -> some View {
+        let blur = width * 0.035
+        let band = height * 0.12
+        let sheet = Image("облачко-бумага")
+            .renderingMode(.template)
+            .resizable()
+            .foregroundStyle(Look.cloudPaper)
+            .frame(width: width, height: height)
+        return ZStack {
+            sheet
+                .blur(radius: blur)
+                .clipShape(FlatFoot(footY: Self.footY, footEnd: Self.footEnd, spill: blur * 3))
+            sheet
+                .mask(alignment: .topLeading) {
+                    LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
+                        .frame(width: width * Self.footEnd, height: band)
+                        .offset(y: height * Self.footY - band)
+                }
+        }
+        .frame(width: width, height: height)
+        .allowsHitTesting(false)
+    }
+}
+
+/// Где видна размытая бумага облачка (P743): всё выше черты прямого низа и
+/// всё правее его конца — там облачко локтем заходит ниже; размытие может
+/// выходить за рамку на `spill`.
+private struct FlatFoot: Shape {
+    let footY: CGFloat
+    let footEnd: CGFloat
+    let spill: CGFloat
+
+    func path(in r: CGRect) -> Path {
+        var p = Path()
+        p.addRect(CGRect(x: r.minX - spill, y: r.minY - spill,
+                         width: r.width + spill * 2, height: r.height * footY + spill))
+        p.addRect(CGRect(x: r.minX + r.width * footEnd, y: r.minY - spill,
+                         width: r.width * (1 - footEnd) + spill, height: r.height + spill * 2))
+        return p
     }
 }
 

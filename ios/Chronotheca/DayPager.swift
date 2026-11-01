@@ -554,6 +554,15 @@ struct PageSides: View {
     /// Кусок края — с места `from` (кусок замкнут сам на себя, шва нет),
     /// сдвинутый вместе с листом. Переворот — у самой картинки, чтобы край
     /// ехал в ту же сторону, что и лист.
+    /// Бока только на поле, у самого края (P742: «фактура налезает на файлы
+    /// и на текст») — дальше 8 точек тают и к 16 сходят на нет; текст и
+    /// вложения начинаются глубже.
+    private static let margin = LinearGradient(
+        stops: [.init(color: .black, location: 0),
+                .init(color: .black, location: 8 / PageTexture.sideDepth),
+                .init(color: .clear, location: 16 / PageTexture.sideDepth)],
+        startPoint: .leading, endPoint: .trailing)
+
     private func strip(_ picture: UIImage, from: Int, flip: CGFloat) -> some View {
         let length = picture.size.height
         let start = CGFloat(abs(from) % max(1, Int(length)))
@@ -572,6 +581,7 @@ struct PageSides: View {
         }
         .frame(width: PageTexture.sideDepth)
         .clipped()
+        .mask(PageSides.margin)
     }
 }
 
@@ -1201,10 +1211,13 @@ struct PageTexture: View {
         let deep: Float = (min(w, h) < 60 ? 0.9 : 1.6) * (light ? 0.45 : 1)
         let torn = [W, W, H, H].enumerated().map { e, n -> [Float] in
             if openBottom && e == 1 { return [Float](repeating: 0, count: n) }
-            return tornLine(length: n, scale: Float(px), deep: deep, next: next)
+            // Верх карточки поиска (P742): «не архив после пожара, а архив,
+            // которым много пользовались» — край рвётся вдвое мельче.
+            return tornLine(length: n, scale: Float(px), deep: openBottom && e == 0 ? deep * 0.5 : deep,
+                            next: next)
         }
         var power = (0..<4).map { _ in 0.75 + next() * 0.3 }        // верх, низ, лево, право
-        if openBottom { power[1] = 0 }
+        if openBottom { power[1] = 0; power[0] *= 0.6 }
         if light { power = power.map { $0 * 0.3 } }
         let fall = Float(wear) * Float(px) / 1.6                             // в пикселях
         let peak: Float = 0.45
