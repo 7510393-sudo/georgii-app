@@ -422,8 +422,18 @@ struct OldPaper: View {
     /// Чей износ — номер дня (`PageTexture.seed`): у соседних клеток разный.
     var seed: Int = 0
     var base: Color? = nil
+    /// Старая бумага выключена в настройках (P730): только цвет прошлого.
+    @AppStorage(Prefs.plainPast) private var plainPast = false
 
     var body: some View {
+        if plainPast {
+            if let base { base }
+        } else {
+            worn
+        }
+    }
+
+    private var worn: some View {
         GeometryReader { geo in
             let art = PageTexture.aged(size: geo.size, band: band, seed: seed)
             let tile = PageTexture.paper.size
@@ -512,6 +522,8 @@ struct PageTexture: View {
     /// середина экрана под шапкой, затемнение ложилось на слово «План»).
     var edgeBottom = false
     @Environment(\.colorScheme) private var scheme
+    /// Старая бумага выключена в настройках (P730).
+    @AppStorage(Prefs.plainPast) private var plainPast = false
     private var dark: Bool { scheme == .dark }
 
     /// Общая точка отсчёта фактуры — вся страница дня.
@@ -520,7 +532,7 @@ struct PageTexture: View {
     var body: some View {
         ZStack {
             tiled(tab == .plan ? PageTexture.grid : PageTexture.grain)
-            if aged {
+            if aged && !plainPast {
                 ZStack {
                     // Бумага почти гладкая, как у образца (P727): рельеф слабее.
                     tiled(PageTexture.paper).opacity(0.4)

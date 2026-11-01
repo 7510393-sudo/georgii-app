@@ -340,6 +340,8 @@ private struct SearchCard<Content: View>: View {
     var past = true
     /// Номер дня — у каждой карточки свой износ (P723).
     var seed = 0
+    /// Старая бумага выключена в настройках (P730): карточки ровные.
+    @AppStorage(Prefs.plainPast) private var plainPast = false
     @ViewBuilder let content: () -> Content
 
     var body: some View {
@@ -373,13 +375,19 @@ private struct SearchCard<Content: View>: View {
                     paper.clipShape(FolderShape(tabHeight: Search.tabHeight))
                     // Прошедший день — затёрт и порван; сегодняшний — слегка
                     // тронут, чтобы не выбивался среди старых (P728).
-                    AgedFrame(band: 12, seed: seed, openBottom: true, light: !past)
-                        .clipShape(FolderShape(tabHeight: Search.tabHeight))
+                    if !plainPast {
+                        AgedFrame(band: 12, seed: seed, openBottom: true, light: !past)
+                            .clipShape(FolderShape(tabHeight: Search.tabHeight))
+                    }
                     FolderShape(tabHeight: Search.tabHeight)
                         .stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
                 }
                 // Травмы края прошедшего дня вырезаны насквозь (P723).
-                .mask { AgedFrame(band: 12, seed: seed, cut: true, openBottom: true, light: !past) }
+                .mask {
+                    if plainPast { Rectangle() } else {
+                        AgedFrame(band: 12, seed: seed, cut: true, openBottom: true, light: !past)
+                    }
+                }
             }
         }
     }
