@@ -908,7 +908,9 @@ struct PageTexture: View {
             return normalised(wrapBlur1D((0..<n).map { _ in next() - 0.5 }, radius: r, passes: 3))
         }
         let lengths = [W, W, H, H]                     // верх, низ, лево, право
-        let wobble = lengths.map { line($0, 10) }
+        // Глубина гуляет плавно и в меру (P723: узкие всплески глубины в
+        // низкой строке списка сходились сверху и снизу тёмной «подковой»).
+        let wobble = lengths.map { line($0, 40).map { max(-1.5, min(1.5, $0)) } }
         let swell = lengths.map { line($0, 70) }
         let power = (0..<4).map { _ in 0.3 + next() * 0.6 }
         var keep = [Float](repeating: 1, count: W * H)
@@ -919,7 +921,7 @@ struct PageTexture: View {
             let deepest = min(Int(wear * 2 * 3.5), e < 2 ? H : W)
             for a in 0..<n {
                 let strength = power[e] * max(0.15, 1 + 0.6 * swell[e][a])
-                let f = fall * max(0.4, 1 + 0.45 * wobble[e][a])
+                let f = fall * max(0.6, 1 + 0.3 * wobble[e][a])
                 for d in 0..<deepest {
                     let worn = min(peak * strength * exp(-Float(d) / f), 0.75)
                     if worn < 0.004 { break }
