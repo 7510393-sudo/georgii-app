@@ -899,6 +899,9 @@ struct PageTexture: View {
             return Float(seed >> 40) / Float(1 << 24)
         }
         let W = Int(w) * 2, H = Int(h) * 2
+        // Мелкая бумага изнашивается уже (P723, по снимку CI: клетки месяца
+        // и строки списка выходили бурыми целиком — четыре края сходились).
+        let wear = min(band, min(w, h) * 0.14)
         // Неровность вдоль края: мелкая — глубина, крупная — сила.
         func line(_ n: Int, _ radius: Int) -> [Float] {
             let r = max(1, min(radius, n / 2 - 1))
@@ -907,13 +910,13 @@ struct PageTexture: View {
         let lengths = [W, W, H, H]                     // верх, низ, лево, право
         let wobble = lengths.map { line($0, 10) }
         let swell = lengths.map { line($0, 70) }
-        let power = (0..<4).map { _ in 0.45 + next() * 0.9 }
+        let power = (0..<4).map { _ in 0.3 + next() * 0.6 }
         var keep = [Float](repeating: 1, count: W * H)
-        let fall = Float(band) * 2 / 2.2               // в пикселях
-        let peak: Float = 0.5
+        let fall = Float(wear) * 2 / 2.2               // в пикселях
+        let peak: Float = 0.42
         for e in 0..<4 {
             let n = lengths[e]
-            let deepest = min(Int(band * 2 * 3.5), e < 2 ? H : W)
+            let deepest = min(Int(wear * 2 * 3.5), e < 2 ? H : W)
             for a in 0..<n {
                 let strength = power[e] * max(0.15, 1 + 0.6 * swell[e][a])
                 let f = fall * max(0.4, 1 + 0.45 * wobble[e][a])
@@ -932,8 +935,8 @@ struct PageTexture: View {
             let t = next()
             let cx = e == 0 || e == 1 ? Float(W) * t : (e == 2 ? 0 : Float(W))
             let cy = e == 2 || e == 3 ? Float(H) * t : (e == 0 ? 0 : Float(H))
-            let radius = Float(band) * 2 * (1.6 + next() * 2.6)
-            let strength = 0.10 + next() * 0.16
+            let radius = Float(wear) * 2 * (1.6 + next() * 2.6)
+            let strength = 0.06 + next() * 0.10
             let p1 = next() * 6.3, p2 = next() * 6.3
             let x0 = max(0, Int(cx - radius * 1.4)), x1 = min(W - 1, Int(cx + radius * 1.4))
             let y0 = max(0, Int(cy - radius * 1.4)), y1 = min(H - 1, Int(cy + radius * 1.4))
@@ -959,7 +962,10 @@ struct PageTexture: View {
         let plain = picture(bytes, width: W, height: H, scale: 2)
         // Травмы: в среднем одна на 230 точек края, не у самых углов.
         let perimeter = 2 * (w + h)
-        let count = Int(Float(perimeter / 230) + next() * 0.9)
+        let count = Int(Float(perimeter / 300) + next() * 0.8)
+        // Надрыв клином — только у крупной бумаги: в строке списка он
+        // выходил тёмной «галочкой» во всю высоту.
+        let roomy = min(w, h) > 60
         var hurts: [(CGPoint, CGFloat, Hurt)] = []
         for _ in 0..<min(count, 4) {
             let e = Int(next() * 4) % 4
@@ -973,7 +979,7 @@ struct PageTexture: View {
             case 3: at = CGPoint(x: w, y: s); turn = .pi / 2
             default: break
             }
-            hurts.append((at, turn, Hurt.random(&seed, small: true)))
+            hurts.append((at, turn, Hurt.random(&seed, small: true, tears: roomy)))
         }
         let format = UIGraphicsImageRendererFormat(); format.scale = 2
         let box = CGSize(width: w, height: h)
@@ -1013,19 +1019,19 @@ struct PageTexture: View {
         /// Линия разрыва надрыва — по ней светлая кромка.
         let lip: CGPath?
 
-        static func random(_ seed: inout UInt64, small: Bool) -> Hurt {
+        static func random(_ seed: inout UInt64, small: Bool, tears: Bool = true) -> Hurt {
             func next() -> CGFloat {
                 seed = seed &* 6364136223846793005 &+ 1442695040888963407
                 return CGFloat(seed >> 40) / CGFloat(1 << 24)
             }
             let roll = next()
-            let kind: Kind = roll < 0.38 ? .nick : (roll < 0.7 ? .bite : .tear)
+            let kind: Kind = roll < 0.38 ? .nick : (roll < 0.7 || !tears ? .bite : .tear)
             let path = CGMutablePath()
             var lip: CGPath?
             switch kind {
             case .nick, .bite:
-                let r = kind == .nick ? 0.7 + next() * 0.9
-                                      : (small ? 1.4 + next() * 1.6 : 2 + next() * 3)
+                let r = kind == .nick ? 0.6 + next() * 0.7
+                                      : (small ? 1.0 + next() * 1.1 : 2 + next() * 3)
                 let stretch = 1.1 + next() * 0.7
                 path.move(to: CGPoint(x: -r * stretch, y: -1))
                 for i in 0...10 {
@@ -1064,7 +1070,7 @@ struct PageTexture: View {
             cg.setLineJoin(.round)
             cg.addPath(path)
             cg.setStrokeColor(burnt.withAlphaComponent(0.16).cgColor)
-            cg.setLineWidth(3.2)
+            cg.setLineWidth(missing ? 3.2 : 1.8)
             cg.strokePath()
             if missing {
                 cg.addPath(path)
