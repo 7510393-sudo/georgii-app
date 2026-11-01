@@ -462,11 +462,13 @@ struct AgedFrame: View {
     var band: CGFloat
     var seed: Int
     var cut = false
+    /// Низ уходит под следующую карточку (P725): не затёрт и без травм.
+    var openBottom = false
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         GeometryReader { geo in
-            let art = PageTexture.aged(size: geo.size, band: band, seed: seed)
+            let art = PageTexture.aged(size: geo.size, band: band, seed: seed, openBottom: openBottom)
             Image(uiImage: cut ? art.cut : art.frame)
                 .resizable()
                 .opacity(cut || scheme != .dark ? 1 : 0.35)
@@ -756,12 +758,12 @@ struct PageTexture: View {
     /// Бок: у края глубже всего, дальше затухает; глубина и сила гуляют по
     /// длине. Длина куска — 1200 точек (P723): на странице он почти не
     /// повторяется. Левый и правый — разные куски, не зеркало одного.
-    static let sideEdge: UIImage = edgeImage(depthPoints: sideDepth, alongPoints: 1200, falloff: 22, peak: 0.40,
+    static let sideEdge: UIImage = edgeImage(depthPoints: sideDepth, alongPoints: 1200, falloff: 17, peak: 0.46,
                                              vertical: true, seed: 0xED6E1)
-    static let sideEdgeRight: UIImage = edgeImage(depthPoints: sideDepth, alongPoints: 1200, falloff: 22, peak: 0.40,
+    static let sideEdgeRight: UIImage = edgeImage(depthPoints: sideDepth, alongPoints: 1200, falloff: 17, peak: 0.46,
                                                   vertical: true, seed: 0xED6E3)
     /// Низ: темнее и шире боков.
-    static let footEdge: UIImage = edgeImage(depthPoints: footDepth, alongPoints: 480, falloff: 30, peak: 0.42,
+    static let footEdge: UIImage = edgeImage(depthPoints: footDepth, alongPoints: 480, falloff: 23, peak: 0.48,
                                              vertical: false, seed: 0xED6E2)
 
     /// Полоска вдоль края, 2 пикселя на точку. Вертикальная — край слева;
@@ -782,9 +784,12 @@ struct PageTexture: View {
         // сила — два плавных поля на плоскости; вдоль края они замкнуты,
         // чтобы кусок повторялся без шва.
         let width = vertical ? depth : along, height = vertical ? along : depth
-        let reachBig = smoothField(width: width, height: height, cell: 140, wrapX: !vertical, wrapY: vertical, next: next)
-        let reachSmall = smoothField(width: width, height: height, cell: 56, wrapX: !vertical, wrapY: vertical, next: next)
-        let tone = smoothField(width: width, height: height, cell: 300, wrapX: !vertical, wrapY: vertical, next: next)
+        // Пятна крупные и у самого края (P725, по замечанию автора: прежние
+        // были слишком местными): шаг полей вдвое крупнее, глубина гуляет
+        // меньше.
+        let reachBig = smoothField(width: width, height: height, cell: 320, wrapX: !vertical, wrapY: vertical, next: next)
+        let reachSmall = smoothField(width: width, height: height, cell: 120, wrapX: !vertical, wrapY: vertical, next: next)
+        let tone = smoothField(width: width, height: height, cell: 700, wrapX: !vertical, wrapY: vertical, next: next)
         var bytes = [UInt8](repeating: 0, count: width * height * 4)
         let k = Float(wearStrength)
         let fadeFrom = Float(depth) * 0.45
@@ -794,8 +799,8 @@ struct PageTexture: View {
                 let d = vertical ? x : depth - 1 - y
                 let distance = Float(d) / 2
                 let i = y * width + x
-                let reach = max(0.35, min(3, 1 + 0.4 * (reachBig[i] + 0.5 * reachSmall[i])))
-                let strength = max(0.15, 1 + 0.5 * tone[i])
+                let reach = max(0.5, min(2, 1 + 0.3 * (reachBig[i] + 0.3 * reachSmall[i])))
+                let strength = max(0.35, 1 + 0.35 * tone[i])
                 var worn = min(peak * k * strength * exp(-distance / (falloff * reach)), 0.7)
                 if Float(d) > fadeFrom {
                     let q = (Float(depth) - Float(d)) / (Float(depth) - fadeFrom)
@@ -902,9 +907,9 @@ struct PageTexture: View {
     /// травмы — выщербины, надрывы, щербинки, — которые вырезаются маской
     /// `cut`. Всё — по номеру `seed`, так что вид одного дня не меняется от
     /// показа к показу. `band` — на сколько точек от края идёт потемнение.
-    static func aged(size: CGSize, band: CGFloat, seed number: Int) -> AgedArt {
+    static func aged(size: CGSize, band: CGFloat, seed number: Int, openBottom: Bool = false) -> AgedArt {
         let w = max(4, size.width.rounded()), h = max(4, size.height.rounded())
-        let key = "\(Int(w))x\(Int(h))b\(Int(band * 10))s\(number)" as NSString
+        let key = "\(Int(w))x\(Int(h))b\(Int(band * 10))s\(number)\(openBottom ? "o" : "")" as NSString
         if let made = agedMade.object(forKey: key) { return made }
         var seed = UInt64(bitPattern: Int64(number)) &* 0x9E37_79B9_7F4A_7C15 &+ 0xA6ED0 &+ UInt64(band * 10)
         func next() -> Float {
@@ -920,7 +925,11 @@ struct PageTexture: View {
         let reachBig = smoothField(width: W, height: H, cell: 60, wrapX: false, wrapY: false, next: next)
         let reachSmall = smoothField(width: W, height: H, cell: 24, wrapX: false, wrapY: false, next: next)
         let tone = smoothField(width: W, height: H, cell: 120, wrapX: false, wrapY: false, next: next)
-        var power = (0..<4).map { _ in 0.3 + next() * 0.6 }          // верх, низ, лево, право
+        // Разброс между клетками меньше (P725: тёмные клетки месяца
+        // выглядели отмеченными).
+        var power = (0..<4).map { _ in 0.4 + next() * 0.3 }          // верх, низ, лево, право
+        // Карточка поиска уходит низом под следующую (P725): низ не затёрт.
+        if openBottom { power[1] = 0 }
         // Низкая строка (список): верх и низ почти чистые, иначе строки
         // складываются в полосы — «полосатый матрас» (замечание автора).
         if h < 40 { power[0] *= 0.25; power[1] *= 0.25 }
@@ -931,7 +940,7 @@ struct PageTexture: View {
             for x in 0..<W {
                 let i = y * W + x
                 let reach = fall * max(0.35, min(3, 1 + 0.45 * (reachBig[i] + 0.5 * reachSmall[i])))
-                let strength = max(0.15, 1 + 0.5 * tone[i])
+                let strength = max(0.3, 1 + 0.3 * tone[i])
                 func kept(_ e: Int, _ d: Int) -> Float {
                     1 - min(peak * power[e] * strength * exp(-Float(d) / reach), 0.75)
                 }
@@ -945,7 +954,7 @@ struct PageTexture: View {
             let cx = e == 0 || e == 1 ? Float(W) * t : (e == 2 ? 0 : Float(W))
             let cy = e == 2 || e == 3 ? Float(H) * t : (e == 0 ? 0 : Float(H))
             let radius = Float(wear) * 2 * (1.6 + next() * 2.6)
-            let strength = 0.06 + next() * 0.10
+            let strength = 0.04 + next() * 0.07
             let p1 = next() * 6.3, p2 = next() * 6.3
             _ = p2
             // Пятно вытянуто вдоль края и неглубоко (P723: круглое пятно с
@@ -984,7 +993,7 @@ struct PageTexture: View {
         for _ in 0..<min(count, 4) {
             let e = Int(next() * 4) % 4
             let length = e < 2 ? w : h
-            guard length > 24 else { continue }
+            guard length > 24, !(openBottom && e == 1) else { continue }
             let s = 9 + CGFloat(next()) * (length - 18)
             var at = CGPoint(x: s, y: 0), turn: CGFloat = 0
             switch e {

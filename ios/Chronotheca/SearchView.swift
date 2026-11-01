@@ -178,7 +178,7 @@ struct SearchView: View {
             LazyVStack(spacing: -Search.overlap) {
                 ForEach(items) { item in
                     SearchCard(stamp: Search.stamp(item.day.date), past: Ru.isPast(item.day.date),
-                               seed: PageTexture.seed(item.day.date)) {
+                               seed: PageTexture.seed(item.day.date) &+ (Search.deep ? (Int(item.id) ?? 0) * 7 : 0)) {
                         row(item.day)
                     }
                 }
@@ -372,14 +372,14 @@ private struct SearchCard<Content: View>: View {
                 ZStack {
                     paper.clipShape(FolderShape(tabHeight: Search.tabHeight))
                     if past {
-                        AgedFrame(band: 12, seed: seed).clipShape(FolderShape(tabHeight: Search.tabHeight))
+                        AgedFrame(band: 12, seed: seed, openBottom: true).clipShape(FolderShape(tabHeight: Search.tabHeight))
                     }
                     FolderShape(tabHeight: Search.tabHeight)
                         .stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
                 }
                 // Травмы края прошедшего дня вырезаны насквозь (P723).
                 .mask {
-                    if past { AgedFrame(band: 12, seed: seed, cut: true) } else { Rectangle() }
+                    if past { AgedFrame(band: 12, seed: seed, cut: true, openBottom: true) } else { Rectangle() }
                 }
             }
         }
@@ -417,12 +417,10 @@ private struct FolderShape: Shape {
         p.addLine(to: CGPoint(x: r.maxX - bodyR, y: r.minY + tabHeight))
         p.addArc(tangent1End: CGPoint(x: r.maxX, y: r.minY + tabHeight),
                  tangent2End: CGPoint(x: r.maxX, y: r.minY + tabHeight + bodyR), radius: bodyR)
-        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY - bodyR))
-        p.addArc(tangent1End: CGPoint(x: r.maxX, y: r.maxY),
-                 tangent2End: CGPoint(x: r.maxX - bodyR, y: r.maxY), radius: bodyR)
-        p.addLine(to: CGPoint(x: r.minX + bodyR, y: r.maxY))
-        p.addArc(tangent1End: CGPoint(x: r.minX, y: r.maxY),
-                 tangent2End: CGPoint(x: r.minX, y: r.maxY - bodyR), radius: bodyR)
+        // Низ прямой, без скругления (P725): карточка уходит под следующую,
+        // и видно, что она выше видимой части.
+        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
+        p.addLine(to: CGPoint(x: r.minX, y: r.maxY))
         p.closeSubpath()
         return p
     }
