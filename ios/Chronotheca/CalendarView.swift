@@ -523,11 +523,28 @@ struct CalendarView: View {
         // Не «ленивый» столбец (P456): в нём строки, ещё не нарисованные,
         // стоят наугад, и прокрутка к дню промахивалась на день-два. Дней в
         // месяце не больше 31 — рисовать их сразу ничего не стоит.
+        // Суббота с воскресеньем — одна связка (P731): их обнимает скоба —
+        // черта под воскресеньем, концы которой поднимаются до верха субботы.
+        let groups = weekendGroups(cells)
         return VStack(spacing: 0) {
-            ForEach(Array(cells.enumerated()), id: \.offset) { _, day in
-                row(day, today: today)
-                    .id(Vault.stamp(day))
-                weekRule(after: day)
+            ForEach(Array(groups.enumerated()), id: \.offset) { _, group in
+                if group.count > 1 || cal.component(.weekday, from: group[0]) == 1 {
+                    VStack(spacing: 0) {
+                        ForEach(group, id: \.self) { day in
+                            row(day, today: today)
+                                .id(Vault.stamp(day))
+                            if day != group.last { dayRule }
+                        }
+                        Color.clear.frame(height: 3)
+                    }
+                    .overlay(WeekendBracket(rise: 9)
+                        .stroke(Look.inkSoft, style: StrokeStyle(lineWidth: 2.6, lineCap: .round))
+                        .padding(.horizontal, -2))
+                } else {
+                    row(group[0], today: today)
+                        .id(Vault.stamp(group[0]))
+                    dayRule
+                }
             }
         }
         .padding(.horizontal, 12)
@@ -613,26 +630,25 @@ struct CalendarView: View {
         .buttonStyle(.plain)
     }
 
-    /// Разделение недель: воскресенье отбивается жирной чертой — это конец
-    /// недели; пятница тонкой — за ней начинаются выходные. Так месяц
-    /// читается ритмом, а не сплошным столбцом.
-    ///
-    /// Черта воскресенья загибается на концах вверх: она не сама по себе, а
-    /// нижний край рамки вокруг недели, и этот загиб её и замыкает (P143).
-    @ViewBuilder private func weekRule(after date: Date) -> some View {
-        let weekday = cal.component(.weekday, from: date)
-        // Черты обнимают выходные — субботу и воскресенье, — с какого бы дня
-        // ни начиналась неделя (P456; прежде при неделе с воскресенья жирная
-        // черта вставала после субботы, и выделенными выглядели пятница и
-        // суббота). Нижняя — заметнее, с явными загибами.
-        if weekday == 1 {
-            WeekEnd(rise: 9).stroke(Look.inkSoft, style: StrokeStyle(lineWidth: 2.6, lineCap: .round))
-                .frame(height: 3)
-        } else if weekday == 6 {
-            Rectangle().fill(Look.inkFaint).opacity(0.55).frame(height: 1)
-        } else {
-            Rectangle().fill(Look.ruleSoft).frame(height: 1)
+    /// Дни месяца по порядку; суббота и следующее за ней воскресенье — в
+    /// одной связке, а воскресенье без субботы (первое число) — одно.
+    private func weekendGroups(_ days: [Date]) -> [[Date]] {
+        var out: [[Date]] = []
+        for day in days {
+            if cal.component(.weekday, from: day) == 1, let last = out.last, last.count == 1,
+               cal.component(.weekday, from: last[0]) == 7 {
+                out[out.count - 1].append(day)
+            } else {
+                out.append([day])
+            }
         }
+        return out
+    }
+
+    /// Тонкая черта между днями; черты после пятницы больше нет (P731) —
+    /// выходные отделяет скоба `WeekendBracket`.
+    private var dayRule: some View {
+        Rectangle().fill(Look.ruleSoft).frame(height: 1)
     }
 
     // MARK: - Касания

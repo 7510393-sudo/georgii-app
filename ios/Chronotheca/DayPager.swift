@@ -775,6 +775,10 @@ struct PageTexture: View {
         }
     }()
 
+    /// Пикселей на точку у картинок старой бумаги (P731): как у экрана
+    /// iPhone — втрое. При двух рваный край на экране расплывался.
+    private static let px = 3
+
     static let sideDepth: CGFloat = 96
     static let footDepth: CGFloat = 110
 
@@ -798,18 +802,18 @@ struct PageTexture: View {
     /// внутренней границе картинки износ сходит на нет (без ступеньки).
     private static func edgeImage(depthPoints: CGFloat, alongPoints: CGFloat, falloff: Float, peak: Float,
                                   vertical: Bool, seed start: UInt64) -> UIImage {
-        let along = Int(alongPoints) * 2, depth = Int(depthPoints) * 2
+        let along = Int(alongPoints) * px, depth = Int(depthPoints) * px
         var seed = start
         func next() -> Float {
             seed = seed &* 6364136223846793005 &+ 1442695040888963407
             return Float(seed >> 40) / Float(1 << 24)
         }
         let width = vertical ? depth : along, height = vertical ? along : depth
-        let reachBig = smoothField(width: width, height: height, cell: 320, wrapX: !vertical, wrapY: vertical, next: next)
-        let reachSmall = smoothField(width: width, height: height, cell: 120, wrapX: !vertical, wrapY: vertical, next: next)
-        let tone = smoothField(width: width, height: height, cell: 700, wrapX: !vertical, wrapY: vertical, next: next)
+        let reachBig = smoothField(width: width, height: height, cell: 480, wrapX: !vertical, wrapY: vertical, next: next)
+        let reachSmall = smoothField(width: width, height: height, cell: 180, wrapX: !vertical, wrapY: vertical, next: next)
+        let tone = smoothField(width: width, height: height, cell: 1050, wrapX: !vertical, wrapY: vertical, next: next)
         let mottle = mottling(width: width, height: height, wrapX: !vertical, wrapY: vertical, next: next)
-        let torn = tornLine(length: along, scale: 2, deep: 3.2, next: next)
+        let torn = tornLine(length: along, scale: Float(px), deep: 3.2, next: next)
         var bytes = [UInt8](repeating: 0, count: width * height * 4)
         let k = Float(wearStrength)
         let fadeFrom = Float(depth) * 0.5
@@ -824,7 +828,7 @@ struct PageTexture: View {
                     write(&bytes, i * 4, (0.24, 0.15, 0.08), 0.85)
                     continue
                 }
-                let distance = fromTear / 2
+                let distance = fromTear / Float(px)
                 let reach = max(0.5, min(2, 1 + 0.35 * (reachBig[i] + 0.4 * reachSmall[i])))
                 let strength = max(0.35, 1 + 0.4 * tone[i])
                 var worn = min(peak * k * strength * exp(-distance / (falloff * reach)), 0.75)
@@ -835,16 +839,16 @@ struct PageTexture: View {
                 paintAged(&bytes, i * 4, worn: worn, distance: distance, mottle: mottle[i])
             }
         }
-        let plain = picture(bytes, width: width, height: height, scale: 2)
+        let plain = picture(bytes, width: width, height: height, scale: CGFloat(px))
         // Мелкие изъяны на полях (P729): только у самого края, где нет
         // текста, — бок до 14 точек, низ — нижние 36 точек; подальше от
         // концов куска, чтобы шов плитки их не резал.
-        let size = CGSize(width: CGFloat(width) / 2, height: CGFloat(height) / 2)
+        let size = CGSize(width: CGFloat(width) / CGFloat(px), height: CGFloat(height) / CGFloat(px))
         let margin = vertical
             ? CGRect(x: 2, y: 12, width: 12, height: size.height - 24)
             : CGRect(x: 12, y: size.height - 36, width: size.width - 24, height: 34)
         let scaleOfFlaws = Float(vertical ? size.height : size.width) / 480
-        let format = UIGraphicsImageRendererFormat(); format.scale = 2
+        let format = UIGraphicsImageRendererFormat(); format.scale = CGFloat(px)
         return UIGraphicsImageRenderer(size: size, format: format).image { ctx in
             plain.draw(at: .zero)
             scatterFlaws(ctx.cgContext, in: margin, amount: scaleOfFlaws,
@@ -947,8 +951,8 @@ struct PageTexture: View {
     /// Неровность тона (P727): мягкие пятна в несколько точек и мельче —
     /// как у образца, без рельефа.
     private static func mottling(width: Int, height: Int, wrapX: Bool, wrapY: Bool, next: () -> Float) -> [Float] {
-        let a = smoothField(width: width, height: height, cell: 28, wrapX: wrapX, wrapY: wrapY, next: next)
-        let b = smoothField(width: width, height: height, cell: 8, wrapX: wrapX, wrapY: wrapY, next: next)
+        let a = smoothField(width: width, height: height, cell: 14 * px, wrapX: wrapX, wrapY: wrapY, next: next)
+        let b = smoothField(width: width, height: height, cell: 4 * px, wrapX: wrapX, wrapY: wrapY, next: next)
         return normalised(zip(a, b).map { $0 * 0.6 + $1 * 0.8 })
     }
 
@@ -1075,10 +1079,10 @@ struct PageTexture: View {
             seed = seed &* 6364136223846793005 &+ 1442695040888963407
             return Float(seed >> 40) / Float(1 << 24)
         }
-        let W = Int(w) * 2, H = Int(h) * 2
+        let W = Int(w) * px, H = Int(h) * px
         let wear = min(band, min(w, h) * 0.18)
-        let reachField = smoothField(width: W, height: H, cell: 60, wrapX: false, wrapY: false, next: next)
-        let tone = smoothField(width: W, height: H, cell: 120, wrapX: false, wrapY: false, next: next)
+        let reachField = smoothField(width: W, height: H, cell: 90, wrapX: false, wrapY: false, next: next)
+        let tone = smoothField(width: W, height: H, cell: 180, wrapX: false, wrapY: false, next: next)
         let mottle = mottling(width: W, height: H, wrapX: false, wrapY: false, next: next)
         // Рваный край по каждой стороне: мелкий — у клеток, крупнее — у карточек.
         // `light` — слегка тронутая бумага (P728: карточка сегодняшнего дня
@@ -1086,12 +1090,12 @@ struct PageTexture: View {
         let deep: Float = (min(w, h) < 60 ? 0.9 : 1.6) * (light ? 0.45 : 1)
         let torn = [W, W, H, H].enumerated().map { e, n -> [Float] in
             if openBottom && e == 1 { return [Float](repeating: 0, count: n) }
-            return tornLine(length: n, scale: 2, deep: deep, next: next)
+            return tornLine(length: n, scale: Float(px), deep: deep, next: next)
         }
         var power = (0..<4).map { _ in 0.75 + next() * 0.3 }        // верх, низ, лево, право
         if openBottom { power[1] = 0 }
         if light { power = power.map { $0 * 0.3 } }
-        let fall = Float(wear) * 2 / 1.6                             // в пикселях
+        let fall = Float(wear) * Float(px) / 1.6                             // в пикселях
         let peak: Float = 0.45
         var frameBytes = [UInt8](repeating: 0, count: W * H * 4)
         var cutBytes = [UInt8](repeating: 0, count: W * H * 4)
@@ -1113,14 +1117,14 @@ struct PageTexture: View {
                 let keep = kept(0, d0) * kept(1, d1) * kept(2, d2) * kept(3, d3)
                 // Кромка — только у рваных сторон (низ карточки поиска чистый).
                 let rimEdge = openBottom ? min(min(d0, d2), d3) : nearest
-                paintAged(&frameBytes, i * 4, worn: 1 - keep, distance: max(0, rimEdge) / 2, mottle: mottle[i])
+                paintAged(&frameBytes, i * 4, worn: 1 - keep, distance: max(0, rimEdge) / Float(px), mottle: mottle[i])
             }
         }
-        var frame = picture(frameBytes, width: W, height: H, scale: 2)
+        var frame = picture(frameBytes, width: W, height: H, scale: CGFloat(px))
         // Мелкие изъяны на боковых полях крупной бумаги — карточек поиска
         // (P729); у клеток и строк полей нет.
         if min(w, h) > 60 && !light {
-            let format = UIGraphicsImageRendererFormat(); format.scale = 2
+            let format = UIGraphicsImageRendererFormat(); format.scale = CGFloat(px)
             let plain = frame
             let amount = Float(h) / 480
             frame = UIGraphicsImageRenderer(size: CGSize(width: w, height: h), format: format).image { ctx in
@@ -1131,7 +1135,7 @@ struct PageTexture: View {
                              amount: amount, inward: .pi, next: next)
             }
         }
-        let made = AgedArt(frame: frame, cut: picture(cutBytes, width: W, height: H, scale: 2))
+        let made = AgedArt(frame: frame, cut: picture(cutBytes, width: W, height: H, scale: CGFloat(px)))
         agedMade.setObject(made, forKey: key)
         return made
     }
