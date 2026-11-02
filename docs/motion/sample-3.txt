@@ -1,41 +1,37 @@
+    4 Thread_47533   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 4 start  (in dyld) + 6992  [0x102fb04e4]
+    +   4 start_sim  (in dyld_sim) + 20  [0x1030f30e4]
+    +     4 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x104d477dc]  ChronothecaApp.swift:0
+    +       4 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x104d47730]  /<compiler-generated>:0
+    +         4 static App.main()  (in SwiftUI) + 132  [0x1d2c5f084]
+    +           4 protocol witness for App.init() in conformance ChronothecaApp  (in Chronotheca.debug.dylib) + 12  [0x104d477c8]  /<compiler-generated>:0
+    +             4 ChronothecaApp.init()  (in Chronotheca.debug.dylib) + 604  [0x104d440c8]  ChronothecaApp.swift:30
+    +               4 Vault.__allocating_init()  (in Chronotheca.debug.dylib) + 44  [0x1052c8c80]  Vault.swift:0
+    +                 4 Vault.init()  (in Chronotheca.debug.dylib) + 2036  [0x1052c9480]  Vault.swift:227
+    +                   4 Vault.usePreviewFolder()  (in Chronotheca.debug.dylib) + 672  [0x1052c9e7c]  Vault.swift:256
+    +                     2 Vault.makeTree(in:)  (in Chronotheca.debug.dylib) + 1608  [0x1052cc398]  Vault.swift:1005
+    +                     ! 2 Data.init<A>(_:)  (in Foundation) + 28  [0x180a98ef4]
+    +                     !   2 specialized Data.init<A>(_:)  (in Foundation) + 276  [0x180aac504]
+    +                     !     2 swift_dynamicCastSlow(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*, swift::DynamicCastFlags, std::atomic<unsigned long>&, unsigned long, bool (*)(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*, swift::DynamicCastFlags))  (in libswiftCore.dylib) + 176  [0x198184274]
+    +                     !       2 tryCast(swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*&, swift::TargetMetadata<swift::InProcess> const*&, bool, bool, bool)  (in libswiftCore.dylib) + 796  [0x1981845fc]
+    +                     !         2 tryCastToConstrainedOpaqueExistential(swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*&, swift::TargetMetadata<swift::InProcess> const*&, bool, bool, bool)  (in libswiftCore.dylib) + 56  [0x198185874]
+    +                     !           2 _conformsToProtocols(swift::OpaqueValue const*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetExistentialTypeMetadata<swift::InProcess> const*, swift::TargetWitnessTable<swift::InProcess> const**, bool)  (in libswiftCore.dylib) + 172  [0x198186838]
+    +                     !             2 swift::_conformsToProtocolInContext(swift::OpaqueValue const*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptorRef<swift::InProcess>, swift::TargetWitnessTable<swift::InProcess> const**, bool)  (in libswiftCore.dylib) + 36  [0x19817f2b0]
+    +                     !               2 swift::_conformsToProtocol(swift::OpaqueValue const*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptorRef<swift::InProcess>, swift::TargetWitnessTable<swift::InProcess> const**, swift::ConformanceExecutionContext*)  (in libswiftCore.dylib) + 48  [0x19817f170]
+    +                     !                 2 swift_conformsToProtocolWithExecutionContext  (in libswiftCore.dylib) + 68  [0x1981d1b30]
+    +                     !                   1 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib) + 3292  [0x1981d3cbc]
+    +                     !                   : 1 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib) + 32  [0x1981d4e64]
+    +                     !                   1 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib) + 3276  [0x1981d3cac]
+    +                     1 Vault.makeTree(in:)  (in Chronotheca.debug.dylib) + 1788  [0x1052cc44c]  Vault.swift:1010
+    +                     ! 1 Vault.noteName.unsafeMutableAddressor  (in Chronotheca.debug.dylib) + 0  [0x1052e1de0]  Vault.swift:1017
+    +                     1 Vault.makeTree(in:)  (in Chronotheca.debug.dylib) + 2384  [0x1052cc6a0]  Vault.swift:1013
+    +                       1 Data.write(to:options:)  (in Foundation) + 2372  [0x180aa5a28]
+    +                         1 closure #1 in writeToFileAux(path:buffer:options:attributes:reportProgress:)  (in Foundation) + 2328  [0x180ac44f4]
+    +                           1 write(buffer:toFileDescriptor:path:parentProgress:)  (in Foundation) + 640  [0x180ac02d8]
+    +                             1 fsync  (in libsystem_kernel.dylib) + 8  [0x102df42cc]
 
 Sort by top of stack, same collapsed (when >= 5):
-        __workq_kernreturn  (in libsystem_kernel.dylib)        1933
-        semaphore_wait_trap  (in libsystem_kernel.dylib)        493
-        mach_msg2_trap  (in libsystem_kernel.dylib)        367
-        __ulock_wake  (in libsystem_kernel.dylib)        339
-        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        169
-        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        151
-        __psynch_cvwait  (in libsystem_kernel.dylib)        62
-        __ulock_wait  (in libsystem_kernel.dylib)        51
-        semaphore_timedwait_trap  (in libsystem_kernel.dylib)        27
-        writev  (in libsystem_kernel.dylib)        24
-        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib)        6
+        __workq_kernreturn  (in libsystem_kernel.dylib)        7
 
-Binary Images:
-       0x104e98000 -        0x104e9b507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/F0C70C77-E423-4478-B648-3D25045B311B/data/Containers/Bundle/Application/818DCAA3-BFF5-4990-93A7-FFA0E15AC4EB/Chronotheca.app/Chronotheca
-       0x104eac000 -        0x104ee6ed7  libsystem_kernel.dylib (12377.161.14) <26CFE427-C180-3145-8D46-DE3129B1CD2A> /usr/lib/system/libsystem_kernel.dylib
-       0x104f2c000 -        0x104f343d3  libsystem_platform.dylib (375.120.2) <7E129155-1748-370C-8EDC-D762067A6D9F> /usr/lib/system/libsystem_platform.dylib
-       0x104fec000 -        0x10503ae9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
-       0x1050a8000 -        0x1050b410b  libsystem_pthread.dylib (539.100.4) <85A501D2-0B0E-3DEA-B121-B24119D80CFE> /usr/lib/system/libsystem_pthread.dylib
-       0x105180000 -        0x1052334ff  dyld (1.0.0 - 1387) <74E52480-C2BD-3C8D-812D-95FE2B74A096> /usr/lib/dyld
-       0x1052d8000 -        0x10531b65f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
-       0x10542c000 -        0x1054c52af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
-       0x105b78000 -        0x105b78b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
-       0x105b8c000 -        0x105b9403f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
-       0x105ca0000 -        0x105cab39f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
-       0x105cc4000 -        0x105cc6dff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
-       0x105ce4000 -        0x105ced49f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
-       0x105d08000 -        0x105d0eb7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
-       0x105d28000 -        0x105d2f2df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
-       0x105d54000 -        0x105d57e5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
-       0x105f54000 -        0x105f571ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
-       0x106224000 -        0x10623d27f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
-       0x106274000 -        0x106279407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
-       0x106290000 -        0x1062946ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
-       0x10634c000 -        0x1065a7bbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
-       0x106c00000 -        0x106c22cff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
-       0x106c98000 -        0x106cbef5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
-       0x106ce4000 -        0x106d1e15f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
-       0x106da0000 -        0x1075170e7 +Chronotheca.debug.dylib (0) <802BD9F8-0FC2-3FF8-BA35-CD4750628540> /Users/*/Library/Developer/CoreSimulator/Devices/F0C70C77-E423-4478-B648-3D25045B311B/data/Containers/Bundle/Application/818DCAA3-BFF5-4990-93A7-FFA0E15AC4EB/Chronotheca.app/Chronotheca.debug.dylib
-       0x1081b0000 -        0x1082037bf  com.apple.dt.XCTAutomationSupport (26.5 - 24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
+Binary images description not available
+
