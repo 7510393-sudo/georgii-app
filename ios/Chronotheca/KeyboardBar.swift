@@ -132,6 +132,8 @@ struct KeyboardBarView: View {
                     .minimumScaleFactor(0.7)
                     .fixedSize(horizontal: false, vertical: true)
             }
+            // На коже — тиснением (P759).
+            .modifier(Embossed(on: !plainPast))
             .background(
                 RoundedRectangle(cornerRadius: 12)
                     .fill(on ? BarInk.pad(plainPast) : .clear)
@@ -202,6 +204,7 @@ struct PlusMenu: View {
             Image(systemName: "plus")
                 .font(.system(size: 22, weight: .semibold))
                 .foregroundStyle(BarInk.ink(plainPast))
+                .modifier(Embossed(on: !plainPast))
                 .frame(width: 44, height: 44)
                 .background(BarCover(edged: false).clipShape(Circle()).opacity(plainPast ? 0.78 : 1))
                 .overlay(Circle().strokeBorder(BarInk.rim(plainPast), lineWidth: 1))
@@ -372,9 +375,8 @@ struct TitleLine: UIViewRepresentable {
 
     func updateUIView(_ field: UITextField, context: Context) {
         context.coordinator.parent = self
-        let plain = Prefs.serifUIFont(size)
-        let bold = plain.fontDescriptor.withSymbolicTraits(.traitBold)
-            .map { UIFont(descriptor: $0, size: size) } ?? plain
+        // Тот же шрифт, что у заголовка на соседних страницах (P759).
+        let bold = Prefs.titleUIFont(size)
         if field.font != bold { field.font = bold }
         if field.markedTextRange == nil, field.text != text { field.text = text }
         if focused, !field.isFirstResponder {

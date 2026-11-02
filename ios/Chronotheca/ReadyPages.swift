@@ -114,7 +114,11 @@ final class ReadyPages {
         let events = DayEvents.shown(DayEvents.items(for: date), marks: DayEvents.marks(in: rows))
         var thumbs: [(url: URL, plan: Bool)] = []
         let underTasks = rows.compactMap(\.verbatim).filter(Plan.isPhotoRow).flatMap(Plan.items(in:))
-        for (links, plan) in [(underTasks, true), (diary.photos + planPhotos, false)] {
+        // Снимки внутри текста записи и в ответах «Как прошло?» — той же
+        // клеткой, что под делами (P759): прежде они читались с диска только
+        // на открывшейся странице и проступали на глазах.
+        let inText = ([diary.text] + Array(diary.answers.values)).flatMap { Diary.anywhere(in: $0).map(\.link) }
+        for (links, plan) in [(underTasks + inText, true), (diary.photos + planPhotos, false)] {
             for link in links where !Diary.isPoint(link) && Diary.kind(of: link) == .photo {
                 if let url = vault.mediaURL(link, for: date) { thumbs.append((url, plan)) }
             }
