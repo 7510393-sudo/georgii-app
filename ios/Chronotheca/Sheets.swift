@@ -23,7 +23,7 @@ struct SettingsSticker: View {
     /// дорастал на глазах.
     private var height: CGFloat? {
         guard let origin, shell.barTop > origin + 300 else { return nil }
-        return shell.barTop - TornEdge.depth - origin - 8
+        return shell.barTop - Leather.lip - origin - 8
     }
 
     /// Объём папки, посчитанный заранее (P486): пока листок открывался, объём

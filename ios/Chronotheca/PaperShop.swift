@@ -16,7 +16,7 @@ final class PaperShop: ObservableObject {
     @Published private(set) var stock = 0
 
     /// Меняется, когда меняется рисунок бумаги, — старые заготовки не берутся.
-    private static let version = "p742"  // P742: верх карточек поиска мягче — старые листы не годятся
+    private static let version = "p744"  // P744: поля плавно, без квадратиков — старые листы не годятся
 
     private let queue = DispatchQueue(label: "graphomanus.paper", qos: .utility)
     private let lock = NSLock()

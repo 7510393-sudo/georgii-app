@@ -162,8 +162,8 @@ enum Ru {
 struct Scheme {
     let past: Color
     let today: Color
-    let kraft: Color
-    let kraftInk: Color
+    /// Кромка корешков карточек поиска (прежде и крафт строк разделов —
+    /// с P745 строки в кожаном переплёте, `Leather`).
     let kraftEdge: Color
 
     static let apricot = Scheme(
@@ -174,20 +174,14 @@ struct Scheme {
         past: Color(light: 0xECDDBB, dark: 0x221D15),
         // Бледнее на 15% (P330).
         today: Color(light: 0xF9E6D7, dark: 0x2F2620),
-        kraft: Color(light: 0xCBB28C, dark: 0x3A3125),
-        kraftInk: Color(light: 0x3A2818, dark: 0xE6D6BA),
         kraftEdge: Color(light: 0x96805F, dark: 0x1E1912))
     static let sage = Scheme(
         past: Color(light: 0xECDDBB, dark: 0x1E1D15),
         today: Color(light: 0xE3EEDC, dark: 0x1F2B21),
-        kraft: Color(light: 0xB7C4A2, dark: 0x2D3829),
-        kraftInk: Color(light: 0x22301A, dark: 0xDCE8D0),
         kraftEdge: Color(light: 0x7F8C6A, dark: 0x172016))
     static let lavender = Scheme(
         past: Color(light: 0xECDDBB, dark: 0x201D16),
         today: Color(light: 0xEAE3F5, dark: 0x28232F),
-        kraft: Color(light: 0xC3B8D8, dark: 0x332E40),
-        kraftInk: Color(light: 0x2D2340, dark: 0xE4DCF2),
         kraftEdge: Color(light: 0x8A7FA3, dark: 0x1B1824))
 
     /// «Без цвета» (P683): нейтральные серые страницы и картон без желтизны и
@@ -196,8 +190,6 @@ struct Scheme {
     static let plain = Scheme(
         past: Color(light: 0xDCDBD7, dark: 0x1B1B1A),
         today: Color(light: 0xF5F4F1, dark: 0x262625),
-        kraft: Color(light: 0xB9B6AF, dark: 0x363634),
-        kraftInk: Color(light: 0x2B2A27, dark: 0xE4E3DF),
         kraftEdge: Color(light: 0x86837C, dark: 0x181817))
 
     /// Выбранная в настройках; «distance» — прежний ключ абрикосовой, «weekday»
@@ -283,18 +275,7 @@ enum Look {
     /// голубой цвет iPhone (P670).
     static let noteChosen  = Color(light: 0xDDE2EC, dark: 0x2A3850)
 
-    /// Крафт-картон нижней строки разделов (P297): обложка блокнота, одна
-    /// во все дни. Значки на нём — тёмно-коричневыми чернилами.
-    /// Цвет — по выбранной гамме (P498).
-    static var kraft: Color     { Scheme.current.kraft }
-    static var kraftInk: Color  { Scheme.current.kraftInk }
-    static var kraftEdge: Color { Scheme.current.kraftEdge }
     /// Бумага облачка «…а помнишь?» — белая (P298).
-    /// Светлая подушка под открытым разделом в строках разделов: раздел
-    /// не затеняется, а светлеет — сразу видно, где мы (P526).
-    static let tabLit = Color(uiColor: UIColor { trait in
-        UIColor.white.withAlphaComponent(trait.userInterfaceStyle == .dark ? 0.16 : 0.45)
-    })
     static let cloudPaper = Color(light: 0xFFFFFF, dark: 0x2A2517)
 
     /// Засечный шрифт дневника. Literata в iOS нет, Georgia есть везде.

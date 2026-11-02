@@ -548,7 +548,9 @@ struct RootView: View {
             // Шторки «Подробности» больше нет (P408).
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .clipped()
+        // Обрезано сверху и по бокам; снизу открыто (P744): список поиска
+        // заходит под нижнюю строку, она лежит поверх.
+        .clipShape(OpenBelow())
     }
 
     // MARK: - Шапка
@@ -705,21 +707,11 @@ struct RootView: View {
         // Над полосой «домой» — её высота у самого окна, она не меняется
         // от клавиатуры (P447), меряется раскладкой (P450).
         .padding(.bottom, homeLift)
-        // Крафт-картон с оторванным верхним краем, до самого низа экрана
-        // (P297). Край заходит на строку вложений на глубину зубцов.
+        // Кожаный переплёт с ровным краем и строчкой, до самого низа экрана
+        // (P745, вместо крафта с оторванным краем P297).
         .background(alignment: .top) {
-            ZStack(alignment: .top) {
-                KraftPaper()
-                    .clipShape(TornEdge())
-                // Только зубцы, не вся закрытая фигура — иначе обводка
-                // прибавляла ещё и прямую черту понизу (P324).
-                TornEdgeLine()
-                    .stroke(Look.kraftEdge.opacity(0.55), lineWidth: 0.8)
-                    .frame(height: TornEdge.depth + 1)
-                    .clipped()
-            }
-            .padding(.top, -TornEdge.depth)
-            .ignoresSafeArea(edges: .bottom)
+            LeatherCover()
+                .ignoresSafeArea(edges: .bottom)
         }
         // Где верх строки — по нему листок настроек кончается над значками
         // и рамкой открытого раздела (P424).
@@ -852,15 +844,17 @@ struct RootView: View {
             // Открытый раздел — на светлой подушке. Подушка выходит за
             // значок наружу и не меняет высоты полосы (P218).
             // Окантовка открытого раздела (P414) — тонкая рамка его цвета.
+            // На коже (P745): тиснение светлым золотом, открытый раздел —
+            // ярче, на светлой подушке с золотой окантовкой.
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(on ? Look.tabLit : .clear)
+                    .fill(on ? Leather.pad : .clear)
                     .overlay(RoundedRectangle(cornerRadius: 12)
-                        .strokeBorder(on ? Look.accent.opacity(0.75) : .clear, lineWidth: 1.3))
+                        .strokeBorder(on ? Leather.lit.opacity(0.6) : .clear, lineWidth: 1.3))
                     .padding(.horizontal, -16)
                     .padding(.vertical, -3))
             .frame(maxWidth: .infinity)
-            .foregroundStyle(on ? Look.accent : Look.kraftInk)
+            .foregroundStyle(on ? Leather.lit : Leather.ink)
         }
         .buttonStyle(TouchDownStyle(action: act))
         .accessibilityIdentifier("bottom.\(target)")
@@ -1153,5 +1147,13 @@ enum TouchDown {
         defer { pressed = nil }
         guard let pressed else { return true }
         return Date().timeIntervalSince(pressed) > 10
+    }
+}
+
+/// Рамка без нижней стороны (P744): всё, что ниже, может выходить под
+/// нижнюю строку.
+private struct OpenBelow: Shape {
+    func path(in r: CGRect) -> Path {
+        Path(CGRect(x: r.minX, y: r.minY, width: r.width, height: r.height + 400))
     }
 }

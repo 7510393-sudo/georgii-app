@@ -555,13 +555,24 @@ struct PageSides: View {
     /// сдвинутый вместе с листом. Переворот — у самой картинки, чтобы край
     /// ехал в ту же сторону, что и лист.
     /// Бока только на поле, у самого края (P742: «фактура налезает на файлы
-    /// и на текст») — дальше 8 точек тают и к 16 сходят на нет; текст и
-    /// вложения начинаются глубже.
+    /// и на текст»): в полную силу до 5 точек, к 26 мягко сходят на нет
+    /// (P744 — без резкой границы).
     private static let margin = LinearGradient(
-        stops: [.init(color: .black, location: 0),
-                .init(color: .black, location: 8 / PageTexture.sideDepth),
-                .init(color: .clear, location: 16 / PageTexture.sideDepth)],
+        stops: PageSides.fade(full: 5, gone: 26, depth: PageTexture.sideDepth),
         startPoint: .leading, endPoint: .trailing)
+
+    /// Плавный спад (P744: «резкая граница, которая ограничивает
+    /// потемнение, — неестественно, должна быть размыта»): от полной силы у
+    /// края до нуля — мягкой кривой, без ступеньки.
+    static func fade(full: CGFloat, gone: CGFloat, depth: CGFloat) -> [Gradient.Stop] {
+        var stops: [Gradient.Stop] = [.init(color: .black, location: 0)]
+        for k in 0...8 {
+            let t = CGFloat(k) / 8
+            let q = 1 - t * t * (3 - 2 * t)
+            stops.append(.init(color: .black.opacity(q), location: (full + (gone - full) * t) / depth))
+        }
+        return stops
+    }
 
     private func strip(_ picture: UIImage, from: Int, flip: CGFloat) -> some View {
         let length = picture.size.height
@@ -717,6 +728,11 @@ struct PageTexture: View {
                     .frame(height: PageTexture.footDepth)
                     .clipped()
                     .scaleEffect(x: (seed >> 2) & 1 == 1 ? -1 : 1, y: 1)
+                    // Низ — только у самого края (P744: «затемнение закрывает
+                    // шаги, их невозможно прочитать»): к 22 точкам от края —
+                    // ноль, погода и шаги на чистой бумаге.
+                    .mask(LinearGradient(stops: PageSides.fade(full: 4, gone: 22, depth: PageTexture.footDepth),
+                                         startPoint: .bottom, endPoint: .top))
                 }
             }
             // Следы рук (P680): страницу берут за нижний внешний угол и
@@ -886,6 +902,16 @@ struct PageTexture: View {
     /// сам край рваный: волнистый, кое-где вырван глубже. Вырванное
     /// закрашено тёмным — страница во весь экран, вырезать нечем. К
     /// внутренней границе картинки износ сходит на нет (без ступеньки).
+    /// Значение поля между точками сетки — плавно (P744).
+    private static func smooth(_ f: [Float], _ w: Int, _ h: Int, _ x: Float, _ y: Float) -> Float {
+        let x0 = min(w - 1, max(0, Int(x))), y0 = min(h - 1, max(0, Int(y)))
+        let x1 = min(w - 1, x0 + 1), y1 = min(h - 1, y0 + 1)
+        let tx = x - Float(x0), ty = y - Float(y0)
+        let top = f[y0 * w + x0] * (1 - tx) + f[y0 * w + x1] * tx
+        let bottom = f[y1 * w + x0] * (1 - tx) + f[y1 * w + x1] * tx
+        return top * (1 - ty) + bottom * ty
+    }
+
     private static func edgeImage(depthPoints: CGFloat, alongPoints: CGFloat, falloff: Float, peak: Float,
                                   vertical: Bool, seed start: UInt64) -> UIImage {
         let along = Int(alongPoints) * px, depth = Int(depthPoints) * px
@@ -920,15 +946,18 @@ struct PageTexture: View {
                 let distance = fromTear / Float(px)
                 // Дальше 14 затуханий износа нет — не считаем (P731).
                 guard distance < falloff * 14 else { continue }
-                let c = (y / px) * cw + x / px
-                let reach = max(0.5, min(2, 1 + 0.35 * (reachBig[c] + 0.4 * reachSmall[c])))
-                let strength = max(0.35, 1 + 0.4 * tone[c])
+                // Поля — плавно между точками (P744): прежде бралась
+                // ближайшая точка, и пятна у края шли квадратиками.
+                let fx = Float(x) / Float(px), fy = Float(y) / Float(px)
+                let reach = max(0.5, min(2, 1 + 0.35 * (smooth(reachBig, cw, ch, fx, fy)
+                                                         + 0.4 * smooth(reachSmall, cw, ch, fx, fy))))
+                let strength = max(0.35, 1 + 0.4 * smooth(tone, cw, ch, fx, fy))
                 var worn = min(peak * k * strength * exp(-distance / (falloff * reach)), 0.75)
                 if Float(d) > fadeFrom {
                     let q = (Float(depth) - Float(d)) / (Float(depth) - fadeFrom)
                     worn *= q * q * (3 - 2 * q)
                 }
-                paintAged(&bytes, i * 4, worn: worn, distance: distance, mottle: mottle[c])
+                paintAged(&bytes, i * 4, worn: worn, distance: distance, mottle: smooth(mottle, cw, ch, fx, fy))
             }
         }
         let plain = picture(bytes, width: width, height: height, scale: CGFloat(px))
@@ -1236,16 +1265,17 @@ struct PageTexture: View {
                 // Дальше восьми затуханий от края износа уже не видно —
                 // середину карточки не считаем (P731).
                 guard nearest < fall * 2 * 8 else { continue }
-                let c = (y / px) * cw + x / px
-                let reach = fall * max(0.5, min(2, 1 + 0.35 * reachField[c]))
-                let strength = max(0.4, 1 + 0.3 * tone[c])
+                let fx = Float(x) / Float(px), fy = Float(y) / Float(px)
+                let reach = fall * max(0.5, min(2, 1 + 0.35 * smooth(reachField, cw, ch, fx, fy)))
+                let strength = max(0.4, 1 + 0.3 * smooth(tone, cw, ch, fx, fy))
                 func kept(_ e: Int, _ d: Float) -> Float {
                     1 - min(peak * power[e] * strength * exp(-max(0, d) / reach), 0.75)
                 }
                 let keep = kept(0, d0) * kept(1, d1) * kept(2, d2) * kept(3, d3)
                 // Кромка — только у рваных сторон (низ карточки поиска чистый).
                 let rimEdge = openBottom ? min(min(d0, d2), d3) : nearest
-                paintAged(&frameBytes, i * 4, worn: 1 - keep, distance: max(0, rimEdge) / Float(px), mottle: mottle[c])
+                paintAged(&frameBytes, i * 4, worn: 1 - keep, distance: max(0, rimEdge) / Float(px),
+                          mottle: smooth(mottle, cw, ch, fx, fy))
             }
         }
         var frame = picture(frameBytes, width: W, height: H, scale: CGFloat(px))

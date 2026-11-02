@@ -78,7 +78,7 @@ enum KeyboardBar {
 
     /// Высота приставки: строка вложений с воздухом и под ней строка
     /// разделов с рваным краем (P613).
-    static let accessoryHeight: CGFloat = attachRoom + SectionsRow.height + TornEdge.depth
+    static let accessoryHeight: CGFloat = attachRoom + SectionsRow.height + Leather.lip
     /// Строка вложений с воздухом над и под ней.
     static let attachRoom: CGFloat = attachHeight + 10
 }
@@ -114,17 +114,9 @@ struct KeyboardBarView: View {
         }
         .padding(.vertical, 1)
         .frame(height: SectionsRow.height)
-        .padding(.top, TornEdge.depth)
-        .background(alignment: .top) {
-            ZStack(alignment: .top) {
-                KraftPaper()
-                    .clipShape(TornEdge())
-                TornEdgeLine()
-                    .stroke(Look.kraftEdge.opacity(0.55), lineWidth: 0.8)
-                    .frame(height: TornEdge.depth + 1)
-                    .clipped()
-            }
-        }
+        .padding(.top, Leather.lip)
+        // Тот же кожаный переплёт, что внизу экрана (P745).
+        .background(alignment: .top) { LeatherCover() }
     }
 
     private func section(_ icon: String, _ name: String, _ target: Shell.Screen) -> some View {
@@ -141,13 +133,13 @@ struct KeyboardBarView: View {
             }
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(on ? Look.tabLit : .clear)
+                    .fill(on ? Leather.pad : .clear)
                     .overlay(RoundedRectangle(cornerRadius: 12)
-                        .strokeBorder(on ? Look.accent.opacity(0.75) : .clear, lineWidth: 1.3))
+                        .strokeBorder(on ? Leather.lit.opacity(0.6) : .clear, lineWidth: 1.3))
                     .padding(.horizontal, -16)
                     .padding(.vertical, -3))
             .frame(maxWidth: .infinity)
-            .foregroundStyle(on ? Look.accent : Look.kraftInk)
+            .foregroundStyle(on ? Leather.lit : Leather.ink)
         }
         .buttonStyle(.plain)
         // Метка для проверок движения (P552, P613).
@@ -207,10 +199,10 @@ struct PlusMenu: View {
         } label: {
             Image(systemName: "plus")
                 .font(.system(size: 22, weight: .semibold))
-                .foregroundStyle(Look.kraftInk)
+                .foregroundStyle(Leather.ink)
                 .frame(width: 44, height: 44)
-                .background(KraftPaper().clipShape(Circle()).opacity(0.78))
-                .overlay(Circle().strokeBorder(Look.kraftEdge.opacity(0.55), lineWidth: 1))
+                .background(LeatherCover(stitched: false).clipShape(Circle()))
+                .overlay(Circle().strokeBorder(Leather.rim, lineWidth: 1))
                 .shadow(color: .black.opacity(0.18), radius: 3, x: 1.5, y: 1.5)
         }
         .accessibilityLabel(T("Приложить", "Attach"))
@@ -304,8 +296,8 @@ final class KeyboardCornersBand: NSObject {
     }
 }
 
-/// Картон уголков — простым видом UIKit (P614): тот же цвет и волокно, что
-/// у строки разделов, обрезанные по двум уголкам. Вид SwiftUI в окне
+/// Кожа уголков — простым видом UIKit (P614, с P745 кожа вместо картона):
+/// тот же цвет и зернь, что у строки разделов, обрезанные по двум уголкам. Вид SwiftUI в окне
 /// приложения оставался пустым — по замеру стоял на месте, но не рисовался.
 private final class CornersView: UIView {
     private let fibre = UIView()
@@ -314,8 +306,8 @@ private final class CornersView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         isUserInteractionEnabled = false
-        backgroundColor = UIColor(Look.kraft)
-        fibre.backgroundColor = UIColor(patternImage: KraftPaper.fibre)
+        backgroundColor = Leather.uiBase
+        fibre.backgroundColor = UIColor(patternImage: Leather.grain)
         fibre.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         addSubview(fibre)
         layer.mask = shape

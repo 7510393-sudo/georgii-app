@@ -108,11 +108,6 @@ struct DaySheet<Plan: View, Diary: View>: View {
                     // обратно (видео автора).
                     .padding(.bottom, Self.stripRoom)
                     .frame(minHeight: outer.size.height, alignment: .top)
-                    .background(Ru.tint(date).overlay(PageTexture(tab: .diary, space: Self.space, aged: Ru.isPast(date), edgeBottom: true,
-                                                                     seed: PageTexture.seed(date))))
-                    // Клетка и волокно отсчитываются от самого листа, а не
-                    // от экрана: тянешь план — клетка едет с текстом (P412).
-                    .coordinateSpace(name: Self.space)
                     // Страница не оттягивается пальцем за край (P445):
                     // клавиатуру смахивали вниз — короткая страница ехала за
                     // пальцем на пару сантиметров и, когда клавиатура уходила,
@@ -147,6 +142,17 @@ struct DaySheet<Plan: View, Diary: View>: View {
                     // из места под клавиатуру, а не из листа: когда
                     // клавиатура уходит, длина листа та же — ничто не прыгает.
                     .padding(.bottom, max(covered(outer, keyboard), hold))
+                    // Бумага листа — и под местом для клавиатуры (P744): прежде
+                    // оно было пустым, и страница, вытянутая до конца при
+                    // открытой клавиатуре, открывала под собой нижнюю строку
+                    // (снимок автора). Низ страницы с затёртым краем — под
+                    // клавиатурой. Мерка листа без этого места (`SheetBox`)
+                    // снята выше и не меняется.
+                    .background(Ru.tint(date).overlay(PageTexture(tab: .diary, space: Self.space, aged: Ru.isPast(date), edgeBottom: true,
+                                                                     seed: PageTexture.seed(date))))
+                    // Клетка и волокно отсчитываются от самого листа, а не
+                    // от экрана: тянешь план — клетка едет с текстом (P412).
+                    .coordinateSpace(name: Self.space)
                     .onAppear {
                         goHome(proxy)
                         settle(proxy, fresh: true)
