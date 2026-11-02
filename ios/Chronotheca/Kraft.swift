@@ -2,8 +2,8 @@ import SwiftUI
 
 /// Кожаный переплёт (P745, выбор автора; вместо крафта с оторванным краем
 /// P297): нижняя строка разделов — край обложки дневника, на которой лежат
-/// страницы. Светлая седельная кожа с крупной зернью (P748), ровный край со
-/// скруглённой кромкой и крупной строчкой-швом вдоль него; значки —
+/// страницы. Светлая седельная кожа с морщинками и потёртостями (P748, P749), ровный край со
+/// скруглённой кромкой и крупной коричневой строчкой-швом вдоль него; значки —
 /// тёмными чернилами. Рваные края остаются только у страниц: строка не лист,
 /// а то, на чём листы лежат.
 struct LeatherCover: View {
@@ -51,7 +51,8 @@ enum Leather {
     static let deep = Color(red: 0.55, green: 0.38, blue: 0.22)
     static let rim = Color(red: 0.36, green: 0.23, blue: 0.12)
     static let sheen = Color(red: 0.86, green: 0.71, blue: 0.52).opacity(0.7)
-    static let thread = Color(red: 0.96, green: 0.90, blue: 0.76).opacity(0.9)
+    /// Нить — коричневая (P749), темнее кожи.
+    static let thread = Color(red: 0.30, green: 0.17, blue: 0.07).opacity(0.9)
     /// Значки и надписи — тёмные чернила.
     static let ink = Color(red: 0.20, green: 0.12, blue: 0.06)
     /// Открытый раздел — ещё темнее, на светлой подушке.
@@ -65,68 +66,111 @@ enum Leather {
     static let lip: CGFloat = 9
     static let uiBase = UIColor(red: 0.64, green: 0.46, blue: 0.28, alpha: 1)
 
-    /// Зернь кожи (P748: «добавить фактуру кожи»): крупные бугорки —
-    /// каждый с тёмной бороздкой снизу-справа и светлым бликом сверху-слева
-    /// (свет слева сверху, P670), между ними мелкие поры и морщинки. Узор
-    /// один и тот же при каждом запуске — снимки не должны различаться
-    /// от раза к разу (P114).
+    /// Фактура кожи (P749: «не пупырышки, а линии и потёртости»;
+    /// бугорки P748 убраны): мягкие светлые потёртости и тёмные пятна
+    /// тона, сеть тонких морщинок — у длинных светлый блик рядом, как у
+    /// вдавленной складки (свет слева сверху, P670), — и редкие светлые
+    /// царапины. Каждый след рисуется и со сдвигом на сторону плитки — шва
+    /// нет. Узор один и тот же при каждом запуске (P114).
     static let grain: UIImage = {
-        let side: CGFloat = 200
+        let side: CGFloat = 240
         var seed: UInt64 = 0x1EA7_4E12
         func next() -> CGFloat {
             seed = seed &* 6364136223846793005 &+ 1442695040888963407
             return CGFloat(seed >> 33) / CGFloat(UInt64(1) << 31)
         }
-        return UIGraphicsImageRenderer(size: CGSize(width: side, height: side)).image { ctx in
+        let tile = CGRect(x: 0, y: 0, width: side, height: side)
+        return UIGraphicsImageRenderer(size: tile.size).image { ctx in
             let cg = ctx.cgContext
-            // Каждое пятно рисуется ещё раз со сдвигом на сторону плитки —
-            // у шва плитки узор не обрывается.
-            func each(_ rect: CGRect, _ draw: (CGRect) -> Void) {
+            func wrapped(_ around: CGPoint, reach: CGFloat, _ draw: (CGPoint) -> Void) {
                 for dx in [-side, 0, side] { for dy in [-side, 0, side] {
-                    let moved = rect.offsetBy(dx: dx, dy: dy)
-                    if moved.intersects(CGRect(x: 0, y: 0, width: side, height: side)) { draw(moved) }
+                    let at = CGPoint(x: around.x + dx, y: around.y + dy)
+                    if tile.insetBy(dx: -reach, dy: -reach).contains(at) { draw(at) }
                 } }
             }
-            // Бугорки.
-            for _ in 0..<520 {
-                let w = 3.0 + next() * 4.5, h = 2.6 + next() * 3.8
-                let box = CGRect(x: next() * side, y: next() * side, width: w, height: h)
-                each(box) { r in
-                    UIColor(red: 0.20, green: 0.11, blue: 0.04, alpha: 0.16 + next() * 0.10).setStroke()
-                    let groove = UIBezierPath(ovalIn: r)
-                    groove.lineWidth = 0.7
-                    cg.saveGState()
-                    cg.clip(to: CGRect(x: r.midX - 0.5, y: r.midY - 0.5, width: r.width, height: r.height))
-                    groove.stroke()
-                    cg.restoreGState()
-                    UIColor(red: 0.96, green: 0.84, blue: 0.66, alpha: 0.14 + next() * 0.10).setFill()
-                    cg.fillEllipse(in: CGRect(x: r.minX + r.width * 0.18, y: r.minY + r.height * 0.15,
-                                              width: r.width * 0.45, height: r.height * 0.4))
+            let space = CGColorSpaceCreateDeviceRGB()
+            // Пятно: мягкий овал, тающий к краю.
+            func patch(_ at: CGPoint, w: CGFloat, h: CGFloat, turn: CGFloat, color: UIColor) {
+                guard let gradient = CGGradient(colorsSpace: space,
+                                                colors: [color.cgColor, color.withAlphaComponent(0).cgColor] as CFArray,
+                                                locations: [0, 1]) else { return }
+                cg.saveGState()
+                cg.translateBy(x: at.x, y: at.y)
+                cg.rotate(by: turn)
+                cg.scaleBy(x: w, y: h)
+                cg.drawRadialGradient(gradient, startCenter: .zero, startRadius: 0,
+                                      endCenter: .zero, endRadius: 1, options: [])
+                cg.restoreGState()
+            }
+            // Тёмные пятна тона.
+            for _ in 0..<10 {
+                let at = CGPoint(x: next() * side, y: next() * side)
+                let w = 30 + next() * 50, h = 14 + next() * 26, turn = next() * .pi
+                let alpha = 0.06 + next() * 0.06
+                wrapped(at, reach: w) { patch($0, w: w, h: h, turn: turn,
+                                              color: UIColor(red: 0.30, green: 0.18, blue: 0.08, alpha: alpha)) }
+            }
+            // Светлые потёртости — вытянутые, вдоль строки.
+            for _ in 0..<12 {
+                let at = CGPoint(x: next() * side, y: next() * side)
+                let w = 18 + next() * 40, h = 4 + next() * 10, turn = (next() - 0.5) * 0.8
+                let alpha = 0.10 + next() * 0.12
+                wrapped(at, reach: w) { patch($0, w: w, h: h, turn: turn,
+                                              color: UIColor(red: 0.93, green: 0.80, blue: 0.62, alpha: alpha)) }
+            }
+            cg.setLineCap(.round)
+            // Линия-морщинка: изогнутая, иногда с бликом рядом.
+            func crease(_ a: CGPoint, length: CGFloat, angle: CGFloat, bend: CGFloat,
+                        width: CGFloat, dark: CGFloat, lit: Bool) {
+                let b = CGPoint(x: a.x + cos(angle) * length, y: a.y + sin(angle) * length)
+                let c = CGPoint(x: (a.x + b.x) / 2 - sin(angle) * bend, y: (a.y + b.y) / 2 + cos(angle) * bend)
+                let line = UIBezierPath()
+                line.move(to: a); line.addQuadCurve(to: b, controlPoint: c)
+                line.lineWidth = width
+                UIColor(red: 0.20, green: 0.11, blue: 0.04, alpha: dark).setStroke()
+                line.stroke()
+                if lit {
+                    line.apply(CGAffineTransform(translationX: 0.6, y: 0.7))
+                    line.lineWidth = width * 0.8
+                    UIColor(red: 0.95, green: 0.84, blue: 0.68, alpha: dark * 0.7).setStroke()
+                    line.stroke()
                 }
             }
-            // Мелкие поры.
-            for _ in 0..<1600 {
-                let w = 0.5 + next() * 1.1, h = 0.5 + next() * 0.9
-                let box = CGRect(x: next() * side, y: next() * side, width: w, height: h)
-                let alpha = 0.14 + next() * 0.16
-                each(box) { r in
-                    UIColor(red: 0.16, green: 0.09, blue: 0.03, alpha: alpha).setFill()
-                    cg.fillEllipse(in: r)
+            // Сеть тонких морщинок: короткие, по нескольку в одну сторону.
+            for _ in 0..<70 {
+                let base = CGPoint(x: next() * side, y: next() * side)
+                let angle = next() * .pi
+                for _ in 0..<(2 + Int(next() * 3)) {
+                    let a = CGPoint(x: base.x + (next() - 0.5) * 10, y: base.y + (next() - 0.5) * 10)
+                    let length = 4 + next() * 9, bend = (next() - 0.5) * 3
+                    let turn = angle + (next() - 0.5) * 0.7
+                    let dark = 0.10 + next() * 0.10
+                    wrapped(a, reach: 16) { crease($0, length: length, angle: turn, bend: bend,
+                                                   width: 0.45, dark: dark, lit: false) }
                 }
             }
-            // Морщинки.
-            for _ in 0..<45 {
-                let x = next() * side, y = next() * side
-                let length = 8 + next() * 18
-                let angle = (next() - 0.5) * .pi
-                let crease = UIBezierPath()
-                crease.move(to: CGPoint(x: x, y: y))
-                crease.addQuadCurve(to: CGPoint(x: x + cos(angle) * length, y: y + sin(angle) * length),
-                                    controlPoint: CGPoint(x: x + cos(angle + 0.6) * length / 2,
-                                                          y: y + sin(angle + 0.6) * length / 2))
-                crease.lineWidth = 0.7
-                UIColor(red: 0.18, green: 0.10, blue: 0.04, alpha: 0.16).setStroke()
-                crease.stroke()
+            // Длинные складки с бликом.
+            for _ in 0..<9 {
+                let a = CGPoint(x: next() * side, y: next() * side)
+                let length = 22 + next() * 40, angle = (next() - 0.5) * 1.2, bend = (next() - 0.5) * 10
+                let dark = 0.16 + next() * 0.08
+                wrapped(a, reach: 70) { crease($0, length: length, angle: angle, bend: bend,
+                                               width: 0.8, dark: dark, lit: true) }
+            }
+            // Светлые царапины.
+            for _ in 0..<14 {
+                let a = CGPoint(x: next() * side, y: next() * side)
+                let length = 8 + next() * 22, angle = next() * .pi
+                let end = CGPoint(x: a.x + cos(angle) * length, y: a.y + sin(angle) * length)
+                let alpha = 0.12 + next() * 0.12
+                wrapped(a, reach: 32) { at in
+                    let line = UIBezierPath()
+                    line.move(to: at)
+                    line.addLine(to: CGPoint(x: end.x - a.x + at.x, y: end.y - a.y + at.y))
+                    line.lineWidth = 0.5
+                    UIColor(red: 0.96, green: 0.87, blue: 0.72, alpha: alpha).setStroke()
+                    line.stroke()
+                }
             }
         }
     }()
