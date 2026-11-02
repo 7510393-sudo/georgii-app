@@ -555,10 +555,10 @@ struct PageSides: View {
     /// сдвинутый вместе с листом. Переворот — у самой картинки, чтобы край
     /// ехал в ту же сторону, что и лист.
     /// Бока только на поле, у самого края (P742: «фактура налезает на файлы
-    /// и на текст»): в полную силу до 5 точек, к 26 мягко сходят на нет
-    /// (P744 — без резкой границы).
+    /// и на текст»): в полную силу до 3 точек, к 15 мягко сходят на нет
+    /// (P744 — без резкой границы; P748 — «ещё уже вдоль края»).
     private static let margin = LinearGradient(
-        stops: PageSides.fade(full: 5, gone: 26, depth: PageTexture.sideDepth),
+        stops: PageSides.fade(full: 3, gone: 15, depth: PageTexture.sideDepth),
         startPoint: .leading, endPoint: .trailing)
 
     /// Плавный спад (P744: «резкая граница, которая ограничивает
@@ -731,7 +731,7 @@ struct PageTexture: View {
                     // Низ — только у самого края (P744: «затемнение закрывает
                     // шаги, их невозможно прочитать»): к 22 точкам от края —
                     // ноль, погода и шаги на чистой бумаге.
-                    .mask(LinearGradient(stops: PageSides.fade(full: 4, gone: 22, depth: PageTexture.footDepth),
+                    .mask(LinearGradient(stops: PageSides.fade(full: 3, gone: 15, depth: PageTexture.footDepth),
                                          startPoint: .bottom, endPoint: .top))
                 }
             }
@@ -880,18 +880,18 @@ struct PageTexture: View {
     /// почти не повторяется. Левый и правый — разные куски, не зеркало.
     static var sideEdge: UIImage? {
         PaperShop.shared.picture("side-left") {
-            edgeImage(depthPoints: sideDepth, alongPoints: 1200, falloff: 28, peak: 0.5, vertical: true, seed: 0xED6E1)
+            edgeImage(depthPoints: sideDepth, alongPoints: 1200, falloff: 14, peak: 0.5, vertical: true, seed: 0xED6E1)
         }
     }
     static var sideEdgeRight: UIImage? {
         PaperShop.shared.picture("side-right") {
-            edgeImage(depthPoints: sideDepth, alongPoints: 1200, falloff: 28, peak: 0.5, vertical: true, seed: 0xED6E3)
+            edgeImage(depthPoints: sideDepth, alongPoints: 1200, falloff: 14, peak: 0.5, vertical: true, seed: 0xED6E3)
         }
     }
     /// Низ: темнее и шире боков.
     static var footEdge: UIImage? {
         PaperShop.shared.picture("foot") {
-            edgeImage(depthPoints: footDepth, alongPoints: 480, falloff: 34, peak: 0.55, vertical: false, seed: 0xED6E2)
+            edgeImage(depthPoints: footDepth, alongPoints: 480, falloff: 16, peak: 0.55, vertical: false, seed: 0xED6E2)
         }
     }
 
@@ -962,12 +962,13 @@ struct PageTexture: View {
         }
         let plain = picture(bytes, width: width, height: height, scale: CGFloat(px))
         // Мелкие изъяны на полях (P729): только у самого края, где нет
-        // текста, — бок до 14 точек, низ — нижние 36 точек; подальше от
-        // концов куска, чтобы шов плитки их не резал.
+        // текста, — бок до 9 точек, низ — нижние 12 (P748: «ещё сильнее
+        // сместить к краям»); подальше от концов куска, чтобы шов плитки
+        // их не резал.
         let size = CGSize(width: CGFloat(width) / CGFloat(px), height: CGFloat(height) / CGFloat(px))
         let margin = vertical
-            ? CGRect(x: 2, y: 12, width: 12, height: size.height - 24)
-            : CGRect(x: 12, y: size.height - 36, width: size.width - 24, height: 34)
+            ? CGRect(x: 1, y: 12, width: 8, height: size.height - 24)
+            : CGRect(x: 12, y: size.height - 12, width: size.width - 24, height: 11)
         let scaleOfFlaws = Float(vertical ? size.height : size.width) / 480
         let format = UIGraphicsImageRendererFormat(); format.scale = CGFloat(px)
         return UIGraphicsImageRenderer(size: size, format: format).image { ctx in
