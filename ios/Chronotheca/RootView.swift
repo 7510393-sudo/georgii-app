@@ -39,6 +39,7 @@ struct RootView: View {
     @AppStorage(Prefs.font) private var fontKey = "newyork"
     /// Цветовая гамма (P498): меняется — страницы и строки собираются заново.
     @AppStorage(Prefs.calendarTint) private var palette = "distance"
+    @AppStorage(Prefs.plainPast) private var plainPast = false
     @State private var locked = UserDefaults.standard.bool(forKey: Prefs.lock)
 
 
@@ -713,7 +714,8 @@ struct RootView: View {
         // Кожаный переплёт с ровным краем и строчкой, до самого низа экрана
         // (P745, вместо крафта с оторванным краем P297).
         .background(alignment: .top) {
-            LeatherCover()
+            // Без старой бумаги — крафт с ровным верхом (P751).
+            BarCover()
                 .ignoresSafeArea(edges: .bottom)
         }
         // Где верх строки — по нему листок настроек кончается над значками
@@ -851,13 +853,13 @@ struct RootView: View {
             // раздел — темнее, на светлой подушке с окантовкой.
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(on ? Leather.pad : .clear)
+                    .fill(on ? BarInk.pad(plainPast) : .clear)
                     .overlay(RoundedRectangle(cornerRadius: 12)
-                        .strokeBorder(on ? Leather.lit.opacity(0.6) : .clear, lineWidth: 1.3))
+                        .strokeBorder(on ? BarInk.frame(plainPast) : .clear, lineWidth: 1.3))
                     .padding(.horizontal, -16)
                     .padding(.vertical, -3))
             .frame(maxWidth: .infinity)
-            .foregroundStyle(on ? Leather.lit : Leather.ink)
+            .foregroundStyle(on ? BarInk.lit(plainPast) : BarInk.ink(plainPast))
         }
         .buttonStyle(TouchDownStyle(action: act))
         .accessibilityIdentifier("bottom.\(target)")

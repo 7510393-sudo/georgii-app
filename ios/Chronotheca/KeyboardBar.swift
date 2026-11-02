@@ -84,6 +84,7 @@ enum KeyboardBar {
 }
 
 struct KeyboardBarView: View {
+    @AppStorage(Prefs.plainPast) private var plainPast = false
 
     /// Гамма, в которой строка нарисована (P674): другая гамма — другой вид,
     /// и строка перерисовывается.
@@ -115,8 +116,8 @@ struct KeyboardBarView: View {
         .padding(.vertical, 1)
         .frame(height: SectionsRow.height)
         .padding(.top, Leather.lip)
-        // Тот же кожаный переплёт, что внизу экрана (P745).
-        .background(alignment: .top) { LeatherCover() }
+        // Та же обложка, что внизу экрана (P745, P751).
+        .background(alignment: .top) { BarCover() }
     }
 
     private func section(_ icon: String, _ name: String, _ target: Shell.Screen) -> some View {
@@ -133,13 +134,13 @@ struct KeyboardBarView: View {
             }
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(on ? Leather.pad : .clear)
+                    .fill(on ? BarInk.pad(plainPast) : .clear)
                     .overlay(RoundedRectangle(cornerRadius: 12)
-                        .strokeBorder(on ? Leather.lit.opacity(0.6) : .clear, lineWidth: 1.3))
+                        .strokeBorder(on ? BarInk.frame(plainPast) : .clear, lineWidth: 1.3))
                     .padding(.horizontal, -16)
                     .padding(.vertical, -3))
             .frame(maxWidth: .infinity)
-            .foregroundStyle(on ? Leather.lit : Leather.ink)
+            .foregroundStyle(on ? BarInk.lit(plainPast) : BarInk.ink(plainPast))
         }
         .buttonStyle(.plain)
         // Метка для проверок движения (P552, P613).
@@ -185,6 +186,7 @@ struct KeyboardCorners: Shape {
 /// у пяти кнопок строки вложений (`KeyboardBar.ask`), — и со страницы, и
 /// над клавиатурой. Новое ложится под последним текстом записи.
 struct PlusMenu: View {
+    @AppStorage(Prefs.plainPast) private var plainPast = false
     var id: String
 
     var body: some View {
@@ -199,10 +201,10 @@ struct PlusMenu: View {
         } label: {
             Image(systemName: "plus")
                 .font(.system(size: 22, weight: .semibold))
-                .foregroundStyle(Leather.ink)
+                .foregroundStyle(BarInk.ink(plainPast))
                 .frame(width: 44, height: 44)
-                .background(LeatherCover(stitched: false).clipShape(Circle()))
-                .overlay(Circle().strokeBorder(Leather.rim, lineWidth: 1))
+                .background(BarCover(edged: false).clipShape(Circle()).opacity(plainPast ? 0.78 : 1))
+                .overlay(Circle().strokeBorder(BarInk.rim(plainPast), lineWidth: 1))
                 .shadow(color: .black.opacity(0.18), radius: 3, x: 1.5, y: 1.5)
         }
         .accessibilityLabel(T("Приложить", "Attach"))
@@ -306,17 +308,28 @@ private final class CornersView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         isUserInteractionEnabled = false
-        backgroundColor = Leather.uiBase
-        fibre.backgroundColor = UIColor(patternImage: Leather.grain)
         fibre.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         addSubview(fibre)
         layer.mask = shape
+        paint()
+    }
+
+    /// Кожа или крафт — как строка разделов (P751). Перекрашивается только
+    /// при смене: раскладка идёт каждый кадр.
+    private var plain: Bool?
+    private func paint() {
+        let now = UserDefaults.standard.bool(forKey: Prefs.plainPast)
+        guard now != plain else { return }
+        plain = now
+        backgroundColor = now ? UIColor(Look.kraft) : Leather.uiBase
+        fibre.backgroundColor = UIColor(patternImage: now ? KraftPaper.fibre : Leather.grain)
     }
 
     required init?(coder: NSCoder) { nil }
 
     override func layoutSubviews() {
         super.layoutSubviews()
+        paint()
         fibre.frame = bounds
         shape.path = KeyboardCorners(radius: KeyboardCorners.radius).path(in: bounds).cgPath
     }

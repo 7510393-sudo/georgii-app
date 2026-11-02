@@ -1,4 +1,87 @@
 import SwiftUI
+import UIKit
+
+/// Обложка нижней строки, строки над клавиатурой и «＋» (P751): при старой
+/// бумаге — кожаный переплёт (P745), без неё — крафт-картон (P297) с ровным
+/// верхним краем вместо рваного.
+struct BarCover: View {
+    /// Кромка по верху — у строк; у «＋» её нет.
+    var edged = true
+    @AppStorage(Prefs.plainPast) private var plainPast = false
+    /// Гамма меняется — картон перекрашивается (P498).
+    @AppStorage(Prefs.calendarTint) private var palette = "distance"
+
+    var body: some View {
+        if plainPast {
+            ZStack(alignment: .top) {
+                KraftPaper()
+                if edged {
+                    Rectangle().fill(Look.kraftEdge.opacity(0.7)).frame(height: 1)
+                }
+            }
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+        } else {
+            LeatherCover(stitched: edged)
+        }
+    }
+}
+
+/// Цвета значков и открытого раздела на обложке (P751): на коже — свои
+/// (`Leather`), на крафте — прежние чернила гаммы и голубая рамка.
+enum BarInk {
+    static func ink(_ plain: Bool) -> Color { plain ? Look.kraftInk : Leather.ink }
+    static func lit(_ plain: Bool) -> Color { plain ? Look.accent : Leather.lit }
+    static func pad(_ plain: Bool) -> Color { plain ? Look.tabLit : Leather.pad }
+    static func frame(_ plain: Bool) -> Color { plain ? Look.accent.opacity(0.75) : Leather.lit.opacity(0.6) }
+    static func rim(_ plain: Bool) -> Color { plain ? Look.kraftEdge.opacity(0.55) : Leather.rim }
+}
+
+/// Крафт-картон (P297): волокна и крапины поверх цвета гаммы.
+struct KraftPaper: View {
+    var body: some View {
+        ZStack {
+            Look.kraft
+            Image(uiImage: KraftPaper.fibre)
+                .resizable(resizingMode: .tile)
+        }
+    }
+
+    /// Волокна картона: крапины и короткие волоски, светлые и тёмные.
+    /// Узор один и тот же при каждом запуске (P114).
+    static let fibre: UIImage = {
+        let side: CGFloat = 180
+        var seed: UInt64 = 0xC4AF_7297
+        func next() -> CGFloat {
+            seed = seed &* 6364136223846793005 &+ 1442695040888963407
+            return CGFloat(seed >> 33) / CGFloat(UInt64(1) << 31)
+        }
+        return UIGraphicsImageRenderer(size: CGSize(width: side, height: side)).image { ctx in
+            for _ in 0..<900 {
+                let x = next() * side, y = next() * side
+                let r = 0.4 + next() * 0.9
+                let dark = next() < 0.55
+                (dark ? UIColor(red: 0.35, green: 0.24, blue: 0.12, alpha: 0.06 + next() * 0.06)
+                      : UIColor(white: 1, alpha: 0.10 + next() * 0.10)).setFill()
+                ctx.cgContext.fillEllipse(in: CGRect(x: x, y: y, width: r, height: r))
+            }
+            for _ in 0..<90 {
+                let x = next() * side, y = next() * side
+                let angle = (next() - 0.5) * 0.9
+                let length = 4 + next() * 10
+                let fibre = UIBezierPath()
+                fibre.move(to: CGPoint(x: x, y: y))
+                fibre.addQuadCurve(to: CGPoint(x: x + cos(angle) * length, y: y + sin(angle) * length),
+                                   controlPoint: CGPoint(x: x + cos(angle + 0.5) * length / 2,
+                                                         y: y + sin(angle + 0.5) * length / 2))
+                fibre.lineWidth = 0.5
+                (next() < 0.6 ? UIColor(red: 0.30, green: 0.20, blue: 0.10, alpha: 0.10)
+                              : UIColor(white: 1, alpha: 0.18)).setStroke()
+                fibre.stroke()
+            }
+        }
+    }()
+}
 
 /// Кожаный переплёт (P745, выбор автора; вместо крафта с оторванным краем
 /// P297): нижняя строка разделов — край обложки дневника, на которой лежат
