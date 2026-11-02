@@ -681,7 +681,11 @@ struct RootView: View {
             * (size.height > 0 ? size.height + BoardEdge.depth + BoardEdge.shade : 1200)
         return content()
             .frame(width: size.width, height: size.height)
-            .background(Look.chrome)
+            // Календарь и поиск — целиком на тёплом столе, и шапка тоже
+            // (P758: на снимке шапка календаря была серой).
+            .background {
+                if which == .calendar || which == .search { Desk() } else { Look.chrome }
+            }
             // Торец стоит с той стороны, которой плашка идёт вперёд, и
             // выступает за её край — то есть лежит на книге, а не на самой
             // плашке. На месте он уходит за край экрана и не виден: толщина
