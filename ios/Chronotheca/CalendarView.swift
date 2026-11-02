@@ -527,6 +527,12 @@ struct CalendarView: View {
         // Суббота с воскресеньем — одна связка (P731): один листок на двоих
         // (P739, выбор автора); недели отделяет зазор после воскресенья (P735).
         let groups = weekendGroups(cells)
+        // Столбец времени один на весь месяц (P756): по самому длинному
+        // виду времени — «00:00» или «00:00 PM», если часы двенадцатичасовые.
+        // Нет ни одного времени за месяц — столбца нет вовсе.
+        let times = cells.flatMap { entries(Vault.stamp($0), $0).compactMap(\.time) }
+        let sample: String? = times.isEmpty ? nil
+            : times.contains { $0.contains(where: \.isLetter) } ? "00:00 PM" : "00:00"
         return VStack(spacing: 0) {
             ForEach(Array(groups.enumerated()), id: \.offset) { _, group in
                 if group.count > 1 || cal.component(.weekday, from: group[0]) == 1 {
@@ -537,7 +543,7 @@ struct CalendarView: View {
                             // днями тонкая черта, рваный край — общий.
                             VStack(spacing: 0) {
                                 ForEach(group, id: \.self) { day in
-                                    row(day, today: today, sheet: false)
+                                    row(day, today: today, sheet: false, sample: sample)
                                         .id(Vault.stamp(day))
                                     if day != group.last {
                                         Rectangle().fill(Look.inkFaint.opacity(0.35))
@@ -553,7 +559,7 @@ struct CalendarView: View {
                             // воскресенье или впереди), — каждый своей
                             // строкой, но вплотную, без зазора.
                             ForEach(group, id: \.self) { day in
-                                row(day, today: today)
+                                row(day, today: today, sample: sample)
                                     .id(Vault.stamp(day))
                                 if day != group.last { dayRule }
                             }
@@ -561,7 +567,7 @@ struct CalendarView: View {
                         Color.clear.frame(height: 12)
                     }
                 } else {
-                    row(group[0], today: today)
+                    row(group[0], today: today, sample: sample)
                         .id(Vault.stamp(group[0]))
                     dayRule
                 }
@@ -572,7 +578,7 @@ struct CalendarView: View {
     }
 
     /// `sheet` — у строки своя бумага; у выходных общий листок (P739) — нет.
-    private func row(_ date: Date, today: String, sheet: Bool = true) -> some View {
+    private func row(_ date: Date, today: String, sheet: Bool = true, sample: String? = nil) -> some View {
         let stamp = Vault.stamp(date)
         let tasks = entries(stamp, date)
         let open = stamp == selected
@@ -608,14 +614,27 @@ struct CalendarView: View {
                         // троеточием: иначе одно дело занимает место двух,
                         // и по строкам уже не видно, насколько день занят
                         // (решение P159).
+                        // Время — своим столбцом (P756): дело без времени
+                        // начинается там же, где остальные, перед ним пусто.
                         ForEach(open ? tasks : Array(tasks.prefix(3))) { task in
-                            Text((task.time.map { $0 + "  " } ?? "") + task.text)
-                                .font(Look.sans(13))
-                                .foregroundStyle(Look.ink)
-                                .opacity(task.done ? 0.45 : 1)
-                                .lineLimit(1)
-                                .truncationMode(.tail)
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                if let sample {
+                                    ZStack(alignment: .leading) {
+                                        Text(sample).hidden()
+                                        Text(task.time ?? "")
+                                    }
+                                    .font(Look.sans(13).monospacedDigit())
+                                    .lineLimit(1)
+                                    .fixedSize()
+                                }
+                                Text(task.text)
+                                    .font(Look.sans(13))
+                                    .lineLimit(1)
+                                    .truncationMode(.tail)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .foregroundStyle(Look.ink)
+                            .opacity(task.done ? 0.45 : 1)
                         }
                         if !open && tasks.count > 3 {
                             Text(T("ещё \(tasks.count - 3)", "\(tasks.count - 3) more"))
