@@ -112,12 +112,12 @@ struct LeatherCover: View {
                         .frame(height: 5)
                     Spacer(minLength: 0)
                 }
-                Stitch()
-                    .stroke(Leather.thread, style: StrokeStyle(lineWidth: 1.7, lineCap: .round, dash: [8, 5]))
-                    .frame(height: 1)
-                    // Во всю ширину, до самого края экрана (P750).
-                    .padding(.horizontal, -4)
-                    .padding(.top, Leather.stitchInset)
+                // Во всю ширину, до самого края экрана (P750); объёмная
+                // нить (P757).
+                StitchRow()
+                    .frame(height: StitchRow.thick + 3)
+                    .padding(.horizontal, -6)
+                    .padding(.top, Leather.stitchInset - (StitchRow.thick + 3) / 2)
             }
         }
         .allowsHitTesting(false)
@@ -135,19 +135,22 @@ enum Leather {
     static let deep = Color(red: 0.55, green: 0.38, blue: 0.22)
     static let rim = Color(red: 0.36, green: 0.23, blue: 0.12)
     static let sheen = Color(red: 0.86, green: 0.71, blue: 0.52).opacity(0.7)
-    /// Нить — коричневая (P749), темнее кожи.
-    static let thread = Color(red: 0.30, green: 0.17, blue: 0.07).opacity(0.9)
+    /// Нить — суровая, небелёная льняная (P757; коричневая P749 отменена):
+    /// светлая грань, тело и тень валика.
+    static let threadLit = Color(red: 0.93, green: 0.89, blue: 0.80)
+    static let thread = Color(red: 0.80, green: 0.74, blue: 0.62)
+    static let threadDeep = Color(red: 0.58, green: 0.52, blue: 0.41)
     /// Значки и надписи — тёмные чернила.
     static let ink = Color(red: 0.20, green: 0.12, blue: 0.06)
     /// Открытый раздел — ещё темнее, на светлой подушке.
     static let lit = Color(red: 0.12, green: 0.07, blue: 0.03)
     static let pad = Color(red: 0.98, green: 0.92, blue: 0.80).opacity(0.38)
     /// Насколько строчка ниже края — посередине полосы над значками (P746).
-    static let stitchInset: CGFloat = 4
+    static let stitchInset: CGFloat = 4.5
     /// Высота полосы над значками у нижней строки и у строки над
     /// клавиатурой — место под кромку и строчку, чтобы строчка не шла по
     /// значкам (P746; прежде — глубина зубцов рваного края, P517).
-    static let lip: CGFloat = 9
+    static let lip: CGFloat = 10
     static let uiBase = UIColor(red: 0.64, green: 0.46, blue: 0.28, alpha: 1)
 
     /// Фактура кожи (P749: «не пупырышки, а линии и потёртости»;
@@ -260,12 +263,44 @@ enum Leather {
     }()
 }
 
-/// Строчка вдоль края переплёта — прямая через всю ширину.
-private struct Stitch: Shape {
-    func path(in r: CGRect) -> Path {
-        var p = Path()
-        p.move(to: CGPoint(x: r.minX, y: r.midY))
-        p.addLine(to: CGPoint(x: r.maxX, y: r.midY))
-        return p
+/// Строчка вдоль края переплёта (P757: «крупнее, нитки объёмные, цвета
+/// некрашеных ниток — суровая нитка»): каждый стежок — валик небелёной
+/// льняной нити, светлый сверху и темнее снизу (свет слева сверху, P670),
+/// с тенью на коже и тёмными проколами на концах.
+struct StitchRow: View {
+    static let thick: CGFloat = 2.8
+    static let stitch: CGFloat = 11
+    static let gap: CGFloat = 6
+
+    var body: some View {
+        Canvas { ctx, size in
+            let t = Self.thick, y = (size.height - t) / 2
+            var x: CGFloat = 0
+            while x < size.width {
+                let r = CGRect(x: x, y: y, width: Self.stitch, height: t)
+                let cap = Path(roundedRect: r, cornerRadius: t / 2)
+                // Тень на коже — вправо-вниз.
+                ctx.fill(cap.offsetBy(dx: 0.7, dy: 1.0), with: .color(.black.opacity(0.35)))
+                // Нить: светлая сверху, темнее снизу.
+                ctx.fill(cap, with: .linearGradient(
+                    Gradient(colors: [Leather.threadLit, Leather.thread, Leather.threadDeep]),
+                    startPoint: CGPoint(x: r.midX, y: r.minY), endPoint: CGPoint(x: r.midX, y: r.maxY)))
+                // Скрутка нити — пара косых штрихов.
+                for k in 1...2 {
+                    var twist = Path()
+                    let tx = r.minX + r.width * CGFloat(k) / 3
+                    twist.move(to: CGPoint(x: tx - 1, y: r.maxY - 0.4))
+                    twist.addLine(to: CGPoint(x: tx + 1, y: r.minY + 0.4))
+                    ctx.stroke(twist, with: .color(Leather.threadDeep.opacity(0.55)), lineWidth: 0.5)
+                }
+                // Проколы на концах.
+                for px in [r.minX - 1.2, r.maxX + 1.2] {
+                    ctx.fill(Path(ellipseIn: CGRect(x: px - 0.9, y: r.midY - 0.9, width: 1.8, height: 1.8)),
+                             with: .color(Leather.rim.opacity(0.7)))
+                }
+                x += Self.stitch + Self.gap
+            }
+        }
+        .allowsHitTesting(false)
     }
 }

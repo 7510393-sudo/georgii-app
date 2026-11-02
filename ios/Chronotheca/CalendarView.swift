@@ -279,8 +279,12 @@ struct CalendarView: View {
             return configuration.label
                 .background(
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(LinearGradient(colors: [Look.plateLight, Look.plateDark],
-                                             startPoint: .top, endPoint: .bottom))
+                        // Цвет «сегодня» гаммы, светлее к верху (P757): прежде
+                        // жёлтые плашки во всех гаммах.
+                        .fill(Scheme.current.today)
+                        .overlay(LinearGradient(colors: [.white.opacity(0.35), .black.opacity(0.04)],
+                                                startPoint: .top, endPoint: .bottom)
+                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous)))
                         .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous)
                             .strokeBorder(Look.stickerEdge, lineWidth: 1))
                         .shadow(color: .black.opacity(down ? 0.06 : 0.16),

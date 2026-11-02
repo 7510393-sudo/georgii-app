@@ -993,7 +993,8 @@ struct Corner: View {
         return ZStack {
             // Без «Ретро» (P737) — прежняя белая бумага листков, ровная.
             if plainPast {
-                Look.planBg
+                // Как листок настроек, который за него тянут (P757).
+                Desk()
             } else {
                 Scheme.current.past
                 Image(uiImage: PageTexture.paper)

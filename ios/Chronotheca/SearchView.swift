@@ -63,7 +63,7 @@ struct SearchView: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 9)
         // Полупрозрачная: под ней видно, как лента уходит к горизонту (P718).
-        .background(Look.chrome.opacity(0.55), in: RoundedRectangle(cornerRadius: 10))
+        .background(Look.fieldBg, in: RoundedRectangle(cornerRadius: 10))
         // Тот же отступ от уголков, что у строки поиска на карте.
         .padding(.leading, Corner.size + 8)
         .padding(.trailing, Corner.size + 8)

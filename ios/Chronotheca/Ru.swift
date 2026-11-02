@@ -254,8 +254,15 @@ enum Look {
     static let rule      = Color(light: 0xE4E5E1, dark: 0x2A3037)
     static let ruleSoft  = Color(light: 0xEFEFEC, dark: 0x222830)
     static let accent    = Color(light: 0x2F4A6B, dark: 0x8FB3E8)
-    static let chrome    = Color(light: 0xF4F4F1, dark: 0x191F26)
-    static let planBg    = Color(light: 0xFDFDFB, dark: 0x14191F)
+    // Тёмные — тёплые, как тёмные страницы гамм (P757); прежде сине-серые.
+    static let chrome    = Color(light: 0xF4F4F1, dark: 0x221E19)
+    static let planBg    = Color(light: 0xFDFDFB, dark: 0x1B1814)
+    /// Подложка строки поиска на тёплом столе (P757): полупрозрачная светлая,
+    /// а не холодная серая.
+    static let fieldBg = Color(uiColor: UIColor { trait in
+        trait.userInterfaceStyle == .dark ? UIColor.black.withAlphaComponent(0.25)
+                                          : UIColor.white.withAlphaComponent(0.55)
+    })
     /// Контур взятого — дела, снимка, точки (P203, P374). Синими чернилами
     /// перьевой ручки, а не синим цветом iPhone (P670): бумага спорила с
     /// технологичным синим.
