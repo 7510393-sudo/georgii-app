@@ -32,7 +32,8 @@ struct LeatherCover: View {
                 Stitch()
                     .stroke(Leather.thread, style: StrokeStyle(lineWidth: 1.7, lineCap: .round, dash: [8, 5]))
                     .frame(height: 1)
-                    .padding(.horizontal, 8)
+                    // Во всю ширину, до самого края экрана (P750).
+                    .padding(.horizontal, -4)
                     .padding(.top, Leather.stitchInset)
             }
         }
