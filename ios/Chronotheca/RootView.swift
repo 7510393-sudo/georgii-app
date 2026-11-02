@@ -309,7 +309,15 @@ struct RootView: View {
             .ignoresSafeArea(.all, edges: .bottom)
             // На странице дня полоса над шапкой (часы, батарея) — того же
             // цвета, что лист: шапка — продолжение страницы (P434).
-            .background((shell.screen == .today ? Ru.tint(store.date) : Look.chrome).ignoresSafeArea())
+            // Над календарём и поиском — их стол (P755).
+            .background {
+                Group {
+                    if shell.screen == .today { Ru.tint(store.date) }
+                    else if shell.screen == .calendar || shell.screen == .search { Desk() }
+                    else { Look.chrome }
+                }
+                .ignoresSafeArea()
+            }
 
             // Верхней строки больше нет: шестерёнка и три точки нарисованы
             // на уголках бумаги, торчащих сверху слева и справа, а имя дня

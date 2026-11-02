@@ -286,7 +286,6 @@ enum Look {
     /// голубой цвет iPhone (P670).
     static let noteChosen  = Color(light: 0xDDE2EC, dark: 0x2A3850)
 
-    /// Бумага облачка «…а помнишь?» — белая (P298).
     /// Крафт-картон строк разделов без старой бумаги (P297, P751), по гамме
     /// (P498); значки на нём — тёмными чернилами.
     static var kraft: Color     { Scheme.current.kraft }
@@ -296,7 +295,20 @@ enum Look {
     static let tabLit = Color(uiColor: UIColor { trait in
         UIColor.white.withAlphaComponent(trait.userInterfaceStyle == .dark ? 0.16 : 0.45)
     })
+    /// Бумага облачка «…а помнишь?» — белая (P298).
     static let cloudPaper = Color(light: 0xFFFFFF, dark: 0x2A2517)
+
+}
+
+/// Стол под календарём и поиском (P755): цвет «сегодня» гаммы, чуть
+/// темнее (как у поиска с P696). Прежде календарь лежал на почти белом
+/// `planBg`, а поиск — на тёплом: два раздела разного цвета.
+struct Desk: View {
+    @AppStorage(Prefs.calendarTint) private var palette = "distance"
+    var body: some View { Scheme.current.today.overlay(Color.black.opacity(0.05)) }
+}
+
+extension Look {
 
     /// Засечный шрифт дневника. Literata в iOS нет, Georgia есть везде.
     /// Шрифт записи можно сменить в настройках (P274).

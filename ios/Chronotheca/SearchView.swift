@@ -40,7 +40,7 @@ struct SearchView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         // Фон поиска — ровный, без фактуры (P696): фактурная бумага — сами
         // карточки, а не стол под ними (замена P693).
-        .background(Scheme.current.today.overlay(Color.black.opacity(0.05)))
+        .background(Desk())
     }
 
     /// Строка поиска стоит вместо заголовка «Поиск» — между уголками
