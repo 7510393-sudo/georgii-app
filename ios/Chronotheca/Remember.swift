@@ -70,17 +70,31 @@ struct RememberCloud: View {
     /// как у настоящего облака; чёткий только прямой низ. Размытая бумага
     /// ниже черты срезается; у самой черты поверх лежит чёткая полоска той же
     /// бумаги, тающая кверху, — низ не просвечивает.
+    /// Объём (P752: «чуть-чуть объёмнее, контур менее мягко растворяющийся»):
+    /// свет слева сверху (P670) — светлее к верху-слева, теплее и темнее к
+    /// низу-справа, и мягкая тень под облачком; размытие края вдвое меньше
+    /// прежнего (0,035 ширины).
+    @Environment(\.colorScheme) private var scheme
+
     private func paper(height: CGFloat) -> some View {
-        let blur = width * 0.035
+        let blur = width * 0.016
         let band = height * 0.12
-        let sheet = Image("облачко-бумага")
-            .renderingMode(.template)
-            .resizable()
-            .foregroundStyle(Look.cloudPaper)
-            .frame(width: width, height: height)
+        let dark = scheme == .dark
+        let shape = Image("облачко-бумага").renderingMode(.template).resizable()
+        let sheet = ZStack {
+            shape.foregroundStyle(Look.cloudPaper)
+            shape.foregroundStyle(LinearGradient(
+                stops: [.init(color: .white.opacity(dark ? 0.10 : 0.6), location: 0),
+                        .init(color: .clear, location: 0.45),
+                        .init(color: Color(red: 0.45, green: 0.36, blue: 0.26).opacity(dark ? 0.30 : 0.16), location: 1)],
+                startPoint: UnitPoint(x: 0.2, y: 0.05), endPoint: UnitPoint(x: 0.8, y: 0.95)))
+        }
+        .frame(width: width, height: height)
         return ZStack {
             sheet
                 .blur(radius: blur)
+                .shadow(color: .black.opacity(dark ? 0.35 : 0.12), radius: width * 0.012,
+                        x: width * 0.004, y: width * 0.006)
                 .mask { FlatFoot(footY: Self.footY, footEnd: Self.footEnd, spill: blur * 3, fade: blur * 4) }
             sheet
                 .mask(alignment: .topLeading) {
