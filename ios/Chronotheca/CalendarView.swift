@@ -648,6 +648,9 @@ struct CalendarView: View {
             .clipShape(RoundedRectangle(cornerRadius: 6))
             .overlay(RoundedRectangle(cornerRadius: 6)
                 .strokeBorder(open ? Look.accent.opacity(0.6) : .clear, lineWidth: 1.5))
+            // Сегодня — в рамке (P754): плотнее и толще, чем у выбранного.
+            .overlay(RoundedRectangle(cornerRadius: 6)
+                .strokeBorder(stamp == today ? Look.accent : .clear, lineWidth: 2))
         }
         .buttonStyle(.plain)
     }
