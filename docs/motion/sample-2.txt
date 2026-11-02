@@ -1,0 +1,222 @@
+    18 Thread_52954   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 18 start  (in dyld) + 6992  [0x100e844e4]
+    +   18 start_sim  (in dyld_sim) + 20  [0x100c5b0e4]
+    +     18 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x102a4a9c8]  ChronothecaApp.swift:0
+    +       18 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x102a4a91c]  /<compiler-generated>:0
+    +         18 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           18 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             18 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               18 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 18 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   18 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     18 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       18 __CFRunLoopRun  (in CoreFoundation) + 760  [0x180421808]
+    +                         18 __CFRunLoopDoSources0  (in CoreFoundation) + 312  [0x180422690]
+    +                           18 __CFRunLoopDoSource0  (in CoreFoundation) + 168  [0x180422ea4]
+    +                             18 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__  (in CoreFoundation) + 24  [0x180422f5c]
+    +                               10 BSServiceMainRunLoopSourceHandler  (in BoardServices) + 180  [0x188242210]
+    +                               ! 10 __BSSERVICEMAINRUNLOOPQUEUE_IS_CALLING_OUT_TO_A_BLOCK__  (in BoardServices) + 44  [0x188243258]
+    +                               !   10 _dispatch_block_invoke_direct  (in libdispatch.dylib) + 376  [0x18018b5fc]
+    +                               !     10 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                               !       10 -[FBSWorkspace _calloutQueue_executeCalloutFromSource:withBlock:]  (in FrontBoardServices) + 168  [0x1887fb2b0]
+    +                               !         10 __92-[FBSWorkspaceScenesClient createSceneWithIdentity:parameters:transitionContext:completion:]_block_invoke_2  (in FrontBoardServices) + 192  [0x18881bc0c]
+    +                               !           9 -[FBSWorkspaceScenesClient _callOutQueue_sendDidCreateForScene:transitionContext:completion:]  (in FrontBoardServices) + 380  [0x18881a4c8]
+    +                               !           : 9 -[FBSWorkspace _calloutQueue_executeCalloutFromSource:withBlock:]  (in FrontBoardServices) + 168  [0x1887fb2b0]
+    +                               !           :   9 __93-[FBSWorkspaceScenesClient _callOutQueue_sendDidCreateForScene:transitionContext:completion:]_block_invoke.281  (in FrontBoardServices) + 220  [0x1888590a4]
+    +                               !           :     9 -[FBSScene _callOutQueue_didCreateWithTransitionContext:alternativeCreationCallout:completion:]  (in FrontBoardServices) + 404  [0x1887ed6f4]
+    +                               !           :       9 -[FBSScene _callOutQueue_maybeCoalesceClientSettingsUpdates:]  (in FrontBoardServices) + 120  [0x1887edd30]
+    +                               !           :         8 __95-[FBSScene _callOutQueue_didCreateWithTransitionContext:alternativeCreationCallout:completion:]_block_invoke  (in FrontBoardServices) + 304  [0x1887ed8a0]
+    +                               !           :         | 8 -[UIApplicationSceneClientAgent scene:didInitializeWithEvent:completion:]  (in UIKitCore) + 276  [0x185ebbbd8]
+    +                               !           :         |   8 -[UIApplication workspace:didCreateScene:withTransitionContext:completion:]  (in UIKitCore) + 324  [0x1864a726c]
+    +                               !           :         |     7 -[UIApplication _connectUISceneFromFBSScene:transitionContext:]  (in UIKitCore) + 1160  [0x1864a6e90]
+    +                               !           :         |     + 7 +[UIScene _sceneForFBSScene:create:withSession:connectionOptions:]  (in UIKitCore) + 540  [0x1857bc4a4]
+    +                               !           :         |     +   7 -[__NSDictionaryM enumerateKeysAndObjectsWithOptions:usingBlock:]  (in CoreFoundation) + 328  [0x1805314d8]
+    +                               !           :         |     +     7 __NSDICTIONARY_IS_CALLING_OUT_TO_A_BLOCK__  (in CoreFoundation) + 16  [0x18040baf4]
+    +                               !           :         |     +       5 __66+[UIScene _sceneForFBSScene:create:withSession:connectionOptions:]_block_invoke_3  (in UIKitCore) + 84  [0x1857bca54]
+    +                               !           :         |     +       ! 2 -[BLSBacklightFBSSceneEnvironment(UIKit) initWithScene:]  (in UIKitCore) + 156  [0x186557de4]
+    +                               !           :         |     +       ! : 2 -[FBSScene(BacklightServices_Internal) backlightSceneEnvironmentWithCreationBlock:]  (in BacklightServices) + 88  [0x1d6c7a38c]
+    +                               !           :         |     +       ! :   2 __56-[BLSBacklightFBSSceneEnvironment(UIKit) initWithScene:]_block_invoke  (in UIKitCore) + 44  [0x186557f08]
+    +                               !           :         |     +       ! :     2 bls_scenes_log  (in BacklightServices) + 60  [0x1d6c8036c]
+    +                               !           :         |     +       ! :       2 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +                               !           :         |     +       ! :         2 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                               !           :         |     +       ! :           2 __bls_scenes_log_block_invoke  (in BacklightServices) + 28  [0x1d6c8038c]
+    +                               !           :         |     +       ! :             2 os_log_create  (in libsystem_trace.dylib) + 132  [0x1800b2f10]
+    +                               !           :         |     +       ! :               2 _platform_strlen  (in libsystem_platform.dylib) + 4  [0x100b909a4]
+    +                               !           :         |     +       ! 1 -[_UIBacklightEnvironment initWithScene:]  (in UIKitCore) + 136  [0x185fcdacc]
+    +                               !           :         |     +       ! : 1 -[BLSBacklightFBSSceneEnvironment setDelegate:]  (in BacklightServices) + 376  [0x1d6c799f8]
+    +                               !           :         |     +       ! :   1 -[FBSScene updateClientSettingsWithBlock:]  (in FrontBoardServices) + 96  [0x1887eb5b4]
+    +                               !           :         |     +       ! :     1 -[FBSScene _updateClientSettings:]  (in FrontBoardServices) + 264  [0x1887ec03c]
+    +                               !           :         |     +       ! :       1 -[FBSMutableSceneClientSettings(BacklightServices) bls_setHasDelegate:]  (in BacklightServices) + 0  [0x1d6c7cca8]
+    +                               !           :         |     +       ! 1 -[_UIFocusSystemSceneComponent initWithScene:]  (in UIKitCore) + 160  [0x185ecc008]
+    +                               !           :         |     +       ! : 1 -[_UIFocusSystemSceneComponent _updateDeviceCapabilityObserver]  (in UIKitCore) + 108  [0x185ecc8bc]
+    +                               !           :         |     +       ! :   1 -[_UIFocusHardwareKeyboardObserver init]  (in UIKitCore) + 0  [0x186b62540]
+    +                               !           :         |     +       ! 1 -[_UIShareableContentSceneComponent initWithScene:]  (in UIKitCore) + 0  [0x1866b1bcc]
+    +                               !           :         |     +       2 __66+[UIScene _sceneForFBSScene:create:withSession:connectionOptions:]_block_invoke_3  (in UIKitCore) + 104  [0x1857bca68]
+    +                               !           :         |     +         1 -[UIWindowScene _registerSceneComponent:forKey:]  (in UIKitCore) + 72  [0x18676d000]
+    +                               !           :         |     +         : 1 -[UIScene _registerSceneComponent:forKey:]  (in UIKitCore) + 184  [0x1857b9e08]
+    +                               !           :         |     +         :   1 -[UIScene _calculateFlattenedBSActionResponders]  (in UIKitCore) + 548  [0x1857c09f4]
+    +                               !           :         |     +         :     1 -[__NSArrayI_Transfer dealloc]  (in CoreFoundation) + 80  [0x1804e87f0]
+    +                               !           :         |     +         :       1 _objc_rootDealloc  (in libobjc.A.dylib) + 56  [0x18005f3bc]
+    +                               !           :         |     +         :         1 objc_destructInstance_nonnull_realized(objc_object*)  (in libobjc.A.dylib) + 72  [0x1800575e0]
+    +                               !           :         |     +         :           1 object_cxxDestructFromClass(objc_object*, objc_class*)  (in libobjc.A.dylib) + 112  [0x18003dfc0]
+    +                               !           :         |     +         :             1 -[_UIShareableContentSceneActionHandler .cxx_destruct]  (in UIKitCore) + 0  [0x18588d6f0]
+    +                               !           :         |     +         1 -[UIWindowScene _registerSceneComponent:forKey:]  (in UIKitCore) + 136  [0x18676d040]
+    +                               !           :         |     +           1 -[UIWindowScene _componentDidUpdateTraitOverrides:]  (in UIKitCore) + 212  [0x18676cd9c]
+    +                               !           :         |     +             1 -[UIWindowScene _updateSceneTraitsAndPushTraitsToScreen:callParentWillTransitionToTraitCollection:]  (in UIKitCore) + 164  [0x18676c0ec]
+    +                               !           :         |     +               1 -[UITraitCollection _traitCollectionByModifyingTraitsCopyOnWrite:]  (in UIKitCore) + 172  [0x185ff0700]
+    +                               !           :         |     +                 1 ____UIWindowSceneTraitCollectionWithSceneUISettings_block_invoke  (in UIKitCore) + 348  [0x18676f2cc]
+    +                               !           :         |     +                   1 ???  (in UIKitCore)  load address 0x185289000 + 0x424cf4  [0x1856adcf4]
+    +                               !           :         |     +                     1 ???  (in UIKitCore)  load address 0x185289000 + 0x424994  [0x1856ad994]
+    +                               !           :         |     +                       1 _swift_getKeyPath(pattern:arguments:)  (in libswiftCore.dylib) + 72  [0x19836e7bc]
+    +                               !           :         |     1 -[UIApplication _connectUISceneFromFBSScene:transitionContext:]  (in UIKitCore) + 532  [0x1864a6c1c]
+    +                               !           :         |       1 +[UIScene _connectionOptionsForScene:withSpecification:transitionContext:actions:sceneSession:]  (in UIKitCore) + 972  [0x1857bd0fc]
+    +                               !           :         |         1 <deduplicated_symbol>  (in UIKitCore) + 0  [0x1859e1e10]
+    +                               !           :         1 __95-[FBSScene _callOutQueue_didCreateWithTransitionContext:alternativeCreationCallout:completion:]_block_invoke  (in FrontBoardServices) + 236  [0x1887ed85c]
+    +                               !           :           1 -[FBSScene _callOutQueue_updateExtensionsFromSettings:toSettings:withDiff:]  (in FrontBoardServices) + 836  [0x1887ee0fc]
+    +                               !           :             1 +[_UISceneInterfaceProtectionExtension clientComponents]  (in UIKitCore) + 40  [0x186502234]
+    +                               !           :               1 _objc_msgSend_uncached  (in libobjc.A.dylib) + 64  [0x18003af00]
+    +                               !           :                 1 lookUpImpOrForward  (in libobjc.A.dylib) + 112  [0x180053344]
+    +                               !           :                   1 _os_unfair_lock_lock_slow  (in libsystem_platform.dylib) + 168  [0x100b91258]
+    +                               !           :                     1 __ulock_wait2  (in libsystem_kernel.dylib) + 8  [0x100b1db04]
+    +                               !           1 -[FBSWorkspaceScenesClient _callOutQueue_sendDidCreateForScene:transitionContext:completion:]  (in FrontBoardServices) + 184  [0x18881a404]
+    +                               !             1 +[BSBlockSentinel sentinelWithCompletion:]  (in BaseBoard) + 48  [0x18409a934]
+    +                               !               1 -[BSBlockSentinel initWithCount:queue:block:]  (in BaseBoard) + 172  [0x184099eac]
+    +                               !                 1 BSStackFrameInfoForAddresss  (in BaseBoard) + 232  [0x184093968]
+    +                               !                   1 dyld4::APIs::dladdr(void const*, dl_info*)  (in dyld_sim) + 260  [0x100c534b4]
+    +                               8 UC::DriverCore::continueProcessing()  (in UpdateCycle) + 80  [0x2343d22c0]
+    +                                 8 schedulerStepScheduledMainSectionContinue  (in UIKitCore) + 56  [0x1863b6064]
+    +                                   8 _UIUpdateSequenceRunNext  (in UIKitCore) + 120  [0x18590339c]
+    +                                     8 __setupUpdateSequence_block_invoke_2  (in UIKitCore) + 372  [0x1863b5c0c]
+    +                                       8 _UIApplicationFlushCATransaction  (in UIKitCore) + 68  [0x1864a3b64]
+    +                                         8 _cleanUpAfterCAFlushAndRunDeferredBlocks  (in UIKitCore) + 76  [0x1864a3a94]
+    +                                           8 _runAfterCACommitDeferredBlocks  (in UIKitCore) + 256  [0x1864b23dc]
+    +                                             8 -[_UIAfterCACommitQueue flush]  (in UIKitCore) + 156  [0x186a4b028]
+    +                                               8 -[_UIAfterCACommitBlock run]  (in UIKitCore) + 64  [0x186a4ac04]
+    +                                                 8 -[UIApplication _immediatelyUpdateSerializableKeyCommands]  (in UIKitCore) + 228  [0x1864c2910]
+    +                                                   8 -[UIResponder _enumerateKeyboardShortcutsInChainWithOptions:usingBlock:]  (in UIKitCore) + 532  [0x1864d4c28]
+    +                                                     8 -[UIMainMenuSystem _keyCommands]  (in UIKitCore) + 24  [0x1857ca1c0]
+    +                                                       8 -[UIMainMenuSystem _automaticallyRebuildIfNeeded]  (in UIKitCore) + 160  [0x1857ca184]
+    +                                                         8 -[UIMenuSystem _newBuilderFromResponderChain:atLocation:inCoordinateSpace:]  (in UIKitCore) + 212  [0x186a52f8c]
+    +                                                           8 -[UIMainMenuSystem _buildMenuWithBuilder:fromResponderChain:atLocation:inCoordinateSpace:]  (in UIKitCore) + 184  [0x1857ca9d8]
+    +                                                             8 -[UIMenuSystem _buildMenuWithBuilder:fromResponderChain:atLocation:inCoordinateSpace:]  (in UIKitCore) + 80  [0x186a53040]
+    +                                                               8 @objc AppDelegate.buildMenu(with:)  (in SwiftUI) + 56  [0x1d292e07c]
+    +                                                                 8 AppDelegate.buildMenu(with:)  (in SwiftUI) + 408  [0x1d292dfd0]
+    +                                                                   5 UIKitMainMenuController.buildMenu(with:)  (in SwiftUI) + 1704  [0x1d2ffded8]
+    +                                                                   : 5 ViewGraphRootValueUpdater.invalidateProperties(_:mayDeferUpdate:)  (in SwiftUICore) + 176  [0x1d43bec98]
+    +                                                                   :   5 closure #1 in ViewGraphRootValueUpdater.invalidateProperties(_:mayDeferUpdate:)  (in SwiftUICore) + 176  [0x1d43bf8cc]
+    +                                                                   :     5 ViewRendererHost.updateViewGraph<A>(body:)  (in SwiftUICore) + 100  [0x1d43bf4e8]
+    +                                                                   :       5 closure #1 in MainMenuItemHost.requestUpdate(after:)  (in SwiftUI) + 52  [0x1d2cbc55c]
+    +                                                                   :         5 MainMenuItemCoordinator.updateIfNeeded()  (in SwiftUI) + 564  [0x1d2fff020]
+    +                                                                   :           5 ViewGraphRootValueUpdater.render(interval:updateDisplayList:targetTimestamp:)  (in SwiftUICore) + 460  [0x1d43be2c0]
+    +                                                                   :             5 closure #1 in ViewGraphRootValueUpdater.render(interval:updateDisplayList:targetTimestamp:)  (in SwiftUICore) + 712  [0x1d43bfbc0]
+    +                                                                   :               5 ViewGraph.updateOutputs(at:)  (in SwiftUICore) + 156  [0x1d43c5ac0]
+    +                                                                   :                 5 specialized GraphHost.runTransaction(_:do:id:)  (in SwiftUICore) + 68  [0x1d3f37bfc]
+    +                                                                   :                   5 GraphHost.instantiateIfNeeded()  (in SwiftUICore) + 168  [0x1d3f31a04]
+    +                                                                   :                     5 GraphHost.instantiate()  (in SwiftUICore) + 328  [0x1d3f365a4]
+    +                                                                   :                       5 ViewGraph.instantiateOutputs()  (in SwiftUICore) + 124  [0x1d43c9880]
+    +                                                                   :                         4 closure #1 in ViewGraph.instantiateOutputs()  (in SwiftUICore) + 648  [0x1d43c9d40]
+    +                                                                   :                         | 4 closure #1 in ViewGraph.init<A>(rootViewType:requestedOutputs:)  (in SwiftUICore) + 692  [0x1d43c9180]
+    +                                                                   :                         |   4 specialized closure #1 in closure #1 in ViewGraph.init<A>(rootViewType:requestedOutputs:)  (in SwiftUICore) + 404  [0x1d43c938c]
+    +                                                                   :                         |     4 static View._makeView(view:inputs:)  (in SwiftUICore) + 28  [0x1d3bdef74]
+    +                                                                   :                         |       2 static View.makeView(view:inputs:)  (in SwiftUICore) + 116  [0x1d3be0550]
+    +                                                                   :                         |       + 2 static DynamicPropertyCache.fields(of:)  (in SwiftUICore) + 276  [0x1d3d0524c]
+    +                                                                   :                         |       +   2 AGTypeApplyFields2  (in AttributeGraph) + 124  [0x1c42ce7f0]
+    +                                                                   :                         |       +     2 AG::swift::metadata::visit(AG::swift::metadata_visitor&) const  (in AttributeGraph) + 780  [0x1c42c8384]
+    +                                                                   :                         |       +       1 AGTypeApplyFields2::Visitor::visit_field(AG::swift::metadata const*, AG::swift::field_record const&, unsigned long, unsigned long)  (in AttributeGraph) + 68  [0x1c42cece4]
+    +                                                                   :                         |       +       ! 1 AG::swift::metadata::mangled_type_name_ref(char const*, bool, AG::swift::metadata::ref_kind*) const  (in AttributeGraph) + 152  [0x1c42c8484]
+    +                                                                   :                         |       +       !   1 swift_getTypeByMangledNameInContextImpl(char const*, unsigned long, swift::TargetContextDescriptor<swift::InProcess> const*, void const* const*)  (in libswiftCore.dylib) + 152  [0x1981b74bc]
+    +                                                                   :                         |       +       !     1 swift_getTypeByMangledName  (in libswiftCore.dylib) + 272  [0x1981b7090]
+    +                                                                   :                         |       +       !       1 swift_getTypeByMangledNameImpl(swift::MetadataRequest, __swift::__runtime::llvm::StringRef, void const* const*, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>)  (in libswiftCore.dylib) + 1016  [0x1981bcd58]
+    +                                                                   :                         |       +       !         1 swift_getTypeByMangledNode  (in libswiftCore.dylib) + 272  [0x1981b8ab0]
+    +                                                                   :                         |       +       !           1 swift_getTypeByMangledNodeImpl(swift::MetadataRequest, swift::Demangle::__runtime::Demangler&, swift::Demangle::__runtime::Node*, void const* const*, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>)  (in libswiftCore.dylib) + 576  [0x1981bc55c]
+    +                                                                   :                         |       +       !             1 swift::Demangle::__runtime::TypeDecoder<(anonymous namespace)::DecodedMetadataBuilder>::decodeMangledType(swift::Demangle::__runtime::Node*, unsigned int, bool)  (in libswiftCore.dylib) + 6884  [0x1981c2174]
+    +                                                                   :                         |       +       !               1 (anonymous namespace)::DecodedMetadataBuilder::createBoundGenericType(swift::TargetContextDescriptor<swift::InProcess> const*, __swift::__runtime::llvm::ArrayRef<swift::MetadataPackOrValue>, swift::MetadataPackOrValue) const  (in libswiftCore.dylib) + 520  [0x1981c6114]
+    +                                                                   :                         |       +       !                 1 type metadata accessor for MainMenuItem.Content  (in SwiftUI) + 0  [0x1d32d4950]
+    +                                                                   :                         |       +       1 AGTypeApplyFields2::Visitor::visit_field(AG::swift::metadata const*, AG::swift::field_record const&, unsigned long, unsigned long)  (in AttributeGraph) + 36  [0x1c42cecc4]
+    +                                                                   :                         |       2 static View.makeView(view:inputs:)  (in SwiftUICore) + 588  [0x1d3be0728]
+    +                                                                   :                         |         2 static ModifiedContent<>._makeView(view:inputs:)  (in SwiftUICore) + 412  [0x1d42591ac]
+    +                                                                   :                         |           1 static PlatformItemListTransformModifier._makeView(modifier:inputs:body:)  (in SwiftUI) + 184  [0x1d2c66a34]
+    +                                                                   :                         |           ! 1 closure #2 in static ModifiedContent<>._makeView(view:inputs:)  (in SwiftUICore) + 352  [0x1d4259380]
+    +                                                                   :                         |           !   1 static View._makeView(view:inputs:)  (in SwiftUICore) + 28  [0x1d3bdef74]
+    +                                                                   :                         |           !     1 static View.makeView(view:inputs:)  (in SwiftUICore) + 588  [0x1d3be0728]
+    +                                                                   :                         |           !       1 static ForEach<>._makeView(view:inputs:)  (in SwiftUICore) + 84  [0x1d42de538]
+    +                                                                   :                         |           !         1 static ForEach<>.makeForEachView(view:inputs:)  (in SwiftUICore) + 392  [0x1d42de770]
+    +                                                                   :                         |           !           1 lazy protocol witness table accessor for type SectionConfiguration.ID and conformance SectionConfiguration.ID  (in SwiftUICore) + 44  [0x1d3a2fa64]
+    +                                                                   :                         |           !             1 swift::_getWitnessTable(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*, void const* const*)  (in libswiftCore.dylib) + 904  [0x1981a1e90]
+    +                                                                   :                         |           1 static PlatformItemListTransformModifier._makeView(modifier:inputs:body:)  (in SwiftUI) + 588  [0x1d2c66bc8]
+    +                                                                   :                         |             1 <deduplicated_symbol>  (in SwiftUI) + 72  [0x1d274c248]
+    +                                                                   :                         |               1 partial apply for closure #1 in Attribute.init<A>(_:)  (in SwiftUI) + 28  [0x1d2c700e4]
+    +                                                                   :                         |                 1 closure #1 in Attribute.init<A>(_:)  (in SwiftUI) + 0  [0x1d27f3960]
+    +                                                                   :                         1 closure #1 in ViewGraph.instantiateOutputs()  (in SwiftUICore) + 604  [0x1d43c9d14]
+    +                                                                   :                           1 static ViewGraphFeatureBuffer._VTable.modifyViewInputs(elt:inputs:graph:)  (in SwiftUICore) + 92  [0x1d43bc2dc]
+    +                                                                   :                             1 protocol witness for ViewGraphFeature.modifyViewInputs(inputs:graph:) in conformance PlatformItemListViewGraph  (in SwiftUI) + 176  [0x1d312c49c]
+    +                                                                   :                               1 specialized _ViewInputs.addPlatformItemListKey<A>(flags:editOperation:)  (in SwiftUI) + 284  [0x1d29e03c8]
+    +                                                                   :                                 1 lazy protocol witness table accessor for type _GraphInputs.ViewThatFitsRepresentationKey and conformance _GraphInputs.ViewThatFitsRepresentationKey  (in SwiftUI) + 44  [0x1d29e418c]
+    +                                                                   :                                   1 swift::_getWitnessTable(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*, void const* const*)  (in libswiftCore.dylib) + 4168  [0x1981a2b50]
+    +                                                                   :                                     1 instantiateWitnessTable(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolConformanceDescriptor<swift::InProcess> const*, void const* const*, void**)  (in libswiftCore.dylib) + 664  [0x1981abf68]
+    +                                                                   :                                       1 swift_getAssociatedConformanceWitnessSlow  (in libswiftCore.dylib) + 192  [0x1981a48f8]
+    +                                                                   :                                         1 base witness table accessor for PropertyKey in _GraphInputs.ViewThatFitsRepresentationKey  (in SwiftUI) + 0  [0x1d2e6b46c]
+    +                                                                   1 UIKitMainMenuController.buildMenu(with:)  (in SwiftUI) + 1216  [0x1d2ffdcf0]
+    +                                                                   : 1 _ResolvedCommands.mainMenuItems(env:)  (in SwiftUI) + 1092  [0x1d35a2300]
+    +                                                                   :   1 closure #2 in _ResolvedCommands.mainMenuItems(env:)  (in SwiftUI) + 200  [0x1d35a3a60]
+    +                                                                   :     1 <deduplicated_symbol>  (in SwiftUI) + 48  [0x1d271a41c]
+    +                                                                   1 UIKitMainMenuController.buildMenu(with:)  (in SwiftUI) + 1560  [0x1d2ffde48]
+    +                                                                   : 1 MainMenuItemCoordinator.init(_:environment:)  (in SwiftUI) + 408  [0x1d3000eb0]
+    +                                                                   :   1 MainMenuItemHost.init(_:environment:focusedValues:focusStore:)  (in SwiftUI) + 636  [0x1d2cbc1f0]
+    +                                                                   :     1 <deduplicated_symbol>  (in SwiftUI) + 48  [0x1d271a41c]
+    +                                                                   :       1 swift::_getWitnessTable(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*, void const* const*)  (in libswiftCore.dylib) + 904  [0x1981a1e90]
+    +                                                                   1 UIKitMainMenuController.buildMenu(with:)  (in SwiftUI) + 2368  [0x1d2ffe170]
+    +                                                                     1 UIKitMainMenuController.synthesizeSystemMenus(_:)  (in SwiftUI) + 220  [0x1d2fffaf8]
+    +                                                                       1 ???  (in UIKitCore)  load address 0x185289000 + 0x206078  [0x18548f078]
+    +                                                                         1 ???  (in UIKitCore)  load address 0x185289000 + 0x2059f4  [0x18548e9f4]
+    +                                                                           1 ???  (in UIKitCore)  load address 0x185289000 + 0x208300  [0x185491300]
+    +                                                                             1 ???  (in UIKitCore)  load address 0x185289000 + 0x20332c  [0x18548c32c]
+    +                                                                               1 ???  (in UIKitCore)  load address 0x185289000 + 0x203238  [0x18548c238]
+    +                                                                                 1 -[UIMenu menuByReplacingChildren:]  (in UIKitCore) + 76  [0x185a781ec]
+    +                                                                                   1 -[UIMenu initWithMenu:overrideChildren:additionalOptions:]  (in UIKitCore) + 508  [0x185a78090]
+    +                                                                                     1 _objc_msgSend_uncached  (in libobjc.A.dylib) + 64  [0x18003af00]
+    +                                                                                       1 lookUpImpOrForward  (in libobjc.A.dylib) + 472  [0x1800534ac]
+    +                                                                                         1 method_t::imp(bool) const  (in libobjc.A.dylib) + 120  [0x180045e34]
+    +                                                                                           1 method_t_remappedImp_nolock(method_t const*)  (in libobjc.A.dylib) + 40  [0x180040530]
+    +                                                                                             1 objc::DenseMapBase<objc::DenseMap<method_t const*, void*, objc::DenseMapValueInfo<void*>, objc::DenseMapInfo<method_t const*>, objc::detail::DenseMapPair<method_t const*, void*>>, method_t const*, void*, objc::DenseMapValueInfo<void*>, objc::DenseMapInfo<method_t const*>, objc::detail::DenseMapPair<method_t const*, void*>>::LookupBucketFor<method_t const*>(method_t const* const&, objc::detail::DenseMapPair<method_t const*, void*> const*&) const  (in libobjc.A.dylib) + 184  [0x18004062c]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        287
+        mach_msg2_trap  (in libsystem_kernel.dylib)        18
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        13
+
+Binary Images:
+       0x100afc000 -        0x100aff507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/F0C70C77-E423-4478-B648-3D25045B311B/data/Containers/Bundle/Application/36942A56-6FF7-41B3-941B-3D7D921A0C45/Chronotheca.app/Chronotheca
+       0x100b10000 -        0x100b4aed7  libsystem_kernel.dylib (12377.161.14) <26CFE427-C180-3145-8D46-DE3129B1CD2A> /usr/lib/system/libsystem_kernel.dylib
+       0x100b90000 -        0x100b983d3  libsystem_platform.dylib (375.120.2) <7E129155-1748-370C-8EDC-D762067A6D9F> /usr/lib/system/libsystem_platform.dylib
+       0x100c50000 -        0x100c9ee9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x100d0c000 -        0x100d4f65f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x100e64000 -        0x100f174ff  dyld (1.0.0 - 1387) <74E52480-C2BD-3C8D-812D-95FE2B74A096> /usr/lib/dyld
+       0x100fbc000 -        0x1010552af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x101674000 -        0x10168010b  libsystem_pthread.dylib (539.100.4) <85A501D2-0B0E-3DEA-B121-B24119D80CFE> /usr/lib/system/libsystem_pthread.dylib
+       0x1017dc000 -        0x1017dcb99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x1017f0000 -        0x1017f803f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x101904000 -        0x10190f39f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x101928000 -        0x10192adff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x101948000 -        0x10195149f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x10196c000 -        0x101972b7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x10198c000 -        0x1019932df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
+       0x1019b8000 -        0x1019bbe5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x101e28000 -        0x101e4127f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
+       0x101e78000 -        0x101e7d407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
+       0x101edc000 -        0x102137bbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+       0x102800000 -        0x1028537bf  com.apple.dt.XCTAutomationSupport (26.5 - 24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
+       0x1028b4000 -        0x1028daf5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
+       0x10296c000 -        0x1030f48cf +Chronotheca.debug.dylib (0) <0E1E55E5-49B5-32DB-81CD-AD54B8C8CBC0> /Users/*/Library/Developer/CoreSimulator/Devices/F0C70C77-E423-4478-B648-3D25045B311B/data/Containers/Bundle/Application/36942A56-6FF7-41B3-941B-3D7D921A0C45/Chronotheca.app/Chronotheca.debug.dylib
+       0x103c74000 -        0x103cae15f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
+       0x103e44000 -        0x103e66cff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
+       0x103e9c000 -        0x103f0bcbf  com.apple.UIUnderstanding (1.0 - 1) <576E64EB-8AA4-3B1E-A89D-365C4DE0C7C8> /Volumes/*/UIUnderstanding.framework/UIUnderstanding
+       0x107bec000 -        0x107ddfd3f  com.apple.UIKit.axbundle (1.0.0 - 1.0) <D3D808D1-AB02-3566-B2DD-1B139F8E9569> /Volumes/*/UIKit
+       0x180038000 -        0x180074943 +libobjc.A.dylib (951.7) <727C4040-5E6D-3DAE-B22C-9A337D46C34F> /Volumes/*/libobjc.A.dylib
+       0x180075000 -        0x1800a01d2 +libdyld.dylib (1378) <2B7568E6-5EEE-33E0-B471-2FDAAE4FF448> /Volumes/*/libdyld.dylib
+       0x1800a1000 -        0x1800bf01f +libsystem_trace.dylib (1861.120.4) <4138F7EF-2588-38B1-9977-1502A60E2E36> /Volumes/*/libsystem_trace.dylib
+       0x1800c0000 -        0x18010481f +libxpc.dylib (3102.120.13) <FF603B08-461E-35C4-82E6-3AD8E5D12848> /Volumes/*/libxpc.dylib
+       0x180105000 -        0x180107da8 +libsystem_blocks.dylib (96) <A5FDF1FF-B793-3574-8903-D24571EACD25> /Volumes/*/libsystem_blocks.dylib
+       0x180108000 -        0x1801842b7 +libsystem_c.dylib (1752.120.2) <05F4B01B-E685-39FA-93F3-DE10CD9B511A> /Volumes/*/libsystem_c.dylib
+       0x180185000 -        0x1801ca3bf +libdispatch.dylib (1542.100.32) <42B50931-38D5-3A5D-90EF-0FD7239C408D> /Volumes/*/libdispatch.dylib
+       0x1801cb000 -        0x18021213f +libsystem_malloc.dylib (812.100.31) <F71AEB05-0D59-37BA-B0F2-457432BB09B5> /Volumes/*/libsystem_malloc.dylib
