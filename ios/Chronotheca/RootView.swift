@@ -39,6 +39,7 @@ struct RootView: View {
     @AppStorage(Prefs.font) private var fontKey = "newyork"
     /// Цветовая гамма (P498): меняется — страницы и строки собираются заново.
     @AppStorage(Prefs.calendarTint) private var palette = "distance"
+    @AppStorage(Prefs.plainPast) private var plainPast = false
     @State private var locked = UserDefaults.standard.bool(forKey: Prefs.lock)
 
 
@@ -308,7 +309,15 @@ struct RootView: View {
             .ignoresSafeArea(.all, edges: .bottom)
             // На странице дня полоса над шапкой (часы, батарея) — того же
             // цвета, что лист: шапка — продолжение страницы (P434).
-            .background((shell.screen == .today ? Ru.tint(store.date) : Look.chrome).ignoresSafeArea())
+            // Над календарём и поиском — их стол (P755).
+            .background {
+                Group {
+                    if shell.screen == .today { Ru.tint(store.date) }
+                    else if shell.screen == .calendar || shell.screen == .search { Desk() }
+                    else { Look.chrome }
+                }
+                .ignoresSafeArea()
+            }
 
             // Верхней строки больше нет: шестерёнка и три точки нарисованы
             // на уголках бумаги, торчащих сверху слева и справа, а имя дня
@@ -672,7 +681,11 @@ struct RootView: View {
             * (size.height > 0 ? size.height + BoardEdge.depth + BoardEdge.shade : 1200)
         return content()
             .frame(width: size.width, height: size.height)
-            .background(Look.chrome)
+            // Календарь и поиск — целиком на тёплом столе, и шапка тоже
+            // (P758: на снимке шапка календаря была серой).
+            .background {
+                if which == .calendar || which == .search { Desk() } else { Look.chrome }
+            }
             // Торец стоит с той стороны, которой плашка идёт вперёд, и
             // выступает за её край — то есть лежит на книге, а не на самой
             // плашке. На месте он уходит за край экрана и не виден: толщина
@@ -713,7 +726,8 @@ struct RootView: View {
         // Кожаный переплёт с ровным краем и строчкой, до самого низа экрана
         // (P745, вместо крафта с оторванным краем P297).
         .background(alignment: .top) {
-            LeatherCover()
+            // Без старой бумаги — крафт с ровным верхом (P751).
+            BarCover()
                 .ignoresSafeArea(edges: .bottom)
         }
         // Где верх строки — по нему листок настроек кончается над значками
@@ -851,13 +865,13 @@ struct RootView: View {
             // раздел — темнее, на светлой подушке с окантовкой.
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(on ? Leather.pad : .clear)
+                    .fill(on ? BarInk.pad(plainPast) : .clear)
                     .overlay(RoundedRectangle(cornerRadius: 12)
-                        .strokeBorder(on ? Leather.lit.opacity(0.6) : .clear, lineWidth: 1.3))
+                        .strokeBorder(on ? BarInk.frame(plainPast) : .clear, lineWidth: 1.3))
                     .padding(.horizontal, -16)
                     .padding(.vertical, -3))
             .frame(maxWidth: .infinity)
-            .foregroundStyle(on ? Leather.lit : Leather.ink)
+            .foregroundStyle(on ? BarInk.lit(plainPast) : BarInk.ink(plainPast))
         }
         .buttonStyle(TouchDownStyle(action: act))
         .accessibilityIdentifier("bottom.\(target)")
@@ -983,7 +997,8 @@ struct Corner: View {
         return ZStack {
             // Без «Ретро» (P737) — прежняя белая бумага листков, ровная.
             if plainPast {
-                Look.planBg
+                // Как листок настроек, который за него тянут (P757).
+                Desk()
             } else {
                 Scheme.current.past
                 Image(uiImage: PageTexture.paper)

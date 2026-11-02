@@ -61,7 +61,7 @@ struct SettingsSticker: View {
     var body: some View {
         // Белый лист, разделы на нём — жёлтыми стикерами с тенью (P600).
         Sticker(side: .leading, title: T("Настройки", "Settings"),
-                width: Self.width, height: height, close: close) {
+                width: Self.width, height: height, onDesk: true, close: close) {
           // Длинная бумажка прокручивается: разделов стало много (P249).
           ScrollView {
            // Ленивая стопка (P475): листок строился целиком — все девять
@@ -408,9 +408,8 @@ struct SettingsSticker: View {
         // «Старая бумага» (P730; с P737 — одним рычажком и уголок, и листок
         // настроек; имя «Ретро» не прижилось, P738). Выключено — прошедшие
         // дни просто цвета прошлого, листки белые, без износа и рваного края.
-        NoteRow(title: T("Старая бумага", "Old paper"),
-                detail: T("Прошедшие дни, уголок и настройки — на затёртой бумаге с рваным краем.",
-                          "Past days, the corner and settings on worn paper with torn edges.")) {
+        // Без пояснения (P753, слово автора).
+        NoteRow(title: T("Старая бумага", "Old paper")) {
             Lever(isOn: Binding(get: { !plainPast }, set: { plainPast = !$0 }))
         }
     }

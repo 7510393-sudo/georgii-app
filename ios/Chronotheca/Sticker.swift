@@ -27,6 +27,8 @@ struct Sticker<Content: View>: View {
     /// Высота листка, если она задана заранее (P669): листок настроек
     /// кончается над нижней строкой, и его низ не дорастает на глазах.
     var height: CGFloat? = nil
+    /// Листок настроек (P757): без старой бумаги — на столе календаря.
+    var onDesk = false
     let close: () -> Void
     @ViewBuilder let content: () -> Content
 
@@ -72,7 +74,11 @@ struct Sticker<Content: View>: View {
         .background {
             // «Ретро» (P737): листок — старая бумага, как уголок, за который
             // его тянут; иначе — прежний белый лист.
-            if plainPast { shape.fill(paper) } else { OldSheet(seed: 9) }
+            // Без старой бумаги листок настроек — того же тёплого стола, что
+            // календарь и поиск (P757); прочие листки — своей бумаги.
+            if !plainPast { OldSheet(seed: 9) }
+            else if onDesk { Desk().clipShape(shape) }
+            else { shape.fill(paper) }
         }
         // Тень — заранее нарисованная картинка (P675), не размытие на ходу.
         .background(PaintedShadow(radius: 14, corner: 12, x: 6, y: 6, opacity: 0.32))

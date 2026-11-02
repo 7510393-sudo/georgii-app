@@ -162,8 +162,11 @@ enum Ru {
 struct Scheme {
     let past: Color
     let today: Color
-    /// Кромка корешков карточек поиска (прежде и крафт строк разделов —
-    /// с P745 строки в кожаном переплёте, `Leather`).
+    /// Крафт строк разделов, когда «Старая бумага» выключена (P751; при ней —
+    /// кожаный переплёт, `Leather`), и его чернила.
+    let kraft: Color
+    let kraftInk: Color
+    /// Кромка крафта и корешков карточек поиска.
     let kraftEdge: Color
 
     static let apricot = Scheme(
@@ -174,14 +177,20 @@ struct Scheme {
         past: Color(light: 0xECDDBB, dark: 0x221D15),
         // Бледнее на 15% (P330).
         today: Color(light: 0xF9E6D7, dark: 0x2F2620),
+        kraft: Color(light: 0xCBB28C, dark: 0x3A3125),
+        kraftInk: Color(light: 0x3A2818, dark: 0xE6D6BA),
         kraftEdge: Color(light: 0x96805F, dark: 0x1E1912))
     static let sage = Scheme(
         past: Color(light: 0xECDDBB, dark: 0x1E1D15),
         today: Color(light: 0xE3EEDC, dark: 0x1F2B21),
+        kraft: Color(light: 0xB7C4A2, dark: 0x2D3829),
+        kraftInk: Color(light: 0x22301A, dark: 0xDCE8D0),
         kraftEdge: Color(light: 0x7F8C6A, dark: 0x172016))
     static let lavender = Scheme(
         past: Color(light: 0xECDDBB, dark: 0x201D16),
         today: Color(light: 0xEAE3F5, dark: 0x28232F),
+        kraft: Color(light: 0xC3B8D8, dark: 0x332E40),
+        kraftInk: Color(light: 0x2D2340, dark: 0xE4DCF2),
         kraftEdge: Color(light: 0x8A7FA3, dark: 0x1B1824))
 
     /// «Без цвета» (P683): нейтральные серые страницы и картон без желтизны и
@@ -190,6 +199,8 @@ struct Scheme {
     static let plain = Scheme(
         past: Color(light: 0xDCDBD7, dark: 0x1B1B1A),
         today: Color(light: 0xF5F4F1, dark: 0x262625),
+        kraft: Color(light: 0xB9B6AF, dark: 0x363634),
+        kraftInk: Color(light: 0x2B2A27, dark: 0xE4E3DF),
         kraftEdge: Color(light: 0x86837C, dark: 0x181817))
 
     /// Выбранная в настройках; «distance» — прежний ключ абрикосовой, «weekday»
@@ -243,8 +254,15 @@ enum Look {
     static let rule      = Color(light: 0xE4E5E1, dark: 0x2A3037)
     static let ruleSoft  = Color(light: 0xEFEFEC, dark: 0x222830)
     static let accent    = Color(light: 0x2F4A6B, dark: 0x8FB3E8)
-    static let chrome    = Color(light: 0xF4F4F1, dark: 0x191F26)
-    static let planBg    = Color(light: 0xFDFDFB, dark: 0x14191F)
+    // Тёмные — тёплые, как тёмные страницы гамм (P757); прежде сине-серые.
+    static let chrome    = Color(light: 0xF4F4F1, dark: 0x221E19)
+    static let planBg    = Color(light: 0xFDFDFB, dark: 0x1B1814)
+    /// Подложка строки поиска на тёплом столе (P757): полупрозрачная светлая,
+    /// а не холодная серая.
+    static let fieldBg = Color(uiColor: UIColor { trait in
+        trait.userInterfaceStyle == .dark ? UIColor.black.withAlphaComponent(0.25)
+                                          : UIColor.white.withAlphaComponent(0.55)
+    })
     /// Контур взятого — дела, снимка, точки (P203, P374). Синими чернилами
     /// перьевой ручки, а не синим цветом iPhone (P670): бумага спорила с
     /// технологичным синим.
@@ -275,8 +293,29 @@ enum Look {
     /// голубой цвет iPhone (P670).
     static let noteChosen  = Color(light: 0xDDE2EC, dark: 0x2A3850)
 
+    /// Крафт-картон строк разделов без старой бумаги (P297, P751), по гамме
+    /// (P498); значки на нём — тёмными чернилами.
+    static var kraft: Color     { Scheme.current.kraft }
+    static var kraftInk: Color  { Scheme.current.kraftInk }
+    static var kraftEdge: Color { Scheme.current.kraftEdge }
+    /// Светлая подушка под открытым разделом на крафте (P526).
+    static let tabLit = Color(uiColor: UIColor { trait in
+        UIColor.white.withAlphaComponent(trait.userInterfaceStyle == .dark ? 0.16 : 0.45)
+    })
     /// Бумага облачка «…а помнишь?» — белая (P298).
     static let cloudPaper = Color(light: 0xFFFFFF, dark: 0x2A2517)
+
+}
+
+/// Стол под календарём и поиском (P755): цвет «сегодня» гаммы, чуть
+/// темнее (как у поиска с P696). Прежде календарь лежал на почти белом
+/// `planBg`, а поиск — на тёплом: два раздела разного цвета.
+struct Desk: View {
+    @AppStorage(Prefs.calendarTint) private var palette = "distance"
+    var body: some View { Scheme.current.today.overlay(Color.black.opacity(0.05)) }
+}
+
+extension Look {
 
     /// Засечный шрифт дневника. Literata в iOS нет, Georgia есть везде.
     /// Шрифт записи можно сменить в настройках (P274).
