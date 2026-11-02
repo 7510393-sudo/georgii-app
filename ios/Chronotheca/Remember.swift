@@ -81,10 +81,16 @@ struct RememberCloud: View {
         return ZStack {
             sheet
                 .blur(radius: blur)
-                .clipShape(FlatFoot(footY: Self.footY, footEnd: Self.footEnd, spill: blur * 3))
+                .mask { FlatFoot(footY: Self.footY, footEnd: Self.footEnd, spill: blur * 3, fade: blur * 4) }
             sheet
                 .mask(alignment: .topLeading) {
+                    // Справа полоска тает вбок (P747): прежде кончалась
+                    // отвесным краем.
                     LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
+                        .mask(LinearGradient(stops: [.init(color: .black, location: 0),
+                                                     .init(color: .black, location: 0.8),
+                                                     .init(color: .clear, location: 1)],
+                                             startPoint: .leading, endPoint: .trailing))
                         .frame(width: width * Self.footEnd, height: band)
                         .offset(y: height * Self.footY - band)
                 }
@@ -96,19 +102,32 @@ struct RememberCloud: View {
 
 /// Где видна размытая бумага облачка (P743): всё выше черты прямого низа и
 /// всё правее его конца — там облачко локтем заходит ниже; размытие может
-/// выходить за рамку на `spill`.
-private struct FlatFoot: Shape {
+/// выходить за рамку на `spill`. У конца прямого низа ниже черты бумага
+/// проступает плавно на ширине `fade` (P747): отвесный обрез давал ступеньку.
+private struct FlatFoot: View {
     let footY: CGFloat
     let footEnd: CGFloat
     let spill: CGFloat
+    let fade: CGFloat
 
-    func path(in r: CGRect) -> Path {
-        var p = Path()
-        p.addRect(CGRect(x: r.minX - spill, y: r.minY - spill,
-                         width: r.width + spill * 2, height: r.height * footY + spill))
-        p.addRect(CGRect(x: r.minX + r.width * footEnd, y: r.minY - spill,
-                         width: r.width * (1 - footEnd) + spill, height: r.height + spill * 2))
-        return p
+    var body: some View {
+        GeometryReader { g in
+            let w = g.size.width, h = g.size.height
+            let line = h * footY
+            let end = w * footEnd
+            ZStack(alignment: .topLeading) {
+                Rectangle()
+                    .frame(width: w + spill * 2, height: line + spill)
+                    .offset(x: -spill, y: -spill)
+                LinearGradient(colors: [.clear, .black], startPoint: .leading, endPoint: .trailing)
+                    .frame(width: fade, height: h - line + spill)
+                    .offset(x: end - fade / 2, y: line)
+                Rectangle()
+                    .frame(width: max(0, w - end - fade / 2 + spill), height: h - line + spill)
+                    .offset(x: end + fade / 2, y: line)
+            }
+            .frame(width: w, height: h, alignment: .topLeading)
+        }
     }
 }
 
