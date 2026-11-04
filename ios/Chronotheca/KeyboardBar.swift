@@ -47,8 +47,8 @@ enum KeyboardBar {
         // от клавиатуры под ней (P310).
         made.safeAreaRegions = []
         made.view.backgroundColor = .clear
-        let box = UIView(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width,
-                                       height: accessoryHeight))
+        let box = PassBox(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width,
+                                        height: accessoryHeight))
         box.backgroundColor = .clear
         made.view.frame = box.bounds
         made.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -81,6 +81,21 @@ enum KeyboardBar {
     static let accessoryHeight: CGFloat = attachRoom + SectionsRow.height + Leather.lip
     /// Строка вложений с воздухом над и под ней.
     static let attachRoom: CGFloat = attachHeight + 10
+}
+
+/// Приставка, сквозь которую видно и можно коснуться записи (P764).
+///
+/// Строка с «＋» прозрачна во всю ширину, и текст записи проступает под
+/// ней, но касание левее «＋» прежде съедала сама приставка — курсор не
+/// вставал в нижнюю видимую строку. Теперь там касание уходит странице;
+/// «＋» и строка разделов отвечают по-прежнему.
+final class PassBox: UIView {
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        // «＋» — 44 точки у правого края с отступом 12, и немного воздуха.
+        let plusLeft = bounds.width - 12 - 44 - 8
+        if point.y < KeyboardBar.attachRoom, point.x < plusLeft { return false }
+        return super.point(inside: point, with: event)
+    }
 }
 
 struct KeyboardBarView: View {
