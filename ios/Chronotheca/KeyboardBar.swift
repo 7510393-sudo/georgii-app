@@ -442,6 +442,34 @@ struct TitleLine: UIViewRepresentable {
     }
 }
 
+/// Клавиатура, оставленная поднятой, после возврата из другого
+/// приложения встаёт сразу, без въезда снизу (P763).
+///
+/// iPhone сам возвращает курсор в поле, но клавиатуру при этом вводит
+/// заново, ходом снизу — уже на глазах: страница показана с местом под
+/// клавиатурой, а сама она приезжает следом. На время возвращения ход
+/// выключается; включается, как только клавиатура встала, а если она не
+/// поднималась — через секунду.
+enum KeyboardReturn {
+    private static var watcher: NSObjectProtocol?
+
+    static func still() {
+        UIView.setAnimationsEnabled(false)
+        if let watcher { NotificationCenter.default.removeObserver(watcher) }
+        watcher = NotificationCenter.default.addObserver(
+            forName: UIResponder.keyboardDidShowNotification, object: nil, queue: .main) { _ in
+            done()
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { done() }
+    }
+
+    private static func done() {
+        UIView.setAnimationsEnabled(true)
+        if let watcher { NotificationCenter.default.removeObserver(watcher) }
+        watcher = nil
+    }
+}
+
 /// Строка разделов — внизу экрана и над клавиатурой одна и та же (P613).
 enum SectionsRow {
     /// На пару миллиметров тоньше прежних 55 (P613); под крупные значки

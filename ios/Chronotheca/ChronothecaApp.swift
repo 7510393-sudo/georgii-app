@@ -82,6 +82,8 @@ struct ChronothecaApp: App {
                 // сегодняшний сразу, до того как приложение станет видно
                 // целиком (P711): прежде это делалось позже, и прежняя
                 // страница успевала мелькнуть.
+                // Клавиатура, если была поднята, встаёт без въезда (P763).
+                if old == .background { KeyboardReturn.still() }
                 if old == .background, shell.newDaySinceLeft() {
                     shell.startOver(store)
                     shell.noteToday()
