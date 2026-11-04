@@ -132,6 +132,8 @@ struct KeyboardBarView: View {
                     .minimumScaleFactor(0.7)
                     .fixedSize(horizontal: false, vertical: true)
             }
+            // На коже — тиснением (P759).
+            .modifier(Embossed(on: !plainPast))
             .background(
                 RoundedRectangle(cornerRadius: 12)
                     .fill(on ? BarInk.pad(plainPast) : .clear)
@@ -202,6 +204,7 @@ struct PlusMenu: View {
             Image(systemName: "plus")
                 .font(.system(size: 22, weight: .semibold))
                 .foregroundStyle(BarInk.ink(plainPast))
+                .modifier(Embossed(on: !plainPast))
                 .frame(width: 44, height: 44)
                 .background(BarCover(edged: false).clipShape(Circle()).opacity(plainPast ? 0.78 : 1))
                 .overlay(Circle().strokeBorder(BarInk.rim(plainPast), lineWidth: 1))
@@ -372,9 +375,8 @@ struct TitleLine: UIViewRepresentable {
 
     func updateUIView(_ field: UITextField, context: Context) {
         context.coordinator.parent = self
-        let plain = Prefs.serifUIFont(size)
-        let bold = plain.fontDescriptor.withSymbolicTraits(.traitBold)
-            .map { UIFont(descriptor: $0, size: size) } ?? plain
+        // Тот же шрифт, что у заголовка на соседних страницах (P759).
+        let bold = Prefs.titleUIFont(size)
         if field.font != bold { field.font = bold }
         if field.markedTextRange == nil, field.text != text { field.text = text }
         if focused, !field.isFirstResponder {
@@ -442,12 +444,14 @@ struct TitleLine: UIViewRepresentable {
 
 /// Строка разделов — внизу экрана и над клавиатурой одна и та же (P613).
 enum SectionsRow {
-    /// На пару миллиметров тоньше прежних 55 (P613).
-    static let height: CGFloat = 44
-    /// Значки — 35 × эта доля (прежде 0,85).
-    static let scale: CGFloat = 0.72
-    /// Названия (прежде 15 × 0,85).
-    static let font: CGFloat = 12.5
+    /// На пару миллиметров тоньше прежних 55 (P613); под крупные значки
+    /// тиснения — 48 (P760).
+    static let height: CGFloat = 48
+    /// Значки — 35 × эта доля (прежде 0,85; 0,72 до P760 — тиснение
+    /// крупнее читается).
+    static let scale: CGFloat = 0.79
+    /// Названия (прежде 15 × 0,85; 12,5 до P760).
+    static let font: CGFloat = 13.5
 
     /// Книжка на 10%, микроскоп на 5% крупнее прочих (P227).
     static func grow(_ target: Shell.Screen) -> CGFloat {

@@ -37,6 +37,22 @@ enum BarInk {
     static func rim(_ plain: Bool) -> Color { plain ? Look.kraftEdge.opacity(0.55) : Leather.rim }
 }
 
+/// Тиснение на коже (P759: «значки и надписи в виде тиснения»): значок
+/// вдавлен — тень у верхнего-левого края впадины, светлая грань у
+/// нижнего-правого. На крафте — прежние чернила без тиснения.
+struct Embossed: ViewModifier {
+    let on: Bool
+    @ViewBuilder func body(content: Content) -> some View {
+        if on {
+            content
+                .shadow(color: .black.opacity(0.4), radius: 0, x: -0.5, y: -0.6)
+                .shadow(color: Leather.embossLit, radius: 0, x: 0.6, y: 0.8)
+        } else {
+            content
+        }
+    }
+}
+
 /// Крафт-картон (P297): волокна и крапины поверх цвета гаммы.
 struct KraftPaper: View {
     var body: some View {
@@ -140,10 +156,12 @@ enum Leather {
     static let threadLit = Color(red: 0.93, green: 0.89, blue: 0.80)
     static let thread = Color(red: 0.80, green: 0.74, blue: 0.62)
     static let threadDeep = Color(red: 0.58, green: 0.52, blue: 0.41)
-    /// Значки и надписи — тёмные чернила.
-    static let ink = Color(red: 0.20, green: 0.12, blue: 0.06)
-    /// Открытый раздел — ещё темнее, на светлой подушке.
-    static let lit = Color(red: 0.12, green: 0.07, blue: 0.03)
+    /// Значки и надписи — тиснение (P759): вдавлены в кожу, темнее её.
+    static let ink = Color(red: 0.36, green: 0.23, blue: 0.12)
+    /// Открытый раздел — тиснение глубже, на светлой подушке.
+    static let lit = Color(red: 0.22, green: 0.13, blue: 0.06)
+    /// Светлая грань тиснения — снизу-справа: свет слева сверху (P670).
+    static let embossLit = Color(red: 0.92, green: 0.79, blue: 0.61).opacity(0.8)
     static let pad = Color(red: 0.98, green: 0.92, blue: 0.80).opacity(0.38)
     /// Насколько строчка ниже края — посередине полосы над значками (P746).
     static let stitchInset: CGFloat = 4.5

@@ -96,6 +96,19 @@ enum Prefs {
         }
     }
 
+    /// Жирный шрифт заголовка записи (P759) — один для открытой страницы
+    /// (поле UIKit) и соседних (надпись SwiftUI). Прежде открытая брала
+    /// жирное начертание через признак шрифта и без поправки размера
+    /// Comfortaa, а соседняя — своё: лист ложился, и заголовок на глазах
+    /// становился шире и толще.
+    static func titleUIFont(_ size: CGFloat) -> UIFont {
+        if fontKey == "comfortaa",
+           let own = UIFont(name: "Comfortaa-Bold", size: size * comfortaaScale) { return own }
+        if fontKey == "system" || fontKey == "comfortaa" { return .systemFont(ofSize: size, weight: .bold) }
+        let plain = UIFont.systemFont(ofSize: size, weight: .bold)
+        return plain.fontDescriptor.withDesign(.serif).map { UIFont(descriptor: $0, size: size) } ?? plain
+    }
+
     /// Шрифт записи для полей UIKit.
     static func serifUIFont(_ size: CGFloat) -> UIFont {
         if fontKey == "comfortaa",

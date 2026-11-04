@@ -290,7 +290,7 @@ enum Search {
     /// Высота корешка карточки (P695).
     static let tabHeight: CGFloat = 22
     /// Насколько список уходит под нижнюю строку (P744).
-    static let underBar: CGFloat = 110
+    static let underBar: CGFloat = 120  // нижняя строка выше (P761)
     /// На сколько карточка заходит на предыдущую: корешок и ещё немного
     /// листа, чтобы нижний край предыдущей скрылся под ней (P696).
     static let overlap: CGFloat = tabHeight + 10

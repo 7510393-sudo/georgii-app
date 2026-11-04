@@ -612,7 +612,8 @@ struct DiaryPage: View {
                     }
                 } else {
                     Text(Geo.stripped(title))
-                        .font(Look.serif(16.5, weight: .semibold))
+                        // Тот же шрифт, что в поле открытой страницы (P759).
+                        .font(Font(Prefs.titleUIFont(16.5)))
                         .foregroundStyle(Look.ink)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
