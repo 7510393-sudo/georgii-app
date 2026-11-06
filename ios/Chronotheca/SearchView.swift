@@ -127,13 +127,9 @@ struct SearchView: View {
     private var found: [Archive.Day] {
         let days = archive.newestFirst.filter(kept)
         let needle = query.trimmingCharacters(in: .whitespaces).lowercased()
-        // Пока ничего не набрано, список начинается с последнего заполненного
-        // дня: пустые будущие дни, заведённые планировщиком (повторы, дела
-        // вперёд), в нём ничего не говорят (P426).
-        guard !needle.isEmpty else {
-            let today = DayStore.today()
-            return days.filter { $0.date <= today || !$0.isPlanOnly }
-        }
+        // Пока ничего не набрано — все дни, и прошлые, и будущие с делами:
+        // в картотеке они стоят ниже сегодняшнего (P768, отменяет P426).
+        guard !needle.isEmpty else { return days }
         let scope = shell.scope
         return days.filter { day in
             if scope != .plan {
@@ -148,6 +144,29 @@ struct SearchView: View {
             }
             return false
         }
+    }
+
+    /// Стопка картотеки (P768): прошлое сверху, сегодня, ниже — будущие дни,
+    /// в том числе пустые на две недели вперёд. Когда что-то ищут или
+    /// выбран вид («только фото»), пустых карточек нет — только находки,
+    /// старые сверху.
+    private var shelf: [Archive.Day] {
+        let days = Array(found.reversed())
+        let needle = query.trimmingCharacters(in: .whitespaces)
+        guard needle.isEmpty, shell.find == .all, !Search.deep else { return days }
+        let today = DayStore.today()
+        let byStamp = Dictionary(days.map { ($0.stamp, $0) }, uniquingKeysWith: { first, _ in first })
+        let todayStamp = Vault.stamp(today)
+        var out = days.filter { $0.stamp < todayStamp }
+        var last = todayStamp
+        for offset in 0...Search.ahead {
+            guard let date = Calendar.current.date(byAdding: .day, value: offset, to: today) else { continue }
+            let stamp = Vault.stamp(date)
+            out.append(byStamp[stamp] ?? Archive.Day(stamp: stamp, date: date))
+            last = stamp
+        }
+        out += days.filter { $0.stamp > last }
+        return out
     }
 
     /// Подходит ли день под «что искать» из меню поиска (P249).
@@ -168,7 +187,7 @@ struct SearchView: View {
         // Выборка считается один раз, а не на каждую карточку.
         // На снимке CI «лента поиска» находки повторены, чтобы было что
         // листать (P717).
-        let days = Search.deep ? Array(repeating: found, count: 12).flatMap { $0 } : found
+        let days = Search.deep ? Array(repeating: found, count: 12).flatMap { $0 } : shelf
         let items = days.enumerated().map { index, day in
             Search.Item(id: Search.deep ? String(index) : day.id, day: day)
         }
@@ -202,11 +221,12 @@ struct SearchView: View {
         .scrollDismissesKeyboard(.interactively)
         .onAppear {
             // Снимок «лента поиска»: список пролистан, как у человека.
-            guard Search.deep else { return }
+            guard Search.deep else { home(proxy, items); return }
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                 proxy.scrollTo("20", anchor: .top)
             }
         }
+        .onChange(of: query) { _, _ in home(proxy, items) }
         }
         .animation(.easeOut(duration: 0.25), value: keyboard)
         // Список продолжается вверх под строку поиска; строка лежит выше и
@@ -215,12 +235,27 @@ struct SearchView: View {
         .zIndex(-1)
     }
 
+    /// Где стоит список: без запроса — сегодняшняя карточка выше середины,
+    /// над ней прошлое, под ней будущее; с запросом — самая новая находка
+    /// внизу, старые над ней (P768).
+    private func home(_ proxy: ScrollViewProxy, _ items: [Search.Item]) {
+        let calm = query.trimmingCharacters(in: .whitespaces).isEmpty && shell.find == .all
+        DispatchQueue.main.async {
+            if calm {
+                proxy.scrollTo(Vault.stamp(DayStore.today()), anchor: UnitPoint(x: 0.5, y: 0.3))
+            } else if let last = items.last {
+                proxy.scrollTo(last.id, anchor: .bottom)
+            }
+        }
+    }
+
     private func row(_ day: Archive.Day) -> some View {
         Button {
             typing = false
             store.go(to: day.date)
             // Искали в плане — туда и открываем: там нашлось искомое.
-            shell.tab = shell.scope == .plan || (day.text.isEmpty && !day.tasks.isEmpty)
+            shell.tab = shell.scope == .plan || day.date > DayStore.today()
+                || (day.text.isEmpty && !day.tasks.isEmpty)
                 ? .plan : .diary
             shell.screen = .today
         } label: {
@@ -234,6 +269,16 @@ struct SearchView: View {
                             .font(Look.serif(15, weight: .semibold))
                             .foregroundStyle(Look.ink)
                             .lineLimit(1)
+                    }
+                    if day.title.isEmpty && day.preview.isEmpty {
+                        // День без записи: дела, если они есть, иначе подсказка.
+                        Text(day.tasks.isEmpty
+                             ? T("Пусто — можно вписать дела", "Empty — room to plan")
+                             : day.tasks.prefix(4).map { $0.text }.joined(separator: "\n"))
+                            .font(Look.serif(13.5))
+                            .foregroundStyle(Look.inkFaint)
+                            .lineLimit(4)
+                            .multilineTextAlignment(.leading)
                     }
                     if !day.text.isEmpty {
                         Text(day.preview)
@@ -296,6 +341,9 @@ enum Search {
     static let overlap: CGFloat = tabHeight + 10
 
     static let lineGap: CGFloat = 3
+
+    /// На сколько дней вперёд картотека показывает пустые карточки (P768).
+    static let ahead = 14
 
     /// Где стоит первая находка, пока список не листали (от верха списка).
     static let restTop: CGFloat = 4
