@@ -411,9 +411,12 @@ struct DayPage: View {
                          guard shell.screen == .today, shell.movingTask == nil else { return }
                          hideKeyboard()
                          store.prune()
+                         // Сторона плашки меняется, пока она за краем, и
+                         // только потом плашка едет (P771): иначе будущее
+                         // приехало бы сверху.
                          shell.fileFrom = dir
                          shell.searchHome += 1
-                         shell.screen = .search
+                         DispatchQueue.main.async { shell.screen = .search }
                          archive.reloadSoon()
                          DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { store.save() }
                      }) {

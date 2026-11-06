@@ -649,7 +649,9 @@ struct RootView: View {
                     if mapReady || shell.screen == .map { MapScreen() } else { Color.clear }
                 }
                 .accessibilityHidden(shell.screen != .map)
-                panel(.search, from: .top, over: geo.size) { SearchView() }
+                // Картотека будущего поднимается снизу, прошлого — опускается
+                // сверху (P771): с той стороны, за которую тянули день.
+                panel(.search, from: shell.fileFrom < 0 ? .bottom : .top, over: geo.size) { SearchView() }
             }
             .frame(width: geo.size.width, height: geo.size.height)
         }
