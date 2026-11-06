@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Прототип «Картотека»</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap">
+<style>
+:root{
+  --stage:#E9E9E4; --plan-bg:#FDFDFB; --diary-bg:#FAF5EC; --paper:#F6F0E2;
+  --ink:#1C2128; --ink-soft:#56606D; --ink-faint:#A2AAB4;
+  --rule:#E4E5E1; --rule-soft:#EFEFEC; --accent:#2F4A6B; --chrome:#F4F4F1;
+  --shadow:0 2px 4px rgba(20,25,32,.06),0 18px 44px -24px rgba(20,25,32,.45);
+  --d1:#2F5FA8; --d2:#2E7D57; --d3:#8A6A12; --d4:#6B4E9E; --d5:#B0403A; --d6:#2C7E96; --d7:#C06A22;
+  --w1:#EAF0FA; --w2:#E9F3EC; --w3:#F7F1DE; --w4:#F0EBF8; --w5:#FAECEA; --w6:#E6F2F6; --w7:#FBEFE3;
+}
+:root.night{
+  --stage:#0D1116; --plan-bg:#14191F; --diary-bg:#1B1812; --paper:#1F1B14;
+  --ink:#E8EBEE; --ink-soft:#A3ACB7; --ink-faint:#69717C;
+  --rule:#2A3037; --rule-soft:#222830; --accent:#8FB3E8; --chrome:#191F26;
+  --shadow:0 2px 4px rgba(0,0,0,.4),0 20px 50px -28px rgba(0,0,0,.9);
+  --d1:#7FA6E0; --d2:#6FBF95; --d3:#D4AE55; --d4:#A88FD6; --d5:#E08B84; --d6:#6FC0D6; --d7:#E0A06A;
+  --w1:#182130; --w2:#15231B; --w3:#252015; --w4:#211B2C; --w5:#2A1B1A; --w6:#132329; --w7:#291F15;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--stage);color:var(--ink);margin:0;
+  font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.5}
+button{font:inherit;color:inherit;background:none;border:none;padding:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.stage{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start;justify-content:center;
+  padding-inline:16px;padding-block:28px 40px;max-width:1000px;margin:0 auto}
+
+.phone{--dayTint:var(--plan-bg);position:relative;width:100%;max-width:392px;
+  height:min(830px,calc(100dvh - 68px));min-height:600px;display:flex;flex-direction:column;overflow:hidden;
+  background:var(--chrome);border:1px solid var(--rule);border-radius:26px;box-shadow:var(--shadow);
+  transition:border-color .5s ease,box-shadow .5s ease;user-select:none;-webkit-user-select:none}
+.phone.buzz{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 35%,transparent),var(--shadow);transition:none}
+
+.appbar{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;padding:12px 8px 2px;background:var(--chrome)}
+.appbar button{width:44px;height:38px;display:flex;align-items:center;justify-content:center;color:var(--ink-soft)}
+.screenname{text-align:center;font-size:23px;font-weight:600;letter-spacing:-.01em;line-height:1.1}
+.subbar{padding:1px 18px 9px;background:var(--chrome);text-align:center}
+.subbar .w{font-size:12.5px;letter-spacing:.06em;line-height:1.4}
+.subbar .d{font-size:15px;color:var(--ink-soft);line-height:1.35;white-space:nowrap}
+.subbar.none{display:none}
+
+.viewport{position:relative;flex:1;min-height:0;overflow:hidden;border-top:1px solid var(--rule)}
+.strip{display:flex;width:300%;height:100%;touch-action:pan-y;will-change:transform}
+.pane{position:relative;flex:0 0 33.3333%;width:33.3333%;height:100%;overflow:hidden;perspective:1400px}
+
+/* ---------- День ---------- */
+.pull{position:absolute;inset:0;will-change:transform}
+.daycard{position:absolute;inset:0;background:var(--dayTint);box-shadow:0 0 18px -6px rgba(20,25,32,.35)}
+.dayscroll{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:none;-webkit-overflow-scrolling:touch}
+.sec{padding:14px 16px 6px;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint)}
+ul.tasks{list-style:none;margin:0;padding:0}
+li.task{display:grid;grid-template-columns:54px 1fr;gap:6px;align-items:baseline;padding:10px 16px;
+  border-bottom:1px solid var(--rule-soft);font-size:15px;line-height:1.45}
+.tm{font-family:"IBM Plex Mono",monospace;font-size:16px;color:var(--ink-soft)}
+li.task.done .tx,li.task.done .tm{color:var(--ink-faint)}
+.past li.task .tx,.past li.task .tm{color:var(--ink-faint)}
+.empty{padding:22px 16px;color:var(--ink-faint);font-size:14px}
+.diarysec{margin-top:18px;padding:6px 16px 120px;background:var(--diary-bg);border-top:1px solid var(--rule);
+  font-family:Literata,Georgia,serif;min-height:260px}
+.diarysec .sec{padding-inline:0;font-family:"IBM Plex Sans",sans-serif}
+.dtitle{font-family:inherit;font-size:19px;font-weight:600;color:var(--ink);width:100%;background:none;border:none;
+  border-bottom:1px solid var(--rule);padding:0 0 7px;outline:none;user-select:text;-webkit-user-select:text}
+.dtitle::placeholder{color:var(--ink-faint);font-weight:400}
+.dtext{min-height:120px;margin-top:14px;outline:none;font-size:15.5px;line-height:1.7;white-space:pre-wrap;
+  word-break:break-word;user-select:text;-webkit-user-select:text}
+.dtext:empty::before{content:attr(data-ph);color:var(--ink-faint)}
+.ts{font-family:"IBM Plex Mono",monospace;font-size:.84em;color:var(--ink-faint);margin-right:.15em}
+
+/* то, что открывается за краем дня: ряд карточек выглядывает из-под него */
+.rv{position:absolute;left:0;right:0;height:170px;background:var(--stage);padding:8px 12px;
+  display:flex;flex-direction:column;gap:5px;overflow:hidden}
+.rv.top{bottom:100%;justify-content:flex-end;border-bottom:1px solid var(--rule)}
+.rv.bot{top:100%;justify-content:flex-start;border-top:1px solid var(--rule)}
+.pulllbl{position:absolute;left:50%;transform:translateX(-50%);z-index:3;opacity:0;pointer-events:none;
+  padding:3px 11px;border-radius:12px;background:var(--chrome);border:1px solid var(--rule);white-space:nowrap;
+  font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+.pulllbl.armed{color:var(--accent);border-color:var(--accent);font-weight:600}
+.rv .card{pointer-events:none}
+
+/* ---------- Картотека ---------- */
+.file{position:absolute;inset:0;z-index:5;background:var(--stage);overflow-y:auto;overflow-x:hidden;
+  display:none;backface-visibility:hidden;transform-origin:left center;overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch}
+.file.open{display:block}
+.fsearch{position:sticky;top:0;z-index:3;display:flex;gap:8px;padding:10px 12px;background:var(--stage);
+  border-bottom:1px solid var(--rule)}
+.fsearch input{flex:1;min-width:0;padding:9px 12px;border:1px solid var(--rule);border-radius:9px;
+  background:var(--plan-bg);color:var(--ink);font-size:14px;outline:none;user-select:text;-webkit-user-select:text}
+.fsearch button{padding:0 12px;border:1px solid var(--rule);border-radius:9px;font-size:13px;color:var(--accent);background:var(--plan-bg)}
+.fmonth{padding:14px 16px 4px;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint)}
+.flist{padding:4px 12px 40px}
+.card{position:relative;display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;width:100%;
+  text-align:left;margin-bottom:6px;padding:10px 12px 10px 14px;background:var(--paper);
+  border:1px solid var(--rule);border-left:5px solid var(--cc,var(--ink-faint));border-radius:4px 9px 9px 4px;
+  box-shadow:0 1px 0 rgba(20,25,32,.05),0 3px 6px -4px rgba(20,25,32,.25)}
+.card .cd{text-align:center;line-height:1.1}
+.card .cd b{display:block;font-size:20px;font-weight:600;font-family:"IBM Plex Mono",monospace}
+.card .cd i{font-style:normal;font-size:11px;letter-spacing:.06em;color:var(--cc,var(--ink-soft))}
+.card .ct{min-width:0;font-size:14px;line-height:1.35;color:var(--ink-soft);display:-webkit-box;
+  -webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .cm{font-size:11px;color:var(--ink-faint);font-family:"IBM Plex Mono",monospace;white-space:nowrap}
+.card.future{background:transparent;border-style:dashed;border-left-style:solid;box-shadow:none}
+.card.future .ct{color:var(--ink-faint)}
+.card.today{background:var(--plan-bg);border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.card.today .ct{color:var(--ink)}
+.card.cur{outline:2px solid color-mix(in srgb,var(--accent) 45%,transparent);outline-offset:1px}
+.card[hidden]{display:none}
+.curlshade{position:absolute;inset:0;z-index:4;pointer-events:none;
+  background:linear-gradient(90deg,rgba(20,25,32,.28),rgba(20,25,32,0) 55%);opacity:0}
+
+/* ---------- Календарь ---------- */
+.calpane{overflow-y:auto;background:var(--plan-bg)}
+.monthnav{display:flex;align-items:center;justify-content:space-between;padding:14px 14px 8px;font-size:16px;color:var(--ink-soft)}
+.monthnav button{width:38px;height:34px;font-size:19px;color:var(--ink-faint)}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center;padding:0 12px}
+.grid .wd{font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;padding-bottom:5px}
+.cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  border-radius:7px;font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--ink)}
+.cell.out{visibility:hidden}
+.cell.today{border:1.5px solid var(--accent)}
+.cell .dot{width:4px;height:4px;border-radius:50%;background:var(--ink-faint)}
+.note-s{font-size:13px;color:var(--ink-faint);line-height:1.5;padding:16px 16px 0}
+
+/* ---------- Карта ---------- */
+.mappane{background:#DDE6D5}
+:root.night .mappane{background:#1A2420}
+.mappane svg{position:absolute;inset:0;width:100%;height:100%}
+.edge{position:absolute;left:0;top:0;bottom:0;width:28px;background:linear-gradient(90deg,rgba(47,74,107,.22),transparent);
+  display:flex;align-items:center;color:var(--accent);font-size:15px;padding-left:4px;pointer-events:none}
+.maplbl{position:absolute;left:36px;right:14px;bottom:14px;padding:9px 12px;border-radius:9px;background:var(--chrome);
+  border:1px solid var(--rule);font-size:12.5px;color:var(--ink-soft);line-height:1.45}
+
+/* ---------- разделы: три точки ---------- */
+.pager{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--rule);background:var(--chrome);padding-bottom:6px}
+.pager button{padding:9px 0 8px;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:12.5px;color:var(--ink-faint)}
+.pager button i{width:7px;height:7px;border-radius:50%;background:var(--ink-faint);opacity:.45;transition:all .2s}
+.pager button.on{color:var(--accent);font-weight:500}
+.pager button.on i{background:var(--accent);opacity:1;transform:scale(1.35)}
+
+#toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);background:var(--ink);color:var(--plan-bg);
+  padding:8px 15px;border-radius:18px;font-size:13px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;
+  z-index:40;max-width:80vw;text-align:center}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- подсказки ---------- */
+.hints{flex:1 1 300px;max-width:400px;font-size:14px;line-height:1.6}
+.hints h2{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);font-weight:500;margin:0 0 10px}
+.hints ol,.hints ul{padding-left:19px;margin:0 0 22px}
+.hints li{margin:7px 0}
+.hints .note{padding:12px 14px;border:1px solid var(--rule);border-radius:8px;background:var(--chrome);
+  font-size:13px;color:var(--ink-soft);margin-bottom:22px}
+.hints .tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+.hints .tools button{padding:7px 13px;border:1px solid var(--rule);border-radius:8px;font-size:13px;color:var(--ink-soft);background:var(--chrome)}
+.hap{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-soft);margin-bottom:18px}
+.hap i{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);flex:none}
+.hap.on i{background:var(--accent);box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 30%,transparent)}
+.hapsw{position:fixed;left:-99px;top:0;opacity:0;pointer-events:none}
+@media (max-width:860px){
+  .stage{padding:0 0 28px;gap:20px}
+  .phone{border-radius:0;border-left:none;border-right:none;height:100dvh;max-width:none;box-shadow:none}
+  .hints{padding-inline:16px;max-width:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="stage">
+  <div class="phone" id="phone">
+    <div class="appbar">
+      <button id="gear" aria-label="Настройки"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg></button>
+      <div class="screenname" id="sname">Сегодня</div>
+      <span></span>
+    </div>
+    <div class="subbar" id="subbar"><div class="w" id="sw"></div><div class="d" id="sd"></div></div>
+
+    <div class="viewport" id="viewport">
+      <div class="strip" id="strip">
+        <section class="pane" id="paneDay">
+          <div class="pull" id="pull">
+            <div class="rv top" id="rvTop"></div>
+            <div class="daycard"><div class="dayscroll" id="dayScroll"></div></div>
+            <div class="rv bot" id="rvBot"></div>
+          </div>
+          <div class="pulllbl" id="pullLbl"></div>
+          <div class="curlshade" id="curlShade"></div>
+          <div class="file" id="file">
+            <div class="fsearch"><input id="fq" type="search" placeholder="Поиск по словам" autocomplete="off"><button id="fclose">К дню</button></div>
+            <div id="flist"></div>
+          </div>
+        </section>
+        <section class="pane calpane" id="paneCal"></section>
+        <section class="pane mappane" id="paneMap">
+          <svg viewBox="0 0 360 520" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <path d="M-10 380 C80 330 140 420 230 360 S350 300 380 330" fill="none" stroke="#A9C7DE" stroke-width="30" opacity=".8"/>
+            <g stroke="#F7F4EA" stroke-width="9" fill="none" stroke-linecap="round">
+              <path d="M40 0 L90 520"/><path d="M0 150 L360 210"/><path d="M200 0 L250 520"/><path d="M0 470 L360 430"/>
+            </g>
+            <g stroke="#EDE9DA" stroke-width="4" fill="none"><path d="M0 80 L360 60"/><path d="M0 290 L360 270"/><path d="M140 0 L170 520"/><path d="M310 0 L330 520"/></g>
+            <g fill="#B0403A" stroke="#fff" stroke-width="2"><circle cx="120" cy="178" r="8"/><circle cx="238" cy="262" r="8"/><circle cx="290" cy="110" r="8"/></g>
+          </svg>
+          <div class="edge">‹</div>
+          <div class="maplbl">Карта: здесь палец двигает карту, поэтому на другой раздел — свайпом от левого края (светлая полоса) или точками внизу.</div>
+        </section>
+      </div>
+    </div>
+
+    <div class="pager" id="pager">
+      <button data-i="0" class="on"><i></i>День</button>
+      <button data-i="1"><i></i>Календарь</button>
+      <button data-i="2"><i></i>Карта</button>
+    </div>
+  </div>
+
+  <aside class="hints">
+    <h2>Что пробовать</h2>
+    <div class="hap" id="hap"><i></i><span id="hapTxt">отклик: …</span></div>
+    <ol>
+      <li><b>Три раздела.</b> «День», «Календарь», «Карта» — свайп вправо-влево или точки внизу. На каждом переключении — короткий отклик. Поиска отдельным разделом нет.</li>
+      <li><b>Прошлое — сверху.</b> Долистайте день до самого верха и тяните вниз дальше: из-под дня выглядывают вчерашние карточки. Дотянули до порога — отклик, подсказка меняется на «отпустите». Отпустили — открылась картотека, сегодняшняя карточка внизу, над ней прошлое.</li>
+      <li><b>Будущее — снизу.</b> Долистайте день до конца и тяните вверх: выглядывают пустые карточки будущих дней. Порог и отпускание — так же.</li>
+      <li><b>Картотека.</b> Одна длинная стопка: прошлое сверху, сегодня посередине, будущее внизу пустыми карточками. Строка поиска наверху (работает по словам).</li>
+      <li><b>Касание карточки.</b> День открывается перелистыванием <b>одной</b> страницы — картотека загибается, как лист, и под ней день. Ряда страниц, как в книге, нет.</li>
+      <li><b>Карта.</b> Палец двигает карту, поэтому с неё уходят от левого края или точками.</li>
+    </ol>
+
+    <div class="tools">
+      <button id="bPast">Вытянуть прошлое</button>
+      <button id="bFut">Вытянуть будущее</button>
+      <button id="bBuzz">Проверить отклик</button>
+      <button id="night">Ночной режим</button>
+      <button id="reset">Сбросить</button>
+    </div>
+
+    <h2>Чего прототип не умеет</h2>
+    <div class="note">
+      Это страница в браузере. <b>Отклик</b> здесь — приближение: в iPhone он берётся из переключателя Safari (с iOS 17.4); в самом приложении будет настоящий системный «тик», и он тоньше. Если отклика не чувствуете — рамка телефона всё равно вспыхивает там, где он будет. Перелистывание — приближение: настоящий загиб листа под пальцем остаётся за приложением. Ничего не сохраняется в папку; набранное пропадает при обновлении страницы. Календарь и карта — заглушки.
+    </div>
+  </aside>
+</div>
+<label class="hapsw" id="hapLbl"><input type="checkbox" switch id="hapSw"></label>
+<div id="toast" role="status"></div>
+
+<script>
+(function(){
+  "use strict";
+  var MONTHS=["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+  var MONTHN=["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
+  var WD=["воскресенье","понедельник","вторник","среда","четверг","пятница","суббота"];
+  var WDS=["вс","пн","вт","ср","чт","пт","сб"];
+  var DCOL=["var(--d7)","var(--d1)","var(--d2)","var(--d3)","var(--d4)","var(--d5)","var(--d6)"];
+  var THRESH=70, EDGE=28, PAST_N=45, FUT_N=21;
+  var RM=window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+  function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+  function parse(s){var p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2]);}
+  function shift(s,n){var d=parse(s);d.setDate(d.getDate()+n);return iso(d);}
+  function todayISO(){var n=new Date();if(n.getHours()<4)n.setDate(n.getDate()-1);return iso(n);}
+  var TODAY=todayISO();
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];});}
+  var $=function(i){return document.getElementById(i);};
+
+  /* ---------- пример данных ---------- */
+  var TITLES=["Длинный день","Дождь и коробки","Тихий вторник","","Письма из кладовки","Поезд в 7:40","","Первый снег","День рождения Ирины","Пустая голова, полный стол","","Дорога домой"];
+  var TASKS=["Позвонить в поликлинику","Дописать вторую главу","Купить хлеб и молоко","Отвезти документы нотариусу","Обед с Ириной","Разобрать коробки","Оплатить счета","Прогулка до реки","Ответить на письма","Постирать и погладить"];
+  var TEXTS=["Вышел из метро без зонта ровно в тот момент, когда начался дождь. Почему-то это меня развеселило.","Нашёл в коробке старые письма и полвечера читал.","Весь день хотелось сесть за вторую главу, сел только вечером.","Ничего особенного. Чай, окно, радио."];
+  var DAYS={};
+  function build(){
+    DAYS={};
+    for(var n=-PAST_N;n<=FUT_N;n++){
+      var k=shift(TODAY,n),h=Math.abs((n+100)*37+11),D={tasks:[],title:"",text:""};
+      if(n<0){
+        var cnt=h%4;
+        for(var i=0;i<cnt;i++)D.tasks.push({t:(8+i*3+(h%2))+":"+(i%2?"30":"00"),x:TASKS[(h+i*3)%TASKS.length],done:true});
+        D.title=TITLES[h%TITLES.length];
+        if(D.title||h%3)D.text=(h%2?"21:"+(10+h%40)+" ":"08:"+(10+h%40)+" ")+TEXTS[h%TEXTS.length];
+      }else if(n===0){
+        D.tasks=[{t:"07:00",x:"Проснуться в хорошем настроении",done:true},{t:"11:30",x:"Позвонить в поликлинику, записаться к врачу",done:false},
+          {t:"15:00",x:"Дописать вторую главу",done:false},{t:"20:00",x:"Купить хлеб, молоко и что-нибудь к чаю",done:false}];
+      }else if(n===1){D.tasks=[{t:"11:30",x:"Врач",done:false},{t:"",x:"Забрать посылку",done:false}];}
+      else if(n===3){D.tasks=[{t:"19:00",x:"Ужин у Ирины",done:false}];}
+      else if(n===8){D.tasks=[{t:"09:00",x:"Сдать вторую главу",done:false}];}
+      DAYS[k]=D;
+    }
+  }
+  build();
+  function day(k){return DAYS[k]||(DAYS[k]={tasks:[],title:"",text:""});}
+  var S={date:TODAY,idx:0,file:false,calMonth:TODAY.slice(0,8)+"01"};
+
+  /* ---------- отклик ---------- */
+  var hapOK=!!(navigator.vibrate), hapTimer=0;
+  $("hapTxt").textContent=hapOK?"отклик: телефон вибрирует (Android)":"отклик: в этом браузере виден только вспышкой рамки (на iPhone — через переключатель Safari, если версия 17.4+)";
+  var KIND={tick:["переключение раздела",10],armed:["порог картотеки",22],open:["картотека открылась",[14,45,14]],page:["лист перелистнулся",12]};
+  function buzz(kind){
+    var k=KIND[kind]||KIND.tick;
+    $("phone").classList.add("buzz");$("hap").classList.add("on");$("hapTxt").textContent="отклик: "+k[0];
+    clearTimeout(hapTimer);hapTimer=setTimeout(function(){$("phone").classList.remove("buzz");$("hap").classList.remove("on");},170);
+    try{if(navigator.vibrate){navigator.vibrate(k[1]);return;}}catch(e){}
+    try{$("hapLbl").click();}catch(e){}
+  }
+  function toast(m){var t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(t._x);t._x=setTimeout(function(){t.classList.remove("on");},1900);}
+
+  /* ---------- День ---------- */
+  function dayTitle(k){
+    var n=Math.round((parse(k)-parse(TODAY))/86400000);
+    return {"-2":"Позавчера","-1":"Вчера","0":"Сегодня","1":"Завтра","2":"Послезавтра"}[String(n)]||WD[parse(k).getDay()].replace(/^./,function(c){return c.toUpperCase();});
+  }
+  function fmtDiary(t){
+    return String(t||"").split("\n").map(function(line){
+      var m=line.match(/^(\d{1,2}:\d{2})\s?([\s\S]*)$/);
+      return m?'<span class="ts">'+m[1]+'</span>&nbsp;'+esc(m[2]):esc(line);}).join("\n");
+  }
+  function renderHeader(){
+    var dayOn=S.idx===0&&!S.file;
+    $("sname").textContent=S.idx===1?"Календарь":S.idx===2?"Карта":(S.file?"Картотека":dayTitle(S.date));
+    $("subbar").classList.toggle("none",!dayOn);
+    if(dayOn){var d=parse(S.date),w=d.getDay();
+      $("sw").textContent=WD[w];$("sw").style.color=DCOL[w];
+      $("sd").textContent=d.getDate()+" "+MONTHS[d.getMonth()]+" "+d.getFullYear()+" г.";}
+    var wdi=parse(S.date).getDay();
+    $("phone").style.setProperty("--dayTint","var(--w"+(wdi===0?7:wdi)+")");
+    document.querySelectorAll("#pager button").forEach(function(b){b.classList.toggle("on",+b.dataset.i===S.idx);});
+  }
+  function renderDay(){
+    var D=day(S.date),past=S.date<TODAY,h='<div class="'+(past?"past":"")+'"><div class="sec">План</div>';
+    if(!D.tasks.length)h+='<div class="empty">На этот день ничего не запланировано.</div>';
+    else{h+='<ul class="tasks">';D.tasks.forEach(function(t,i){
+      h+='<li class="task'+(t.done?" done":"")+'" data-i="'+i+'"><span class="tm">'+(t.t||"--:--")+'</span><span class="tx">'+esc(t.x)+'</span></li>';});h+='</ul>';}
+    h+='<div class="diarysec"><div class="sec">Дневник</div><input class="dtitle" id="dTitle" placeholder="Заголовок дня" value="'+esc(D.title)+'">'+
+      '<div class="dtext" id="dText" contenteditable="true" spellcheck="false" data-ph="Что было в этот день…">'+fmtDiary(D.text)+'</div></div></div>';
+    $("dayScroll").innerHTML=h;$("dayScroll").scrollTop=0;
+  }
+  $("dayScroll").addEventListener("click",function(e){
+    var li=e.target.closest("li.task");if(!li||S.date<TODAY)return;
+    var t=day(S.date).tasks[+li.dataset.i];t.done=!t.done;li.classList.toggle("done",t.done);});
+  $("dayScroll").addEventListener("input",function(e){
+    var D=day(S.date);if(e.target.id==="dTitle")D.title=e.target.value;else if(e.target.id==="dText")D.text=e.target.innerText.replace(/ /g," ");});
+
+  /* ---------- карточки ---------- */
+  function lineOf(D){
+    if(D.title)return D.title;
+    var t=(D.text||"").replace(/^\d{1,2}:\d{2}\s?/,"");if(t)return t;
+    return D.tasks[0]?D.tasks[0].x:"";
+  }
+  function cardHTML(k){
+    var d=parse(k),D=day(k),w=d.getDay(),fut=k>TODAY,line=lineOf(D),n=D.tasks.length;
+    var cls="card"+(k===TODAY?" today":fut?" future":"")+(k===S.date?" cur":"");
+    return '<button class="'+cls+'" data-k="'+k+'" style="--cc:'+DCOL[w]+'"><span class="cd"><b>'+d.getDate()+'</b><i>'+WDS[w]+'</i></span>'+
+      '<span class="ct">'+(line?esc(line):(fut?"пусто — впишите дела":"—"))+'</span><span class="cm">'+(n?n+" "+(n===1?"дело":n<5?"дела":"дел"):"")+'</span></button>';
+  }
+  function rvCards(dir){ // выглядывающие карточки: 3 ближайших
+    var a=[];for(var i=1;i<=3;i++)a.push(cardHTML(shift(TODAY,dir*i)));
+    return dir<0?a.reverse().join(""):a.join("");
+  }
+  function renderReveals(){
+    $("rvTop").innerHTML=rvCards(-1);
+    $("rvBot").innerHTML=rvCards(1);
+  }
+  function renderFile(){
+    var h='<div class="flist">',cm="";
+    for(var n=-PAST_N;n<=FUT_N;n++){
+      var k=shift(TODAY,n),m=k.slice(0,7);
+      if(m!==cm){cm=m;var d=parse(k);h+='<div class="fmonth">'+MONTHN[d.getMonth()]+" "+d.getFullYear()+'</div>';}
+      h+=cardHTML(k);
+    }
+    $("flist").innerHTML=h+'</div>';
+  }
+  $("fq").addEventListener("input",function(){
+    var q=this.value.trim().toLowerCase(),cards=document.querySelectorAll("#flist .card");
+    cards.forEach(function(c){c.hidden=!!q&&c.textContent.toLowerCase().indexOf(q)<0&&c.dataset.k!==TODAY;});
+    document.querySelectorAll("#flist .fmonth").forEach(function(m){m.hidden=!!q;});
+  });
+  function openFile(dir){
+    renderFile();$("fq").value="";S.file=true;
+    var f=$("file");f.classList.add("open");
+    var t=f.querySelector(".card.today"),sh=f.querySelector(".fsearch").offsetHeight;
+    // прошлое — сегодняшняя карточка внизу экрана; будущее — наверху
+    f.scrollTop=dir>0?Math.max(0,t.offsetTop+t.offsetHeight-f.clientHeight+24):Math.max(0,t.offsetTop-sh-8);
+    if(!RM&&f.animate)f.animate([{opacity:0,transform:"translateY("+(dir>0?-24:24)+"px)"},{opacity:1,transform:"none"}],{duration:240,easing:"ease-out"});
+    renderHeader();
+  }
+  function closeFile(){S.file=false;$("file").classList.remove("open");renderHeader();}
+  $("fclose").addEventListener("click",closeFile);
+
+  // одна страница: картотека загибается вокруг левого края, под ней день
+  function pickCard(k){
+    S.date=k;renderDay();
+    var f=$("file");
+    if(RM||!f.animate){closeFile();return;}
+    var sh=$("curlShade");
+    sh.animate([{opacity:1},{opacity:0}],{duration:420,easing:"ease-out"});
+    var a=f.animate([{transform:"rotateY(0deg)",opacity:1},{transform:"rotateY(-62deg)",opacity:1,offset:.7},{transform:"rotateY(-96deg)",opacity:0}],
+      {duration:420,easing:"cubic-bezier(.45,.05,.55,.95)"});
+    setTimeout(function(){buzz("page");},300);
+    a.onfinish=function(){closeFile();};
+    S.file=false;renderHeader();
+  }
+  $("flist").addEventListener("click",function(e){var c=e.target.closest(".card");if(c)pickCard(c.dataset.k);});
+
+  /* ---------- Календарь ---------- */
+  function renderCal(){
+    var d=parse(S.calMonth),y=d.getFullYear(),m=d.getMonth(),start=(new Date(y,m,1).getDay()+6)%7,dim=new Date(y,m+1,0).getDate();
+    var h='<div class="monthnav"><button data-mv="-1" aria-label="Предыдущий месяц">‹</button><span>'+MONTHN[m]+" "+y+
+      '</span><button data-mv="1" aria-label="Следующий месяц">›</button></div><div class="grid">';
+    ["пн","вт","ср","чт","пт","сб","вс"].forEach(function(w,i){h+='<div class="wd" style="color:'+DCOL[(i+1)%7]+'">'+w+'</div>';});
+    for(var i=0;i<start;i++)h+='<div class="cell out"></div>';
+    for(var n=1;n<=dim;n++){
+      var k=y+"-"+String(m+1).padStart(2,"0")+"-"+String(n).padStart(2,"0"),D=DAYS[k];
+      h+='<button class="cell'+(k===TODAY?" today":"")+'" data-pick="'+k+'">'+n+((D&&(D.tasks.length||D.title))?'<span class="dot"></span>':'')+'</button>';}
+    $("paneCal").innerHTML=h+'</div><p class="note-s">Касание даты открывает этот день. Смена месяца — стрелками; в приложении она станет вертикальной (в прототипе не сделано).</p>';
+  }
+  $("paneCal").addEventListener("click",function(e){
+    var el;
+    if((el=e.target.closest("[data-mv]"))){var d=parse(S.calMonth);d.setMonth(d.getMonth()+ +el.dataset.mv);S.calMonth=iso(d);renderCal();return;}
+    if((el=e.target.closest("[data-pick]"))){goPane(0);S.date=el.dataset.pick;closeFile();renderDay();renderHeader();}
+  });
+
+  /* ---------- разделы и жесты ---------- */
+  var strip=$("strip"),vp=$("viewport");
+  function VW(){return vp.clientWidth;}
+  function setStrip(dx,anim){
+    strip.style.transition=anim&&!RM?"transform .3s cubic-bezier(.22,.61,.36,1)":"none";
+    strip.style.transform="translateX("+(-S.idx*VW()+dx)+"px)";}
+  function goPane(i,silent){
+    var ch=i!==S.idx;S.idx=Math.max(0,Math.min(2,i));setStrip(0,true);renderHeader();
+    if(ch&&!silent)buzz("tick");}
+  function setPull(off,anim){
+    var p=$("pull");p.style.transition=anim&&!RM?"transform .28s cubic-bezier(.22,.61,.36,1)":"none";
+    p.style.transform=off?"translateY("+off+"px)":"";}
+  function showLbl(dir,arm){
+    var l=$("pullLbl");l.style.opacity=1;l.style.top=dir>0?"8px":"auto";l.style.bottom=dir>0?"auto":"8px";
+    l.className="pulllbl"+(arm?" armed":"");
+    l.textContent=arm?"Отпустите — откроется картотека":(dir>0?"Прошлое · тяните ещё":"Будущее · тяните ещё");
+  }
+  function atTop(){return $("dayScroll").scrollTop<=0;}
+  function atBot(){var s=$("dayScroll");return s.scrollTop+s.clientHeight>=s.scrollHeight-1;}
+
+  var G=null,block=false;
+  function gstart(x,y,t){
+    var r=vp.getBoundingClientRect();
+    G={x0:x,y0:y,lx:x,ly:y,axis:null,dx:0,pd:0,py:0,off:0,armed:false,t0:Date.now(),relx:x-r.left,moved:false};
+  }
+  function gmove(x,y,ev){
+    if(!G)return;
+    var dx=x-G.x0,dy=y-G.y0;
+    if(!G.axis){
+      if(Math.abs(dx)<5&&Math.abs(dy)<5)return;
+      G.moved=true;
+      G.axis=Math.abs(dx)>Math.abs(dy)*1.2?"h":"v";
+      if(G.axis==="h"&&S.idx===2&&G.relx>EDGE)G.axis="x"; // карта: палец двигает карту
+    }
+    if(G.axis==="h"){
+      if(ev.cancelable)ev.preventDefault();
+      var d=dx;if((S.idx===0&&d>0)||(S.idx===2&&d<0))d*=.3;
+      G.dx=d;setStrip(d,false);return;}
+    if(G.axis==="v"&&S.idx===0&&!S.file){
+      var step=y-G.ly;
+      if(!G.pd){
+        if(step>0&&atTop()){G.pd=1;G.py=G.ly;}
+        else if(step<0&&atBot()){G.pd=-1;G.py=G.ly;}
+      }
+      if(G.pd){
+        var raw=(y-G.py)*G.pd;
+        if(raw<=0){G.pd=0;G.off=0;setPull(0,false);}
+        else{
+          if(ev.cancelable)ev.preventDefault();
+          G.off=Math.min(raw*.55,170);setPull(G.off*G.pd,false);
+          var arm=G.off>=THRESH;
+          if(arm&&!G.armed){G.armed=true;buzz("armed");}
+          else if(!arm&&G.armed)G.armed=false;
+          showLbl(G.pd,arm);
+        }
+      }
+    }
+    G.lx=x;G.ly=y;
+  }
+  function gend(){
+    if(!G)return;var g=G;G=null;
+    if(g.moved){block=true;setTimeout(function(){block=false;},80);}
+    if(g.axis==="h"){
+      var fast=Math.abs(g.dx)/(Date.now()-g.t0+1)>.5,dir=0;
+      if(Math.abs(g.dx)>VW()*.2||(fast&&Math.abs(g.dx)>30))dir=g.dx<0?1:-1;
+      if((S.idx===0&&dir<0)||(S.idx===2&&dir>0))dir=0;
+      if(dir)goPane(S.idx+dir);else setStrip(0,true);
+      return;}
+    if(g.pd){
+      $("pullLbl").style.opacity=0;
+      if(g.armed)commitPull(g.pd);else setPull(0,true);
+    }
+  }
+  function commitPull(dir){
+    buzz("open");openFile(dir);
+    setTimeout(function(){setPull(0,false);renderReveals();},260);
+  }
+  vp.addEventListener("touchstart",function(e){gstart(e.touches[0].clientX,e.touches[0].clientY,e.target);},{passive:true});
+  vp.addEventListener("touchmove",function(e){gmove(e.touches[0].clientX,e.touches[0].clientY,e);},{passive:false});
+  vp.addEventListener("touchend",gend);
+  vp.addEventListener("touchcancel",gend);
+  // мышь — для проверки на компьютере
+  var md=false;
+  vp.addEventListener("mousedown",function(e){
+    if(e.target.closest('input,[contenteditable="true"]'))return;
+    md=true;gstart(e.clientX,e.clientY,e.target);});
+  window.addEventListener("mousemove",function(e){if(md)gmove(e.clientX,e.clientY,e);});
+  window.addEventListener("mouseup",function(){if(md){md=false;gend();}});
+  vp.addEventListener("click",function(e){if(block){e.stopPropagation();e.preventDefault();}},true);
+  // колесо мыши: на краю дня «потяни» заменяется накопленной прокруткой
+  var wheelAcc=0,wheelT=0;
+  $("dayScroll").addEventListener("wheel",function(e){
+    if(S.file)return;
+    var up=e.deltaY<0&&atTop(),dn=e.deltaY>0&&atBot();
+    if(!up&&!dn){wheelAcc=0;return;}
+    wheelAcc+=Math.abs(e.deltaY);clearTimeout(wheelT);wheelT=setTimeout(function(){wheelAcc=0;},400);
+    if(wheelAcc>260){wheelAcc=0;buzz("armed");commitPull(up?1:-1);}
+  },{passive:true});
+
+  $("pager").addEventListener("click",function(e){var b=e.target.closest("button");if(b)goPane(+b.dataset.i);});
+  document.addEventListener("keydown",function(e){
+    if(e.target.isContentEditable||/INPUT|TEXTAREA/.test(e.target.tagName))return;
+    if(e.key==="ArrowLeft")goPane(S.idx-1);else if(e.key==="ArrowRight")goPane(S.idx+1);});
+  window.addEventListener("resize",function(){setStrip(0,false);});
+
+  $("gear").addEventListener("click",function(){toast("Настройки в прототипе не сделаны");});
+  $("bPast").addEventListener("click",function(){goPane(0,true);if(!S.file){buzz("armed");commitPull(1);}});
+  $("bFut").addEventListener("click",function(){goPane(0,true);if(!S.file){buzz("armed");commitPull(-1);}});
+  $("bBuzz").addEventListener("click",function(){buzz("open");});
+  $("night").addEventListener("click",function(){
+    var n=document.documentElement.classList.toggle("night");this.textContent=n?"Дневной режим":"Ночной режим";});
+  $("reset").addEventListener("click",function(){build();S.date=TODAY;S.idx=0;closeFile();setStrip(0,false);renderDay();renderCal();renderReveals();renderHeader();toast("Прототип сброшен");});
+
+  renderDay();renderCal();renderReveals();renderHeader();setStrip(0,false);
+  window.__proto={S:S,openFile:openFile,pickCard:pickCard};
+})();
+</script>
