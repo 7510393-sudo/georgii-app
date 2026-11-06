@@ -23,6 +23,14 @@
   --d1:#7FA6E0; --d2:#6FBF95; --d3:#D4AE55; --d4:#A88FD6; --d5:#E08B84; --d6:#6FC0D6; --d7:#E0A06A;
   --w1:#182130; --w2:#15231B; --w3:#252015; --w4:#211B2C; --w5:#2A1B1A; --w6:#132329; --w7:#291F15;
 }
+@media (prefers-color-scheme:dark){:root:not(.day){
+  --stage:#0D1116; --plan-bg:#14191F; --diary-bg:#1B1812; --paper:#1F1B14;
+  --ink:#E8EBEE; --ink-soft:#A3ACB7; --ink-faint:#69717C;
+  --rule:#2A3037; --rule-soft:#222830; --accent:#8FB3E8; --chrome:#191F26;
+  --shadow:0 2px 4px rgba(0,0,0,.4),0 20px 50px -28px rgba(0,0,0,.9);
+  --d1:#7FA6E0; --d2:#6FBF95; --d3:#D4AE55; --d4:#A88FD6; --d5:#E08B84; --d6:#6FC0D6; --d7:#E0A06A;
+  --w1:#182130; --w2:#15231B; --w3:#252015; --w4:#211B2C; --w5:#2A1B1A; --w6:#132329; --w7:#291F15;
+}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{background:var(--stage);color:var(--ink);margin:0;
   font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.5}
@@ -529,7 +537,8 @@ li.task.done .tx,li.task.done .tm{color:var(--ink-faint)}
   $("bFut").addEventListener("click",function(){goPane(0,true);if(!S.file){buzz("armed");commitPull(-1);}});
   $("bBuzz").addEventListener("click",function(){buzz("open");});
   $("night").addEventListener("click",function(){
-    var n=document.documentElement.classList.toggle("night");this.textContent=n?"Дневной режим":"Ночной режим";});
+    var r=document.documentElement,dark=r.classList.contains("night")||(!r.classList.contains("day")&&window.matchMedia("(prefers-color-scheme:dark)").matches);
+    r.classList.toggle("night",!dark);r.classList.toggle("day",dark);this.textContent=dark?"Ночной режим":"Дневной режим";});
   $("reset").addEventListener("click",function(){build();S.date=TODAY;S.idx=0;closeFile();setStrip(0,false);renderDay();renderCal();renderReveals();renderHeader();toast("Прототип сброшен");});
 
   renderDay();renderCal();renderReveals();renderHeader();setStrip(0,false);
