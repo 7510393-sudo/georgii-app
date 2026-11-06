@@ -244,7 +244,7 @@ struct SearchView: View {
             LazyVStack(spacing: -Search.overlap) {
                 ForEach(items) { item in
                     SearchCard(stamp: Search.stamp(item.day.date), past: Ru.isPast(item.day.date),
-                               seed: PageTexture.seed(item.day.date) &+ (Search.deep ? (Int(item.id) ?? 0) * 7 : 0)) {
+                               seed: PageTexture.seed(item.day.date) &+ (Search.deep ? (Int(item.id) ?? 0) * 7 : 0), tight: ahead) {
                         if ahead { futureRow(item.day, sample: sample) } else { row(item.day) }
                     }
                 }
@@ -315,10 +315,10 @@ struct SearchView: View {
             shell.tab = .plan
             shell.screen = .today
         } label: {
-            VStack(alignment: .leading, spacing: Search.lineGap) {
+            VStack(alignment: .leading, spacing: Search.futureGap) {
                 if tasks.isEmpty {
                     Text(T("Пусто — можно вписать дела", "Empty — room to plan"))
-                        .font(Look.sans(13))
+                        .font(Look.sans(12))
                         .foregroundStyle(Look.inkFaint)
                 }
                 ForEach(shown) { task in
@@ -328,12 +328,12 @@ struct SearchView: View {
                                 Text(sample).hidden()
                                 Text(task.time ?? "")
                             }
-                            .font(Look.sans(13).monospacedDigit())
+                            .font(Look.sans(12).monospacedDigit())
                             .lineLimit(1)
                             .fixedSize()
                         }
                         Text(task.text)
-                            .font(Look.sans(13))
+                            .font(Look.sans(12))
                             .lineLimit(1)
                             .truncationMode(.tail)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -351,7 +351,7 @@ struct SearchView: View {
                     Text(T("ещё \(tasks.count - 4)", "\(tasks.count - 4) more"))
                         .font(Look.sans(11))
                         .foregroundStyle(Look.inkFaint)
-                        .offset(y: Search.tabHeight + 2)
+                        .offset(y: Search.tabHeight - 2)
                 }
             }
             .padding(.horizontal, 18)
@@ -456,8 +456,10 @@ enum Search {
 
     /// Высота четырёх строк будущей карточки (P771).
     static var futureBody: CGFloat {
-        ceil(UIFont.systemFont(ofSize: 13).lineHeight) * 4 + lineGap * 3
+        ceil(UIFont.systemFont(ofSize: 12).lineHeight) * 4 + futureGap * 3
     }
+    /// Промежуток между строками будущей карточки (P774).
+    static let futureGap: CGFloat = 1
 
     /// Где стоит первая находка, пока список не листали (от верха списка).
     static let restTop: CGFloat = 4
@@ -508,6 +510,9 @@ private struct SearchCard<Content: View>: View {
     var past = true
     /// Номер дня — у каждой карточки свой износ (P723).
     var seed = 0
+    /// Будущая карточка — плотнее (P774): меньше воздуха над и под строками,
+    /// чтобы на экран входила неделя.
+    var tight = false
     @ViewBuilder let content: () -> Content
 
     var body: some View {
@@ -526,9 +531,9 @@ private struct SearchCard<Content: View>: View {
             }
             .frame(height: Search.tabHeight)
             content()
-                .padding(.top, 8)
+                .padding(.top, tight ? 4 : 8)
                 // Пустое место под карточкой — под следующую (P696).
-                .padding(.bottom, Search.overlap + 6)
+                .padding(.bottom, Search.overlap + (tight ? 2 : 6))
                 .frame(maxWidth: .infinity)
         }
         .background {
