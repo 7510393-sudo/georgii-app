@@ -218,6 +218,11 @@ struct SearchView: View {
         .padding(.bottom, -Search.underBar)
         // Второе нажатие на «Поиск» — список заново, с начала (P576).
         .id(shell.searchHome)
+        // Список открывается с низа (P770): там сегодня и ближайшие дни.
+        // Прежде он открывался сверху и прыгал к сегодняшней карточке через
+        // весь архив — в длинном архиве прыжок не доходил, и картотека
+        // стояла на самой первой карточке (замечание автора к 233).
+        .defaultScrollAnchor(.bottom)
         .scrollDismissesKeyboard(.interactively)
         .onAppear {
             // Снимок «лента поиска»: список пролистан, как у человека.
@@ -243,14 +248,21 @@ struct SearchView: View {
         // Вытянули прошлое — сегодня внизу, над ним прошлое; будущее —
         // сегодня вверху, под ним будущее (P769).
         let from = shell.fileFrom
-        let spot: CGFloat = from > 0 ? 0.8 : from < 0 ? 0.15 : 0.3
-        DispatchQueue.main.async {
-            if from != 0 { shell.fileFrom = 0 }
+        let spot: CGFloat = from > 0 ? 0.78 : from < 0 ? 0.12 : 0.3
+        let today = Vault.stamp(DayStore.today())
+        let go = {
             if calm {
-                proxy.scrollTo(Vault.stamp(DayStore.today()), anchor: UnitPoint(x: 0.5, y: spot))
+                proxy.scrollTo(today, anchor: UnitPoint(x: 0.5, y: spot))
             } else if let last = items.last {
                 proxy.scrollTo(last.id, anchor: .bottom)
             }
+        }
+        // Ещё раз, когда список уже разложен: первая прокрутка могла
+        // прийтись на прикидку высот (как у листа дня, P445).
+        DispatchQueue.main.async(execute: go)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            go()
+            if from != 0 { shell.fileFrom = 0 }
         }
     }
 
