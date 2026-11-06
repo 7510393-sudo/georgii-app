@@ -310,9 +310,11 @@ struct SearchView: View {
                     .opacity(task.done ? 0.45 : 1)
                 }
                 if tasks.count > 4 {
+                    // У правого края листа (замечание автора к P771).
                     Text(T("ещё \(tasks.count - 3)", "\(tasks.count - 3) more"))
                         .font(Look.sans(11))
                         .foregroundStyle(Look.inkFaint)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
                 }
             }
             .frame(height: Search.futureBody, alignment: .top)
