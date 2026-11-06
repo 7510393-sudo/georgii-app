@@ -1662,6 +1662,22 @@ struct DiaryEditor: UIViewRepresentable {
                     provisional = p
                     return
                 }
+                // Включили диктовку (P766): iPhone ставит временный текст
+                // или на миг выделяет место под слова за отметкой — курсор
+                // сдвигается, хотя человек никуда не уходил. Прежде отметка
+                // от этого убиралась и вставала заново только с готовой
+                // фразой, когда микрофон выключали. Пока идёт временный
+                // текст или курсор на той же строке за отметкой — ждём.
+                if !leaving, view.markedTextRange != nil {
+                    provisional = p
+                    return
+                }
+                if !leaving, sel.location >= NSMaxRange(p), NSMaxRange(sel) <= ns.length,
+                   !ns.substring(with: NSRange(location: NSMaxRange(p),
+                                               length: NSMaxRange(sel) - NSMaxRange(p))).contains("\n") {
+                    provisional = p
+                    return
+                }
                 // Ушли, ничего не написав, — убрать.
                 placing = true
                 view.textStorage.replaceCharacters(in: p, with: "")
