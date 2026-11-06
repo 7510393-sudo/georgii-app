@@ -408,17 +408,46 @@ struct DayPage: View {
                      strip: AnyView(AttachBar(live: live)),
                      onPull: { [shell, store, archive] dir in
                          // Тянули за край открытого дня — картотека (P769).
-                         guard shell.screen == .today, shell.movingTask == nil else { return }
+                         guard shell.screen == .today, shell.movingTask == nil else {
+                             withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) { shell.filePull = 0 }
+                             return
+                         }
                          hideKeyboard()
                          store.prune()
                          // Сторона плашки меняется, пока она за краем, и
                          // только потом плашка едет (P771): иначе будущее
                          // приехало бы сверху.
-                         shell.fileFrom = dir
-                         shell.searchHome += 1
-                         DispatchQueue.main.async { shell.screen = .search }
+                         // Картотека уже наполовину на экране — доезжает
+                         // отсюда (P772); день встаёт на место под ней.
+                         shell.screen = .search
+                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+                             var still = Transaction()
+                             still.disablesAnimations = true
+                             withTransaction(still) { shell.filePull = 0 }
+                         }
                          archive.reloadSoon()
                          DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { store.save() }
+                     },
+                     onPullMove: { [shell] amount, dir in
+                         guard shell.screen == .today, shell.movingTask == nil else { return }
+                         if dir == 0 {
+                             // Не дотянули или вернули палец — мягко назад.
+                             withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) {
+                                 shell.filePull = 0
+                             }
+                             return
+                         }
+                         var still = Transaction()
+                         still.disablesAnimations = true
+                         withTransaction(still) {
+                             // Начало тяги: сторона плашки и стопка готовятся,
+                             // пока плашка за краем.
+                             if shell.filePull == 0 || shell.fileFrom != dir {
+                                 shell.fileFrom = dir
+                                 shell.searchHome += 1
+                             }
+                             shell.filePull = amount * CGFloat(dir)
+                         }
                      }) {
                 PlanView()
             } diary: {

@@ -696,7 +696,10 @@ struct RootView: View {
                 BoardEdge(fromTop: edge == .top)
                     .offset(y: edge == .top ? BoardEdge.depth : -BoardEdge.depth)
             }
-            .offset(y: down ? 0 : away)
+            // Пока картотеку тянут (P772), она едет за пальцем, а день — вместе
+            // с ней: картотека прилеплена к его краю.
+            .offset(y: down ? (which == .today ? shell.filePull : 0)
+                            : away + (which == .search ? shell.filePull : 0))
             // Новая плашка ложится поверх прежних (P501).
             .zIndex(down ? Double((shell.stack.firstIndex(of: which) ?? 0) + 1) : 0)
             // Ловит касания только верхняя: под ней другая плашка или
