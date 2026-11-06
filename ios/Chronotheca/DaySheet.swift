@@ -36,6 +36,9 @@ struct DaySheet<Plan: View, Diary: View>: View {
     /// Полоска вложений — конец самой страницы, под погодой, в самом низу
     /// (P502): едет со страницей, а не стоит у нижней строки.
     var strip: AnyView? = nil
+    /// Тянут страницу дальше её края (P769): 1 — вниз за верх, -1 — вверх
+    /// за низ. Только у открытого дня; у соседних нет.
+    var onPull: ((Int) -> Void)? = nil
 
     @ViewBuilder let plan: () -> Plan
     @ViewBuilder let diary: () -> Diary
@@ -46,6 +49,8 @@ struct DaySheet<Plan: View, Diary: View>: View {
     /// Сама прокрутка листа — чтобы, когда клавиатура ушла, плавно опустить
     /// страницу на место (P457).
     @State private var scroller = SheetScroller()
+    /// Тяга за край листа — к картотеке (P769).
+    @StateObject private var pull = EdgePull()
 
     private static var top: String { "страница-верх" }
     private static var diaryTop: String { "страница-дневник" }
@@ -113,7 +118,7 @@ struct DaySheet<Plan: View, Diary: View>: View {
                     // пальцем на пару сантиметров и, когда клавиатура уходила,
                     // прыгала обратно (запись экрана автора). Это и был
                     // «скачок».
-                    .background(NoBounce(box: scroller))
+                    .background(NoBounce(box: scroller, pull: onPull == nil ? nil : pull))
                     // Где лист и какой он высоты без места под клавиатуру —
                     // по ним место отпускается, когда клавиатура ушла (P446).
                     .background(GeometryReader { g in
@@ -199,6 +204,19 @@ struct DaySheet<Plan: View, Diary: View>: View {
                 if needed < hold { hold = needed }
             }
             .onChange(of: date) { _, _ in hold = 0 }
+            // Подсказка у края, за который тянут: прошлое — сверху, будущее
+            // — снизу (P769). Касания проходят насквозь.
+            .overlay(alignment: pull.dir < 0 ? .bottom : .top) {
+                if onPull != nil, pull.dir != 0, pull.amount > 6 {
+                    PullHint(past: pull.dir > 0, armed: pull.amount >= EdgePull.threshold)
+                        .padding(pull.dir > 0 ? .top : .bottom, pull.dir > 0 ? 10 : Self.stripRoom + 12)
+                        .opacity(Double(min(1, pull.amount / 40)))
+                        .allowsHitTesting(false)
+                }
+            }
+            // Пока пишут, лист за край не тянется: палец занят текстом.
+            .onChange(of: keyboard, initial: true) { _, now in pull.enabled = now == 0 }
+            .onAppear { pull.commit = onPull }
             .onPreferenceChange(DiaryShare.self) { top in
                 onDiary?(top < (outer.size.height - Self.stripRoom) / 2)
             }
@@ -365,19 +383,23 @@ final class SheetScroller {
 /// запоминает её (P457).
 private struct NoBounce: UIViewRepresentable {
     let box: SheetScroller
+    var pull: EdgePull? = nil
 
     func makeUIView(context: Context) -> Finder {
         let finder = Finder()
         finder.box = box
+        finder.pull = pull
         return finder
     }
     func updateUIView(_ view: Finder, context: Context) {
         view.box = box
+        view.pull = pull
         view.apply()
     }
 
     final class Finder: UIView {
         var box: SheetScroller?
+        var pull: EdgePull?
 
         override func didMoveToWindow() {
             super.didMoveToWindow()
@@ -393,6 +415,7 @@ private struct NoBounce: UIViewRepresentable {
                     if let scroll = here as? UIScrollView {
                         scroll.bounces = false
                         self?.box?.view = scroll
+                        self?.pull?.attach(to: scroll)
                         return
                     }
                     node = here.superview
@@ -413,5 +436,111 @@ private struct DiaryTopMark: View {
                 .onChange(of: top) { _, now in PlanZones.diaryTop = now }
                 .onDisappear { PlanZones.diaryTop = nil }
         }
+    }
+}
+
+/// Тяга листа дальше его края (P769): страница в самом верху, а палец тянет
+/// ещё вниз — или в самом низу и тянет вверх. Лист не едет (оттяжки нет,
+/// P445), растёт только подсказка; на пороге — толчок в руку, отпустили за
+/// порогом — открывается картотека.
+///
+/// Свой распознаватель рядом с прокруткой листа: прокрутке он не мешает и
+/// касаний не забирает. Вбок не срабатывает — там перелистывание.
+final class EdgePull: NSObject, ObservableObject, UIGestureRecognizerDelegate {
+    /// Сколько точек протянуть за край, чтобы открыть картотеку.
+    static let threshold: CGFloat = 90
+
+    @Published private(set) var amount: CGFloat = 0
+    /// 1 — тянут вниз за верх, -1 — вверх за низ, 0 — не тянут.
+    @Published private(set) var dir = 0
+
+    var enabled = true
+    var commit: ((Int) -> Void)?
+
+    private weak var scroll: UIScrollView?
+    private weak var recognizer: UIPanGestureRecognizer?
+    /// Где был палец, когда лист упёрся в край.
+    private var anchor: CGFloat?
+    private var last: CGFloat = 0
+    private var armed = false
+
+    func attach(to view: UIScrollView) {
+        guard scroll !== view else { return }
+        if let old = recognizer { old.view?.removeGestureRecognizer(old) }
+        let pan = UIPanGestureRecognizer(target: self, action: #selector(moved(_:)))
+        pan.delegate = self
+        pan.cancelsTouchesInView = false
+        pan.delaysTouchesBegan = false
+        pan.delaysTouchesEnded = false
+        view.addGestureRecognizer(pan)
+        scroll = view
+        recognizer = pan
+    }
+
+    func gestureRecognizer(_ g: UIGestureRecognizer,
+                           shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool { true }
+
+    @objc private func moved(_ pan: UIPanGestureRecognizer) {
+        guard let view = scroll else { return }
+        let t = pan.translation(in: view)
+        switch pan.state {
+        case .began:
+            reset()
+            last = t.y
+        case .changed:
+            guard enabled else { reset(); return }
+            let inset = view.adjustedContentInset
+            let top = view.contentOffset.y <= -inset.top + 0.5
+            let bottom = view.contentOffset.y >= view.contentSize.height - view.bounds.height + inset.bottom - 0.5
+            if anchor == nil {
+                // Вбок — это перелистывание, не тяга.
+                if abs(t.x) > abs(t.y) { last = t.y; return }
+                if top && t.y > last {
+                    anchor = last; dir = 1
+                } else if bottom && t.y < last {
+                    anchor = last; dir = -1
+                }
+            }
+            last = t.y
+            guard let start = anchor else { return }
+            let now = (t.y - start) * CGFloat(dir)
+            if now <= 0 { reset(); return }
+            amount = now
+            let over = now >= Self.threshold
+            if over && !armed { Feel.light() }
+            armed = over
+        case .ended:
+            let go = armed && enabled ? dir : 0
+            reset()
+            if go != 0 { commit?(go) }
+        default:
+            reset()
+        }
+    }
+
+    private func reset() {
+        anchor = nil
+        armed = false
+        if amount != 0 { amount = 0 }
+        if dir != 0 { dir = 0 }
+    }
+}
+
+/// Подсказка у края листа, пока его тянут к картотеке (P769).
+private struct PullHint: View {
+    let past: Bool
+    let armed: Bool
+
+    var body: some View {
+        Text(armed ? T("Отпустите — картотека", "Let go — card file")
+                   : past ? T("Прошлое — тяните ещё", "Past — keep pulling")
+                          : T("Будущее — тяните ещё", "Future — keep pulling"))
+            .font(Look.sans(12.5, weight: armed ? .semibold : .regular))
+            .tracking(0.4)
+            .foregroundStyle(armed ? Look.accent : Look.inkSoft)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 5)
+            .background(Look.chrome.opacity(0.92), in: Capsule())
+            .overlay(Capsule().stroke(armed ? Look.accent : Look.inkFaint.opacity(0.5), lineWidth: 0.8))
     }
 }

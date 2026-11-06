@@ -240,9 +240,14 @@ struct SearchView: View {
     /// внизу, старые над ней (P768).
     private func home(_ proxy: ScrollViewProxy, _ items: [Search.Item]) {
         let calm = query.trimmingCharacters(in: .whitespaces).isEmpty && shell.find == .all
+        // Вытянули прошлое — сегодня внизу, над ним прошлое; будущее —
+        // сегодня вверху, под ним будущее (P769).
+        let from = shell.fileFrom
+        let spot: CGFloat = from > 0 ? 0.8 : from < 0 ? 0.15 : 0.3
         DispatchQueue.main.async {
+            if from != 0 { shell.fileFrom = 0 }
             if calm {
-                proxy.scrollTo(Vault.stamp(DayStore.today()), anchor: UnitPoint(x: 0.5, y: 0.3))
+                proxy.scrollTo(Vault.stamp(DayStore.today()), anchor: UnitPoint(x: 0.5, y: spot))
             } else if let last = items.last {
                 proxy.scrollTo(last.id, anchor: .bottom)
             }

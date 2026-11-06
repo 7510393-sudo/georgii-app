@@ -405,7 +405,18 @@ struct DayPage: View {
                      land: shell.landing, landDiary: shell.landOnDiary,
                      onDiary: { [shell] in shell.lookingAtDiary = $0 },
                      diaryMark: AnyView(cloud),
-                     strip: AnyView(AttachBar(live: live))) {
+                     strip: AnyView(AttachBar(live: live)),
+                     onPull: { [shell, store, archive] dir in
+                         // Тянули за край открытого дня — картотека (P769).
+                         guard shell.screen == .today, shell.movingTask == nil else { return }
+                         hideKeyboard()
+                         store.prune()
+                         shell.fileFrom = dir
+                         shell.searchHome += 1
+                         shell.screen = .search
+                         archive.reloadSoon()
+                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { store.save() }
+                     }) {
                 PlanView()
             } diary: {
                 DiaryView()
