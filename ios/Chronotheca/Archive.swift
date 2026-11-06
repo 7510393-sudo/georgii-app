@@ -49,11 +49,6 @@ final class Archive: ObservableObject {
             inCloud || photos > 0 || !tasks.isEmpty || !title.isEmpty || !text.isEmpty
         }
 
-        /// В дне есть только дела: ни заголовка, ни текста, ни снимков.
-        var isPlanOnly: Bool {
-            !inCloud && photos == 0 && title.isEmpty && text.isEmpty && attachments.isEmpty
-        }
-
         /// Начало записи для поиска — без пустых строк.
         ///
         /// В находке под датой умещается три-четыре строки, и отдавать одну
