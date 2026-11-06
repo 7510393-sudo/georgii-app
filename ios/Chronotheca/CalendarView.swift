@@ -1,13 +1,13 @@
 import SwiftUI
 
-/// Календарь: год, месяц и список месяца.
+/// Календарь: год и месяц. «Список» перешёл в картотеку будущего (P773).
 ///
 /// Первое касание даты разворачивает дела этого дня, второе открывает день.
 /// Так можно заглянуть в дату, не теряя места, где стоишь.
 struct CalendarView: View {
 
     enum Kind: String, CaseIterable, Identifiable {
-        case year = "Год", month = "Месяц", list = "Список"
+        case year = "Год", month = "Месяц"
         var id: String { rawValue }
         /// Название на языке приложения; `rawValue` хранится в настройках
         /// и не меняется (P355).
@@ -15,7 +15,6 @@ struct CalendarView: View {
             switch self {
             case .year: return T("Год", "Year")
             case .month: return T("Месяц", "Month")
-            case .list: return T("Список", "List")
             }
         }
     }
@@ -24,8 +23,8 @@ struct CalendarView: View {
     @EnvironmentObject private var archive: Archive
     @EnvironmentObject private var shell: Shell
 
-    /// Вид запоминается между заходами: человек, оставивший «Список»,
-    /// возвращается в «Список», а не в чужой ему «Месяц».
+    /// Вид запоминается между заходами. Оставленный прежде «Список» (его
+    /// больше нет, P773) открывается «Месяцем».
     @AppStorage("calendar.kind") private var stored = Kind.month.rawValue
     private var kind: Kind { Kind(rawValue: stored) ?? .month }
     @State private var shown: Date = CalendarView.previewStart ?? DayStore.today()
@@ -105,22 +104,15 @@ struct CalendarView: View {
     private func page(at date: Date, current: Bool) -> some View {
         VStack(spacing: 0) {
             ScrollView {
-                ScrollViewReader { proxy in
-                    VStack(spacing: 0) {
-                        switch kind {
-                        case .year:  yearGrid(of: date)
-                        case .month: monthGrid(of: date, current: current)
-                        case .list:  monthList(of: date)
-                        }
+                VStack(spacing: 0) {
+                    switch kind {
+                    case .year:  yearGrid(of: date)
+                    case .month: monthGrid(of: date, current: current)
                     }
-                    // Список открывается так, чтобы нужный день — открытый
-                    // или сегодняшний — стоял вверху экрана (P286).
-                    .onAppear { toTop(proxy, in: date, current: current) }
-                    .onChange(of: stored) { _, _ in toTop(proxy, in: date, current: current) }
-                    // Календарь ждёт на своей плашке там, где его оставили
-                    // (P576); прежде вставал на день при каждом открытии
-                    // (P442) — отменено.
                 }
+                // Календарь ждёт на своей плашке там, где его оставили
+                // (P576); прежде вставал на день при каждом открытии
+                // (P442) — отменено.
             }
         }
         // Тот же тёплый стол, что под поиском (P755).
@@ -502,202 +494,6 @@ struct CalendarView: View {
                 .foregroundStyle(Look.inkFaint)
                 .padding(.horizontal, 20)
         }
-    }
-
-    // MARK: - Список
-
-    private func toTop(_ proxy: ScrollViewProxy, in month: Date, current: Bool) {
-        guard current, kind == .list else { return }
-        // Сегодняшний — первым (P456): автор открыл «Список» в пятницу, а
-        // вверху стояло воскресенье, открытое раньше.
-        let target = [DayStore.today(), store.date].first {
-            cal.isDate($0, equalTo: month, toGranularity: .month)
-        }
-        guard let target else { return }
-        // Строки списка рисуются по мере надобности: дать им встать, потом
-        // ехать к дню (P442).
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            proxy.scrollTo(Vault.stamp(target), anchor: .top)
-        }
-    }
-
-    private func monthList(of date: Date) -> some View {
-        let cells = MonthGrid.cells(of: date, calendar: cal, firstWeekday: cal.firstWeekday).compactMap { $0 }
-        let today = Vault.stamp(DayStore.today())
-
-        // Не «ленивый» столбец (P456): в нём строки, ещё не нарисованные,
-        // стоят наугад, и прокрутка к дню промахивалась на день-два. Дней в
-        // месяце не больше 31 — рисовать их сразу ничего не стоит.
-        // Суббота с воскресеньем — одна связка (P731): один листок на двоих
-        // (P739, выбор автора); недели отделяет зазор после воскресенья (P735).
-        let groups = weekendGroups(cells)
-        // Столбец времени один на весь месяц (P756): по самому длинному
-        // виду времени — «00:00» или «00:00 PM», если часы двенадцатичасовые.
-        // Нет ни одного времени за месяц — столбца нет вовсе.
-        let times = cells.flatMap { entries(Vault.stamp($0), $0).compactMap(\.time) }
-        let sample: String? = times.isEmpty ? nil
-            : times.contains { $0.contains(where: \.isLetter) } ? "00:00 PM" : "00:00"
-        return VStack(spacing: 0) {
-            ForEach(Array(groups.enumerated()), id: \.offset) { _, group in
-                if group.count > 1 || cal.component(.weekday, from: group[0]) == 1 {
-                    VStack(spacing: 0) {
-                        if group.count > 1, group.allSatisfy({ Ru.isPast($0) }) {
-                            // Суббота и воскресенье — один листок (P739, как
-                            // в бумажных ежедневниках): одна бумага, между
-                            // днями тонкая черта, рваный край — общий.
-                            VStack(spacing: 0) {
-                                ForEach(group, id: \.self) { day in
-                                    row(day, today: today, sheet: false, sample: sample)
-                                        .id(Vault.stamp(day))
-                                    if day != group.last {
-                                        Rectangle().fill(Look.inkFaint.opacity(0.35))
-                                            .frame(height: 0.8)
-                                            .padding(.horizontal, 14)
-                                    }
-                                }
-                            }
-                            .background { OldPaper(seed: PageTexture.seed(group[0]), base: tint(group[0])) }
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
-                        } else {
-                            // Выходные, где не оба дня прошли (сегодня
-                            // воскресенье или впереди), — каждый своей
-                            // строкой, но вплотную, без зазора.
-                            ForEach(group, id: \.self) { day in
-                                row(day, today: today, sample: sample)
-                                    .id(Vault.stamp(day))
-                                if day != group.last { dayRule }
-                            }
-                        }
-                        Color.clear.frame(height: 12)
-                    }
-                } else {
-                    row(group[0], today: today, sample: sample)
-                        .id(Vault.stamp(group[0]))
-                    dayRule
-                }
-            }
-        }
-        .padding(.horizontal, 12)
-        .padding(.bottom, 20)
-    }
-
-    /// `sheet` — у строки своя бумага; у выходных общий листок (P739) — нет.
-    private func row(_ date: Date, today: String, sheet: Bool = true, sample: String? = nil) -> some View {
-        let stamp = Vault.stamp(date)
-        let tasks = entries(stamp, date)
-        let open = stamp == selected
-        // Пустой день — тонкой строкой (P466): прежде каждый пустой день
-        // был такой же высоты, как занятый, и дела тонули среди тире.
-        let quiet = tasks.isEmpty && !open && stamp != today
-
-        return Button { pick(stamp, date) } label: {
-            HStack(alignment: .firstTextBaseline, spacing: 12) {
-                // Число и справа от него день недели — у всех дней одинаково
-                // (P467): прежде у пустых дней день недели стоял справа, у
-                // занятых — под числом, и столбец дат прыгал.
-                HStack(alignment: .firstTextBaseline, spacing: 5) {
-                    // Сегодня — белым в синем кружке (P431).
-                    Text("\(cal.component(.day, from: date))")
-                        .font(Look.mono(15, weight: stamp == today ? .bold : .regular))
-                        .foregroundStyle(stamp == today ? Color.white : Look.ink)
-                        .padding(.horizontal, stamp == today ? 5 : 0)
-                        .background { if stamp == today { Capsule().fill(Look.accent).padding(.vertical, -3) } }
-                    Text(Ru.weekdayShort(date))
-                        .font(Look.sans(10))
-                        .foregroundStyle(Ru.dayColor(date))
-                }
-                .frame(width: 56, alignment: .leading)
-
-                VStack(alignment: .leading, spacing: 3) {
-                    if tasks.isEmpty {
-                        Text(open ? T("Дел нет. Нажмите ещё раз, чтобы открыть день →", "No tasks. Tap again to open the day →") : "—")
-                            .font(Look.sans(13))
-                            .foregroundStyle(Look.inkFaint)
-                    } else {
-                        // Дело — ровно одна строка. Длинное обрывается
-                        // троеточием: иначе одно дело занимает место двух,
-                        // и по строкам уже не видно, насколько день занят
-                        // (решение P159).
-                        // Время — своим столбцом (P756): дело без времени
-                        // начинается там же, где остальные, перед ним пусто.
-                        ForEach(open ? tasks : Array(tasks.prefix(3))) { task in
-                            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                                if let sample {
-                                    ZStack(alignment: .leading) {
-                                        Text(sample).hidden()
-                                        Text(task.time ?? "")
-                                    }
-                                    .font(Look.sans(13).monospacedDigit())
-                                    .lineLimit(1)
-                                    .fixedSize()
-                                }
-                                Text(task.text)
-                                    .font(Look.sans(13))
-                                    .lineLimit(1)
-                                    .truncationMode(.tail)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                            }
-                            .foregroundStyle(Look.ink)
-                            .opacity(task.done ? 0.45 : 1)
-                        }
-                        if !open && tasks.count > 3 {
-                            Text(T("ещё \(tasks.count - 3)", "\(tasks.count - 3) more"))
-                                .font(Look.sans(11))
-                                .foregroundStyle(Look.inkFaint)
-                        }
-                        if open {
-                            Text(T("Нажмите ещё раз, чтобы открыть день →", "Tap again to open the day →"))
-                                .font(Look.sans(11))
-                                .foregroundStyle(Look.inkFaint)
-                        }
-                    }
-                }
-                Spacer(minLength: 0)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, quiet ? 4 : 9)
-            .opacity(quiet ? 0.75 : 1)
-            // Строка дня — цвета его страницы (P245); выбранная обведена.
-            // Прошедший день — на бумаге с рельефом (P684), со своим износом
-            // и травмами края (P723).
-            .background {
-                if !sheet {
-                    Color.clear
-                } else if Ru.isPast(date) {
-                    OldPaper(seed: PageTexture.seed(date), base: tint(date))
-                } else {
-                    tint(date)
-                }
-            }
-            .clipShape(RoundedRectangle(cornerRadius: 6))
-            .overlay(RoundedRectangle(cornerRadius: 6)
-                .strokeBorder(open ? Look.accent.opacity(0.6) : .clear, lineWidth: 1.5))
-            // Сегодня — в рамке (P754): плотнее и толще, чем у выбранного.
-            .overlay(RoundedRectangle(cornerRadius: 6)
-                .strokeBorder(stamp == today ? Look.accent : .clear, lineWidth: 2))
-        }
-        .buttonStyle(.plain)
-    }
-
-    /// Дни месяца по порядку; суббота и следующее за ней воскресенье — в
-    /// одной связке, а воскресенье без субботы (первое число) — одно.
-    private func weekendGroups(_ days: [Date]) -> [[Date]] {
-        var out: [[Date]] = []
-        for day in days {
-            if cal.component(.weekday, from: day) == 1, let last = out.last, last.count == 1,
-               cal.component(.weekday, from: last[0]) == 7 {
-                out[out.count - 1].append(day)
-            } else {
-                out.append([day])
-            }
-        }
-        return out
-    }
-
-    /// Тонкая черта между днями; черты после пятницы больше нет (P731) —
-    /// недели разделяет зазор после воскресенья (P735).
-    private var dayRule: some View {
-        Rectangle().fill(Look.ruleSoft).frame(height: 1)
     }
 
     // MARK: - Касания

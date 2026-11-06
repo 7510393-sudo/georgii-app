@@ -292,6 +292,9 @@ final class Shell: ObservableObject {
     /// опустилось сверху на столько точек, меньше — будущее поднялось снизу.
     /// День едет вместе с ней.
     @Published var filePull: CGFloat = 0
+    /// Картотеку тянут обратно к «Дню» (P773): прошлое — вверх за его низ
+    /// (меньше нуля), будущее — вниз за верх (больше нуля).
+    @Published var fileBack: CGFloat = 0
 
     /// Где искать: везде, только в дневнике или только в плане.
     enum Scope { case all, diary, plan }
@@ -389,11 +392,11 @@ final class Shell: ObservableObject {
             tab = .diary
         case "side":      probingSide = true
         case "hint":      Hints.shared.showFirstForPreview()
-        case "list":
-            // Вид календаря запоминается в настройках — оттуда его и берём.
-            UserDefaults.standard.set(CalendarView.Kind.list.rawValue, forKey: "calendar.kind")
-            CalendarView.previewStart = day(-7)
-            screen = .calendar
+        case "filefuture":
+            // Картотека будущего (P771, P773): вместо снимка «Списка»
+            // календаря, которого больше нет.
+            fileFrom = -1
+            screen = .search
         default: break
         }
         // Для снимков плашка стоит на месте сразу, без хода.

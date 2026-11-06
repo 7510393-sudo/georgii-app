@@ -119,14 +119,14 @@ struct KeyboardBarView: View {
         }
     }
 
-    /// Те же четыре раздела, что внизу экрана, того же вида. Приставка есть
-    /// только у полей дня — открыт «День».
+    /// Те же три раздела, что внизу экрана, того же вида (P773: «Поиска»
+    /// нет — картотеку вытягивают из «Дня»). Приставка есть только у полей
+    /// дня — открыт «День».
     private var sections: some View {
         HStack(spacing: 0) {
             section("календарь", T("Календарь", "Calendar"), .calendar)
             section("сегодня", T("День", "Day"), .today)
             section("карта", T("Карта", "Map"), .map)
-            section("поиск", T("Поиск", "Search"), .search)
         }
         .padding(.vertical, 1)
         .frame(height: SectionsRow.height)

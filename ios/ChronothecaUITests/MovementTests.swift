@@ -202,7 +202,7 @@ final class MovementTests: XCTestCase {
         note("запуск", String(format: "%.2f с", opened))
         sleep(3)
 
-        for (button, screen) in [("bottom.calendar", "calendar"), ("bottom.search", "search"),
+        for (button, screen) in [("bottom.calendar", "calendar"),
                                  ("bottom.map", "map"), ("bottom.today", "today")] {
             let tap = Date()
             app.buttons[button].firstMatch.tap()

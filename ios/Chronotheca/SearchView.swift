@@ -21,6 +21,11 @@ struct SearchView: View {
     /// Насколько клавиатура закрывает список находок.
     @State private var keyboard: CGFloat = 0
 
+    /// Картотеку тянут обратно к «Дню» за её край у дня (P773): прошлое —
+    /// вверх за низ, будущее — вниз за верх.
+    @StateObject private var back = EdgePull()
+    @State private var scroller = SheetScroller()
+
     var body: some View {
         VStack(spacing: 0) {
             field
@@ -36,6 +41,30 @@ struct SearchView: View {
                           "No entries \(whereNot)match “\(query)”."))
             } else {
                 list(days)
+            }
+        }
+        .onChange(of: shell.fileFrom, initial: true) { _, from in back.only = from < 0 ? 1 : -1 }
+        .onChange(of: keyboard, initial: true) { _, now in back.enabled = now == 0 }
+        .onAppear {
+            back.progress = { [shell] amount, dir in
+                guard shell.screen == .search else { return }
+                if dir == 0 {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) { shell.fileBack = 0 }
+                    return
+                }
+                var still = Transaction()
+                still.disablesAnimations = true
+                withTransaction(still) { shell.fileBack = amount * CGFloat(dir) }
+            }
+            back.commit = { [shell] _ in
+                guard shell.screen == .search else { return }
+                // Плашка уже наполовину ушла — уезжает отсюда; день под ней.
+                shell.screen = .today
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+                    var still = Transaction()
+                    still.disablesAnimations = true
+                    withTransaction(still) { shell.fileBack = 0 }
+                }
             }
         }
         // Ушли из картотеки — в следующий раз она снова о прошлом и
@@ -221,6 +250,8 @@ struct SearchView: View {
                 }
             }
             .padding(.horizontal, 10)
+            // Прокрутка без оттяжки: за край едет вся плашка (P773).
+            .background(NoBounce(box: scroller, pull: back))
             // Список начинается под строкой поиска, а листаясь, уходит под
             // неё — она полупрозрачная (P719).
             .padding(.top, Search.fieldHeight + Search.restTop)
@@ -272,11 +303,12 @@ struct SearchView: View {
 
     /// Карточка будущего дня (P771): та же карточка картотеки, но ниже —
     /// четыре строки, чтобы на экран входила неделя. Строки — как в «Списке»
-    /// календаря: время своим столбцом, дело одной строкой; больше четырёх
-    /// дел — три и «ещё N».
+    /// календаря: время своим столбцом, дело одной строкой. Больше четырёх
+    /// дел — четыре и «ещё N» пятой строкой у правого края (P773): слева
+    /// пятую строку закрывает корешок следующей карточки, справа место есть.
     private func futureRow(_ day: Archive.Day, sample: String?) -> some View {
         let tasks = plan(day)
-        let shown = tasks.count > 4 ? Array(tasks.prefix(3)) : tasks
+        let shown = Array(tasks.prefix(4))
         return Button {
             typing = false
             store.go(to: day.date)
@@ -309,16 +341,19 @@ struct SearchView: View {
                     .foregroundStyle(Look.ink)
                     .opacity(task.done ? 0.45 : 1)
                 }
-                if tasks.count > 4 {
-                    // У правого края листа (замечание автора к P771).
-                    Text(T("ещё \(tasks.count - 3)", "\(tasks.count - 3) more"))
-                        .font(Look.sans(11))
-                        .foregroundStyle(Look.inkFaint)
-                        .frame(maxWidth: .infinity, alignment: .trailing)
-                }
             }
             .frame(height: Search.futureBody, alignment: .top)
             .frame(maxWidth: .infinity, alignment: .leading)
+            // Пятая строка — под четырьмя, в полосе, которую справа от своего
+            // корешка оставляет открытой следующая карточка.
+            .overlay(alignment: .bottomTrailing) {
+                if tasks.count > 4 {
+                    Text(T("ещё \(tasks.count - 4)", "\(tasks.count - 4) more"))
+                        .font(Look.sans(11))
+                        .foregroundStyle(Look.inkFaint)
+                        .offset(y: Search.tabHeight + 2)
+                }
+            }
             .padding(.horizontal, 18)
         }
         .buttonStyle(.plain)

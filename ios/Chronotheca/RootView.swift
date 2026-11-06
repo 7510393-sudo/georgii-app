@@ -698,7 +698,9 @@ struct RootView: View {
             }
             // Пока картотеку тянут (P772), она едет за пальцем, а день — вместе
             // с ней: картотека прилеплена к его краю.
-            .offset(y: down ? (which == .today ? shell.filePull : 0)
+            // Обратно — так же: картотека уезжает за пальцем и открывает день
+            // под собой (P773).
+            .offset(y: down ? (which == .today ? shell.filePull : which == .search ? shell.fileBack : 0)
                             : away + (which == .search ? shell.filePull : 0))
             // Новая плашка ложится поверх прежних (P501).
             .zIndex(down ? Double((shell.stack.firstIndex(of: which) ?? 0) + 1) : 0)
@@ -711,12 +713,11 @@ struct RootView: View {
 
     private var tabbar: some View {
         HStack(spacing: 0) {
-            // Сегодня, календарь, карта, поиск (P239). Глобус нарисован
-            // автором (P248).
+            // Календарь, день, карта (P773; прежде и поиск, P239): картотеку
+            // вытягивают из «Дня». Глобус нарисован автором (P248).
             section("календарь", T("Календарь", "Calendar"), .calendar)
             section("сегодня", T("День", "Day"), .today)
             section("карта", T("Карта", "Map"), .map)
-            section("поиск", T("Поиск", "Search"), .search)
         }
         // Тоньше на пару миллиметров (P613; прежде 55 — P506): та же
         // строка встаёт над клавиатурой и не должна занимать там много.
@@ -814,11 +815,7 @@ struct RootView: View {
                 shell.calendarHome = true
                 return
             case .search:
-                hideKeyboard()
-                shell.query = ""
-                shell.scope = .all
-                shell.find = .all
-                shell.searchHome += 1
+                // Кнопки «Поиск» больше нет (P773).
                 return
             case .map:
                 shell.mapHome += 1
