@@ -703,10 +703,24 @@ struct RootView: View {
             .offset(y: down ? (which == .today ? shell.filePull : which == .search ? shell.fileBack : 0)
                             : away + (which == .search ? shell.filePull + gapClose(away) : 0))
             // Новая плашка ложится поверх прежних (P501).
-            .zIndex(down ? Double((shell.stack.firstIndex(of: which) ?? 0) + 1) : 0)
+            .zIndex(down ? Double((shell.stack.firstIndex(of: which) ?? 0) + 1) : loose(which))
             // Ловит касания только верхняя: под ней другая плашка или
             // живая книга.
             .allowsHitTesting(on)
+    }
+
+    /// Слой картотеки, пока она за краем (P776). Прочие стоящие за краем
+    /// плашки — под всеми. Но календарь или карта, открытые раньше, лежат
+    /// под днём: вытягиваемая картотека оказывалась под ними, и вместо неё
+    /// за днём был виден календарь. Пока её тянут — сразу под днём, поверх
+    /// остальных; пока уезжает обратно — поверх дня, иначе день закрыл бы
+    /// её мгновенно.
+    private func loose(_ which: Shell.Screen) -> Double {
+        guard which == .search else { return 0 }
+        let top = Double(shell.stack.count)
+        if shell.fileBack != 0 { return top + 0.5 }
+        if shell.filePull != 0 { return top - 0.5 }
+        return 0
     }
 
     /// Щель между картотекой и днём при вытягивании (P775): плашка стоит за
