@@ -123,8 +123,7 @@ final class MovementTests: XCTestCase {
         XCTAssertTrue(waitDay { $0 == "today" }, "второе нажатие не вернуло на сегодня: \(openDay)")
     }
 
-    /// С клавиатурой разделы поднимаются над ней (P613; верхней строки нет):
-    /// над клавиатурой одна строка разделов и над ней «＋» (P615).
+    /// С клавиатурой над ней только «＋» (P615, P799: строки разделов нет).
     func testKeyboardKeepsScreen() {
         launch("diary")
         XCTAssertTrue(raiseKeyboard(), "клавиатура не поднялась")
@@ -132,18 +131,15 @@ final class MovementTests: XCTestCase {
         // Где приставка и уголки над клавиатурой (P614).
         let why = app.staticTexts["cornerWhy"].firstMatch
         note("уголки", why.exists ? why.label : "нет строки")
+        // Разделов над клавиатурой больше нет — только «＋» (P799).
         let keys = app.buttons.matching(identifier: "keys.today").allElementsBoundByIndex
-            .filter { $0.isHittable }
-        XCTAssertEqual(keys.count, 1, "разделов над клавиатурой: \(keys.count)")
+        XCTAssertEqual(keys.count, 0, "разделы над клавиатурой: \(keys.count)")
         let keyboardPlus = app.buttons.matching(identifier: "keyboard.plus").allElementsBoundByIndex
             .filter { $0.isHittable }
         XCTAssertEqual(keyboardPlus.count, 1, "«＋» над клавиатурой: \(keyboardPlus.count)")
         let pagePlus = app.buttons.matching(identifier: "strip.plus").allElementsBoundByIndex
             .filter { $0.isHittable }
         XCTAssertEqual(pagePlus.count, 0, "«＋» страницы виден вместе с клавиатурой")
-        // Раздел над клавиатурой открывается и убирает её.
-        app.buttons["keys.map"].firstMatch.tap()
-        XCTAssertTrue(wait(6) { openScreen == "map" }, "карта не открылась из строки над клавиатурой")
     }
 
     /// Лента картотеки (P777) тянется из дня настоящим пальцем: вниз за
@@ -186,10 +182,10 @@ final class MovementTests: XCTestCase {
         save("10-лента-будущее")
     }
 
-    /// Свайп между разделами (P778, по кругу — P779): с «Дня» влево —
-    /// карта; на карте с середины — ничего (палец двигает карту); от правого
-    /// края влево — по кругу календарь; с календаря вправо — по кругу карта;
-    /// от левого края вправо — «День». День при этом не перелистывается.
+    /// Разделы — лента вбок (P799, без круга): с «Дневника» влево — карта;
+    /// на карте с середины — ничего (палец двигает карту); от левого края
+    /// вправо — «Дневник»; вправо — календарь; с календаря влево — снова
+    /// «Дневник». День при этом не перелистывается.
     func testSwipeSections() {
         launch(trace: "след-свайп")
         XCTAssertEqual(openScreen, "today")
@@ -208,15 +204,15 @@ final class MovementTests: XCTestCase {
         swipe(0.5, 0.05)
         sleep(1)
         XCTAssertEqual(openScreen, "map", "с середины карты свайп увёл с карты")
-        swipe(0.98, 0.1)
-        XCTAssertTrue(wait(6) { openScreen == "calendar" }, "от правого края карты не открылся календарь: \(openScreen)")
+        swipe(0.02, 0.9)
+        XCTAssertTrue(wait(6) { openScreen == "today" }, "от левого края карты не вернулся «Дневник»: \(openScreen)")
+        sleep(1)
+        swipe(0.2, 0.9)
+        XCTAssertTrue(wait(6) { openScreen == "calendar" }, "свайп вправо не открыл календарь: \(openScreen)")
         sleep(1)
         save("02-свайп-календарь")
-        swipe(0.2, 0.9)
-        XCTAssertTrue(wait(6) { openScreen == "map" }, "с календаря вправо по кругу не открылась карта: \(openScreen)")
-        sleep(1)
-        swipe(0.02, 0.9)
-        XCTAssertTrue(wait(6) { openScreen == "today" }, "от левого края карты свайп не вернул «День»: \(openScreen)")
+        swipe(0.8, 0.1)
+        XCTAssertTrue(wait(6) { openScreen == "today" }, "с календаря свайп не вернул «Дневник»: \(openScreen)")
         XCTAssertEqual(openDay, "today", "свайп перелистнул день")
     }
 

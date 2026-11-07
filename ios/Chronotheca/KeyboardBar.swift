@@ -16,8 +16,6 @@ enum KeyboardBar {
 
     /// Кто исполняет просьбы — оболочка приложения.
     static var ask: (Ask) -> Void = { _ in }
-    /// Кто открывает раздел, выбранный над клавиатурой (P613).
-    static var go: (Shell.Screen) -> Void = { _ in }
 
     /// Высота строки над разделами — в ней одна «＋» справа (P423, P615).
     static let attachHeight: CGFloat = 44
@@ -76,9 +74,9 @@ enum KeyboardBar {
         host.view.layoutIfNeeded()
     }
 
-    /// Высота приставки: строка вложений с воздухом и под ней строка
-    /// разделов с рваным краем (P613).
-    static let accessoryHeight: CGFloat = attachRoom + SectionsRow.height + Leather.lip
+    /// Высота приставки — строка с «＋» и воздух (P799: строки разделов
+    /// над клавиатурой больше нет).
+    static let accessoryHeight: CGFloat = attachRoom
     /// Строка вложений с воздухом над и под ней.
     static let attachRoom: CGFloat = attachHeight + 10
 }
@@ -106,62 +104,12 @@ struct KeyboardBarView: View {
     var palette = ""
 
     var body: some View {
-        // Нижняя строка разделов поднимается вместе с клавиатурой (P613):
-        // она — часть приставки и едет с клавиатурой сама, и когда ту
-        // смахивают пальцем. Над ней — «＋» справа, как и на странице
-        // над нижней строкой (P615).
-        VStack(spacing: 0) {
-            attachments
-                .frame(height: KeyboardBar.attachHeight)
-                .padding(.top, 6)
-                .padding(.bottom, 4)
-            sections
-        }
-    }
-
-    /// Те же три раздела, что внизу экрана, того же вида (P773: «Поиска»
-    /// нет — картотеку вытягивают из «Дня»). Приставка есть только у полей
-    /// дня — открыт «День».
-    private var sections: some View {
-        HStack(spacing: 0) {
-            section("календарь", T("Календарь", "Calendar"), .calendar)
-            section("сегодня", T("Дневник", "Diary"), .today)
-            section("карта", T("Карта", "Map"), .map)
-        }
-        .padding(.vertical, 1)
-        .frame(height: SectionsRow.height)
-        .padding(.top, Leather.lip)
-        // Та же обложка, что внизу экрана (P745, P751).
-        .background(alignment: .top) { BarCover() }
-    }
-
-    private func section(_ icon: String, _ name: String, _ target: Shell.Screen) -> some View {
-        let on = target == .today
-        let side = 35 * SectionsRow.scale * SectionsRow.grow(target)
-        return Button { KeyboardBar.go(target) } label: {
-            VStack(spacing: 3) {
-                Image(icon).renderingMode(.template).resizable().scaledToFit()
-                    .frame(width: side, height: side)
-                Text(name).font(Look.sans(SectionsRow.font, weight: on ? .medium : .regular))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            // На коже — тиснением (P759).
-            .modifier(Embossed(on: !plainPast))
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(on ? BarInk.pad(plainPast) : .clear)
-                    .overlay(RoundedRectangle(cornerRadius: 12)
-                        .strokeBorder(on ? BarInk.frame(plainPast) : .clear, lineWidth: 1.3))
-                    .padding(.horizontal, -16)
-                    .padding(.vertical, -3))
-            .frame(maxWidth: .infinity)
-            .foregroundStyle(on ? BarInk.lit(plainPast) : BarInk.ink(plainPast))
-        }
-        .buttonStyle(.plain)
-        // Метка для проверок движения (P552, P613).
-        .accessibilityIdentifier("keys.\(target)")
+        // Над клавиатурой — только «＋» справа (P799, вместо строки разделов
+        // P613): разделы листаются вбок, а пока пишут, экран нужнее.
+        attachments
+            .frame(height: KeyboardBar.attachHeight)
+            .padding(.top, 6)
+            .padding(.bottom, 4)
     }
 
     /// Вместо пяти кнопок — одна «＋» справа (P615), как и на странице.
@@ -174,29 +122,6 @@ struct KeyboardBarView: View {
     }
 }
 
-/// Два уголка над скруглённым верхом клавиатуры: квадрат в каждом углу без
-/// четверти круга (P614). Чуть шире скругления самой клавиатуры — лишнее
-/// ложится под её полупрозрачное стекло.
-struct KeyboardCorners: Shape {
-    static let radius: CGFloat = 32
-    var radius: CGFloat
-
-    func path(in rect: CGRect) -> Path {
-        var p = Path()
-        let r = min(radius, rect.height)
-        p.move(to: CGPoint(x: rect.minX, y: rect.minY))
-        p.addLine(to: CGPoint(x: rect.minX + r, y: rect.minY))
-        p.addArc(center: CGPoint(x: rect.minX + r, y: rect.minY + r), radius: r,
-                 startAngle: .degrees(-90), endAngle: .degrees(180), clockwise: true)
-        p.closeSubpath()
-        p.move(to: CGPoint(x: rect.maxX, y: rect.minY))
-        p.addLine(to: CGPoint(x: rect.maxX - r, y: rect.minY))
-        p.addArc(center: CGPoint(x: rect.maxX - r, y: rect.minY + r), radius: r,
-                 startAngle: .degrees(-90), endAngle: .degrees(0), clockwise: false)
-        p.closeSubpath()
-        return p
-    }
-}
 
 /// «＋» — всё, что прикладывают к дню, одной кнопкой (P610, P615): камера,
 /// фото, голос, файл, место. Просьба уходит открытой странице, как прежде
@@ -230,128 +155,6 @@ struct PlusMenu: View {
     }
 }
 
-/// Картон в двух уголках над скруглённым верхом клавиатуры (P614): будто
-/// строка разделов поднята, а клавиатура лежит на ней сверху.
-///
-/// Нарисовать их ниже самой приставки нельзя — iPhone обрезает её по краю
-/// (так вышло в первой пробе, снимок проверки движения). Поэтому уголки
-/// лежат в окне приложения, под окном клавиатуры, и каждый кадр, пока
-/// клавиатура видна, встают под нижний край приставки — и когда клавиатуру
-/// смахивают пальцем.
-final class KeyboardCornersBand: NSObject {
-    static let shared = KeyboardCornersBand()
-
-    private var band: UIView?
-    private var link: CADisplayLink?
-    private var observers: [NSObjectProtocol] = []
-
-    func start() {
-        guard observers.isEmpty else { return }
-        let center = NotificationCenter.default
-        observers.append(center.addObserver(forName: UIResponder.keyboardWillShowNotification,
-                                            object: nil, queue: .main) { [weak self] _ in self?.follow() })
-        observers.append(center.addObserver(forName: UIResponder.keyboardDidHideNotification,
-                                            object: nil, queue: .main) { [weak self] _ in self?.stop() })
-    }
-
-    private func follow() {
-        guard link == nil else { return }
-        let made = CADisplayLink(target: self, selector: #selector(tick))
-        made.add(to: .main, forMode: .common)
-        link = made
-    }
-
-    private func stop() {
-        link?.invalidate()
-        link = nil
-        band?.isHidden = true
-    }
-
-    @objc private func tick() {
-        let app = UIApplication.shared.connectedScenes
-            .compactMap({ ($0 as? UIWindowScene)?.keyWindow }).first
-        if Vault.isUITest { report(app) }
-        guard let holder = KeyboardBar.shownHolder, let from = holder.window, let app
-        else { band?.isHidden = true; return }
-        let edge = from.convert(holder.convert(holder.bounds, to: from), to: app)
-        let view = band ?? make(in: app)
-        // Поверх всего, что приложение положило в окно позже (листки).
-        if view.superview === app, app.subviews.last !== view { app.bringSubviewToFront(view) }
-        let r = KeyboardCorners.radius
-        view.frame = CGRect(x: 0, y: edge.maxY, width: app.bounds.width, height: r)
-        view.isHidden = edge.maxY >= app.bounds.height - 1
-    }
-
-    /// Для проверки движения: где приставка и уголки — невидимой строкой.
-    private var probe: UILabel?
-    private func report(_ app: UIWindow?) {
-        guard let app else { return }
-        let label = probe ?? {
-            let made = UILabel(frame: CGRect(x: 0, y: 60, width: 300, height: 4))
-            made.alpha = 0.02
-            made.accessibilityIdentifier = "cornerWhy"
-            app.addSubview(made)
-            probe = made
-            return made
-        }()
-        let holder = KeyboardBar.shownHolder
-        let from = holder?.window
-        var text = "holder=\(holder != nil) window=\(from.map { String(describing: type(of: $0)) } ?? "nil")"
-        text += " same=\(from === app)"
-        if let holder, let from {
-            let r = from.convert(holder.convert(holder.bounds, to: from), to: app)
-            text += " edge=\(Int(r.minY))-\(Int(r.maxY))"
-        }
-        if let band { text += " band=\(Int(band.frame.minY)) hidden=\(band.isHidden) on=\(band.superview === app)" }
-        else { text += " band=nil" }
-        label.text = text
-        label.accessibilityLabel = text
-    }
-
-    private func make(in window: UIWindow) -> UIView {
-        let view = CornersView()
-        window.addSubview(view)
-        band = view
-        return view
-    }
-}
-
-/// Кожа уголков — простым видом UIKit (P614, с P745 кожа вместо картона):
-/// тот же цвет и зернь, что у строки разделов, обрезанные по двум уголкам. Вид SwiftUI в окне
-/// приложения оставался пустым — по замеру стоял на месте, но не рисовался.
-private final class CornersView: UIView {
-    private let fibre = UIView()
-    private let shape = CAShapeLayer()
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        isUserInteractionEnabled = false
-        fibre.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        addSubview(fibre)
-        layer.mask = shape
-        paint()
-    }
-
-    /// Кожа или крафт — как строка разделов (P751). Перекрашивается только
-    /// при смене: раскладка идёт каждый кадр.
-    private var plain: Bool?
-    private func paint() {
-        let now = UserDefaults.standard.bool(forKey: Prefs.plainPast)
-        guard now != plain else { return }
-        plain = now
-        backgroundColor = now ? UIColor(Look.kraft) : Leather.uiBase
-        fibre.backgroundColor = UIColor(patternImage: now ? KraftPaper.fibre : Leather.grain)
-    }
-
-    required init?(coder: NSCoder) { nil }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        paint()
-        fibre.frame = bounds
-        shape.path = KeyboardCorners(radius: KeyboardCorners.radius).path(in: bounds).cgPath
-    }
-}
 
 /// Заголовок дня — поле UIKit со своей приставкой над клавиатурой (P425).
 ///

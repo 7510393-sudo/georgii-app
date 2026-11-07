@@ -985,6 +985,12 @@ struct DiaryEditor: UIViewRepresentable {
         }
 
         @objc func carried(_ g: UILongPressGestureRecognizer) {
+            // Пока несут — разделы не листаются (P799).
+            switch g.state {
+            case .began: Hold.report?(true)
+            case .ended, .cancelled, .failed: Hold.report?(false)
+            default: break
+            }
             if g.state == .began {
                 taken = maybeTaken
                 maybeTaken = nil

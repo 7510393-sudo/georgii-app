@@ -84,8 +84,6 @@ final class Ribbon: ObservableObject {
             self?.scrolled(view)
         }
         scroll.panGestureRecognizer.addTarget(self, action: #selector(panned(_:)))
-        // Свайп между разделами и из картотеки (P790).
-        SectionSwipe.shared.attach(scroll)
     }
 
     // MARK: - Порог у дня (P779)

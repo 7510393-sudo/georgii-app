@@ -21,11 +21,8 @@ final class Shell: ObservableObject {
 
     @Published var screen: Screen = .today
 
-    /// Плашки экранов, опущенные друг на друга, снизу вверх (P501, P505).
-    /// Нажатие на раздел опускает его плашку сверху поверх остальных, не
-    /// поднимая прежнюю. «День» — такая же плашка, как остальные; при
-    /// запуске лежит одна она.
-    @Published var stack: [Screen] = [.today]
+    /// Что-то несут пальцем (P799) — разделы вбок не листаются.
+    @Published var holding = false
     @Published var tab: Tab = .plan
 
     /// Дело, чья шторка «Подробности» открыта.
@@ -180,8 +177,6 @@ final class Shell: ObservableObject {
     /// Кнопка над клавиатурой попросила открыть фото, голос или файлы —
     /// исполняет полоска открытой страницы (P279).
     @Published var keyboardAsk: KeyboardBar.Ask?
-    /// Раздел, выбранный в строке над клавиатурой (P613).
-    @Published var keyboardGo: Screen?
     /// Просьба странице встать на план или на дневник (P424): после
     /// перелистывания и из календаря.
     @Published var landing = 0
@@ -274,7 +269,6 @@ final class Shell: ObservableObject {
             screen = target
             // Лента — не плашка в стопке, а продолжение дня (P777).
             ribbonOpen = target == .search
-            stack = target == .search ? [.today] : [.today, target]
         }
     }
 
@@ -289,9 +283,6 @@ final class Shell: ObservableObject {
     /// Лента картотеки (P777): прошлое, место дня, будущее — одной
     /// прокруткой. Сама не публикуется: её сдвиги смотрит только день.
     let ribbon = Ribbon()
-    /// Свайп между разделами (P778): сдвиг вбок за пальцем. Сам не
-    /// публикуется: его смотрят только едущие плашки.
-    let slide = SectionSlide()
     /// День тянут за край — лента видна под ним и едет вместе с ним.
     @Published var pulling = false
     /// Лента открыта — день стоит в ней на своём месте, пока не вернутся.
@@ -402,10 +393,9 @@ final class Shell: ObservableObject {
             screen = .search
         default: break
         }
-        // Для снимков плашка стоит на месте сразу, без хода. Лента — не
-        // плашка в стопке (P777).
+        // Для снимков — сразу, без хода (P799: разделы — лента вбок).
+        instant = true
         ribbonOpen = screen == .search
-        stack = screen == .today || screen == .search ? [.today] : [.today, screen]
     }
 
 }
@@ -452,6 +442,12 @@ enum LagWatch {
         }
         thread.start()
     }
+}
+
+/// Что-то несут пальцем — дело, событие, снимок (P799): пока несут, разделы
+/// не листаются вбок. Сообщают план и запись; слушает оболочка.
+enum Hold {
+    static var report: ((Bool) -> Void)?
 }
 
 /// След жестов для проверок движения (P787): только когда приложение

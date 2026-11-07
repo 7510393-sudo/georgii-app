@@ -37,8 +37,6 @@ struct PageHost<Content: View>: UIViewControllerRepresentable {
         for gesture in book.gestureRecognizers {
             gesture.isEnabled = false
         }
-        // Свайп между разделами — на самой странице (P790).
-        SectionSwipe.shared.attach(book.view)
         return book
     }
 

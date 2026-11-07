@@ -19,6 +19,8 @@ struct RootView: View {
     /// Карта собрана заранее, в стороне, вскоре после запуска (P581): на
     /// большом архиве её сборка по нажатию держала экран секундами.
     @State private var mapReady = false
+    /// Какая страница ленты разделов стоит на экране (P799).
+    @State private var pageAt: Shell.Screen? = .today
 
     /// Клавиатура: над ней встаёт полоска вложений (P253).
     @StateObject private var keyboard = KeyboardWatch()
@@ -424,12 +426,6 @@ struct RootView: View {
             windowBottom = UIApplication.shared.connectedScenes
                 .compactMap { ($0 as? UIWindowScene)?.keyWindow }.first?.safeAreaInsets.bottom ?? 0
         }
-        .onChange(of: shell.keyboardGo) { _, target in
-            guard let target else { return }
-            shell.keyboardGo = nil
-            hideKeyboard()
-            tapSection(target)
-        }
         .onChange(of: shell.screen) { old, new in
             LagWatch.note(new)
             follow(from: old, to: new)
@@ -526,9 +522,6 @@ struct RootView: View {
             KeyboardBar.ask = { [shell] ask in shell.keyboardAsk = ask }
             // Раздел, выбранный над клавиатурой (P613), — сюда, как и с
             // нижней строки.
-            KeyboardBar.go = { [shell] target in shell.keyboardGo = target }
-            // Картон в уголках над скруглённой клавиатурой (P614).
-            KeyboardCornersBand.shared.start()
             // Опись архива нужна не только календарю и поиску: без неё
             // облачко «…помнишь?» не знает, есть ли что вспомнить, и не
             // появляется никогда. Читаем папку сразу при запуске.
@@ -541,7 +534,7 @@ struct RootView: View {
             // Карту — заранее, когда запуск уже позади (P581).
             warmMapSoon()
             // Свайп между разделами (P778).
-            wireSwipe()
+            wireRibbon()
             LaunchClock.step(T("первый экран", "first screen"))
             // Открываемся там, где закрыли, если день тот же (P686).
             shell.tab = .plan
@@ -624,107 +617,98 @@ struct RootView: View {
 
     // MARK: - Экран
 
-    /// Книга и два вкладыша.
-    ///
-    /// «Сегодня» — сама книга, она лежит всегда. Календарь и поиск наезжают
-    /// на неё сверху — оба, как кладут сверху вкладыш в бумажном
-    /// ежедневнике. Поиск выезжал снизу, из-под книги: снизу вещи не
-    /// приходят, туда их убирают (решения P146, P178).
-    ///
-    /// Вкладыши не появляются и не исчезают, а стоят за краем экрана и
-    /// выезжают: собирать их заново в начале хода — значит уронить первые
-    /// кадры, а ход должен быть гладким.
+    /// Разделы — одна лента вбок (P799, вместо плашек, опускавшихся сверху,
+    /// P501, и самодельного свайпа P778–P790, который на телефоне не
+    /// брался): «Календарь», «Дневник», «Карта». Листает сам iPhone — он и
+    /// отличает ход вбок от прокрутки вверх-вниз. Кнопки внизу ведут ленту к
+    /// своей странице. Без круга: от карты — только назад к «Дневнику».
     private var screen: some View {
         GeometryReader { geo in
-            ZStack {
-                // Под плашкой книга не отзывается. Иначе движение вбок по
-                // поиску доставалось перелистыванию дней, и человека
-                // выбрасывало на «Сегодня» (решение P160).
-                panel(.today, from: .top, over: geo.size) {
-                    DayPages().allowsHitTesting(shell.screen == .today)
+            ScrollView(.horizontal) {
+                HStack(spacing: 0) {
+                    CalendarView()
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        .background(Desk())
+                        .id(Shell.Screen.calendar)
+                    dayPage(geo.size)
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        .id(Shell.Screen.today)
+                    mapPage
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        .background(Look.chrome)
+                        .id(Shell.Screen.map)
                 }
-                panel(.calendar, from: .top, over: geo.size) { CalendarView() }
-                // Карта — такая же плашка. Собирается заранее, через несколько
-                // секунд после запуска, и дальше ждёт на своей плашке (P581);
-                // о месте спрашивает, только когда её впервые открыли.
-                // Прежде собиралась по нажатию и разбиралась после ухода (P242).
-                panel(.map, from: .top, over: geo.size) {
-                    if mapReady || shell.screen == .map { MapScreen() } else { Color.clear }
-                }
-                .accessibilityHidden(shell.screen != .map)
-                // Лента картотеки (P777): не плашка, а продолжение дня —
-                // лежит сразу под ним и видна, только пока её тянут или она
-                // открыта. Прежде — две плашки, прошлого и будущего, со
-                // щелями у дня (P771–P776).
-                SearchView(height: geo.size.height)
-                    .frame(width: geo.size.width, height: geo.size.height)
-                    .background(Desk())
-                    .opacity(shell.ribbonLive ? 1 : 0)
-                    .zIndex(shell.ribbonLive ? Double(shell.stack.firstIndex(of: .today) ?? 0) + 0.5 : -1)
-                    .allowsHitTesting(shell.screen == .search)
-                    .accessibilityHidden(!shell.ribbonLive)
-                    // Свайп из картотеки (P779): лента уезжает вбок с днём.
-                    .modifier(SlideAlong(slide: shell.slide))
+                .scrollTargetLayout()
             }
-            .frame(width: geo.size.width, height: geo.size.height)
+            .scrollTargetBehavior(.paging)
+            .scrollPosition(id: $pageAt)
+            // С самого начала — «Дневник», средняя страница.
+            .defaultScrollAnchor(.center)
+            .scrollIndicators(.hidden)
+            // Карточки ленты заходят под нижнюю строку (P744).
+            .scrollClipDisabled()
+            .scrollDisabled(!pagingFree)
+            .onChange(of: pageAt) { _, now in
+                if let now { landed(on: now) }
+            }
         }
     }
 
-    /// Вкладыш: лежит за краем экрана и выезжает на книгу.
-    private func panel<V: View>(_ which: Shell.Screen, from edge: Edge,
-                                over size: CGSize,
-                                @ViewBuilder content: () -> V) -> some View {
-        let down = shell.stack.contains(which)
-        let on = shell.stack.last == which
-        // Плашка уезжает ровно на свою высоту — не дальше.
-        //
-        // Раньше её уводили заведомо далеко, на 1200 точек, и она проходила
-        // вдвое больше, чем видно на экране: разгон и торможение хода
-        // приходились на путь за краем. Оттого приход выглядел мягким, а
-        // уход — резким: на экране оставалась только разгонная половина
-        // (решение P181). Толщина торца прибавляется: он тоже должен уйти
-        // за край.
-        //
-        // До первой раскладки высота нулевая. Если поверить ей, плашки
-        // окажутся на книге и мигнут при запуске — а ничто не должно
-        // двигаться само (P113), — поэтому до измерения уводим их далеко.
-        //
-        // Сверх торца — ещё и его тень: стоящая за краем плашка не должна
-        // бросать тень на экран. Тень под шапкой рисуется нарочно, одна на
-        // все экраны (решение P192).
-        let away = (edge == .top ? -1 : 1)
-            * (size.height > 0 ? size.height + BoardEdge.depth + BoardEdge.shade : 1200)
-        return content()
-            .frame(width: size.width, height: size.height)
-            // Календарь — целиком на тёплом столе, и шапка тоже
-            // (P758: на снимке шапка календаря была серой).
-            .background {
-                // Под «Днём» — стол, как под картотекой: справа от корешка
-                // листа виден он (P797).
-                if which == .calendar || which == .today { Desk() } else { Look.chrome }
-            }
-            // Торец стоит с той стороны, которой плашка идёт вперёд, и
-            // выступает за её край — то есть лежит на книге, а не на самой
-            // плашке. На месте он уходит за край экрана и не виден: толщина
-            // показывается движением, а стоящее не должно ничего занимать.
-            .overlay(alignment: edge == .top ? .bottom : .top) {
-                // У «Дня» торца нет (P797, вместо торца P780): полосы по
-                // краям листа выглядели чужими; лист — карточка с корешком.
-                if which != .today {
-                    BoardEdge(fromTop: edge == .top)
-                        .offset(y: edge == .top ? BoardEdge.depth : -BoardEdge.depth)
-                }
-            }
-            // День стоит в ленте картотеки на своём месте и едет с ней (P777).
-            .modifier(FollowRibbon(ribbon: shell.ribbon, live: which == .today && shell.ribbonLive))
-            // Свайпом плашка едет вбок за пальцем (P778). Новая плашка
-            // ложится поверх прежних (P501).
-            .modifier(FollowSlide(slide: shell.slide, which: which, down: down, away: away,
-                                  z: down ? Double((shell.stack.firstIndex(of: which) ?? 0) + 1) : 0))
-            // Ловит касания только верхняя: под ней другая плашка или
-            // живая книга. Пока открыта лента, день пропускает касания к ней:
-            // ленту листают и по месту дня (P777).
-            .allowsHitTesting(on && !(which == .today && shell.screen == .search))
+    /// Страница «Дневника»: лист дня, под ним — лента картотеки (P777).
+    private func dayPage(_ size: CGSize) -> some View {
+        ZStack {
+            SearchView(height: size.height)
+                .frame(width: size.width, height: size.height)
+                .background(Desk())
+                .opacity(shell.ribbonLive ? 1 : 0)
+                .allowsHitTesting(shell.screen == .search)
+                .accessibilityHidden(!shell.ribbonLive)
+            // Пока открыта лента, день пропускает касания к ней: ленту
+            // листают и по месту дня (P777). Справа от корешка — стол (P797).
+            DayPages()
+                .frame(width: size.width, height: size.height)
+                .background(Desk())
+                .modifier(FollowRibbon(ribbon: shell.ribbon, live: shell.ribbonLive))
+                .allowsHitTesting(shell.screen == .today)
+        }
+    }
+
+    /// Страница карты. Палец двигает карту, поэтому лента на ней не листается
+    /// — к «Дневнику» ведёт полоска у левого края: ведёшь по ней вправо.
+    /// Карта собирается заранее, через несколько секунд после запуска (P581).
+    private var mapPage: some View {
+        ZStack(alignment: .leading) {
+            if mapReady || shell.screen == .map { MapScreen() } else { Color.clear }
+            Color.clear
+                .frame(width: 24)
+                .contentShape(Rectangle())
+                .gesture(DragGesture(minimumDistance: 16).onEnded { drag in
+                    if drag.translation.width > 50 { tapSection(.today) }
+                })
+        }
+        .accessibilityHidden(shell.screen != .map)
+    }
+
+    /// Ленту разделов можно листать пальцем: не на карте, не пока тянут
+    /// картотеку или несут дело, не под листком и не во время переезда.
+    private var pagingFree: Bool {
+        !shell.pulling && !shell.holding && !shell.showingSettings && shell.settingsPull == nil
+            && shell.movingTask == nil && shell.drawer == nil && shell.screen != .map
+            && vault.moving == nil
+    }
+
+    /// Лента встала на страницу. Если её пролистали пальцем — раздел
+    /// меняется, как по касанию внизу; если её повела кнопка — уже сменился.
+    private func landed(on page: Shell.Screen) {
+        let current: Shell.Screen = shell.screen == .search ? .today : shell.screen
+        guard page != current else { return }
+        Feel.thud()
+        if shell.ribbonOpen { closeRibbonNow() }
+        store.prune()
+        LaunchClock.opened("\(page)", since: Date())
+        open(page)
+        if page != .today { archive.reloadSoon() }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { store.save() }
     }
 
     // MARK: - Разделы
@@ -790,50 +774,11 @@ struct RootView: View {
         }
     }
 
-    /// Свайп между разделами (P778, по кругу — P779): палец вбок — соседний
-    /// раздел едет за ним. И из открытой картотеки: вбок она не двигается.
-    /// Не пока тянут картотеку, не во время листков, переноса дела и
-    /// переезда папки; на карте палец двигает карту — свайп от края, у обоих
-    /// краёв (P767, P779).
-    private func wireSwipe() {
-        let swipe = SectionSwipe.shared
-        let slide = shell.slide
-        swipe.allowed = { [shell, vault] point, way, width in
-            let edge = SectionSwipe.mapEdge
-            guard !slide.active, !slide.settling,
-                  shell.screen != .search || (shell.ribbonOpen && !shell.ribbon.busy),
-                  !shell.pulling, !shell.showingSettings, shell.settingsPull == nil,
-                  shell.drawer == nil, shell.movingTask == nil, shell.openedPhoto == nil,
-                  vault.root != nil, vault.moving == nil,
-                  shell.barTop == 0 || point.y < shell.barTop
-            else {
-                Trace.note("свайп не пускает: едет \(slide.active) доезжает \(slide.settling) "
-                    + "раздел \(shell.screen) лента \(shell.ribbonOpen)/\(shell.ribbon.busy) "
-                    + "тянут \(shell.pulling) листок \(shell.showingSettings) "
-                    + "дело \(shell.movingTask != nil) снимок \(shell.openedPhoto != nil) "
-                    + "низ \(Int(shell.barTop)) палец \(Int(point.y))")
-                // Временно (P790): на телефоне свайп не брался, а в
-                // симуляторе брался — причину говорим вслух, коротко.
-                // Убрать, когда свайп заработает у автора.
-                shell.say(swipeRefusal(point))
-                return false
-            }
-            if shell.screen == .map {
-                return (way > 0 && point.x < edge) || (way < 0 && point.x > width - edge)
-            }
-            return true
+    /// Порог у дня в открытой картотеке (P779) и «несут пальцем» (P799).
+    private func wireRibbon() {
+        Hold.report = { [shell] now in
+            if shell.holding != now { shell.holding = now }
         }
-        swipe.began = { [shell] width in
-            // Карта выезжает сбоку — она должна быть собрана.
-            if !mapReady { mapReady = true }
-            slide.begin(from: shell.screen, width: width)
-        }
-        swipe.moved = { dx in slide.move(dx) }
-        swipe.ended = { speed in slide.end(speed: speed) { target in swipeTo(target) } }
-        swipe.cancelled = { slide.cancel() }
-        // Временно (P790, P797): причины отказа свайпа — вслух.
-        swipe.report = { [shell] text in shell.say(text) }
-        // Порог у дня в открытой картотеке (P779).
         shell.ribbon.walls = { [shell] in
             shell.screen == .search && shell.ribbonOpen && !shell.pulling
         }
@@ -841,45 +786,6 @@ struct RootView: View {
             guard shell.screen == .search else { return }
             shell.screen = .today
         }
-    }
-
-    /// Временно (P790), для проверки на телефоне: почему свайп не пустили.
-    /// Только по-русски — это не надпись приложения, а записка автору;
-    /// убрать вместе с вызовом, когда свайп заработает.
-    private func swipeRefusal(_ point: CGPoint) -> String {
-        var why: [String] = []
-        if shell.slide.active { why.append("раздел ещё едет") }
-        if shell.slide.settling { why.append("раздел доезжает") }
-        if shell.screen == .search && !(shell.ribbonOpen && !shell.ribbon.busy) {
-            why.append("картотека занята (открыта \(shell.ribbonOpen), едет \(shell.ribbon.busy))")
-        }
-        if shell.pulling { why.append("картотеку тянут") }
-        if shell.showingSettings || shell.settingsPull != nil { why.append("настройки") }
-        if shell.drawer != nil { why.append("шторка") }
-        if shell.movingTask != nil { why.append("перенос дела") }
-        if shell.openedPhoto != nil { why.append("снимок") }
-        if vault.root == nil || vault.moving != nil { why.append("папка") }
-        if shell.barTop > 0 && point.y >= shell.barTop {
-            why.append("палец на нижней строке (\(Int(point.y)) ≥ \(Int(shell.barTop)))")
-        }
-        return "Свайп не пущен: " + (why.isEmpty ? "?" : why.joined(separator: ", "))
-    }
-
-    /// Свайп довёз соседний раздел (P778): он уже на экране — ложится в
-    /// стопку без хода, остальное — как по касанию внизу.
-    private func swipeTo(_ target: Shell.Screen) {
-        guard shell.screen != target else { return }
-        store.prune()
-        LaunchClock.opened("\(target)", since: Date())
-        var still = Transaction()
-        still.disablesAnimations = true
-        withTransaction(still) {
-            shell.instant = true
-            open(target)
-            shell.stack = [target]
-        }
-        if target != .today { archive.reloadSoon() }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { store.save() }
     }
 
     /// Касание по разделу — внизу экрана или в строке над клавиатурой
@@ -1016,63 +922,36 @@ struct RootView: View {
         shell.screen = target
     }
 
-    /// Опустить или убрать плашку вслед за сменой экрана (P501).
-    ///
-    /// Нажатие на раздел просто опускает его плашку поверх того, что было, —
-    /// прежнюю никто не поднимает. «День» убирает все плашки. Второе
-    /// нажатие плашку больше не убирает (P576, P577).
+    /// Лента разделов — к открытому разделу (P799). Касание внизу ведёт её
+    /// ходом, с виджета, из напоминания, после паузы — сразу (P583).
     private func follow(from old: Shell.Screen, to new: Shell.Screen) {
-        // Быстрее прежних 0,46 (P565): медленный ход казался задумчивостью.
-        let heavy = Animation.spring(response: 0.3, dampingFraction: 0.9)
-        // Лента картотеки (P777) — не плашка: в стопку не входит, открыта
-        // прямо под днём.
+        // Лента картотеки (P777) — не раздел, а продолжение дня.
         if new == .search {
-            if shell.instant {
-                shell.instant = false
-                var still = Transaction()
-                still.disablesAnimations = true
-                withTransaction(still) { shell.stack = [.today] }
-            }
+            shell.instant = false
             shell.ribbonOpen = true
             return
         }
-        // С виджета, из напоминания, после паузы — сразу, без хода (P583).
-        if shell.instant {
-            shell.instant = false
-            var still = Transaction()
-            still.disablesAnimations = true
-            withTransaction(still) { shell.stack = [new] }
-            closeRibbonNow()
-            return
-        }
+        let instant = shell.instant
+        shell.instant = false
         if shell.ribbonOpen {
-            // Из ленты в день: лента доезжает, пока место дня не встанет на
-            // экран целиком (P777). День не роняют заново сверху.
-            if old == .search && new == .today {
+            // Из ленты в день: лента доезжает до места дня (P777).
+            if old == .search && new == .today && !instant {
                 Feel.thud()
                 backToDay()
                 return
             }
-            // В день из календаря или карты, открытых поверх ленты: день
-            // опускается сверху, как всегда, а лента под ним закрывается.
-            if new == .today { closeRibbonNow() }
+            closeRibbonNow()
         }
-        // Толчок — в начале хода, вместе с нажатием (P268).
-        Feel.thud()
-        if let i = shell.stack.firstIndex(of: new) {
-            // Эта плашка уже лежит, но под другой: снимаем её без хода (её не
-            // видно) и опускаем заново поверх.
-            if i == shell.stack.count - 1 { return }
+        guard pageAt != new else { return }
+        if instant {
             var still = Transaction()
             still.disablesAnimations = true
-            withTransaction(still) { shell.stack.remove(at: i) }
-            DispatchQueue.main.async { [shell] in
-                guard shell.screen == new else { return }
-                withAnimation(heavy) { shell.stack.append(new) }
-            }
-            return
+            withTransaction(still) { pageAt = new }
+        } else {
+            // Толчок — вместе с нажатием (P268).
+            Feel.thud()
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.9)) { pageAt = new }
         }
-        withAnimation(heavy) { shell.stack.append(new) }
     }
 
     /// Лента доезжает местом дня на экран, и день снова живой (P777).

@@ -522,6 +522,15 @@ struct PlanView: View {
     @State private var keyboard: CGFloat = 0
 
     var body: some View {
+        planBody
+            // Пока дело, событие или снимок несут пальцем — разделы не
+            // листаются вбок (P799): иначе ход вправо-влево уводил бы страницу.
+            .onChange(of: lifted != nil || liftedEvent != nil || photoCarry != nil) { _, now in
+                Hold.report?(now)
+            }
+    }
+
+    private var planBody: some View {
         // План — верхняя часть страницы дня, без своей прокрутки: страница
         // едет целиком, план и дневник вместе (P408).
         ScrollViewReader { proxy in
