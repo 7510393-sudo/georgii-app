@@ -123,7 +123,9 @@ final class Ribbon: ObservableObject {
         let inside = wallSide > 0 ? raw < wall : raw > wall
         var target: CGFloat?
         if scroll.isTracking {
-            let t = scroll.panGestureRecognizer.translation(in: scroll.window ?? scroll).y
+            // Где палец, а не сколько прошла тяга прокрутки: прокрутка сама
+            // обнуляет свой ход по шагам, и порог не набирался (P783).
+            let t = scroll.panGestureRecognizer.location(in: scroll.window ?? scroll).y
             if inside, anchor == nil { anchor = t }
             if let a = anchor {
                 // Прошлое: день снизу, палец идёт вверх; будущее — вниз.

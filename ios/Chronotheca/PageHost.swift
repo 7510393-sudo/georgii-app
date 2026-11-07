@@ -18,15 +18,29 @@ struct PageHost<Content: View>: UIViewControllerRepresentable {
 
     let content: () -> Content
 
-    func makeUIViewController(context: Context) -> UIHostingController<Content> {
+    /// Страница лежит в той же книге системы, что и прежде (P783): голая
+    /// рамка из P779 на телефоне совпала с тем, что день перестал
+    /// прокручиваться. Книга не листается — ни пальцем, ни ходом: в ней
+    /// одна страница, жесты книги выключены.
+    func makeUIViewController(context: Context) -> UIPageViewController {
+        let book = UIPageViewController(
+            transitionStyle: .pageCurl,
+            navigationOrientation: .horizontal,
+            options: [.spineLocation: UIPageViewController.SpineLocation.min.rawValue])
+        book.isDoubleSided = false
+        book.view.backgroundColor = UIColor(Look.chrome)
         let host = UIHostingController(rootView: content())
         host.view.backgroundColor = UIColor(Look.chrome)
         host.view.isOpaque = true
         host.safeAreaRegions = []
-        return host
+        book.setViewControllers([host], direction: .forward, animated: false)
+        for gesture in book.gestureRecognizers {
+            gesture.isEnabled = false
+        }
+        return book
     }
 
-    func updateUIViewController(_ host: UIHostingController<Content>, context: Context) {
-        host.rootView = content()
+    func updateUIViewController(_ book: UIPageViewController, context: Context) {
+        (book.viewControllers?.first as? UIHostingController<Content>)?.rootView = content()
     }
 }

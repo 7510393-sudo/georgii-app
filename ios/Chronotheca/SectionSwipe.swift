@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import UIKit.UIGestureRecognizerSubclass
 
 /// Свайп между разделами (P778): «Календарь», «День», «Карта» лежат в ряд,
 /// как в нижней строке, и по кругу (P779): за картой снова календарь, перед
@@ -174,7 +175,6 @@ final class SectionSwipe: NSObject, UIGestureRecognizerDelegate {
 
     private weak var pan: UIPanGestureRecognizer?
     /// Когда лёг палец и на что.
-    private var touchDown: CFTimeInterval = 0
     private weak var touched: UIView?
 
     /// Повесить на окно приложения. Повторный вызов ничего не меняет.
@@ -187,9 +187,12 @@ final class SectionSwipe: NSObject, UIGestureRecognizerDelegate {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in self?.install() }
             return
         }
-        let g = UIPanGestureRecognizer(target: self, action: #selector(panned(_:)))
+        let g = SwipePan(target: self, action: #selector(panned(_:)))
         g.delegate = self
         g.maximumNumberOfTouches = 1
+        // Касаний не отнимает и не задерживает (P783): на телефоне день
+        // переставал прокручиваться и откликаться, пока свайп решал.
+        g.cancelsTouchesInView = false
         g.delaysTouchesBegan = false
         g.delaysTouchesEnded = false
         window.addGestureRecognizer(g)
@@ -201,7 +204,6 @@ final class SectionSwipe: NSObject, UIGestureRecognizerDelegate {
         if let root = g.view?.window?.rootViewController, root.presentedViewController != nil {
             return false
         }
-        touchDown = CACurrentMediaTime()
         touched = touch.view
         return true
     }
@@ -214,8 +216,6 @@ final class SectionSwipe: NSObject, UIGestureRecognizerDelegate {
         let dy = abs(way.y) > 0 ? way.y : speed.y
         // Вбок, а не вверх-вниз.
         guard abs(dx) > abs(dy) * 1.2 else { return false }
-        // Сразу после касания: удержанием берут дело, снимок и курсор.
-        guard CACurrentMediaTime() - touchDown < Cross.hold else { return false }
         // Выделен текст — палец, скорее всего, тянет ручку выделения.
         guard !Self.selecting else { return false }
         let start = CGPoint(x: pan.location(in: view).x - way.x, y: pan.location(in: view).y - way.y)
@@ -284,3 +284,46 @@ struct SlideAlong: ViewModifier {
         content.offset(x: slide.active && slide.from == .search ? slide.x : 0)
     }
 }
+
+
+/// Тяга свайпа (P783): решает сразу и отпускает палец, как только ясно, что
+/// это не свайп. Прежде она ждала обычные 10 точек хода, и на телефоне всё
+/// это время прокрутка дня и касания стояли, а свайп брался только после
+/// хода буквой «Г». Теперь: палец пошёл больше вверх-вниз, чем вбок, — не
+/// свайп; за четверть секунды не сдвинулся — тоже нет (удержанием берут
+/// дело, снимок и курсор).
+final class SwipePan: UIPanGestureRecognizer {
+    private var start: CGPoint = .zero
+    private var since: CFTimeInterval = 0
+
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
+        super.touchesBegan(touches, with: event)
+        guard let touch = touches.first, let view else { return }
+        start = touch.location(in: view)
+        let stamp = CACurrentMediaTime()
+        since = stamp
+        DispatchQueue.main.asyncAfter(deadline: .now() + Cross.hold) { [weak self] in
+            guard let self, self.since == stamp, self.state == .possible else { return }
+            self.state = .failed
+        }
+    }
+
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent) {
+        if state == .possible, let touch = touches.first, let view {
+            let p = touch.location(in: view)
+            let dx = p.x - start.x, dy = p.y - start.y
+            let late = CACurrentMediaTime() - since > Cross.hold
+            if late || (hypot(dx, dy) > 4 && abs(dy) * 1.2 >= abs(dx)) {
+                state = .failed
+                return
+            }
+        }
+        super.touchesMoved(touches, with: event)
+    }
+
+    override func reset() {
+        super.reset()
+        since = 0
+    }
+}
+
