@@ -66,6 +66,17 @@ struct SearchView: View {
         .padding(.trailing, Corner.size + 8)
         .padding(.top, 8)
         .padding(.bottom, 10)
+        // Под строкой — полоса стола, тающая книзу (P781): прежде сквозь
+        // полупрозрачную строку читался текст верхней карточки, и слово
+        // «Поиск» тонуло в нём. Лента по-прежнему уходит под строку (P718).
+        .background {
+            Desk()
+                .mask(LinearGradient(stops: [.init(color: .black, location: 0),
+                                             .init(color: .black, location: 0.8),
+                                             .init(color: .clear, location: 1)],
+                                     startPoint: .top, endPoint: .bottom))
+                .allowsHitTesting(false)
+        }
     }
 
     /// Где и что искать — меню в самой строке поиска (P632; прежде в меню
