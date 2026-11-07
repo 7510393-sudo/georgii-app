@@ -1,0 +1,441 @@
+    415 Thread_80707   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 415 start  (in dyld) + 6992  [0x100d504e4]
+    +   415 start_sim  (in dyld_sim) + 20  [0x100af30e4]
+    +     415 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x102959e84]  ChronothecaApp.swift:0
+    +       415 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x102959dd8]  /<compiler-generated>:0
+    +         415 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           415 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             415 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               415 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 415 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   415 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     415 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       261 __CFRunLoopRun  (in CoreFoundation) + 760  [0x180421808]
+    +                       ! 261 __CFRunLoopDoSources0  (in CoreFoundation) + 220  [0x180422634]
+    +                       !   261 __CFRunLoopDoSource0  (in CoreFoundation) + 168  [0x180422ea4]
+    +                       !     261 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__  (in CoreFoundation) + 24  [0x180422f5c]
+    +                       !       261 UC::DriverCore::continueProcessing()  (in UpdateCycle) + 80  [0x2343d22c0]
+    +                       !         261 schedulerStepScheduledMainSectionContinue  (in UIKitCore) + 56  [0x1863b6064]
+    +                       !           261 _UIUpdateSequenceRunNext  (in UIKitCore) + 120  [0x18590339c]
+    +                       !             227 ???  (in UIKitCore)  load address 0x185289000 + 0x169788  [0x1853f2788]
+    +                       !             : 227 ???  (in UIKitCore)  load address 0x185289000 + 0x169c88  [0x1853f2c88]
+    +                       !             :   227 static ViewGraphHostUpdate.dispatchImmediately<A>(_:)  (in SwiftUICore) + 40  [0x1d3a49218]
+    +                       !             :     219 static Update.dispatchImmediately<A>(reason:_:)  (in SwiftUICore) + 332  [0x1d3d0a8c4]
+    +                       !             :     | 219 ???  (in UIKitCore)  load address 0x185289000 + 0x1ea30  [0x1852a7a30]
+    +                       !             :     |   219 ???  (in UIKitCore)  load address 0x185289000 + 0x169994  [0x1853f2994]
+    +                       !             :     |     219 ???  (in UIKitCore)  load address 0x185289000 + 0xac264  [0x185335264]
+    +                       !             :     |       219 partial apply for closure #1 in closure #1 in _UIHostingView.beginTransaction()  (in SwiftUI) + 64  [0x1d295e28c]
+    +                       !             :     |         219 static Update.ensure<A>(_:)  (in SwiftUICore) + 96  [0x1d3d0a2f0]
+    +                       !             :     |           219 closure #1 in static Update.ensure<A>(_:)  (in SwiftUICore) + 48  [0x1d3d0b718]
+    +                       !             :     |             219 partial apply for closure #1 in closure #1 in closure #1 in _UIHostingView.beginTransaction()  (in SwiftUI) + 20  [0x1d295e2b0]
+    +                       !             :     |               219 closure #1 in closure #1 in closure #1 in _UIHostingView.beginTransaction()  (in SwiftUI) + 144  [0x1d2954830]
+    +                       !             :     |                 219 ViewGraphRootValueUpdater.updateGraph<A>(body:)  (in SwiftUICore) + 136  [0x1d43bf084]
+    +                       !             :     |                   219 ViewGraphRootValueUpdater._updateViewGraph<A>(body:)  (in SwiftUICore) + 200  [0x1d43c079c]
+    +                       !             :     |                     219 <deduplicated_symbol>  (in SwiftUICore) + 20  [0x1d41904c0]
+    +                       !             :     |                       219 <deduplicated_symbol>  (in SwiftUI) + 20  [0x1d2954860]
+    +                       !             :     |                         219 GraphHost.flushTransactions()  (in SwiftUICore) + 176  [0x1d3f322dc]
+    +                       !             :     |                           219 specialized GraphHost.runTransaction(_:do:id:)  (in SwiftUICore) + 352  [0x1d3f4ca50]
+    +                       !             :     |                             203 AG::Subgraph::update(unsigned int)  (in AttributeGraph) + 952  [0x1c42da590]
+    +                       !             :     |                             + 203 AG::Graph::UpdateStack::update()  (in AttributeGraph) + 488  [0x1c42cb6c0]
+    +                       !             :     |                             +   186 partial apply for implicit closure #1 in closure #1 in closure #1 in Attribute.init<A>(_:)  (in SwiftUICore) + 28  [0x1d3a882d4]
+    +                       !             :     |                             +   ! 157 DynamicBody.updateValue()  (in SwiftUICore) + 840  [0x1d3d0744c]
+    +                       !             :     |                             +   ! : 154 closure #1 in DynamicBody.updateValue()  (in SwiftUICore) + 936  [0x1d3d07af4]
+    +                       !             :     |                             +   ! : | 154 protocol witness for BodyAccessor.updateBody(of:changed:) in conformance ViewBodyAccessor<A>  (in SwiftUICore) + 12  [0x1d3be116c]
+    +                       !             :     |                             +   ! : |   152 ViewBodyAccessor.updateBody(of:changed:)  (in SwiftUICore) + 180  [0x1d3be0cc4]
+    +                       !             :     |                             +   ! : |   + 149 closure #1 in ViewBodyAccessor.updateBody(of:changed:)  (in SwiftUICore) + 864  [0x1d3be1054]
+    +                       !             :     |                             +   ! : |   + ! 109 protocol witness for View.body.getter in conformance SearchView  (in Chronotheca.debug.dylib) + 52  [0x102df7cec]  /<compiler-generated>:0
+    +                       !             :     |                             +   ! : |   + ! : 106 SearchView.body.getter  (in Chronotheca.debug.dylib) + 512  [0x102de02bc]  SearchView.swift:28
+    +                       !             :     |                             +   ! : |   + ! : | 51 SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 1704  [0x102de0dc4]  SearchView.swift:277
+    +                       !             :     |                             +   ! : |   + ! : | + 49 Sequence.flatMap<A>(_:)  (in libswiftCore.dylib) + 552  [0x1983bc720]
+    +                       !             :     |                             +   ! : |   + ! : | + ! 49 partial apply for closure #5 in SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 24  [0x102de99e8]  /<compiler-generated>:0
+    +                       !             :     |                             +   ! : |   + ! : | + !   48 closure #5 in SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 56  [0x102de9904]  SearchView.swift:277
+    +                       !             :     |                             +   ! : |   + ! : | + !   : 42 SearchView.plan(_:)  (in Chronotheca.debug.dylib) + 472  [0x102de9bcc]  SearchView.swift:413
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | 40 static DayEvents.cachedItems(for:)  (in Chronotheca.debug.dylib) + 64  [0x102963884]  DayEvents.swift:95
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + 33 static Vault.stamp(_:)  (in Chronotheca.debug.dylib) + 348  [0x102f1c4e0]  Vault.swift:1436
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! 31 -[NSDateFormatter stringForObjectValue:]  (in Foundation) + 100  [0x181061ddc]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! : 31 -[NSDateFormatter _regenerateFormatter]  (in Foundation) + 200  [0x1810612a4]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   29 __CreateCFDateFormatter  (in CoreFoundation) + 320  [0x1803d1780]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | 21 __ResetUDateFormat  (in CoreFoundation) + 484  [0x1803d1e64]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + 18 udat_open  (in libicucore.A.dylib) + 404  [0x1825caf04]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! 12 icu::DateFormat::create(icu::DateFormat::EStyle, icu::DateFormat::EStyle, icu::Locale const&)  (in libicucore.A.dylib) + 224  [0x1824c85f4]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : 9 icu::SimpleDateFormat::SimpleDateFormat(icu::Locale const&, UErrorCode&)  (in libicucore.A.dylib) + 320  [0x18259a044]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | 4 icu::SimpleDateFormat::initialize(icu::Locale const&, UErrorCode&)  (in libicucore.A.dylib) + 540  [0x1825992bc]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | + 4 icu::NumberFormat::createInstance(icu::Locale const&, UNumberFormatStyle, UErrorCode&)  (in libicucore.A.dylib) + 144  [0x182551d40]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +   4 icu::DecimalFormat::clone() const  (in libicucore.A.dylib) + 56  [0x1824d6ed8]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +     1 icu::DecimalFormat::DecimalFormat(icu::DecimalFormat const&)  (in libicucore.A.dylib) + 80  [0x1824d6af8]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +     ! 1 $_0::operator()() const::'lambda0'(unsigned long, std::__type_descriptor_t)::__invoke(unsigned long, std::__type_descriptor_t)  (in libc++abi.dylib) + 12  [0x1802d10a0]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +     !   1 operator_new_impl[abi:nqe210106](unsigned long, std::__type_descriptor_t)  (in libc++abi.dylib) + 32  [0x1802d10d0]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +     !     1 _xzm_xzone_malloc_small  (in libsystem_malloc.dylib) + 1420  [0x1801ef0ec]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +     1 icu::DecimalFormat::DecimalFormat(icu::DecimalFormat const&)  (in libicucore.A.dylib) + 96  [0x1824d6b08]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +     ! 1 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0x12148c  [0x1824da48c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +     !   1 icu::number::impl::DecimalFormatProperties::DecimalFormatProperties()  (in libicucore.A.dylib) + 284  [0x18253308c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +     !     1 icu::number::impl::DecimalFormatProperties::clear()  (in libicucore.A.dylib) + 0  [0x18253309c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +     1 icu::DecimalFormat::DecimalFormat(icu::DecimalFormat const&)  (in libicucore.A.dylib) + 160  [0x1824d6b48]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +     ! 1 icu::DecimalFormatSymbols::operator=(icu::DecimalFormatSymbols const&)  (in libicucore.A.dylib) + 112  [0x1824cba54]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +     !   1 icu::UnicodeString::copyFrom(icu::UnicodeString const&, signed char)  (in libicucore.A.dylib) + 156  [0x18246879c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +     !     1 _platform_memmove  (in libsystem_platform.dylib) + 572  [0x100a2b2ec]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +     1 icu::DecimalFormat::DecimalFormat(icu::DecimalFormat const&)  (in libicucore.A.dylib) + 196  [0x1824d6b6c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +       1 icu::DecimalFormat::touch(UErrorCode&)  (in libicucore.A.dylib) + 152  [0x1824d50c0]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +         1 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0x187948  [0x182540948]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +           1 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0x1870b4  [0x1825400b4]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +             1 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0x188068  [0x182541068]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | 4 icu::SimpleDateFormat::initialize(icu::Locale const&, UErrorCode&)  (in libicucore.A.dylib) + 600  [0x1825992f8]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | + 4 icu::SimpleDateFormat::initSimpleNumberFormatter(UErrorCode&)  (in libicucore.A.dylib) + 148  [0x18259a3e0]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +   3 icu::number::SimpleNumberFormatter::initialize(icu::Locale const&, icu::DecimalFormatSymbols const&, UNumberGroupingStrategy, UErrorCode&)  (in libicucore.A.dylib) + 192  [0x18254a258]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +   ! 2 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0x197610  [0x182550610]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +   ! : 1 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0x1977ec  [0x1825507ec]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +   ! : | 1 ures_getStringByKeyWithFallback  (in libicucore.A.dylib) + 80  [0x18247104c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +   ! : |   1 ures_getByKeyWithFallback  (in libicucore.A.dylib) + 200  [0x182471200]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +   ! : |     1 icu::CharString::append(char const*, int, UErrorCode&)  (in libicucore.A.dylib) + 236  [0x1823c1984]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +   ! : |       1 icu::CharString::ensureCapacity(int, int, UErrorCode&)  (in libicucore.A.dylib) + 172  [0x1823c1670]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +   ! : |         1 _platform_memmove  (in libsystem_platform.dylib) + 588  [0x100a2b2fc]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +   ! : 1 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0x197800  [0x182550800]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +   ! :   1 _xzm_free  (in libsystem_malloc.dylib) + 336  [0x1801ea560]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +   ! :     1 _platform_memset  (in libsystem_platform.dylib) + 128  [0x100a2ae40]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +   ! 1 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0x1975d8  [0x1825505d8]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +   !   1 ures_openWithCountryFallback  (in libicucore.A.dylib) + 92  [0x1824728f0]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +   !     1 ulocimp_setRegionToSupplementalRegion  (in libicucore.A.dylib) + 152  [0x1823dcb48]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +   !       1 ulocimp_getKeywordValue(char const*, std::basic_string_view<char>, icu::ByteSink&, UErrorCode&)  (in libicucore.A.dylib) + 352  [0x18244cc74]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +   1 icu::number::SimpleNumberFormatter::initialize(icu::Locale const&, icu::DecimalFormatSymbols const&, UNumberGroupingStrategy, UErrorCode&)  (in libicucore.A.dylib) + 312  [0x18254a2d0]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | +     1 icu::number::impl::PatternParser::parseToPatternInfo(icu::UnicodeString const&, icu::number::impl::ParsedPatternInfo&, UErrorCode&)  (in libicucore.A.dylib) + 0  [0x182545658]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | 1 icu::SimpleDateFormat::initialize(icu::Locale const&, UErrorCode&)  (in libicucore.A.dylib) + 572  [0x1825992dc]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : |   1 icu::DecimalFormat::setDateSettings()  (in libicucore.A.dylib) + 172  [0x1824d97f8]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : |     1 icu::DecimalFormat::touch(UErrorCode&)  (in libicucore.A.dylib) + 168  [0x1824d50d0]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : |       1 icu::number::LocalizedNumberFormatter::LocalizedNumberFormatter(icu::number::impl::MacroProps&&, icu::Locale const&)  (in libicucore.A.dylib) + 32  [0x182537314]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : |         1 icu::Locale::Locale()  (in libicucore.A.dylib) + 60  [0x1823d6370]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : 2 icu::SimpleDateFormat::SimpleDateFormat(icu::Locale const&, UErrorCode&)  (in libicucore.A.dylib) + 212  [0x182599fd8]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : | 2 icu::DateFormatSymbols::createForLocale(icu::Locale const&, UErrorCode&)  (in libicucore.A.dylib) + 92  [0x1824dfa68]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : |   2 icu::DateFormatSymbols::DateFormatSymbols(icu::DateFormatSymbols const&)  (in libicucore.A.dylib) + 184  [0x1824e1f34]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : |     1 icu::DateFormatSymbols::copyData(icu::DateFormatSymbols const&)  (in libicucore.A.dylib) + 556  [0x1824e2174]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : |     + 1 icu::DateFormatSymbols::assignArray(icu::UnicodeString*&, int&, icu::UnicodeString const*, int)  (in libicucore.A.dylib) + 160  [0x1824e2374]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : |     1 icu::DateFormatSymbols::copyData(icu::DateFormatSymbols const&)  (in libicucore.A.dylib) + 636  [0x1824e21c4]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : |       1 icu::DateFormatSymbols::assignArray(icu::UnicodeString*&, int&, icu::UnicodeString const*, int)  (in libicucore.A.dylib) + 84  [0x1824e2328]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : |         1 $_0::operator()() const::'lambda2'(unsigned long, std::__type_descriptor_t)::__invoke(unsigned long, std::__type_descriptor_t)  (in libc++abi.dylib) + 12  [0x1802d1108]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : |           1 operator_new_impl[abi:nqe210106](unsigned long, std::__type_descriptor_t)  (in libc++abi.dylib) + 32  [0x1802d10d0]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : |             1 <deduplicated_symbol>  (in libsystem_malloc.dylib) + 212  [0x1801e9480]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! : 1 icu::SimpleDateFormat::SimpleDateFormat(icu::Locale const&, UErrorCode&)  (in libicucore.A.dylib) + 340  [0x18259a058]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! :   1 icu::SimpleDateFormat::initializeDefaultCentury()  (in libicucore.A.dylib) + 36  [0x182598ee8]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! :     1 icu::GregorianCalendar::haveDefaultCentury() const  (in libicucore.A.dylib) + 0  [0x182501b4c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! 6 icu::DateFormat::create(icu::DateFormat::EStyle, icu::DateFormat::EStyle, icu::Locale const&)  (in libicucore.A.dylib) + 172  [0x1824c85c0]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !   6 icu::SimpleDateFormat::SimpleDateFormat(icu::DateFormat::EStyle, icu::DateFormat::EStyle, icu::Locale const&, UErrorCode&)  (in libicucore.A.dylib) + 196  [0x182599ed4]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     2 icu::SimpleDateFormat::construct(icu::DateFormat::EStyle, icu::DateFormat::EStyle, icu::Locale const&, UErrorCode&)  (in libicucore.A.dylib) + 96  [0x182598698]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     | 1 icu::SimpleDateFormat::initializeCalendar(icu::TimeZone*, icu::Locale const&, UErrorCode&)  (in libicucore.A.dylib) + 60  [0x182599078]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     | + 1 icu::TimeZone::forLocaleOrDefault(icu::Locale const&)  (in libicucore.A.dylib) + 80  [0x1825a6258]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     | +   1 uloc_getKeywordValue  (in libicucore.A.dylib) + 24  [0x18244c97c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     | 1 icu::SimpleDateFormat::initializeCalendar(icu::TimeZone*, icu::Locale const&, UErrorCode&)  (in libicucore.A.dylib) + 80  [0x18259908c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     |   1 icu::Calendar::createInstance(icu::TimeZone*, icu::Locale const&, UErrorCode&)  (in libicucore.A.dylib) + 148  [0x18249e87c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     |     1 _xzm_free  (in libsystem_malloc.dylib) + 340  [0x1801ea564]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     2 icu::SimpleDateFormat::construct(icu::DateFormat::EStyle, icu::DateFormat::EStyle, icu::Locale const&, UErrorCode&)  (in libicucore.A.dylib) + 964  [0x1825989fc]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     | 2 icu::DateFormatSymbols::createForLocale(icu::Locale const&, UErrorCode&)  (in libicucore.A.dylib) + 92  [0x1824dfa68]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     |   2 icu::DateFormatSymbols::DateFormatSymbols(icu::DateFormatSymbols const&)  (in libicucore.A.dylib) + 184  [0x1824e1f34]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     |     1 icu::DateFormatSymbols::copyData(icu::DateFormatSymbols const&)  (in libicucore.A.dylib) + 364  [0x1824e20b4]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     |     + 1 icu::DateFormatSymbols::assignArray(icu::UnicodeString*&, int&, icu::UnicodeString const*, int)  (in libicucore.A.dylib) + 196  [0x1824e2398]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     |     +   1 icu::UnicodeString::copyFrom(icu::UnicodeString const&, signed char)  (in libicucore.A.dylib) + 416  [0x1824688a0]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     |     1 icu::DateFormatSymbols::copyData(icu::DateFormatSymbols const&)  (in libicucore.A.dylib) + 596  [0x1824e219c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     |       1 icu::DateFormatSymbols::assignArray(icu::UnicodeString*&, int&, icu::UnicodeString const*, int)  (in libicucore.A.dylib) + 196  [0x1824e2398]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     |         1 icu::UnicodeString::copyFrom(icu::UnicodeString const&, signed char)  (in libicucore.A.dylib) + 160  [0x1824687a0]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     1 icu::SimpleDateFormat::construct(icu::DateFormat::EStyle, icu::DateFormat::EStyle, icu::Locale const&, UErrorCode&)  (in libicucore.A.dylib) + 256  [0x182598738]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     | 1 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0xb93ec  [0x1824723ec]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     |   1 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0xbc030  [0x182475030]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     1 icu::SimpleDateFormat::construct(icu::DateFormat::EStyle, icu::DateFormat::EStyle, icu::Locale const&, UErrorCode&)  (in libicucore.A.dylib) + 288  [0x182598758]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !       1 ures_openWithCountryFallback  (in libicucore.A.dylib) + 184  [0x18247294c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !         1 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0xb93c8  [0x1824723c8]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !           1 std::mutex::lock()  (in libc++.1.dylib) + 12  [0x180301464]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !             1 pthread_mutex_lock  (in libsystem_pthread.dylib) + 48  [0x101541310]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + 2 udat_open  (in libicucore.A.dylib) + 520  [0x1825caf78]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! 2 icu::TimeZone::createTimeZone(icu::UnicodeString const&)  (in libicucore.A.dylib) + 32  [0x1825a5e68]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !   2 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0x1ef944  [0x1825a8944]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     1 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0x1edc58  [0x1825a6c58]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     : 1 ures_getByKey  (in libicucore.A.dylib) + 156  [0x182471be0]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     :   1 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0xbb308  [0x182474308]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     :     1 _xzm_xzone_malloc  (in libsystem_malloc.dylib) + 132  [0x1801e9c64]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !     1 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0x1edca8  [0x1825a6ca8]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !       1 ures_getByIndex  (in libicucore.A.dylib) + 292  [0x182470b7c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !         1 res_getArrayItem  (in libicucore.A.dylib) + 20  [0x182477334]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + 1 udat_open  (in libicucore.A.dylib) + 388  [0x1825caef4]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | +   1 icu::Locale::Locale(char const*, char const*, char const*, char const*)  (in libicucore.A.dylib) + 600  [0x1823d65e4]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | +     1 icu::Locale::init(char const*, signed char)  (in libicucore.A.dylib) + 52  [0x1823d5b64]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | +       1 icu::Locale::init(icu::StringPiece, signed char)  (in libicucore.A.dylib) + 196  [0x1823d7a48]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | +         1 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0x96ce0  [0x18244fce0]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | +           1 icu::CheckedArrayByteSink::Append(char const*, int)  (in libicucore.A.dylib) + 0  [0x1823bc8ac]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | 2 __ResetUDateFormat  (in CoreFoundation) + 804  [0x1803d1fa4]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + 1 @objc _NSSwiftLocale.object(forKey:)  (in Foundation) + 56  [0x180d7b28c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + ! 1 _NSSwiftLocale.object(forKey:)  (in Foundation) + 224  [0x180d79234]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + !   1 __CFStringIsCF  (in CoreFoundation) + 0  [0x180446664]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + 1 @objc _NSSwiftLocale.object(forKey:)  (in Foundation) + 148  [0x180d7b2e8]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | +   1 _bridgeAnythingToObjectiveC<A>(_:)  (in libswiftCore.dylib) + 0  [0x198278f50]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | 1 __ResetUDateFormat  (in CoreFoundation) + 104  [0x1803d1ce8]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + 1 objc_autoreleaseReturnValue  (in libobjc.A.dylib) + 128  [0x18006252c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | 1 __ResetUDateFormat  (in CoreFoundation) + 852  [0x1803d1fd4]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + 1 icu::SimpleDateFormat::set2DigitYearStart(double, UErrorCode&)  (in libicucore.A.dylib) + 0  [0x1825a0c18]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | 1 __ResetUDateFormat  (in CoreFoundation) + 864  [0x1803d1fe0]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + 1 @objc _NSSwiftLocale._pref(forKey:)  (in Foundation) + 124  [0x180d7e814]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | +   1 _LocaleICU.pref(for:)  (in Foundation) + 160  [0x180d5b210]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | +     1 <deduplicated_symbol>  (in Foundation) + 0  [0x18087b268]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | 1 __ResetUDateFormat  (in CoreFoundation) + 1160  [0x1803d2108]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + 1 @objc _NSSwiftLocale._pref(forKey:)  (in Foundation) + 40  [0x180d7e7c0]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | +   1 static String._unconditionallyBridgeFromObjectiveC(_:)  (in Foundation) + 620  [0x180e383e8]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | +     1 String.init<A>(_immortalCocoaString:count:encoding:)  (in libswiftCore.dylib) + 100  [0x1983e84a0]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | +       1 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 4  [0x1981dc77c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | 1 __ResetUDateFormat  (in CoreFoundation) + 1444  [0x1803d2224]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | + 1 @objc _NSSwiftLocale.object(forKey:)  (in Foundation) + 56  [0x180d7b28c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | +   1 _NSSwiftLocale.object(forKey:)  (in Foundation) + 4852  [0x180d7a448]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | +     1 static String._unconditionallyBridgeFromObjectiveC(_:)  (in Foundation) + 620  [0x180e383e8]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | +       1 String.init<A>(_immortalCocoaString:count:encoding:)  (in libswiftCore.dylib) + 108  [0x1983e84a8]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | +         1 objc_release  (in libobjc.A.dylib) + 8  [0x18003967c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | 1 __ResetUDateFormat  (in CoreFoundation) + 1580  [0x1803d22ac]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   |   1 @objc _NSSwiftTimeZone.name.getter  (in Foundation) + 84  [0x180d99ad8]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   |     1 <deduplicated_symbol>  (in Foundation) + 0  [0x180bf82d8]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   1 __CreateCFDateFormatter  (in CoreFoundation) + 232  [0x1803d1728]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   | 1 CFTimeZoneCopyDefault  (in CoreFoundation) + 32  [0x1804e8bfc]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   |   1 +[NSTimeZone defaultTimeZone]  (in CoreFoundation) + 0  [0x1804e6c78]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :   1 __CreateCFDateFormatter  (in CoreFoundation) + 256  [0x1803d1740]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :     1 @objc _NSSwiftLocale.object(forKey:)  (in Foundation) + 56  [0x180d7b28c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :       1 _NSSwiftLocale.object(forKey:)  (in Foundation) + 4800  [0x180d7a414]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :         1 static String._unconditionallyBridgeFromObjectiveC(_:)  (in Foundation) + 132  [0x180e38200]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :           1 String.init(unsafeUninitializedCapacity:initializingUTF8With:)  (in libswiftCore.dylib) + 76  [0x1983e08d0]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! :             1 partial apply for closure #1 in static String._unconditionallyBridgeFromObjectiveC(_:)  (in Foundation) + 0  [0x180e39440]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! 2 -[NSDateFormatter stringForObjectValue:]  (in Foundation) + 136  [0x181061e00]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !   2 CFDateFormatterCreateStringWithAbsoluteTime  (in CoreFoundation) + 180  [0x1803d2b98]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !     2 udat_format  (in libicucore.A.dylib) + 356  [0x1825cb1a4]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !       2 icu::DateFormat::format(double, icu::UnicodeString&, icu::FieldPosition&) const  (in libicucore.A.dylib) + 212  [0x1824c8030]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !         2 icu::SimpleDateFormat::format(icu::Calendar&, icu::UnicodeString&, icu::FieldPosition&) const  (in libicucore.A.dylib) + 80  [0x18259b170]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !           2 icu::SimpleDateFormat::_format(icu::Calendar&, icu::UnicodeString&, icu::FieldPositionHandler&, UErrorCode&) const  (in libicucore.A.dylib) + 400  [0x18259b320]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !             1 icu::SimpleDateFormat::subFormat(icu::UnicodeString&, char16_t, int, UDisplayContext, int, char16_t, icu::FieldPositionHandler&, icu::Calendar&, UErrorCode&) const  (in libicucore.A.dylib) + 1272  [0x18259b9f0]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !             | 1 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0x3e420  [0x1823f7420]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !             1 icu::SimpleDateFormat::subFormat(icu::UnicodeString&, char16_t, int, UDisplayContext, int, char16_t, icu::FieldPositionHandler&, icu::Calendar&, UErrorCode&) const  (in libicucore.A.dylib) + 3508  [0x18259c2ac]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !               1 icu::SimpleDateFormat::zeroPaddingNumber(icu::NumberFormat const*, icu::UnicodeString&, int, int, int) const  (in libicucore.A.dylib) + 256  [0x18259cd60]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !                 1 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0x12151c  [0x1824da51c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + 4 static Vault.stamp(_:)  (in Chronotheca.debug.dylib) + 432  [0x102f1c534]  Vault.swift:1436
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! 4 -[NSDateFormatter dealloc]  (in Foundation) + 60  [0x1810619bc]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !   4 -[NSDateFormatter _clearFormatter]  (in Foundation) + 36  [0x1810611a0]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !     4 _CFRelease  (in CoreFoundation) + 296  [0x180424d1c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !       4 __CFDateFormatterDeallocate  (in CoreFoundation) + 28  [0x1803d0fdc]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !         4 icu::SimpleDateFormat::~SimpleDateFormat()  (in libicucore.A.dylib) + 12  [0x1825984c0]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !           2 icu::SimpleDateFormat::~SimpleDateFormat()  (in libicucore.A.dylib) + 40  [0x1825983d0]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !           : 2 icu::DateFormatSymbols::~DateFormatSymbols()  (in libicucore.A.dylib) + 20  [0x1824e2df4]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !           :   1 icu::DateFormatSymbols::dispose()  (in libicucore.A.dylib) + 372  [0x1824e26c8]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !           :   | 1 icu::UnicodeString::~UnicodeString()  (in libicucore.A.dylib) + 28  [0x182468b44]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !           :   1 icu::DateFormatSymbols::dispose()  (in libicucore.A.dylib) + 804  [0x1824e2878]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !           1 icu::DateFormat::~DateFormat()  (in libicucore.A.dylib) + 48  [0x1824c7e24]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !           : 1 icu::GregorianCalendar::~GregorianCalendar()  (in libicucore.A.dylib) + 0  [0x18250037c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !           1 icu::SimpleDateFormat::~SimpleDateFormat()  (in libicucore.A.dylib) + 108  [0x182598414]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !             1 icu::number::SimpleNumberFormatter::cleanup()  (in libicucore.A.dylib) + 104  [0x18254a0cc]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !               1 icu::number::impl::AdoptingSignumModifierStore::~AdoptingSignumModifierStore()  (in libicucore.A.dylib) + 52  [0x1825417d8]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !                 1 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0x189edc  [0x182542edc]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + 1 static Vault.stamp(_:)  (in Chronotheca.debug.dylib) + 120  [0x102f1c3fc]  Vault.swift:1433
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! 1 NSDateFormatter.__allocating_init()  (in Chronotheca.debug.dylib) + 32  [0x102a11f68]  NSObject.h:0
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !   1 @nonobjc NSDateFormatter.init()  (in Chronotheca.debug.dylib) + 16  [0x102a22e78]  /<compiler-generated>:0
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !     1 -[NSDateFormatter init]  (in Foundation) + 172  [0x1810618ac]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !       1 objc_msgSend$setValue:forKey:  (in Foundation) + 0  [0x1815f5240]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + 1 static Vault.stamp(_:)  (in Chronotheca.debug.dylib) + 308  [0x102f1c4b8]  Vault.swift:1435
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + ! 1 -[NSDateFormatter _setDateFormat:alreadyLocked:]  (in Foundation) + 136  [0x181062a54]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + !   1 -[__SwiftNativeNSStringBase autorelease]  (in libswiftCore.dylib) + 0  [0x19824c958]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + 1 static Vault.stamp(_:)  (in Chronotheca.debug.dylib) + 388  [0x102f1c508]  Vault.swift:1436
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | +   1 static String._unconditionallyBridgeFromObjectiveC(_:)  (in Foundation) + 756  [0x180e38470]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | +     1 String.init(_cocoaString:)  (in libswiftCore.dylib) + 24  [0x1983e8520]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | +       1 _bridgeCocoaString(_:)  (in libswiftCore.dylib) + 76  [0x1983e82e8]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | +         1 -[__NSCFString copyWithZone:]  (in CoreFoundation) + 0  [0x1803f31a0]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | 1 static DayEvents.cachedItems(for:)  (in Chronotheca.debug.dylib) + 124  [0x1029638c0]  DayEvents.swift:96
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | + 1 swift_beginAccess  (in libswiftCore.dylib) + 72  [0x19818a128]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | +   1 swift::runtime::AccessSet::insert(swift::runtime::Access*, void*, void*, swift::ExclusivityFlags)  (in libswiftCore.dylib) + 32  [0x198189e7c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | 1 static DayEvents.cachedItems(for:)  (in Chronotheca.debug.dylib) + 216  [0x10296391c]  DayEvents.swift:96
+    +                       !             :     |                             +   ! : |   + ! : | + !   : |   1 Dictionary._Variant.lookup(_:)  (in libswiftCore.dylib) + 148  [0x1982d1bd4]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : |     1 __RawDictionaryStorage.find<A>(_:hashValue:)  (in libswiftCore.dylib) + 164  [0x1982ea258]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : |       1 <deduplicated_symbol>  (in libswiftCore.dylib) + 0  [0x19828f400]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : 2 SearchView.plan(_:)  (in Chronotheca.debug.dylib) + 248  [0x102de9aec]  SearchView.swift:412
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | 2 Archive.day(_:)  (in Chronotheca.debug.dylib) + 72  [0x1028926c8]  Archive.swift:94
+    +                       !             :     |                             +   ! : |   + ! : | + !   : |   2 Archive.days.getter  (in Chronotheca.debug.dylib) + 100  [0x102890378]  Archive.swift:0
+    +                       !             :     |                             +   ! : |   + ! : | + !   : |     1 static Published.subscript.getter  (in Combine) + 184  [0x1c3288bb4]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : |     + 1 static Published.subscript.getter  (in Combine) + 184  [0x1c3288bb4]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : |     +   1 swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::incrementSlow(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)  (in libswiftCore.dylib) + 132  [0x1981d5d28]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : |     1 static Published.subscript.getter  (in Combine) + 200  [0x1c3288bc4]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : |       1 swift_getAtKeyPath  (in libswiftCore.dylib) + 20  [0x19836d830]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : |         1 KeyPath._projectReadOnly(from:)  (in libswiftCore.dylib) + 76  [0x19836a180]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : |           1 __swift_instantiateGenericMetadata  (in libswiftCore.dylib) + 32  [0x1985279c0]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : |             1 _swift_getGenericMetadata(swift::MetadataRequest, void const* const*, swift::TargetTypeContextDescriptor<swift::InProcess> const*)  (in libswiftCore.dylib) + 260  [0x198198e88]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : |               1 swift::LockingConcurrentMap<swift::GenericCacheEntry, swift::LockingConcurrentMapStorage<swift::GenericCacheEntry, (unsigned short)14>>::getOrInsert<swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)  (in libswiftCore.dylib) + 188  [0x1981a9814]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : |                 1 swift::MetadataCacheEntryBase<swift::GenericCacheEntry, void const*>::awaitSatisfyingState(swift::ConcurrencyControl&, swift::MetadataRequest)  (in libswiftCore.dylib) + 24  [0x1981a84c8]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : 1 SearchView.plan(_:)  (in Chronotheca.debug.dylib) + 264  [0x102de9afc]  SearchView.swift:412
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | 1 swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::doDecrementSlow<(swift::PerformDeinit)1>(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)  (in libswiftCore.dylib) + 264  [0x19818fb50]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : 1 SearchView.plan(_:)  (in Chronotheca.debug.dylib) + 492  [0x102de9be0]  SearchView.swift:413
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | 1 static DayEvents.shown(_:marks:)  (in Chronotheca.debug.dylib) + 176  [0x10296644c]  <stdin>:0
+    +                       !             :     |                             +   ! : |   + ! : | + !   : |   1 type metadata accessor for PlanRow  (in Chronotheca.debug.dylib) + 0  [0x102c62df4]  /<compiler-generated>:0
+    +                       !             :     |                             +   ! : |   + ! : | + !   : 1 SearchView.plan(_:)  (in Chronotheca.debug.dylib) + 856  [0x102de9d4c]  SearchView.swift:414
+    +                       !             :     |                             +   ! : |   + ! : | + !   : | 1 Archive.tasks(_:)  (in Chronotheca.debug.dylib) + 144  [0x1028927c0]  Archive.swift:95
+    +                       !             :     |                             +   ! : |   + ! : | + !   : |   1 Archive.days.getter  (in Chronotheca.debug.dylib) + 100  [0x102890378]  Archive.swift:0
+    +                       !             :     |                             +   ! : |   + ! : | + !   : |     1 static Published.subscript.getter  (in Combine) + 200  [0x1c3288bc4]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : |       1 swift_getAtKeyPath  (in libswiftCore.dylib) + 20  [0x19836d830]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : |         1 KeyPath._projectReadOnly(from:)  (in libswiftCore.dylib) + 432  [0x19836a2e4]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : |           1 swift_cvw_initWithCopyImpl(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib) + 472  [0x198178704]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : 1 SearchView.plan(_:)  (in Chronotheca.debug.dylib) + 916  [0x102de9d88]  SearchView.swift:414
+    +                       !             :     |                             +   ! : |   + ! : | + !   :   1 static Array.+ infix(_:_:)  (in libswiftCore.dylib) + 104  [0x198263a74]
+    +                       !             :     |                             +   ! : |   + ! : | + !   :     1 Array.append<A>(contentsOf:)  (in libswiftCore.dylib) + 480  [0x19825ebe4]
+    +                       !             :     |                             +   ! : |   + ! : | + !   :       1 _ArrayBuffer._consumeAndCreateNew(bufferIsUnique:minimumCapacity:growForAppend:)  (in libswiftCore.dylib) + 448  [0x198254390]
+    +                       !             :     |                             +   ! : |   + ! : | + !   :         1 _ArrayBuffer._copyContents(subRange:initializing:)  (in libswiftCore.dylib) + 52  [0x19824e83c]
+    +                       !             :     |                             +   ! : |   + ! : | + !   :           1 _ArrayBuffer._typeCheck(_:)  (in libswiftCore.dylib) + 0  [0x1982559d8]
+    +                       !             :     |                             +   ! : |   + ! : | + !   1 closure #5 in SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 116  [0x102de9940]  SearchView.swift:277
+    +                       !             :     |                             +   ! : |   + ! : | + !     1 lazy protocol witness table accessor for type [PlanRow] and conformance [A]  (in Chronotheca.debug.dylib) + 0  [0x10289eeb8]  /<compiler-generated>:0
+    +                       !             :     |                             +   ! : |   + ! : | + 2 Sequence.flatMap<A>(_:)  (in libswiftCore.dylib) + 636  [0x1983bc774]
+    +                       !             :     |                             +   ! : |   + ! : | +   1 protocol witness for IteratorProtocol.next() in conformance IndexingIterator<A>  (in libswiftCore.dylib) + 308  [0x1982b03d8]
+    +                       !             :     |                             +   ! : |   + ! : | +   : 1 protocol witness for Collection.subscript.read in conformance [A]  (in libswiftCore.dylib) + 44  [0x19825c618]
+    +                       !             :     |                             +   ! : |   + ! : | +   :   1 <deduplicated_symbol>  (in libsystem_malloc.dylib) + 0  [0x1801e93ac]
+    +                       !             :     |                             +   ! : |   + ! : | +   1 protocol witness for IteratorProtocol.next() in conformance IndexingIterator<A>  (in libswiftCore.dylib) + 280  [0x1982b03bc]
+    +                       !             :     |                             +   ! : |   + ! : | 28 SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 508  [0x102de0918]  SearchView.swift:266
+    +                       !             :     |                             +   ! : |   + ! : | + 28 SearchView.found.getter  (in Chronotheca.debug.dylib) + 420  [0x102de690c]  SearchView.swift:137
+    +                       !             :     |                             +   ! : |   + ! : | +   23 _ArrayProtocol.filter(_:)  (in libswiftCore.dylib) + 464  [0x1982709b4]
+    +                       !             :     |                             +   ! : |   + ! : | +   ! 23 implicit closure #2 in implicit closure #1 in SearchView.found.getter  (in Chronotheca.debug.dylib) + 48  [0x102de6d78]  SearchView.swift:0
+    +                       !             :     |                             +   ! : |   + ! : | +   !   14 SearchView.kept(_:)  (in Chronotheca.debug.dylib) + 172  [0x102de6e38]  SearchView.swift:247
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : 10 Collection.map<A, B>(_:)  (in Chronotheca.debug.dylib) + 1012  [0x10288f8c0]  /<compiler-generated>:0
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : | 10 closure #1 in SearchView.kept(_:)  (in Chronotheca.debug.dylib) + 52  [0x102de9588]  SearchView.swift:247
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   5 static Diary.kind(of:)  (in Chronotheca.debug.dylib) + 176  [0x102a3ffb0]  Diary.swift:199
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   + 2 String.lowercased()  (in libswiftCore.dylib) + 972  [0x1983e6b64]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   + ! 2 String.UTF8View._foreignDistance(from:to:)  (in libswiftCore.dylib) + 132  [0x19840c5a4]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   + !   2 -[NSString(NSStringOtherEncodings) getBytes:maxLength:usedLength:encoding:options:range:remainingRange:]  (in Foundation) + 256  [0x18114b60c]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   + !     2 __CFStringEncodeByteStream  (in CoreFoundation) + 232  [0x18046b124]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   + !       1 CFStringGetCharactersPtr  (in CoreFoundation) + 0  [0x18044e820]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   + !       1 objc_msgSend  (in libobjc.A.dylib) + 52  [0x18003ac34]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   + 2 String.lowercased()  (in libswiftCore.dylib) + 1388  [0x1983e6d04]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   + ! 2 specialized static String._uncheckedFromUTF8(_:isASCII:)  (in libswiftCore.dylib) + 284,452  [0x1984e8c04,0x1984e8cac]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   + 1 String.lowercased()  (in libswiftCore.dylib) + 1176  [0x1983e6c30]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   +   1 _StringGuts.foreignErrorCorrectedScalar(startingAt:)  (in libswiftCore.dylib) + 36  [0x1983f1b64]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   2 static Diary.kind(of:)  (in Chronotheca.debug.dylib) + 136  [0x102a3ff88]  Diary.swift:199
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   + 1 static String._unconditionallyBridgeFromObjectiveC(_:)  (in Foundation) + 200  [0x180e38244]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   + ! 1 __CFStringIsCF  (in CoreFoundation) + 48  [0x180446694]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   + !   1 CF_IS_OBJC_CHECKING_CONSTANT_STRING  (in CoreFoundation) + 72  [0x180423b34]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   + 1 static String._unconditionallyBridgeFromObjectiveC(_:)  (in Foundation) + 268  [0x180e38288]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   +   1 DYLD-STUB$$objc_retain_x19  (in Foundation) + 4  [0x18123fa74]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   1 static Diary.kind(of:)  (in Chronotheca.debug.dylib) + 196  [0x102a3ffc4]  /<compiler-generated>:0
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   + 1 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 8  [0x1981dcc5c]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   1 static Diary.kind(of:)  (in Chronotheca.debug.dylib) + 96  [0x102a3ff60]  Diary.swift:199
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   + 1 -[NSString(NSPathUtilities) pathExtension]  (in Foundation) + 320  [0x18110091c]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   +   1 objc_autorelease  (in libobjc.A.dylib) + 132  [0x18005fea4]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   +     1 AutoreleasePoolPage::moveTLSAutoreleaseToPool(ReturnAutoreleaseInfo)  (in libobjc.A.dylib) + 164  [0x18005f8cc]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   +       1 pthread_setspecific  (in libsystem_pthread.dylib) + 0  [0x101541ab0]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   1 static Diary.kind(of:)  (in Chronotheca.debug.dylib) + 316  [0x102a4003c]  Diary.swift:199
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : 2 Collection.map<A, B>(_:)  (in Chronotheca.debug.dylib) + 980  [0x10288f8a0]  /<compiler-generated>:0
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : | 1 <deduplicated_symbol>  (in libswiftCore.dylib) + 28  [0x198491b4c]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : | + 1 Array.subscript.read  (in libswiftCore.dylib) + 32  [0x19825c7c0]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : | +   1 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 0  [0x1981dcc54]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : | 1 _xzm_free  (in libsystem_malloc.dylib) + 336  [0x1801ea560]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   1 _platform_memset  (in libsystem_platform.dylib) + 224  [0x100a2aea0]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : 1 Collection.map<A, B>(_:)  (in Chronotheca.debug.dylib) + 1192  [0x10288f974]  /<compiler-generated>:0
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : | 1 dispatch thunk of Collection.formIndex(after:)  (in libswiftCore.dylib) + 0  [0x19850ce30]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : 1 Collection.map<A, B>(_:)  (in Chronotheca.debug.dylib) + 1428  [0x10288fa60]  /<compiler-generated>:0
+    +                       !             :     |                             +   ! : |   + ! : | +   !   6 SearchView.kept(_:)  (in Chronotheca.debug.dylib) + 276  [0x102de6ea0]  SearchView.swift:248
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : 5 Shell.find.getter  (in Chronotheca.debug.dylib) + 100  [0x102ebdb48]  Shell.swift:0
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : | 2 static Published.subscript.getter  (in Combine) + 84  [0x1c3288b50]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : | + 1 __swift_instantiateGenericMetadata  (in Combine) + 32  [0x1c3262d38]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : | + ! 1 DYLD-STUB$$swift_getGenericMetadata  (in Combine) + 0  [0x1c32ea590]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : | + 1 __swift_instantiateGenericMetadata  (in Combine) + 0  [0x1c3262d18]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : | 2 static Published.subscript.getter  (in Combine) + 264  [0x1c3288c04]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : | + 1 PublishedSubject.value.getter  (in Combine) + 36  [0x1c32708a8]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : | + ! 1 os_unfair_lock_lock  (in libsystem_platform.dylib) + 4  [0x100a28ab0]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : | + 1 PublishedSubject.value.getter  (in Combine) + 88  [0x1c32708dc]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : | +   1 __swift_memcpy1_1  (in Chronotheca.debug.dylib) + 4  [0x1028a0c4c]  /<compiler-generated>:0
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : | 1 static Published.subscript.getter  (in Combine) + 200  [0x1c3288bc4]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |   1 swift_getAtKeyPath  (in libswiftCore.dylib) + 20  [0x19836d830]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : |     1 KeyPath._projectReadOnly(from:)  (in libswiftCore.dylib) + 244  [0x19836a228]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   : 1 Shell.find.getter  (in Chronotheca.debug.dylib) + 108  [0x102ebdb50]  Shell.swift:0
+    +                       !             :     |                             +   ! : |   + ! : | +   !   :   1 swift_release  (in libswiftCore.dylib) + 4  [0x19818c810]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   3 SearchView.kept(_:)  (in Chronotheca.debug.dylib) + 256  [0x102de6e8c]  SearchView.swift:248
+    +                       !             :     |                             +   ! : |   + ! : | +   !     2 EnvironmentObject.wrappedValue.getter  (in SwiftUICore) + 0  [0x1d3bdb844]
+    +                       !             :     |                             +   ! : |   + ! : | +   !     1 DYLD-STUB$$swift_unknownObjectRetain  (in SwiftUICore) + 0  [0x1d43eb7a4]
+    +                       !             :     |                             +   ! : |   + ! : | +   3 _ArrayProtocol.filter(_:)  (in libswiftCore.dylib) + 408  [0x19827097c]
+    +                       !             :     |                             +   ! : |   + ! : | +   ! 2 protocol witness for IteratorProtocol.next() in conformance IndexingIterator<A>  (in libswiftCore.dylib) + 392  [0x1982b042c]
+    +                       !             :     |                             +   ! : |   + ! : | +   ! : 2 <deduplicated_symbol>  (in libswiftCore.dylib) + 28  [0x198491b4c]
+    +                       !             :     |                             +   ! : |   + ! : | +   ! :   1 _free  (in libsystem_malloc.dylib) + 0  [0x1801f9da8]
+    +                       !             :     |                             +   ! : |   + ! : | +   ! :   1 _xzm_free  (in libsystem_malloc.dylib) + 336  [0x1801ea560]
+    +                       !             :     |                             +   ! : |   + ! : | +   ! :     1 DYLD-STUB$$_platform_bzero  (in libsystem_malloc.dylib) + 0  [0x180206a90]
+    +                       !             :     |                             +   ! : |   + ! : | +   ! 1 protocol witness for IteratorProtocol.next() in conformance IndexingIterator<A>  (in libswiftCore.dylib) + 308  [0x1982b03d8]
+    +                       !             :     |                             +   ! : |   + ! : | +   !   1 protocol witness for Collection.subscript.read in conformance [A]  (in libswiftCore.dylib) + 68  [0x19825c630]
+    +                       !             :     |                             +   ! : |   + ! : | +   !     1 Array.subscript.read  (in libswiftCore.dylib) + 164  [0x19825c6f4]
+    +                       !             :     |                             +   ! : |   + ! : | +   !       1 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 156  [0x10289fd50]  /<compiler-generated>:0
+    +                       !             :     |                             +   ! : |   + ! : | +   !         1 swift_retain  (in libswiftCore.dylib) + 32  [0x19818cb04]
+    +                       !             :     |                             +   ! : |   + ! : | +   2 _ArrayProtocol.filter(_:)  (in libswiftCore.dylib) + 504  [0x1982709dc]
+    +                       !             :     |                             +   ! : |   + ! : | +     1 _platform_memmove  (in libsystem_platform.dylib) + 208  [0x100a2b180]
+    +                       !             :     |                             +   ! : |   + ! : | +     1 _swift_pod_copy  (in libswiftCore.dylib) + 0  [0x19819c50c]
+    +                       !             :     |                             +   ! : |   + ! : | 17 SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 2032  [0x102de0f0c]  SearchView.swift:280
+    +                       !             :     |                             +   ! : |   + ! : | + 12 SearchView.entries(_:_:later:)  (in Chronotheca.debug.dylib) + 1708  [0x102de8cbc]  SearchView.swift:0
+    +                       !             :     |                             +   ! : |   + ! : | + ! 8 EnumeratedSequence.Iterator.next()  (in libswiftCore.dylib) + 232  [0x1982f67c8]
+    +                       !             :     |                             +   ! : |   + ! : | + ! : 3 protocol witness for IteratorProtocol.next() in conformance IndexingIterator<A>  (in libswiftCore.dylib) + 308  [0x1982b03d8]
+    +                       !             :     |                             +   ! : |   + ! : | + ! : | 2 protocol witness for Collection.subscript.read in conformance [A]  (in libswiftCore.dylib) + 68  [0x19825c630]
+    +                       !             :     |                             +   ! : |   + ! : | + ! : | + 2 Array.subscript.read  (in libswiftCore.dylib) + 164  [0x19825c6f4]
+    +                       !             :     |                             +   ! : |   + ! : | + ! : | +   2 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 524  [0x10289fec0]  /<compiler-generated>:0
+    +                       !             :     |                             +   ! : |   + ! : | + ! : | +     2 swift_retain  (in libswiftCore.dylib) + 48,80  [0x19818cb14,0x19818cb34]
+    +                       !             :     |                             +   ! : |   + ! : | + ! : | 1 protocol witness for Collection.subscript.read in conformance [A]  (in libswiftCore.dylib) + 44  [0x19825c618]
+    +                       !             :     |                             +   ! : |   + ! : | + ! : |   1 _xzm_xzone_malloc  (in libsystem_malloc.dylib) + 68  [0x1801e9c24]
+    +                       !             :     |                             +   ! : |   + ! : | + ! : |     1 pthread_getspecific  (in libsystem_pthread.dylib) + 0  [0x101541aa4]
+    +                       !             :     |                             +   ! : |   + ! : | + ! : 2 protocol witness for IteratorProtocol.next() in conformance IndexingIterator<A>  (in libswiftCore.dylib) + 380  [0x1982b0420]
+    +                       !             :     |                             +   ! : |   + ! : | + ! : | 1 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 476  [0x10289fe90]  /<compiler-generated>:0
+    +                       !             :     |                             +   ! : |   + ! : | + ! : | + 1 swift_retain  (in libswiftCore.dylib) + 48  [0x19818cb14]
+    +                       !             :     |                             +   ! : |   + ! : | + ! : | 1 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 524  [0x10289fec0]  /<compiler-generated>:0
+    +                       !             :     |                             +   ! : |   + ! : | + ! : |   1 swift_retain  (in libswiftCore.dylib) + 56  [0x19818cb1c]
+    +                       !             :     |                             +   ! : |   + ! : | + ! : 2 protocol witness for IteratorProtocol.next() in conformance IndexingIterator<A>  (in libswiftCore.dylib) + 392  [0x1982b042c]
+    +                       !             :     |                             +   ! : |   + ! : | + ! : | 2 <deduplicated_symbol>  (in libswiftCore.dylib) + 28  [0x198491b4c]
+    +                       !             :     |                             +   ! : |   + ! : | + ! : |   2 Array.subscript.read  (in libswiftCore.dylib) + 32  [0x19825c7c0]
+    +                       !             :     |                             +   ! : |   + ! : | + ! : |     1 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 48  [0x10289fbf8]  /<compiler-generated>:0
+    +                       !             :     |                             +   ! : |   + ! : | + ! : |     + 1 DYLD-STUB$$type metadata accessor for Date  (in Chronotheca.debug.dylib) + 4  [0x102f4ac50]
+    +                       !             :     |                             +   ! : |   + ! : | + ! : |     1 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 164  [0x10289fc6c]  /<compiler-generated>:0
+    +                       !             :     |                             +   ! : |   + ! : | + ! : |       1 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 8  [0x1981dcc5c]
+    +                       !             :     |                             +   ! : |   + ! : | + ! : 1 protocol witness for IteratorProtocol.next() in conformance IndexingIterator<A>  (in libswiftCore.dylib) + 440  [0x1982b045c]
+    +                       !             :     |                             +   ! : |   + ! : | + ! :   1 storeEnumTagSinglePayload for Archive.Day  (in Chronotheca.debug.dylib) + 20  [0x1028a05fc]  /<compiler-generated>:0
+    +                       !             :     |                             +   ! : |   + ! : | + ! :     1 swift::storeEnumTagSinglePayloadImpl(swift::OpaqueValue*, unsigned int, unsigned int, swift::TargetMetadata<swift::InProcess> const*, unsigned long, unsigned int, void (swift::OpaqueValue*, unsigned int, unsigned int, swift::TargetMetadata<swift::InProcess> const*) swiftcall*)  (in libswiftCore.dylib) + 484  [0x1981870a8]
+    +                       !             :     |                             +   ! : |   + ! : | + ! 2 EnumeratedSequence.Iterator.next()  (in libswiftCore.dylib) + 56,384  [0x1982f6718,0x1982f6860]
+    +                       !             :     |                             +   ! : |   + ! : | + ! 1 EnumeratedSequence.Iterator.next()  (in libswiftCore.dylib) + 252  [0x1982f67dc]
+    +                       !             :     |                             +   ! : |   + ! : | + ! : 1 getEnumTagSinglePayload for Archive.Day  (in Chronotheca.debug.dylib) + 20  [0x1028a0510]  /<compiler-generated>:0
+    +                       !             :     |                             +   ! : |   + ! : | + ! :   1 ???  (in Chronotheca.debug.dylib)  load address 0x10288c000 + 0x145dc  [0x1028a05dc]
+    +                       !             :     |                             +   ! : |   + ! : | + ! 1 EnumeratedSequence.Iterator.next()  (in libswiftCore.dylib) + 388  [0x1982f6864]
+    +                       !             :     |                             +   ! : |   + ! : | + !   1 swift_getTupleTypeMetadata  (in libswiftCore.dylib) + 564  [0x19819b148]
+    +                       !             :     |                             +   ! : |   + ! : | + 2 SearchView.entries(_:_:later:)  (in Chronotheca.debug.dylib) + 2128  [0x102de8e60]  SearchView.swift:219
+    +                       !             :     |                             +   ! : |   + ! : | + ! 2 outlined init with copy of Archive.Day  (in Chronotheca.debug.dylib) + 32,376  [0x10289bed4,0x10289c02c]  /<compiler-generated>:0
+    +                       !             :     |                             +   ! : |   + ! : | + 2 SearchView.entries(_:_:later:)  (in Chronotheca.debug.dylib) + 2216  [0x102de8eb8]  SearchView.swift:219
+    +                       !             :     |                             +   ! : |   + ! : | + ! 2 Array.append(_:)  (in libswiftCore.dylib) + 76  [0x19825e120]
+    +                       !             :     |                             +   ! : |   + ! : | + !   1 Array._reserveCapacityAssumingUniqueBuffer(oldCount:)  (in libswiftCore.dylib) + 108  [0x19825de34]
+    +                       !             :     |                             +   ! : |   + ! : | + !   : 1 _ArrayBuffer._consumeAndCreateNew(bufferIsUnique:minimumCapacity:growForAppend:)  (in libswiftCore.dylib) + 356  [0x198254334]
+    +                       !             :     |                             +   ! : |   + ! : | + !   :   1 _platform_memmove  (in libsystem_platform.dylib) + 100  [0x100a2b114]
+    +                       !             :     |                             +   ! : |   + ! : | + !   1 Array._reserveCapacityAssumingUniqueBuffer(oldCount:)  (in libswiftCore.dylib) + 24  [0x19825dde0]
+    +                       !             :     |                             +   ! : |   + ! : | + 1 SearchView.entries(_:_:later:)  (in Chronotheca.debug.dylib) + 1720  [0x102de8cc8]  SearchView.swift:0
+    +                       !             :     |                             +   ! : |   + ! : | +   1 outlined init with take of (offset: Int, element: Archive.Day)?  (in Chronotheca.debug.dylib) + 72  [0x102decc10]  /<compiler-generated>:0
+    +                       !             :     |                             +   ! : |   + ! : | +     1 getEnumTagSinglePayload for Archive.Day  (in Chronotheca.debug.dylib) + 20  [0x1028a0510]  /<compiler-generated>:0
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        2336
+        mach_msg2_trap  (in libsystem_kernel.dylib)        548
+        semaphore_wait_trap  (in libsystem_kernel.dylib)        271
+        dyld4::APIs::_dyld_get_image_name(unsigned int)  (in dyld_sim)        168
+        __semwait_signal  (in libsystem_kernel.dylib)        142
+        objc_msgSend$rangeOfString:  (in AXCoreUtilities)        99
+        writev  (in libsystem_kernel.dylib)        79
+        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        43
+        _xzm_xzone_malloc_tiny  (in libsystem_malloc.dylib)        34
+        __46-[AXBinaryMonitor _addHandler:withName:toMap:]_block_invoke_2  (in AXCoreUtilities)        20
+        semaphore_timedwait_trap  (in libsystem_kernel.dylib)        18
+        AG::Graph::propagate_dirty(AG::AttributeID)  (in AttributeGraph)        15
+        objc_msgSend  (in libobjc.A.dylib)        13
+        swift_retain  (in libswiftCore.dylib)        13
+        swift_release  (in libswiftCore.dylib)        10
+        __CFAllocatorRespectsHintZeroWhenAllocating  (in CoreFoundation)        8
+        pthread_getspecific  (in libsystem_pthread.dylib)        8
+        <deduplicated_symbol>  (in SwiftUICore)        6
+        _platform_memmove  (in libsystem_platform.dylib)        6
+        objc_release_x23  (in libobjc.A.dylib)        6
+        _CFAllocatorAllocateImpl  (in CoreFoundation)        5
+        pthread_setspecific  (in libsystem_pthread.dylib)        5
+
+Binary Images:
+       0x100994000 -        0x100997507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC/data/Containers/Bundle/Application/74970AE8-C4FC-4613-AAD5-8D10C842DFC0/Chronotheca.app/Chronotheca
+       0x1009a8000 -        0x1009e2ee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
+       0x100a28000 -        0x100a303d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
+       0x100ae8000 -        0x100b36e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x100ba4000 -        0x100be765f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x100d30000 -        0x100de3523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
+       0x100e88000 -        0x100f212af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x101540000 -        0x10154c10b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
+       0x101638000 -        0x10163adff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x101654000 -        0x10165c03f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x101768000 -        0x101768b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x101778000 -        0x10178339f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x10179c000 -        0x10179fe5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x1017bc000 -        0x1017c549f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x1017e0000 -        0x1017e6b7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
