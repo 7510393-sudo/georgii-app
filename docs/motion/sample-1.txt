@@ -1,0 +1,47 @@
+    2 Thread_45460   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 2 start  (in dyld) + 6992  [0x1008ac4e4]
+    +   2 start_sim  (in dyld_sim) + 20  [0x10074f0e4]
+    +     2 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x1025ee7d8]  ChronothecaApp.swift:0
+    +       2 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1025ee72c]  /<compiler-generated>:0
+    +         2 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           2 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             2 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               2 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 2 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   2 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     2 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       2 __CFRunLoopRun  (in CoreFoundation) + 2100  [0x180421d44]
+    +                         2 __CFRunLoopDoSource1  (in CoreFoundation) + 476  [0x180422c78]
+    +                           2 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE1_PERFORM_FUNCTION__  (in CoreFoundation) + 56  [0x180423628]
+    +                             2 __CFMachPortPerform  (in CoreFoundation) + 164  [0x1803e6c50]
+    +                               2 UC::DriverCore::continueProcessing()  (in UpdateCycle) + 80  [0x2343d22c0]
+    +                                 2 schedulerStepScheduledMainSectionContinue  (in UIKitCore) + 56  [0x1863b6064]
+    +                                   2 _UIUpdateSequenceRunNext  (in UIKitCore) + 120  [0x18590339c]
+    +                                     2 __setupUpdateSequence_block_invoke_2  (in UIKitCore) + 372  [0x1863b5c0c]
+    +                                       2 _UIApplicationFlushCATransaction  (in UIKitCore) + 48  [0x1864a3b50]
+    +                                         2 CA::Transaction::flush_as_runloop_observer(bool)  (in QuartzCore) + 68  [0x18cefa1a4]
+    +                                           2 CA::Transaction::commit()  (in QuartzCore) + 632  [0x18cef88f0]
+    +                                             2 CA::Context::commit_transaction(CA::Transaction*, double, double*)  (in QuartzCore) + 560  [0x18cecacc8]
+    +                                               2 CA::Layer::layout_and_display_if_needed(CA::Transaction*)  (in QuartzCore) + 464  [0x18cfb2aac]
+    +                                                 2 -[CALayer _display]  (in QuartzCore) + 1648  [0x18cf9e8e4]
+    +                                                   2 invocation function for block in CA::Layer::display_()  (in QuartzCore) + 60  [0x18cfa9280]
+    +                                                     2 CABackingStoreUpdate_  (in QuartzCore) + 636  [0x18cdfede8]
+    +                                                       2 CGDisplayListDrawInContextDelegate  (in CoreGraphics) + 308  [0x18d47b770]
+    +                                                         2 CG::DisplayList::executeEntries(std::__wrap_iter<std::shared_ptr<CG::DisplayListEntry const>*>, std::__wrap_iter<std::shared_ptr<CG::DisplayListEntry const>*>, CGContextDelegate*, CGRenderingState*, CGGStack*, CGRect const*, __CFDictionary const*, bool)  (in CoreGraphics) + 1304  [0x18d479558]
+    +                                                           2 ripc_DrawGlyphs  (in CoreGraphics) + 1452  [0x18d4981c0]
+    +                                                             2 draw_glyph_bitmaps  (in CoreGraphics) + 1096  [0x18d498d10]
+    +                                                               2 render_glyphs  (in CoreGraphics) + 276  [0x18d498f60]
+    +                                                                 2 CGGlyphBuilderLockBitmaps  (in CoreGraphics) + 1092  [0x18d4a2b64]
+    +                                                                   2 CGFontCreateGlyphPath  (in CoreGraphics) + 40  [0x18d525008]
+    +                                                                     2 FPFontCopyGlyphPath  (in libFontParser.dylib) + 24  [0x19365aa48]
+    +                                                                       2 TFPFont::CopyGlyphPath(CGAffineTransform const*, unsigned int) const  (in libFontParser.dylib) + 36  [0x1937e6328]
+    +                                                                         2 TFPFont::CopyGlyphPath(unsigned int) const  (in libFontParser.dylib) + 276  [0x1937e5178]
+    +                                                                           2 TFontHandler::CopyGlyphPath(unsigned int, bool*) const  (in libFontParser.dylib) + 88  [0x1937caa18]
+    +                                                                             2 TTrueTypeFontHandler::GetOutlinePath(unsigned int, TGlyphOutlineBatch const&, bool*) const  (in libFontParser.dylib) + 124  [0x1937cdad0]
+    +                                                                               2 TTrueTypeFontHandler::RenderGlyph(unsigned int, TTrueTypeQuadOutlineContext&, unsigned int, bool*) const  (in libFontParser.dylib) + 164  [0x1937cc2a0]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        5
+
+Binary images description not available
+
