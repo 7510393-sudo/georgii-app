@@ -740,10 +740,12 @@ struct PageTexture: View {
         }
     }
 
-    /// Сторона клетки — по ней же строки плана (P413).
-    static let cell: CGFloat = 18
+    /// Сторона клетки — по ней же строки плана (P413). 22 точки — ровно
+    /// строчка названия дела: каждая строчка сидит на линии клетки, как в
+    /// тетради (P795; прежде 18, и строчки в 22 расходились с клеткой).
+    static let cell: CGFloat = 22
 
-    /// Клетка в 18 точек — как в школьной тетради, но еле видная.
+    /// Клетка — как в школьной тетради, но еле видная.
     static let grid: UIImage = {
         let side: CGFloat = cell
         return UIGraphicsImageRenderer(size: CGSize(width: side, height: side)).image { ctx in

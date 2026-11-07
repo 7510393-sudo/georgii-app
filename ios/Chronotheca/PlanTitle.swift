@@ -43,14 +43,20 @@ struct PlanTitle: UIViewRepresentable {
     static var placeholder: String { T("Без названия", "Untitled") }
     /// На ступень крупнее прежних 15 и растёт с настройкой (P274).
     static var size: CGFloat { 16 * Prefs.textScale }
-    static let spacing: CGFloat = 3
+    /// Шаг строчек названия (P795): ровно клетка листа — строчка за строчкой
+    /// сидят на её линиях. Крупный шрифт (настройка размера) в клетку не
+    /// влезает — тогда шаг по шрифту, как прежде.
+    static var pitch: CGFloat {
+        let line = UIFont.systemFont(ofSize: size).lineHeight
+        return line + 2 <= PageTexture.cell ? PageTexture.cell : line + 3
+    }
+    /// Зазор между строчками — до шага (P795). Отдельного зазора после
+    /// первой строки больше нет (P186): шаг в клетку и так выше голов строки.
+    static var spacing: CGFloat { pitch - UIFont.systemFont(ofSize: size).lineHeight }
 
-    /// Насколько вторая строка названия отступает от первой сверх обычного.
-    ///
-    /// Первая строка стоит рядом с номером, временем и колокольчиком, а
-    /// вторая начинается под ними. Без зазора она прилипала к пунктиру
-    /// времени, и «нотариусу» читалось как подпись к «09:00» (решение P186).
-    static let clearance: CGFloat = 5
+    /// Сколько от верха строки дела до верха букв, чтобы строчка письма
+    /// легла на линию клетки (P795).
+    static var lead: CGFloat { max(0, PageTexture.cell - baseline) }
 
     /// Где проходит строчка письма, считая от верха поля. По ней голова
     /// строки садится на первую строку названия (P171).
@@ -325,15 +331,12 @@ struct PlanTitle: UIViewRepresentable {
             страница.setContentOffset(CGPoint(x: страница.contentOffset.x, y: куда), animated: true)
         }
 
-        /// После первой строки — зазор, если за ней есть вторая: вторая
-        /// начинается под головой строки и не должна к ней прилипать.
-        /// Одиночное название строку не удлиняет (решение P186).
+        /// Строчки идут шагом в клетку листа (P795, вместо отдельного зазора
+        /// после первой строки P186).
         func layoutManager(_ layoutManager: NSLayoutManager,
                            lineSpacingAfterGlyphAt glyphIndex: Int,
                            withProposedLineFragmentRect rect: CGRect) -> CGFloat {
-            let первая = rect.minY < 1
-            let дальше = glyphIndex + 1 < layoutManager.numberOfGlyphs
-            return первая && дальше ? PlanTitle.spacing + PlanTitle.clearance : PlanTitle.spacing
+            PlanTitle.spacing
         }
 
         /// Буквы, набранные сразу за кнопочкой, — обычные буквы, а не
