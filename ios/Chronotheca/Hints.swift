@@ -34,8 +34,8 @@ final class Hints: ObservableObject {
         [
             Hint(id: "pages", screen: .today,
                  title: T("Разделы — свайпом", "Swipe between sections"),
-                 text: T("Проведите пальцем вбок — календарь и карта. Вчера и завтра — стрелки ‹ › вверху страницы; там уже лежат образцы: так выглядит заполненный день. «День» внизу вернёт на сегодня.",
-                         "Swipe sideways for the calendar and the map. Yesterday and tomorrow are behind the ‹ › arrows at the top of the page; there are samples there: this is what a filled-in day looks like. “Day” at the bottom brings you back to today.")),
+                 text: T("Проведите пальцем вбок — календарь и карта. Вчера и завтра — стрелки ‹ › вверху страницы; там уже лежат образцы: так выглядит заполненный день. «Дневник» внизу вернёт на сегодня.",
+                         "Swipe sideways for the calendar and the map. Yesterday and tomorrow are behind the ‹ › arrows at the top of the page; there are samples there: this is what a filled-in day looks like. “Diary” at the bottom brings you back to today.")),
             Hint(id: "outcome", screen: .today,
                  title: T("Итоги дня", "How the day went"),
                  text: T("В дневнике под каждым делом — строка для итога: что вышло. Одно слово или фраза — и вечер записан.",

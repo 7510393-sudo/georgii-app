@@ -82,14 +82,19 @@ struct ChronothecaApp: App {
                 // сегодняшний сразу, до того как приложение станет видно
                 // целиком (P711): прежде это делалось позже, и прежняя
                 // страница успевала мелькнуть.
-                // Клавиатура, если была поднята, встаёт без въезда (P763).
-                if old == .background { KeyboardReturn.still() }
                 if old == .background, shell.newDaySinceLeft() {
                     shell.startOver(store)
                     shell.noteToday()
                 }
                 store.save()
             case .background:
+                // Уходя в фон — клавиатуру убрать (P794, вместо возврата без
+                // въезда P763): после разблокировки iPhone поднимал её сам,
+                // и строка над ней с вложениями вставала посреди экрана, а
+                // самой клавиатуры не было (снимок автора). Вернувшись,
+                // человек видит лист; писать дальше — одно касание.
+                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder),
+                                                to: nil, from: nil, for: nil)
                 store.save()
                 shell.rememberLeft(store)
             // Вернувшись — сверить день с диском: пока приложение стояло,
