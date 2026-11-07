@@ -777,26 +777,46 @@ enum Afar {
 
     /// `top` — верх карточки на экране ленты, `height` — высота экрана.
     /// Возвращает сдвиг по вертикали и масштаб.
+    ///
+    /// Пространство ленты сжимается плавно (P786): каждый отрезок ленты
+    /// показывается в `k` раз короче, где `k` — масштаб карточки в этом
+    /// месте, а в дальней трети — ещё и на долю наползания. Карточка встаёт
+    /// в сжатом пространстве и уменьшается вместе с ним, поэтому стык с
+    /// соседней не расходится. Прежде шаг сжимался только в дальней трети, а
+    /// карточки уменьшались по всему экрану — в середине между ними
+    /// открывалась щель.
     static func place(_ top: CGFloat, side: Int, height: CGFloat) -> (CGFloat, CGFloat) {
         // Расстояние до дальнего края: у прошлого — от верха экрана,
         // у будущего — от низа.
         let t = side > 0 ? top : height - top
-        let third = height / 3
-        // Дальняя треть сжимается: шаг между карточками плавно убывает от
-        // прежнего на границе трети до `tightest` у края, дальше за краем —
-        // как у края. Каждая карточка встаёт по этой мере сама.
-        let loss = 1 - tightest
-        let f: CGFloat
-        if t >= third {
-            f = t
-        } else if t >= 0 {
-            f = third - (tightest * (third - t) + loss / 2 * (third * third - t * t) / third)
-        } else {
-            f = loss / 2 * third + tightest * t
-        }
+        let f = height - squeezed(from: t, height: height)
         let shown = side > 0 ? f : height - f
         let near = min(1, max(0, f / height))
         return (shown - top, smallest + (1 - smallest) * near)
+    }
+
+    /// Сколько показанной длины у отрезка ленты от `t` до ближнего края
+    /// (`height`): сумма `k` по отрезку. За ближним краем — как есть.
+    private static func squeezed(from t: CGFloat, height h: CGFloat) -> CGFloat {
+        if t >= h { return h - t }
+        let a = smallest, b = 1 - smallest
+        let third = h / 3
+        // Ближние две трети: k = масштаб, a + b·t/h.
+        func near(_ t: CGFloat) -> CGFloat { a * (h - t) + b * (h * h - t * t) / (2 * h) }
+        if t >= third { return near(t) }
+        // Дальняя треть: k = масштаб × наползание (от 1 у границы до
+        // `tightest` у края).
+        let beta = b / h
+        let gamma = (1 - tightest) / third
+        func far(_ t: CGFloat) -> CGFloat {
+            near(third)
+                + tightest * a * (third - t)
+                + (a * gamma + tightest * beta) * (third * third - t * t) / 2
+                + beta * gamma * (third * third * third - t * t * t) / 3
+        }
+        if t >= 0 { return far(t) }
+        // За дальним краем — как у края.
+        return far(0) - a * tightest * t
     }
 }
 
