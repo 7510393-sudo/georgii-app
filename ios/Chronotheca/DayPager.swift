@@ -407,55 +407,57 @@ struct DayPage: View {
                      diaryMark: AnyView(cloud),
                      strip: AnyView(AttachBar(live: live)),
                      onPull: { [shell, store, archive] dir in
-                         // Тянули за край открытого дня — картотека (P769).
-                         guard shell.screen == .today, shell.movingTask == nil else {
-                             withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) { shell.filePull = 0 }
+                         // Дотянули до порога и отпустили — лента картотеки
+                         // открыта (P769, P777): доезжает, пока вчера не встанет
+                         // над нижней строкой, а завтра — под строкой поиска.
+                         let ribbon = shell.ribbon
+                         guard shell.screen == .today, shell.movingTask == nil, shell.pulling else {
+                             ribbon.glide(to: 0) { shell.pulling = false; ribbon.release() }
                              return
                          }
                          hideKeyboard()
                          store.prune()
-                         // Сторона плашки меняется, пока она за краем, и
-                         // только потом плашка едет (P771): иначе будущее
-                         // приехало бы сверху.
-                         // Картотека уже наполовину на экране — доезжает
-                         // отсюда (P772); день встаёт на место под ней.
+                         // Толчок смены раздела (P772).
+                         Feel.thud()
+                         shell.ribbonOpen = true
                          shell.screen = .search
-                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
-                             var still = Transaction()
-                             still.disablesAnimations = true
-                             withTransaction(still) { shell.filePull = 0 }
+                         let h = ribbon.height
+                         let target = dir > 0 ? h : Search.fieldHeight + Search.restTop - h
+                         ribbon.glide(to: target) {
+                             shell.pulling = false
+                             ribbon.release()
                          }
-                         archive.reloadSoon()
-                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { store.save() }
+                         // Запись дня и перечитывание описи — после хода: ничто
+                         // не стоит между пальцем и лентой.
+                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                             store.save()
+                             archive.reloadSoon()
+                         }
                      },
                      onPullMove: { [shell] amount, dir in
                          guard shell.screen == .today, shell.movingTask == nil else { return }
+                         let ribbon = shell.ribbon
                          if dir == 0 {
                              // Не дотянули или вернули палец — мягко назад.
-                             withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) {
-                                 shell.filePull = 0
+                             guard shell.pulling else { return }
+                             ribbon.glide(to: 0) {
+                                 shell.pulling = false
+                                 ribbon.release()
                              }
                              return
                          }
-                         var still = Transaction()
-                         still.disablesAnimations = true
-                         withTransaction(still) {
-                             // Начало тяги: сторона плашки и стопка готовятся,
-                             // пока плашка за краем.
-                             if shell.filePull == 0 || shell.fileFrom != dir {
-                                 shell.fileFrom = dir
-                                 shell.searchHome += 1
-                                 // Картотека, оставленная под днём кнопкой
-                                 // «День», лежала бы на месте и не ехала за
-                                 // пальцем, а на пороге прыгала (P775).
-                                 // Убираем её за край, пока день закрывает
-                                 // весь экран.
-                                 if shell.stack.contains(.search), shell.stack.last == .today {
-                                     shell.stack.removeAll { $0 == .search }
-                                 }
-                             }
-                             shell.filePull = amount * CGFloat(dir)
+                         if !shell.pulling {
+                             // Лента ещё не стоит у дня — ставим и ждём
+                             // следующего движения пальца.
+                             guard ribbon.begin() else { return }
+                             shell.fileFrom = dir
+                             shell.pulling = true
+                         } else if shell.fileFrom != dir {
+                             shell.fileFrom = dir
                          }
+                         // Лента и день — одной прокруткой: место дня ровно
+                         // под днём, карточки вплотную к его краю.
+                         ribbon.pull(amount * CGFloat(dir))
                      }) {
                 PlanView()
             } diary: {

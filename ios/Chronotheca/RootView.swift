@@ -649,9 +649,17 @@ struct RootView: View {
                     if mapReady || shell.screen == .map { MapScreen() } else { Color.clear }
                 }
                 .accessibilityHidden(shell.screen != .map)
-                // Картотека будущего поднимается снизу, прошлого — опускается
-                // сверху (P771): с той стороны, за которую тянули день.
-                panel(.search, from: shell.fileFrom < 0 ? .bottom : .top, over: geo.size) { SearchView() }
+                // Лента картотеки (P777): не плашка, а продолжение дня —
+                // лежит сразу под ним и видна, только пока её тянут или она
+                // открыта. Прежде — две плашки, прошлого и будущего, со
+                // щелями у дня (P771–P776).
+                SearchView(height: geo.size.height)
+                    .frame(width: geo.size.width, height: geo.size.height)
+                    .background(Desk())
+                    .opacity(shell.ribbonLive ? 1 : 0)
+                    .zIndex(shell.ribbonLive ? Double(shell.stack.firstIndex(of: .today) ?? 0) + 0.5 : -1)
+                    .allowsHitTesting(shell.screen == .search)
+                    .accessibilityHidden(!shell.ribbonLive)
             }
             .frame(width: geo.size.width, height: geo.size.height)
         }
@@ -683,10 +691,10 @@ struct RootView: View {
             * (size.height > 0 ? size.height + BoardEdge.depth + BoardEdge.shade : 1200)
         return content()
             .frame(width: size.width, height: size.height)
-            // Календарь и поиск — целиком на тёплом столе, и шапка тоже
+            // Календарь — целиком на тёплом столе, и шапка тоже
             // (P758: на снимке шапка календаря была серой).
             .background {
-                if which == .calendar || which == .search { Desk() } else { Look.chrome }
+                if which == .calendar { Desk() } else { Look.chrome }
             }
             // Торец стоит с той стороны, которой плашка идёт вперёд, и
             // выступает за её край — то есть лежит на книге, а не на самой
@@ -696,40 +704,15 @@ struct RootView: View {
                 BoardEdge(fromTop: edge == .top)
                     .offset(y: edge == .top ? BoardEdge.depth : -BoardEdge.depth)
             }
-            // Пока картотеку тянут (P772), она едет за пальцем, а день — вместе
-            // с ней: картотека прилеплена к его краю.
-            // Обратно — так же: картотека уезжает за пальцем и открывает день
-            // под собой (P773).
-            .offset(y: down ? (which == .today ? shell.filePull : which == .search ? shell.fileBack : 0)
-                            : away + (which == .search ? shell.filePull + gapClose(away) : 0))
+            .offset(y: down ? 0 : away)
+            // День стоит в ленте картотеки на своём месте и едет с ней (P777).
+            .modifier(FollowRibbon(ribbon: shell.ribbon, live: which == .today && shell.ribbonLive))
             // Новая плашка ложится поверх прежних (P501).
-            .zIndex(down ? Double((shell.stack.firstIndex(of: which) ?? 0) + 1) : loose(which))
+            .zIndex(down ? Double((shell.stack.firstIndex(of: which) ?? 0) + 1) : 0)
             // Ловит касания только верхняя: под ней другая плашка или
-            // живая книга.
-            .allowsHitTesting(on)
-    }
-
-    /// Слой картотеки, пока она за краем (P776). Прочие стоящие за краем
-    /// плашки — под всеми. Но календарь или карта, открытые раньше, лежат
-    /// под днём: вытягиваемая картотека оказывалась под ними, и вместо неё
-    /// за днём был виден календарь. Пока её тянут — сразу под днём, поверх
-    /// остальных; пока уезжает обратно — поверх дня, иначе день закрыл бы
-    /// её мгновенно.
-    private func loose(_ which: Shell.Screen) -> Double {
-        guard which == .search else { return 0 }
-        let top = Double(shell.stack.count)
-        if shell.fileBack != 0 { return top + 0.5 }
-        if shell.filePull != 0 { return top - 0.5 }
-        return 0
-    }
-
-    /// Щель между картотекой и днём при вытягивании (P775): плашка стоит за
-    /// краем с запасом на тень, и пока тянут, между ней и днём видно
-    /// то, что лежит ниже, — карту. Запас убирается по мере вытягивания; с
-    /// запасом в точку сверху — под днём, чтобы не было волоска.
-    private func gapClose(_ away: CGFloat) -> CGFloat {
-        let k = min(abs(shell.filePull), BoardEdge.shade + 1)
-        return away < 0 ? k : -k
+            // живая книга. Пока открыта лента, день пропускает касания к ней:
+            // ленту листают и по месту дня (P777).
+            .allowsHitTesting(on && !(which == .today && shell.screen == .search))
     }
 
     // MARK: - Разделы
@@ -937,25 +920,38 @@ struct RootView: View {
     private func follow(from old: Shell.Screen, to new: Shell.Screen) {
         // Быстрее прежних 0,46 (P565): медленный ход казался задумчивостью.
         let heavy = Animation.spring(response: 0.3, dampingFraction: 0.9)
-        // Возврат из картотеки жестом (P775) — флаг на один ход.
-        let back = shell.fileReturn
-        shell.fileReturn = false
+        // Лента картотеки (P777) — не плашка: в стопку не входит, открыта
+        // прямо под днём.
+        if new == .search {
+            if shell.instant {
+                shell.instant = false
+                var still = Transaction()
+                still.disablesAnimations = true
+                withTransaction(still) { shell.stack = [.today] }
+            }
+            shell.ribbonOpen = true
+            return
+        }
         // С виджета, из напоминания, после паузы — сразу, без хода (P583).
         if shell.instant {
             shell.instant = false
             var still = Transaction()
             still.disablesAnimations = true
             withTransaction(still) { shell.stack = [new] }
+            closeRibbonNow()
             return
         }
-        // Из картотеки жестом (P775): уезжает только её плашка, день под ней
-        // стоит. Прежде день снимали и роняли заново — на ходу он пропадал
-        // и выезжал сверху.
-        // Только когда прямо под картотекой лежит день.
-        if back, new == .today, shell.stack.last == .search,
-           shell.stack.dropLast().last == .today {
-            withAnimation(heavy) { shell.stack.removeLast() }
-            return
+        if shell.ribbonOpen {
+            // Из ленты в день: лента доезжает, пока место дня не встанет на
+            // экран целиком (P777). День не роняют заново сверху.
+            if old == .search && new == .today {
+                Feel.thud()
+                backToDay()
+                return
+            }
+            // В день из календаря или карты, открытых поверх ленты: день
+            // опускается сверху, как всегда, а лента под ним закрывается.
+            if new == .today { closeRibbonNow() }
         }
         // Толчок — в начале хода, вместе с нажатием (P268).
         Feel.thud()
@@ -973,6 +969,43 @@ struct RootView: View {
             return
         }
         withAnimation(heavy) { shell.stack.append(new) }
+    }
+
+    /// Лента доезжает местом дня на экран, и день снова живой (P777).
+    private func backToDay() {
+        let ribbon = shell.ribbon
+        let finish = { [shell] in
+            var still = Transaction()
+            still.disablesAnimations = true
+            withTransaction(still) {
+                shell.ribbonOpen = false
+                shell.fileFrom = 0
+            }
+        }
+        if ribbon.seen {
+            ribbon.glide(to: 0, then: finish)
+        } else {
+            // Место дня далеко в ленте: сперва лента встаёт у дня, затем
+            // доезжает до него.
+            ribbon.rest?(ribbon.y < 0 ? -1 : 1)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                ribbon.glide(to: 0, then: finish)
+            }
+        }
+    }
+
+    /// Закрыть ленту без хода — она под другой плашкой, её не видно.
+    private func closeRibbonNow() {
+        guard shell.ribbonOpen || shell.pulling else { return }
+        var still = Transaction()
+        still.disablesAnimations = true
+        withTransaction(still) {
+            shell.ribbonOpen = false
+            shell.pulling = false
+            shell.fileFrom = 0
+        }
+        shell.ribbon.release()
+        shell.ribbon.home?()
     }
 
     // MARK: - Сообщение

@@ -376,8 +376,8 @@ final class SheetScroller {
 }
 
 /// Выключает у прокрутки, в которой стоит, оттяжку за край (P445) и
-/// запоминает её (P457). Ею же пользуется картотека (P773): вместо оттяжки
-/// за пальцем едет сама плашка.
+/// запоминает её (P457). Ею же пользуется лента картотеки (P777): её
+/// прокрутку ведут вместе с днём.
 struct NoBounce: UIViewRepresentable {
     let box: SheetScroller
     var pull: EdgePull? = nil
@@ -452,9 +452,6 @@ final class EdgePull: NSObject, ObservableObject, UIGestureRecognizerDelegate {
     private var dir = 0
 
     var enabled = true
-    /// Какой край тянется (P773): 0 — оба, 1 — только верх вниз, -1 — только
-    /// низ вверх.
-    var only = 0
     var commit: ((Int) -> Void)?
     var progress: ((CGFloat, Int) -> Void)?
 
@@ -498,9 +495,9 @@ final class EdgePull: NSObject, ObservableObject, UIGestureRecognizerDelegate {
             if anchor == nil {
                 // Вбок — это перелистывание, не тяга.
                 if abs(t.x) > abs(t.y) { last = t.y; return }
-                if top && t.y > last && only >= 0 {
+                if top && t.y > last {
                     anchor = last; dir = 1
-                } else if bottom && t.y < last && only <= 0 {
+                } else if bottom && t.y < last {
                     anchor = last; dir = -1
                 }
             }

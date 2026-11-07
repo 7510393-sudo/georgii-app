@@ -21,66 +21,23 @@ struct SearchView: View {
     /// Насколько клавиатура закрывает список находок.
     @State private var keyboard: CGFloat = 0
 
-    /// Картотеку тянут обратно к «Дню» за её край у дня (P773): прошлое —
-    /// вверх за низ, будущее — вниз за верх.
-    @StateObject private var back = EdgePull()
-    @State private var scroller = SheetScroller()
+    /// Высота экрана раздела — высота места дня в ленте (P777).
+    let height: CGFloat
 
     var body: some View {
-        VStack(spacing: 0) {
-            field
-            // Стопка считается один раз за перерисовку (P771).
-            let days = Search.deep ? Array(repeating: found, count: 12).flatMap { $0 } : shelf
-            if days.isEmpty && query.trimmingCharacters(in: .whitespaces).isEmpty {
-                message(T("Пока нечего искать.", "Nothing to search yet."),
-                        T("Напишите первую запись — и она найдётся здесь.",
-                          "Write your first entry, and it will turn up here."))
-            } else if days.isEmpty {
-                message(T("Ничего не нашлось.", "Nothing found."),
-                        T("По запросу «\(query)» \(whereNot)записей нет.",
-                          "No entries \(whereNot)match “\(query)”."))
-            } else {
-                list(days)
+        ribbonList
+            // Строка поиска — над лентой, полупрозрачная (P718, P719), и
+            // только у открытой ленты: на стыке с днём её нет (P777).
+            .overlay(alignment: .top) {
+                field
+                    .opacity(shell.screen == .search ? 1 : 0)
+                    .allowsHitTesting(shell.screen == .search)
+                    .animation(.easeOut(duration: 0.2), value: shell.screen == .search)
             }
-        }
-        .onChange(of: shell.fileFrom, initial: true) { _, from in back.only = from < 0 ? 1 : -1 }
-        .onChange(of: keyboard, initial: true) { _, now in back.enabled = now == 0 }
-        .onAppear {
-            back.progress = { [shell] amount, dir in
-                guard shell.screen == .search else { return }
-                if dir == 0 {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) { shell.fileBack = 0 }
-                    return
-                }
-                var still = Transaction()
-                still.disablesAnimations = true
-                withTransaction(still) { shell.fileBack = amount * CGFloat(dir) }
-            }
-            back.commit = { [shell] _ in
-                guard shell.screen == .search else { return }
-                // Плашка уже наполовину ушла — уезжает отсюда; день под ней.
-                shell.fileReturn = true
-                shell.screen = .today
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
-                    var still = Transaction()
-                    still.disablesAnimations = true
-                    withTransaction(still) { shell.fileBack = 0 }
-                }
-            }
-        }
-        // Ушли из картотеки — в следующий раз она снова о прошлом и
-        // приезжает сверху (P771). Не сразу: плашка ещё уезжает.
-        .onChange(of: shell.screen) { _, now in
-            guard now != .search, shell.fileFrom != 0 else { return }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                if shell.screen != .search { shell.fileFrom = 0 }
-            }
-        }
-        .keyboardHeight($keyboard)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        // Фон поиска — ровный, без фактуры (P696): фактурная бумага — сами
-        // карточки, а не стол под ними (замена P693).
-        .background(Desk())
+            .keyboardHeight($keyboard)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .onAppear { shell.ribbon.height = height }
+            .onChange(of: height) { _, h in shell.ribbon.height = h }
     }
 
     /// Строка поиска стоит вместо заголовка «Поиск» — между уголками
@@ -186,23 +143,31 @@ struct SearchView: View {
         }
     }
 
-    /// Картотека о будущем (P771): её вытянули из «Дня» вверх.
-    private var future: Bool { shell.fileFrom < 0 }
+    /// Строка ленты (P777): поле сверху, прошлое, место дня, будущее, поле
+    /// снизу.
+    private struct Entry: Identifiable {
+        enum Kind {
+            case pad(CGFloat)
+            case note
+            case past(Archive.Day)
+            case slot
+            case future(Archive.Day)
+        }
+        let id: String
+        let kind: Kind
+        /// Заходит на предыдущую карточку (P694, P695).
+        var over = false
+    }
 
-    /// Стопка картотеки (P771, вместо единой стопки P768). Две разные:
-    /// прошлое — старые сверху, внизу вчерашний день; будущее — вверху
-    /// завтрашний, ниже дальше: месяц подряд, и пустые дни тоже, потом
-    /// только дни с делами. Сегодняшней карточки нет ни в одной: человек и
-    /// так на сегодня. Когда ищут — находки той же стороны, старые сверху.
-    private var shelf: [Archive.Day] {
-        let todayStamp = Vault.stamp(DayStore.today())
-        let days = found.reversed().filter { future ? $0.stamp > todayStamp : $0.stamp < todayStamp }
+    /// Будущее ленты (P771): месяц подряд, и пустые дни тоже, потом только
+    /// дни с делами. Когда ищут — только находки.
+    private func ahead(_ days: [Archive.Day]) -> [Archive.Day] {
         let needle = query.trimmingCharacters(in: .whitespaces)
-        guard future, needle.isEmpty, shell.find == .all else { return days }
+        guard needle.isEmpty, shell.find == .all else { return days }
         let today = DayStore.today()
         let byStamp = Dictionary(days.map { ($0.stamp, $0) }, uniquingKeysWith: { first, _ in first })
         var out: [Archive.Day] = []
-        var last = todayStamp
+        var last = Vault.stamp(today)
         for offset in 1...Search.ahead {
             guard let date = Calendar.current.date(byAdding: .day, value: offset, to: today) else { continue }
             let stamp = Vault.stamp(date)
@@ -210,6 +175,33 @@ struct SearchView: View {
             last = stamp
         }
         out += days.filter { $0.stamp > last }
+        return out
+    }
+
+    /// Вся лента одной стопкой (P777, вместо двух картотек P771): старые
+    /// сверху, внизу прошлого вчера, ниже место сегодняшнего дня, под ним
+    /// завтра и дальше. Сегодняшней карточки нет: на её месте сам день.
+    private func entries(_ past: [Archive.Day], _ future: [Archive.Day]) -> [Entry] {
+        var out: [Entry] = []
+        // Над самой старой — место под строку поиска; в коротком архиве —
+        // стол до верха экрана, чтобы лента могла встать вчерашним днём
+        // над нижней строкой.
+        let lead = max(Search.fieldHeight + Search.restTop, height - CGFloat(past.count) * 60)
+        out.append(Entry(id: "lead", kind: .pad(lead)))
+        if !query.trimmingCharacters(in: .whitespaces).isEmpty && past.isEmpty && future.isEmpty {
+            out.append(Entry(id: "note", kind: .note))
+        }
+        for (i, day) in past.enumerated() {
+            out.append(Entry(id: Search.deep ? "p\(i)" : day.id, kind: .past(day), over: i > 0))
+        }
+        // Место дня заходит на нижний край вчерашней карточки, как
+        // следующая карточка; завтрашняя лежит под днём своим корешком.
+        out.append(Entry(id: Ribbon.slotID, kind: .slot, over: !past.isEmpty))
+        for (i, day) in future.enumerated() {
+            out.append(Entry(id: day.id, kind: .future(day), over: i > 0))
+        }
+        let tail = max(8, height - CGFloat(future.count) * 60)
+        out.append(Entry(id: "tail", kind: .pad(tail)))
         return out
     }
 
@@ -227,71 +219,137 @@ struct SearchView: View {
         }
     }
 
-    private func list(_ days: [Archive.Day]) -> some View {
+    private var ribbonList: some View {
+        let todayStamp = Vault.stamp(DayStore.today())
+        // Опись читается один раз за перерисовку (P771): старые сверху.
+        let all = Array(found.reversed())
+        var past = all.filter { $0.stamp < todayStamp }
         // На снимке CI «лента поиска» находки повторены, чтобы было что
         // листать (P717).
-        let ahead = future
+        if Search.deep { past = Array(repeating: past, count: 12).flatMap { $0 } }
+        let future = ahead(all.filter { $0.stamp > todayStamp })
         // Столбец времени у будущих карточек один на всю стопку, как в
         // «Списке» календаря (P756): по самому длинному виду времени.
-        let times = ahead ? days.flatMap { plan($0).compactMap(\.time) } : []
+        let times = future.flatMap { plan($0).compactMap(\.time) }
         let sample: String? = times.isEmpty ? nil
             : times.contains { $0.contains(where: \.isLetter) } ? "00:00 PM" : "00:00"
-        let items = days.enumerated().map { index, day in
-            Search.Item(id: Search.deep ? String(index) : day.id, day: day)
-        }
+        let items = entries(past, future)
+        let ribbon = shell.ribbon
+        // Края ленты у дня — для покоя: вчера и завтра.
+        let yesterday: String? = Search.deep ? (past.isEmpty ? nil : "p\(past.count - 1)") : past.last?.id
+        ribbon.ends = (yesterday, future.first?.id)
         return ScrollViewReader { proxy in ScrollView {
-            // Находки — карточки картотеки, вид сверху: нижняя лежит поверх
-            // верхней и своим корешком с датой закрывает её низ (P694, P695).
-            LazyVStack(spacing: -Search.overlap) {
-                ForEach(items) { item in
-                    SearchCard(stamp: Search.stamp(item.day.date), past: Ru.isPast(item.day.date),
-                               seed: PageTexture.seed(item.day.date) &+ (Search.deep ? (Int(item.id) ?? 0) * 7 : 0), tight: ahead) {
-                        if ahead { futureRow(item.day, sample: sample) } else { row(item.day) }
-                    }
+            // Карточки — вид сверху: нижняя лежит поверх верхней и своим
+            // корешком с датой закрывает её низ (P694, P695).
+            LazyVStack(spacing: 0) {
+                ForEach(items) { entry in
+                    piece(entry, sample: sample)
+                        .padding(.top, entry.over ? -Search.overlap : 0)
+                        .id(entry.id)
                 }
             }
             .padding(.horizontal, 10)
-            // Прокрутка без оттяжки: за край едет вся плашка (P773).
-            .background(NoBounce(box: scroller, pull: back))
-            // Список начинается под строкой поиска, а листаясь, уходит под
-            // неё — она полупрозрачная (P719).
-            .padding(.top, Search.fieldHeight + Search.restTop)
-            // Место под клавиатуру. Без него последние находки лежат под
-            // ней и не достаются прокруткой: список кончается там, где
-            // начинается клавиатура (решение P174).
-            // Строки разделов над клавиатурой больше нет (P505).
-            .padding(.bottom, Search.underBar + (keyboard > 0 ? keyboard + 4 : 0))
+            // Прокрутка без оттяжки (P445): лента и день едут вместе, а
+            // оттяжка разлучила бы их.
+            .background(NoBounce(box: ribbon.box))
+            // Место под клавиатуру (P174).
+            .padding(.bottom, keyboard > 0 ? keyboard + 4 : 0)
         }
-        // Список заходит под нижнюю строку (P744): карточки создаются ещё
-        // под ней и выезжают из-под неё вместе с корешком, а не появляются
-        // целиком, когда их место уже на экране (запись автора).
-        .padding(.bottom, -Search.underBar)
-        // Второе нажатие на «Поиск» — список заново, с начала (P576).
-        .id("\(shell.searchHome)|\(shell.fileFrom)")
-        // Прошлое открывается с низа — внизу вчерашний день; будущее — с
-        // верха, там завтрашний (P771). Прыжков через весь архив нет: в
-        // длинном архиве они не доходили (P770).
-        .defaultScrollAnchor(ahead ? .top : .bottom)
+        .coordinateSpace(.named(Ribbon.space))
         .scrollDismissesKeyboard(.interactively)
+        .modifier(SnapToDay(shell: shell))
         .onAppear {
-            // Снимок «лента поиска»: список пролистан, как у человека.
-            guard Search.deep else { return }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                proxy.scrollTo("20", anchor: .top)
+            ribbon.home = { proxy.scrollTo(Ribbon.slotID, anchor: .top) }
+            ribbon.rest = { [ribbon] dir in
+                if dir > 0, let last = ribbon.ends.past {
+                    proxy.scrollTo(last, anchor: .bottom)
+                } else if dir < 0, let first = ribbon.ends.future {
+                    proxy.scrollTo(first, anchor: .top)
+                } else {
+                    proxy.scrollTo(Ribbon.slotID, anchor: .top)
+                }
+            }
+            DispatchQueue.main.async {
+                if shell.ribbonOpen { settle() } else { ribbon.home?() }
+                // Снимок «лента поиска»: список пролистан, как у человека.
+                if Search.deep {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                        proxy.scrollTo("p20", anchor: .top)
+                    }
+                }
             }
         }
-        // Набрали слово — к ближайшей находке: в прошлом она внизу, в
-        // будущем вверху.
+        // Опись перечитана, пока лента спрятана: место дня — снова под днём,
+        // чтобы тяга из дня начиналась сразу.
+        .onChange(of: items.count) { _, _ in
+            guard !shell.ribbonLive else { return }
+            DispatchQueue.main.async { ribbon.home?() }
+        }
+        // Ленту открыли не тягой (снимок, запуск на картотеке) — в покой.
+        .onChange(of: shell.ribbonOpen) { _, open in
+            guard open, !shell.pulling else { return }
+            DispatchQueue.main.async { settle() }
+        }
+        // Набрали слово — к ближайшей находке: в прошлом она над днём, в
+        // будущем под ним. Стёрли — лента снова в покое у дня.
         .onChange(of: query) { _, _ in
-            guard let near = ahead ? items.first : items.last else { return }
-            DispatchQueue.main.async { proxy.scrollTo(near.id, anchor: ahead ? .top : .bottom) }
+            DispatchQueue.main.async { settle() }
         }
         }
         .animation(.easeOut(duration: 0.25), value: keyboard)
-        // Список продолжается вверх под строку поиска; строка лежит выше и
-        // принимает касания.
-        .padding(.top, -Search.fieldHeight)
-        .zIndex(-1)
+    }
+
+    /// Лента в покое: вчера над нижней строкой или завтра под строкой поиска.
+    private func settle() {
+        guard shell.ribbonOpen, !shell.pulling else { return }
+        shell.ribbon.rest?(shell.fileFrom < 0 ? -1 : 1)
+    }
+
+    @ViewBuilder private func piece(_ entry: Entry, sample: String?) -> some View {
+        switch entry.kind {
+        case .pad(let h):
+            Color.clear.frame(height: h)
+        case .note:
+            message(T("Ничего не нашлось.", "Nothing found."),
+                    T("По запросу «\(query)» \(whereNot)записей нет.",
+                      "No entries \(whereNot)match “\(query)”."))
+                .frame(height: 160)
+        case .past(let day):
+            SearchCard(stamp: Search.stamp(day.date), past: Ru.isPast(day.date),
+                       seed: PageTexture.seed(day.date) &+ (Search.deep ? (Int(entry.id.dropFirst()) ?? 0) * 7 : 0)) {
+                row(day)
+            }
+        case .slot:
+            daySlot
+        case .future(let day):
+            SearchCard(stamp: Search.stamp(day.date), past: false,
+                       seed: PageTexture.seed(day.date), tight: true) {
+                futureRow(day, sample: sample)
+            }
+        }
+    }
+
+    /// Место сегодняшнего дня в ленте (P777): пустое, высотой с экран; живой
+    /// день лежит над ним и едет вместе с ним. Касание — вернуться в день.
+    private var daySlot: some View {
+        let ribbon = shell.ribbon
+        return Color.clear
+            .frame(height: height)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                guard shell.screen == .search else { return }
+                typing = false
+                shell.screen = .today
+            }
+            .onGeometryChange(for: CGFloat.self) { proxy in
+                proxy.frame(in: .named(Ribbon.space)).minY
+            } action: { y in
+                ribbon.measured(y)
+            }
+            .onAppear { ribbon.seen = true }
+            .onDisappear { ribbon.lost() }
+            .accessibilityLabel(T("Вернуться в день", "Back to the day"))
+            .accessibilityAddTraits(.isButton)
     }
 
     /// Дела будущего дня вместе с событиями Календаря iPhone — как в
@@ -443,8 +501,6 @@ struct SearchView: View {
 enum Search {
     /// Высота корешка карточки (P695).
     static let tabHeight: CGFloat = 22
-    /// Насколько список уходит под нижнюю строку (P744).
-    static let underBar: CGFloat = 120  // нижняя строка выше (P761)
     /// На сколько карточка заходит на предыдущую: корешок и ещё немного
     /// листа, чтобы нижний край предыдущей скрылся под ней (P696).
     static let overlap: CGFloat = tabHeight + 10
