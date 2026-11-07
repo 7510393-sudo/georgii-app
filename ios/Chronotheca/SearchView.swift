@@ -432,10 +432,7 @@ struct SearchView: View {
         let tasks = plan(day)
         let shown = Array(tasks.prefix(4))
         return Button {
-            typing = false
-            store.go(to: day.date)
-            shell.tab = .plan
-            shell.screen = .today
+            openCard(day.date, tab: .plan)
         } label: {
             VStack(alignment: .leading, spacing: Search.futureGap) {
                 if tasks.isEmpty {
@@ -481,15 +478,34 @@ struct SearchView: View {
         .buttonStyle(.plain)
     }
 
+    /// Карточка открывает свой день сразу, без хода ленты (P796). Лента
+    /// стоит вокруг открытого дня (P791) и с новым днём перестраивается —
+    /// прежде она, доезжая до места дня, перестраивалась на ходу, и день
+    /// мелькал вверху, пропадал и всплывал снизу (запись автора к 244).
+    /// Теперь лента закрывается в том же такте, что и меняется день.
+    private func openCard(_ date: Date, tab: Shell.Tab) {
+        typing = false
+        Feel.thud()
+        let ribbon = shell.ribbon
+        var still = Transaction()
+        still.disablesAnimations = true
+        withTransaction(still) {
+            shell.instant = true
+            shell.ribbonOpen = false
+            shell.fileFrom = 0
+            store.go(to: date)
+            shell.tab = tab
+            shell.screen = .today
+        }
+        ribbon.release()
+        ribbon.park()
+    }
+
     private func row(_ day: Archive.Day) -> some View {
         Button {
-            typing = false
-            store.go(to: day.date)
             // Искали в плане — туда и открываем: там нашлось искомое.
-            shell.tab = shell.scope == .plan || day.date > DayStore.today()
-                || (day.text.isEmpty && !day.tasks.isEmpty)
-                ? .plan : .diary
-            shell.screen = .today
+            openCard(day.date, tab: shell.scope == .plan || day.date > DayStore.today()
+                     || (day.text.isEmpty && !day.tasks.isEmpty) ? .plan : .diary)
         } label: {
             HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: Search.lineGap) {
