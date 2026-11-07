@@ -170,6 +170,16 @@ struct SearchView: View {
         var over = false
         /// Отступ сверху, когда не заходит.
         var gap: CGFloat = 0
+
+        /// Куда уходит даль (P782): 1 — прошлое, вдаль вверх; -1 — будущее,
+        /// вдаль вниз; 0 — не карточка (место дня, поля).
+        var depth: Int {
+            switch kind {
+            case .past: return 1
+            case .future: return -1
+            default: return 0
+            }
+        }
     }
 
     /// Будущее ленты (P771): месяц подряд, и пустые дни тоже, потом только
@@ -260,6 +270,7 @@ struct SearchView: View {
                 ForEach(items) { entry in
                     piece(entry, sample: sample)
                         .padding(.top, entry.over ? -Search.overlap : entry.gap)
+                        .modifier(Distance(side: entry.depth, height: height))
                         .id(entry.id)
                 }
             }
@@ -730,3 +741,62 @@ private struct FolderShape: Shape {
         return p
     }
 }
+
+/// Карточки уходят вдаль (P782; прежняя лента к горизонту — P699–P719 —
+/// отменена за сложность). Каждая карточка сама по себе меняется по тому,
+/// где она сейчас на экране: у ближнего края — как есть, к дальнему —
+/// вместе с текстом на 15% меньше; в дальней трети экрана передняя
+/// карточка всё сильнее заходит на заднюю — от пяти видимых строк до
+/// четырёх у самого края. У прошлого даль вверху, у будущего — внизу.
+/// Только при показе: раскладка ленты, замеры места дня и прокрутка те же.
+private struct Distance: ViewModifier {
+    let side: Int
+    let height: CGFloat
+
+    func body(content: Content) -> some View {
+        if side == 0 || height <= 0 {
+            content
+        } else {
+            content.visualEffect { [side, height] view, geo in
+                let top = geo.frame(in: .scrollView).minY
+                let (shift, scale) = Afar.place(top, side: side, height: height)
+                return view
+                    .scaleEffect(scale, anchor: .top)
+                    .offset(y: shift)
+            }
+        }
+    }
+}
+
+/// Меры дали (P782): где карточка видна и насколько она меньше.
+enum Afar {
+    /// Насколько уже карточка у дальнего края.
+    static let smallest: CGFloat = 0.85
+    /// Сколько от прежнего шага остаётся у дальнего края: 4 строки из 5.
+    static let tightest: CGFloat = 0.8
+
+    /// `top` — верх карточки на экране ленты, `height` — высота экрана.
+    /// Возвращает сдвиг по вертикали и масштаб.
+    static func place(_ top: CGFloat, side: Int, height: CGFloat) -> (CGFloat, CGFloat) {
+        // Расстояние до дальнего края: у прошлого — от верха экрана,
+        // у будущего — от низа.
+        let t = side > 0 ? top : height - top
+        let third = height / 3
+        // Дальняя треть сжимается: шаг между карточками плавно убывает от
+        // прежнего на границе трети до `tightest` у края, дальше за краем —
+        // как у края. Каждая карточка встаёт по этой мере сама.
+        let loss = 1 - tightest
+        let f: CGFloat
+        if t >= third {
+            f = t
+        } else if t >= 0 {
+            f = third - (tightest * (third - t) + loss / 2 * (third * third - t * t) / third)
+        } else {
+            f = loss / 2 * third + tightest * t
+        }
+        let shown = side > 0 ? f : height - f
+        let near = min(1, max(0, f / height))
+        return (shown - top, smallest + (1 - smallest) * near)
+    }
+}
+
