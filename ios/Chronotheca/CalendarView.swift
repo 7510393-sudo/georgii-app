@@ -33,9 +33,6 @@ struct CalendarView: View {
     /// заранее, поэтому месяц ставится, когда его открывают.
     static var previewStart: Date?
     @State private var selected: String? = Vault.stamp(DayStore.today())
-    /// Месяц или год, что стоит вверху ленты календаря (P784): по нему
-    /// название в шапке, его ставят стрелки и «домой».
-    @State private var top: Date?
 
     private var cal: Calendar { Prefs.calendar }
 
@@ -66,10 +63,9 @@ struct CalendarView: View {
             .padding(.top, 12)
             .padding(.bottom, 10)
 
-            // Месяцы или годы — одной лентой сверху вниз (P784, вместо
-            // листания вбок): вбок — свайп между разделами.
+            // Месяц или год встаёт на место без загиба листа (P779).
             PageHost {
-                stream
+                page(at: shown, current: true)
                     .environmentObject(store)
                     .environmentObject(archive)
                     .environmentObject(shell)
@@ -77,17 +73,11 @@ struct CalendarView: View {
         }
         .onAppear {
             DayEvents.forgetCache()
-            if top == nil { top = period(shown) }
         }
         .onChange(of: shell.screen) { _, now in
             guard now == .calendar, let start = CalendarView.previewStart else { return }
             CalendarView.previewStart = nil
             shown = start
-            top = period(start)
-        }
-        // Сменили вид — лента встаёт на тот же месяц или его год.
-        .onChange(of: stored) { _, _ in
-            top = period(shown)
         }
         // Просьба из меню календаря: та же дорога домой, что у кнопки вида.
         .onChange(of: shell.calendarHome) { _, want in
@@ -100,57 +90,28 @@ struct CalendarView: View {
         }
     }
 
-    /// Лента календаря (P784): месяцы (или годы) друг под другом, от
-    /// десяти лет назад до пяти вперёд (годы — двадцать назад). Листают
-    /// вверх-вниз; что вверху — то в шапке. Список дел выбранного дня — под
-    /// его месяцем.
-    private var stream: some View {
-        let list = periods()
-        return ScrollView {
-            LazyVStack(spacing: 0) {
-                ForEach(list, id: \.self) { p in
-                    section(p)
+    /// Страница календаря целиком: название, сетка и список дел под ней.
+    ///
+    /// Название и стрелки теперь в неподвижной верхней строке (P334), не
+    /// на самой странице. Список дел показывается только на той странице,
+    /// на которой человек стоит: на соседнем месяце дела сегодняшнего
+    /// дня — чужие.
+    private func page(at date: Date, current: Bool) -> some View {
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(spacing: 0) {
+                    switch kind {
+                    case .year:  yearGrid(of: date)
+                    case .month: monthGrid(of: date, current: current)
+                    }
                 }
+                // Календарь ждёт на своей плашке там, где его оставили
+                // (P576); прежде вставал на день при каждом открытии
+                // (P442) — отменено.
             }
-            .scrollTargetLayout()
-        }
-        .scrollPosition(id: $top, anchor: .top)
-        .onChange(of: top) { _, now in
-            if let now { shown = now }
         }
         // Тот же тёплый стол, что под поиском (P755).
         .background(Desk())
-    }
-
-    /// Начала месяцев или лет ленты — от нынешнего.
-    private func periods() -> [Date] {
-        let unit: Calendar.Component = kind == .year ? .year : .month
-        let back = kind == .year ? 20 : 120
-        let ahead = kind == .year ? 5 : 60
-        let home = period(DayStore.today())
-        return (-back...ahead).compactMap { cal.date(byAdding: unit, value: $0, to: home) }
-    }
-
-    /// Один месяц или год ленты: своё название и сетка.
-    @ViewBuilder private func section(_ p: Date) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(kind == .year ? String(cal.component(.year, from: p)) : Ru.monthTitle(p))
-                .font(Look.sans(15, weight: .semibold))
-                .foregroundStyle(period(p) == period(DayStore.today()) ? Look.accent : Look.ink)
-                .padding(.horizontal, 16)
-                .padding(.top, 10)
-            switch kind {
-            case .year:  yearGrid(of: p)
-            case .month: monthGrid(of: p, current: listHere(p))
-            }
-        }
-    }
-
-    /// Список дел — под месяцем выбранного дня; ничего не выбрано — под
-    /// нынешним месяцем подсказка.
-    private func listHere(_ p: Date) -> Bool {
-        if let stamp = selected, let date = Vault.date(from: stamp) { return period(date) == p }
-        return p == period(DayStore.today())
     }
 
     /// Кнопка вида работает дважды. Первое нажатие переключает вид. Нажатие
@@ -163,7 +124,7 @@ struct CalendarView: View {
         goHome()
     }
 
-    /// Вернуться к нынешнему месяцу или году — лента едет к нему (P784).
+    /// Вернуться к нынешнему месяцу или году (без загиба листа — P779).
     private func goHome(asked: Bool = false) {
         let unit: Calendar.Component = kind == .year ? .year : .month
         let c = cal.dateComponents([unit], from: period(shown),
@@ -179,7 +140,7 @@ struct CalendarView: View {
             }
             return
         }
-        withAnimation(.easeInOut(duration: 0.35)) { top = period(DayStore.today()) }
+        shown = shift(shown, by: steps)
         shell.say(kind == .year ? T("Вернулись на этот год", "Back to this year")
                                 : T("Вернулись на этот месяц", "Back to this month"))
     }
@@ -232,7 +193,8 @@ struct CalendarView: View {
                         in: RoundedRectangle(cornerRadius: 8))
             .contentShape(Rectangle())
             .onTapGesture {
-                withAnimation(.easeInOut(duration: 0.3)) { top = shift(period(shown), by: step) }
+                shown = shift(shown, by: step)
+                selected = nil
             }
             .accessibilityLabel(label)
     }
