@@ -709,7 +709,7 @@ struct RootView: View {
             .allowsHitTesting(on)
     }
 
-    /// Щель между картотекой и днём при вытягивании (P774): плашка стоит за
+    /// Щель между картотекой и днём при вытягивании (P775): плашка стоит за
     /// краем с запасом на тень, и пока тянут, между ней и днём видно
     /// то, что лежит ниже, — карту. Запас убирается по мере вытягивания; с
     /// запасом в точку сверху — под днём, чтобы не было волоска.
@@ -923,6 +923,9 @@ struct RootView: View {
     private func follow(from old: Shell.Screen, to new: Shell.Screen) {
         // Быстрее прежних 0,46 (P565): медленный ход казался задумчивостью.
         let heavy = Animation.spring(response: 0.3, dampingFraction: 0.9)
+        // Возврат из картотеки жестом (P775) — флаг на один ход.
+        let back = shell.fileReturn
+        shell.fileReturn = false
         // С виджета, из напоминания, после паузы — сразу, без хода (P583).
         if shell.instant {
             shell.instant = false
@@ -931,15 +934,14 @@ struct RootView: View {
             withTransaction(still) { shell.stack = [new] }
             return
         }
-        // Из картотеки жестом (P774): уезжает только её плашка, день под ней
+        // Из картотеки жестом (P775): уезжает только её плашка, день под ней
         // стоит. Прежде день снимали и роняли заново — на ходу он пропадал
         // и выезжал сверху.
-        if shell.fileReturn {
-            shell.fileReturn = false
-            if new == .today, shell.stack.contains(.today) {
-                withAnimation(heavy) { shell.stack.removeAll { $0 == .search } }
-                return
-            }
+        // Только когда прямо под картотекой лежит день.
+        if back, new == .today, shell.stack.last == .search,
+           shell.stack.dropLast().last == .today {
+            withAnimation(heavy) { shell.stack.removeLast() }
+            return
         }
         // Толчок — в начале хода, вместе с нажатием (P268).
         Feel.thud()

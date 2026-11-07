@@ -445,6 +445,14 @@ struct DayPage: View {
                              if shell.filePull == 0 || shell.fileFrom != dir {
                                  shell.fileFrom = dir
                                  shell.searchHome += 1
+                                 // Картотека, оставленная под днём кнопкой
+                                 // «День», лежала бы на месте и не ехала за
+                                 // пальцем, а на пороге прыгала (P775).
+                                 // Убираем её за край, пока день закрывает
+                                 // весь экран.
+                                 if shell.stack.contains(.search), shell.stack.last == .today {
+                                     shell.stack.removeAll { $0 == .search }
+                                 }
                              }
                              shell.filePull = amount * CGFloat(dir)
                          }
