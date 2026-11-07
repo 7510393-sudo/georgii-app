@@ -540,6 +540,8 @@ struct RootView: View {
             Places.loadSoon(vault)
             // Карту — заранее, когда запуск уже позади (P581).
             warmMapSoon()
+            // Свайп между разделами (P778).
+            wireSwipe()
             LaunchClock.step(T("первый экран", "first screen"))
             // Открываемся там, где закрыли, если день тот же (P686).
             shell.tab = .plan
@@ -708,11 +710,12 @@ struct RootView: View {
                         .offset(y: edge == .top ? BoardEdge.depth : -BoardEdge.depth)
                 }
             }
-            .offset(y: down ? 0 : away)
             // День стоит в ленте картотеки на своём месте и едет с ней (P777).
             .modifier(FollowRibbon(ribbon: shell.ribbon, live: which == .today && shell.ribbonLive))
-            // Новая плашка ложится поверх прежних (P501).
-            .zIndex(down ? Double((shell.stack.firstIndex(of: which) ?? 0) + 1) : 0)
+            // Свайпом плашка едет вбок за пальцем (P778). Новая плашка
+            // ложится поверх прежних (P501).
+            .modifier(FollowSlide(slide: shell.slide, which: which, down: down, away: away,
+                                  z: down ? Double((shell.stack.firstIndex(of: which) ?? 0) + 1) : 0))
             // Ловит касания только верхняя: под ней другая плашка или
             // живая книга. Пока открыта лента, день пропускает касания к ней:
             // ленту листают и по месту дня (P777).
@@ -780,6 +783,51 @@ struct RootView: View {
                 mapReady = true
             }
         }
+    }
+
+    /// Свайп между разделами (P778): палец вбок — соседний раздел едет за
+    /// ним. Не во время ленты, листков, переноса дела и переезда папки; на
+    /// карте палец двигает карту — на «День» от левого края (P767).
+    private func wireSwipe() {
+        let swipe = SectionSwipe.shared
+        let slide = shell.slide
+        swipe.allowed = { [shell, vault] point, way in
+            guard !slide.active, !slide.settling,
+                  SectionSlide.order.contains(shell.screen),
+                  !shell.ribbonLive, !shell.showingSettings, shell.settingsPull == nil,
+                  shell.drawer == nil, shell.movingTask == nil, shell.openedPhoto == nil,
+                  vault.root != nil, vault.moving == nil,
+                  shell.barTop == 0 || point.y < shell.barTop
+            else { return false }
+            if shell.screen == .map { return way > 0 && point.x < SectionSwipe.mapEdge }
+            return true
+        }
+        swipe.began = { [shell] width in
+            // Карта выезжает сбоку — она должна быть собрана.
+            if shell.screen == .today && !mapReady { mapReady = true }
+            slide.begin(from: shell.screen, width: width)
+        }
+        swipe.moved = { dx in slide.move(dx) }
+        swipe.ended = { speed in slide.end(speed: speed) { target in swipeTo(target) } }
+        swipe.cancelled = { slide.cancel() }
+        swipe.install()
+    }
+
+    /// Свайп довёз соседний раздел (P778): он уже на экране — ложится в
+    /// стопку без хода, остальное — как по касанию внизу.
+    private func swipeTo(_ target: Shell.Screen) {
+        guard shell.screen != target else { return }
+        store.prune()
+        LaunchClock.opened("\(target)", since: Date())
+        var still = Transaction()
+        still.disablesAnimations = true
+        withTransaction(still) {
+            shell.instant = true
+            open(target)
+            shell.stack = [target]
+        }
+        if target != .today { archive.reloadSoon() }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { store.save() }
     }
 
     /// Касание по разделу — внизу экрана или в строке над клавиатурой

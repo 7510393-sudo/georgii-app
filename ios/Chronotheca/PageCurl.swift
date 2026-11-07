@@ -1,6 +1,5 @@
 import SwiftUI
 import UIKit
-import UIKit.UIGestureRecognizerSubclass
 
 /// Дорога домой: один поворот на всё расстояние.
 ///
@@ -33,9 +32,10 @@ func whirlLeaves(_ distance: Int) -> Int {
 
 /// Перелистывание страницы, как в бумажной книге.
 ///
-/// Тот же механизм, что в «Книгах» Apple: страница поднимается за пальцем,
-/// загибается и ложится на соседнюю. Своими силами такое не нарисовать, да и
-/// не нужно — система умеет это сама, и умеет правильно.
+/// Тот же механизм, что в «Книгах» Apple: страница загибается и ложится на
+/// соседнюю. Своими силами такое не нарисовать, да и не нужно — система
+/// умеет это сама, и умеет правильно. Пальцем лист больше не берут (P778):
+/// поворот идёт только по просьбе — «День» внизу, карточка картотеки.
 ///
 /// Содержимое задаётся смещением: 0 — нынешняя страница, −1 и +1 — соседние.
 /// Перелистнув, человек оказывается на соседней, и она становится нулевой.
@@ -63,46 +63,20 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
             transitionStyle: .pageCurl,
             navigationOrientation: .horizontal,
             options: [.spineLocation: UIPageViewController.SpineLocation.min.rawValue])
-        pages.dataSource = context.coordinator
-        pages.delegate = context.coordinator
         pages.isDoubleSided = false
         pages.view.backgroundColor = UIColor(Look.chrome)
         pages.setViewControllers([context.coordinator.make(0)],
                                  direction: .forward, animated: false)
 
-        // Страница переворачивается движением, а не касанием. Система сама
-        // вешает на края экрана касания, которые листают: человек тыкает в
-        // край — и день меняется без его намерения. Это нарушение главного
-        // правила (P113), поэтому касания снимаем, тяга остаётся.
-        for gesture in pages.gestureRecognizers where gesture is UITapGestureRecognizer {
+        // Пальцем книга не листается (P778): вбок по экрану — свайп между
+        // разделами. Листают стрелки, «День» внизу и карточки картотеки —
+        // поворотом по просьбе (`plan`). Без источника страниц и без своих
+        // жестов система сама лист не поднимет. Прежде лист брали за край
+        // (P532), взмахом от края наружу (P540) и быстрым движением с
+        // клавиатурой (P550) — отменено.
+        for gesture in pages.gestureRecognizers {
             gesture.isEnabled = false
         }
-        // Лист берут за край (P532): тяга, начатая посреди страницы, —
-        // это курсор или выделение, а не листание. Привратник отпускает
-        // тягу системы, только если палец лёг у левого или правого края.
-        let gate = EdgeGate.make()
-        pages.view.addGestureRecognizer(gate)
-        for gesture in pages.gestureRecognizers where gesture is UIPanGestureRecognizer {
-            gesture.require(toFail: gate)
-        }
-        // От края наружу (P540): у правого края вправо — назад, у левого
-        // влево — вперёд. Тяга системы этого направления не видит, поэтому
-        // свой жест: короткий взмах, и лист перелистывается целиком сам.
-        let outward = UIPanGestureRecognizer(target: context.coordinator,
-                                             action: #selector(Coordinator.flicked(_:)))
-        outward.delegate = context.coordinator
-        outward.cancelsTouchesInView = false
-        pages.view.addGestureRecognizer(outward)
-        // Пока пишут — палец лёг посреди страницы и быстро, почти прямо
-        // довёл движение до края: лист переворачивается (P550). Медленное
-        // ведение курсора или выделения — нет.
-        let reach = UIPanGestureRecognizer(target: context.coordinator,
-                                           action: #selector(Coordinator.reached(_:)))
-        reach.delegate = context.coordinator
-        reach.cancelsTouchesInView = false
-        pages.view.addGestureRecognizer(reach)
-        context.coordinator.reachPan = reach
-        context.coordinator.book = pages
         return pages
     }
 
@@ -116,14 +90,8 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
         var offset = 0
     }
 
-    final class Coordinator: NSObject, UIPageViewControllerDataSource,
-                             UIPageViewControllerDelegate, UIGestureRecognizerDelegate {
+    final class Coordinator: NSObject {
         var parent: PageCurl
-        /// Сама книга — для взмаха от края наружу (P540).
-        weak var book: UIPageViewController?
-        /// Взмах «довёл до края», пока пишут (P550).
-        weak var reachPan: UIPanGestureRecognizer?
-        private var reachDone = false
 
         /// Пока страница в воздухе, второго поворота не начинаем.
         private var busy = false {
@@ -326,96 +294,6 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
             }
         }
 
-        // MARK: - От края наружу (P540)
-
-        /// Взмах начинается только у края и только наружу: у левого — влево,
-        /// у правого — вправо. Внутрь лист ведёт тяга системы, как прежде.
-        func gestureRecognizerShouldBegin(_ g: UIGestureRecognizer) -> Bool {
-            guard let pan = g as? UIPanGestureRecognizer, let view = pan.view else { return false }
-            let start = pan.location(in: view)
-            let speed = pan.velocity(in: view)
-            if pan === reachPan {
-                // Только пока пишут и только начатое не у края: у края лист
-                // ведёт тяга системы или взмах наружу.
-                let band = EdgeGate.band
-                return EdgeGate.keyboardUp && abs(speed.x) > abs(speed.y)
-                    && start.x > band && start.x < view.bounds.width - band
-            }
-            // Наружу пальцу до края экрана меньше сантиметра — полоса для
-            // этого взмаха шире, около сантиметра, а наклон допускается
-            // больший (P543): прежде взмах часто не узнавался.
-            guard abs(speed.x) > abs(speed.y) * 0.7 else { return false }
-            let band = EdgeGate.band + 30
-            if start.x < band { return speed.x < 0 }
-            if start.x > view.bounds.width - band { return speed.x > 0 }
-            return false
-        }
-
-        /// Этот взмах уже перелистнул — второй раз за одно касание нельзя.
-        private var flickDone = false
-
-        func gestureRecognizer(_ g: UIGestureRecognizer,
-                               shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool {
-            true
-        }
-
-        @objc func flicked(_ pan: UIPanGestureRecognizer) {
-            guard let book, let view = pan.view else { return }
-            switch pan.state {
-            case .began:
-                flickDone = false
-            case .changed, .ended:
-                if stuck { busy = false }
-                guard !flickDone, !busy else { return }
-                let moved = pan.translation(in: view).x
-                let speed = pan.velocity(in: view).x
-                // Лист идёт, как только палец сдвинулся на пару миллиметров,
-                // не дожидаясь, пока его отпустят (P543): у края места мало.
-                let enough = abs(moved) >= 12
-                    || (pan.state == .ended && (abs(moved) > 4 || abs(speed) > 150))
-                guard enough else { return }
-                flickDone = true
-                // Вправо — назад, влево — вперёд: так же, как внутрь.
-                let step = (moved != 0 ? moved : speed) > 0 ? -1 : 1
-                busy = true
-                turn(book, step)
-            default:
-                break
-            }
-        }
-
-        @objc func reached(_ pan: UIPanGestureRecognizer) {
-            guard let book, let view = pan.view else { return }
-            switch pan.state {
-            case .began:
-                reachDone = false
-            case .changed:
-                guard !reachDone else { return }
-                if stuck { busy = false }
-                guard !busy else { return }
-                let moved = pan.translation(in: view)
-                let speed = pan.velocity(in: view)
-                // Посреди страницы с клавиатурой (P679): прежде брался только
-                // быстрый и почти прямой взмах на 60 точек и дальше — лист не
-                // слушался. Теперь взмах мягче и короче (250 точек в секунду,
-                // 30 точек пути), но только начатый сразу после касания:
-                // курсор и ручки выделения берут после удержания, и пока
-                // выделен текст, лист посреди страницы не идёт.
-                let quick = Date().timeIntervalSince(EdgeGate.touchDown) < 0.5
-                let swipe = abs(speed.x) > 250 && abs(speed.x) > abs(speed.y) * 1.4 && abs(moved.x) > 30
-                guard quick, swipe, !EdgeGate.selecting else { return }
-                let right = moved.x > 0
-                let left = moved.x < 0
-                guard right || left else { return }
-                reachDone = true
-                busy = true
-                // Вправо — назад, влево — вперёд, как везде.
-                turn(book, right ? -1 : 1)
-            default:
-                break
-            }
-        }
-
         /// Настоящий поворот — последний лист дороги.
         private func turn(_ pages: UIPageViewController, _ step: Int) {
             // Вперёд — чуть выше тоном, назад — чуть ниже (P330).
@@ -503,118 +381,5 @@ struct PageCurl<Content: View>: UIViewControllerRepresentable {
             guard let current = pages.viewControllers?.first as? Host else { return }
             current.rootView = parent.content(current.offset)
         }
-
-        func pageViewController(_ pages: UIPageViewController,
-                                viewControllerBefore vc: UIViewController) -> UIViewController? {
-            (vc as? Host).map { make($0.offset - 1) }
-        }
-
-        func pageViewController(_ pages: UIPageViewController,
-                                viewControllerAfter vc: UIViewController) -> UIViewController? {
-            (vc as? Host).map { make($0.offset + 1) }
-        }
-
-        /// Страницу потянули пальцем — шелест (P265). Вперёд — чуть выше
-        /// тоном, назад — чуть ниже (P330).
-        func pageViewController(_ pages: UIPageViewController,
-                                willTransitionTo pending: [UIViewController]) {
-            let from = (pages.viewControllers?.first as? Host)?.offset ?? 0
-            let to = (pending.first as? Host)?.offset ?? 0
-            Sounds.flip(rate: to > from ? 1.04 : 0.96)
-        }
-
-        func pageViewController(_ pages: UIPageViewController,
-                                didFinishAnimating finished: Bool,
-                                previousViewControllers: [UIViewController],
-                                transitionCompleted completed: Bool) {
-            guard completed,
-                  let current = pages.viewControllers?.first as? Host,
-                  current.offset != 0
-            else { return }
-
-            parent.onTurn(current.offset)
-            // Страница, на которой человек теперь стоит, становится нулевой —
-            // но подменять её новой нельзя: новая соберётся по старым данным
-            // и мелькнёт чужим месяцем, пока не подоспеют свежие. Поэтому
-            // просто перенумеровываем ту же самую: на экране ничего не
-            // меняется, а соседи теперь считаются от неё (P113).
-            current.offset = 0
-        }
-    }
-}
-
-/// Привратник листания (P532). Палец лёг у края страницы — привратник сразу
-/// сдаётся, и система листает, как прежде. Лёг посреди — привратник
-/// «срабатывает», и ждавшая его тяга системы не начинается: движение вбок
-/// достаётся тексту — курсору и выделению. Сам он ничего не делает и
-/// никому не мешает: касания не задерживает и работает вместе со всеми.
-final class EdgeGate: UIGestureRecognizer, UIGestureRecognizerDelegate {
-
-    /// Ширина полосы у каждого края, где лист можно взять, — около 7 мм.
-    static let band: CGFloat = 40
-
-    /// Привратник, готовый к делу: касаний не держит и не отменяет.
-    static func make() -> EdgeGate {
-        _ = watching
-        let gate = EdgeGate(target: nil, action: nil)
-        gate.cancelsTouchesInView = false
-        gate.delaysTouchesBegan = false
-        gate.delaysTouchesEnded = false
-        gate.delegate = gate
-        return gate
-    }
-
-    /// Поднята ли клавиатура (P549): спор листания с курсором бывает только
-    /// пока пишут. Без клавиатуры движение вбок курсор не двигает — лист
-    /// берут где угодно; с клавиатурой — только у края (P532).
-    static var keyboardUp = false
-
-    /// Когда палец лёг в последний раз (P679).
-    static var touchDown = Date.distantPast
-
-    /// Выделен ли текст в поле, где пишут: тогда посреди страницы палец,
-    /// скорее всего, тянет ручку выделения, и лист не берём (P679).
-    static var selecting: Bool {
-        for scene in UIApplication.shared.connectedScenes {
-            guard let windows = (scene as? UIWindowScene)?.windows else { continue }
-            for window in windows {
-                if let text = firstResponderText(in: window), text.selectedRange.length > 0 { return true }
-            }
-        }
-        return false
-    }
-
-    private static func firstResponderText(in view: UIView) -> UITextView? {
-        if let text = view as? UITextView, text.isFirstResponder { return text }
-        for sub in view.subviews { if let found = firstResponderText(in: sub) { return found } }
-        return nil
-    }
-
-    private static let watching: Void = {
-        let centre = NotificationCenter.default
-        centre.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil,
-                           queue: .main) { _ in EdgeGate.keyboardUp = true }
-        centre.addObserver(forName: UIResponder.keyboardWillHideNotification, object: nil,
-                           queue: .main) { _ in EdgeGate.keyboardUp = false }
-    }()
-
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
-        _ = Self.watching
-        guard state == .possible, let view, let touch = touches.first else { return }
-        let x = touch.location(in: view).x
-        let atEdge = x < Self.band || x > view.bounds.width - Self.band
-        // Ленты, которая листалась бы вбок сама, больше нет (P665, P679):
-        // вложения внизу страницы — обычные ряды, и лист берут и над ними
-        // (прежде над лентой лист не брался — P535, отменено).
-        let free = !Self.keyboardUp
-        // Когда палец лёг: быстрый взмах начинается сразу, а курсор и
-        // ручки выделения берут после удержания (P679).
-        Self.touchDown = Date()
-        state = atEdge || free ? .failed : .recognized
-    }
-
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
-                           shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool {
-        true
     }
 }

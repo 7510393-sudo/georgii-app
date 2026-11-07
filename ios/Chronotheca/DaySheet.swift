@@ -443,7 +443,7 @@ private struct DiaryTopMark: View {
 /// порогом — картотека доезжает, иначе всё мягко возвращается.
 ///
 /// Свой распознаватель рядом с прокруткой листа: прокрутке он не мешает и
-/// касаний не забирает. Вбок не срабатывает — там перелистывание.
+/// касаний не забирает. Вбок не срабатывает — там свайп разделов (P778).
 final class EdgePull: NSObject, ObservableObject, UIGestureRecognizerDelegate {
     /// Сколько точек протянуть за край, чтобы открыть картотеку.
     static let threshold: CGFloat = 90
@@ -493,7 +493,7 @@ final class EdgePull: NSObject, ObservableObject, UIGestureRecognizerDelegate {
             let top = view.contentOffset.y <= -inset.top + 0.5
             let bottom = view.contentOffset.y >= view.contentSize.height - view.bounds.height + inset.bottom - 0.5
             if anchor == nil {
-                // Вбок — это перелистывание, не тяга.
+                // Вбок — это свайп разделов, не тяга.
                 if abs(t.x) > abs(t.y) { last = t.y; return }
                 if top && t.y > last {
                     anchor = last; dir = 1

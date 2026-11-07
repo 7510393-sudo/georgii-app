@@ -1,7 +1,7 @@
 import XCTest
 
 /// Проверки движения (P552): то, что прежде ломалось незаметно для снимков —
-/// ход экрана с клавиатурой, «Сегодня», листание, лишние строки кнопок.
+/// ход экрана с клавиатурой, «Сегодня», свайп разделов, лишние строки кнопок.
 /// Приложение запускается на образцах дней, как для снимков экрана.
 ///
 /// Снимки экрана с клавиатурой кладутся в папку, которую называет
@@ -178,33 +178,57 @@ final class MovementTests: XCTestCase {
         save("10-лента-будущее")
     }
 
-    /// Лист берут за край (P532) — и без клавиатуры в любом месте (P549).
-    func testPagingWithoutKeyboard() {
+    /// Свайп между разделами (P778): с «Дня» влево — карта; с карты от
+    /// левого края вправо — «День»; вправо — календарь; с календаря влево —
+    /// снова «День». День при этом не перелистывается: пальцем его больше
+    /// не листают (прежние P532, P549 отменены).
+    func testSwipeSections() {
         launch()
-        XCTAssertEqual(openDay, "today")
-        let edge = app.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.55))
-        edge.press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.55)))
-        XCTAssertTrue(waitDay { $0 != "today" }, "от края лист не перевернулся")
-        app.buttons["bottom.today"].firstMatch.tap()
-        XCTAssertTrue(waitDay { $0 == "today" }, "«Сегодня» после листания не вернуло")
+        XCTAssertEqual(openScreen, "today")
+        func swipe(_ from: CGFloat, _ to: CGFloat) {
+            app.coordinate(withNormalizedOffset: CGVector(dx: from, dy: 0.55))
+                .press(forDuration: 0.05,
+                       thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: to, dy: 0.55)),
+                       withVelocity: 1500,
+                       thenHoldForDuration: 0)
+        }
+        swipe(0.8, 0.1)
+        XCTAssertTrue(wait(6) { openScreen == "map" }, "свайп влево не открыл карту: \(openScreen)")
+        XCTAssertEqual(openDay, "today", "свайп перелистнул день")
         sleep(2)
-        let middle = app.coordinate(withNormalizedOffset: CGVector(dx: 0.6, dy: 0.55))
-        middle.press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.05, dy: 0.55)))
-        XCTAssertTrue(waitDay { $0 != "today" }, "с середины без клавиатуры лист не перевернулся")
+        save("02-свайп-карта")
+        // На карте — только от левого края.
+        swipe(0.5, 0.95)
+        sleep(1)
+        XCTAssertEqual(openScreen, "map", "с середины карты свайп увёл с карты")
+        swipe(0.02, 0.9)
+        XCTAssertTrue(wait(6) { openScreen == "today" }, "от края карты свайп не вернул «День»: \(openScreen)")
+        sleep(1)
+        swipe(0.2, 0.9)
+        XCTAssertTrue(wait(6) { openScreen == "calendar" }, "свайп вправо не открыл календарь: \(openScreen)")
+        sleep(1)
+        save("02-свайп-календарь")
+        swipe(0.8, 0.1)
+        XCTAssertTrue(wait(6) { openScreen == "today" }, "с календаря свайп не вернул «День»: \(openScreen)")
+        XCTAssertEqual(openDay, "today", "свайп перелистнул день")
     }
 
-    /// Пока пишут, быстрое движение с середины до края листает (P550).
-    func testPagingWithKeyboard() {
+    /// Пока пишут, быстрый свайп вбок тоже меняет раздел, клавиатура
+    /// уходит (P778).
+    func testSwipeWithKeyboard() {
         launch("diary")
         XCTAssertTrue(raiseKeyboard(), "клавиатура не поднялась")
         let start = openDay
-        let middle = app.coordinate(withNormalizedOffset: CGVector(dx: 0.45, dy: 0.3))
-        middle.press(forDuration: 0.05,
-                     thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.99, dy: 0.3)),
-                     withVelocity: 1500,
-                     thenHoldForDuration: 0)
-        XCTAssertTrue(waitDay { $0 != start }, "с клавиатурой быстрое движение к краю не перелистнуло")
-        save("03-листание-с-клавиатурой")
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.8, dy: 0.3))
+            .press(forDuration: 0.05,
+                   thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.1, dy: 0.3)),
+                   withVelocity: 1500,
+                   thenHoldForDuration: 0)
+        XCTAssertTrue(wait(6) { openScreen == "map" }, "с клавиатурой свайп не открыл карту: \(openScreen)")
+        XCTAssertEqual(openDay, start, "свайп перелистнул день")
+        sleep(2)
+        XCTAssertFalse(app.keyboards.firstMatch.exists, "клавиатура осталась на карте")
+        save("03-свайп-с-клавиатурой")
     }
 
     /// Вложения в конце записи — рядом внизу страницы (P665): снимок

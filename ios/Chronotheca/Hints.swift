@@ -26,16 +26,16 @@ final class Hints: ObservableObject {
 
     static let shared = Hints()
 
-    /// По одной и к месту (P452): на странице дня сразу — только «листайте»:
+    /// По одной и к месту (P452): на странице дня сразу — только «разделы свайпом» (P778):
     /// как обращаться с делами и записью, рассказывают образцы дней. Итоги
     /// дня — вечером, перенос снимка — после первого снимка, карта,
     /// календарь и поиск — при первом заходе туда.
     static var all: [Hint] {
         [
             Hint(id: "pages", screen: .today,
-                 title: T("Листайте дни", "Turn the days"),
-                 text: T("Проведите пальцем вбок — вчера и завтра. Там уже лежат образцы: так выглядит заполненный день. «Сегодня» внизу вернёт обратно.",
-                         "Swipe sideways for yesterday and tomorrow. There are samples there: this is what a filled-in day looks like. “Today” at the bottom brings you back.")),
+                 title: T("Разделы — свайпом", "Swipe between sections"),
+                 text: T("Проведите пальцем вбок — календарь и карта. Вчера и завтра — стрелки ‹ › вверху страницы; там уже лежат образцы: так выглядит заполненный день. «День» внизу вернёт на сегодня.",
+                         "Swipe sideways for the calendar and the map. Yesterday and tomorrow are behind the ‹ › arrows at the top of the page; there are samples there: this is what a filled-in day looks like. “Day” at the bottom brings you back to today.")),
             Hint(id: "outcome", screen: .today,
                  title: T("Итоги дня", "How the day went"),
                  text: T("В дневнике под каждым делом — строка для итога: что вышло. Одно слово или фраза — и вечер записан.",
