@@ -258,7 +258,7 @@ struct SearchView: View {
         .onAppear {
             ribbon.home = { proxy.scrollTo(Ribbon.slotID, anchor: .top) }
             DispatchQueue.main.async {
-                if shell.ribbonOpen { settle() } else { ribbon.home?() }
+                if shell.ribbonOpen { settle() } else { ribbon.park() }
                 // Ленивая стопка ставит дальнюю карточку со второго раза.
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     if shell.ribbonOpen && ribbon.fresh { settle() }
@@ -277,14 +277,14 @@ struct SearchView: View {
         // догоняет позже — встаём в покой ещё раз.
         .onChange(of: items.count) { _, _ in
             DispatchQueue.main.async {
-                if !shell.ribbonLive { ribbon.home?() } else if ribbon.fresh { settle() }
+                if !shell.ribbonLive { ribbon.park() } else if ribbon.fresh { settle() }
             }
         }
         // Высота экрана известна не с первого кадра: до неё место дня
         // нулевое, и лента вставала не там (снимки CI к P777).
         .onChange(of: height) { _, _ in
             DispatchQueue.main.async {
-                if !shell.ribbonLive { ribbon.home?() } else if ribbon.fresh { settle() }
+                if !shell.ribbonLive { ribbon.park() } else if ribbon.fresh { settle() }
             }
         }
         // Ленту открыли не тягой (снимок, запуск на картотеке) — в покой.

@@ -142,6 +142,42 @@ final class MovementTests: XCTestCase {
         XCTAssertTrue(wait(6) { openScreen == "map" }, "карта не открылась из строки над клавиатурой")
     }
 
+    /// Лента картотеки (P777) тянется из дня настоящим пальцем: вниз за
+    /// верх — прошлое, касание по дню — назад в день, вверх за низ —
+    /// будущее. Снимки — чтобы видеть стык дня и карточек.
+    func testRibbonFromDay() {
+        launch()
+        XCTAssertEqual(openDay, "today")
+        let top = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2))
+        top.press(forDuration: 0.05,
+                  thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.6)),
+                  withVelocity: .slow, thenHoldForDuration: 0.1)
+        XCTAssertTrue(wait(4) { openScreen == "search" }, "лента прошлого не открылась: \(openScreen)")
+        sleep(1)
+        save("07-лента-прошлое")
+        // Подтянуть день из-под нижней строки и коснуться его.
+        let low = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
+        low.press(forDuration: 0.05,
+                  thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.45)),
+                  withVelocity: .slow, thenHoldForDuration: 0.3)
+        sleep(1)
+        save("08-лента-день-внизу")
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.82)).tap()
+        XCTAssertTrue(wait(4) { openScreen == "today" }, "касание по дню не вернуло в день: \(openScreen)")
+        sleep(1)
+        save("09-лента-снова-день")
+        // Будущее — вверх за низ листа: сперва долистать лист до конца.
+        for _ in 0..<4 { app.swipeUp() }
+        sleep(1)
+        let bottom = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
+        bottom.press(forDuration: 0.05,
+                     thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3)),
+                     withVelocity: .slow, thenHoldForDuration: 0.1)
+        XCTAssertTrue(wait(4) { openScreen == "search" }, "лента будущего не открылась: \(openScreen)")
+        sleep(1)
+        save("10-лента-будущее")
+    }
+
     /// Лист берут за край (P532) — и без клавиатуры в любом месте (P549).
     func testPagingWithoutKeyboard() {
         launch()

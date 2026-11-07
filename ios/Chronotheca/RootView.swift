@@ -701,8 +701,12 @@ struct RootView: View {
             // плашке. На месте он уходит за край экрана и не виден: толщина
             // показывается движением, а стоящее не должно ничего занимать.
             .overlay(alignment: edge == .top ? .bottom : .top) {
-                BoardEdge(fromTop: edge == .top)
-                    .offset(y: edge == .top ? BoardEdge.depth : -BoardEdge.depth)
+                // В ленте у дня торца нет (P777): он лёг бы на корешок
+                // завтрашней карточки.
+                if !(which == .today && shell.ribbonLive) {
+                    BoardEdge(fromTop: edge == .top)
+                        .offset(y: edge == .top ? BoardEdge.depth : -BoardEdge.depth)
+                }
             }
             .offset(y: down ? 0 : away)
             // День стоит в ленте картотеки на своём месте и едет с ней (P777).
@@ -1004,7 +1008,7 @@ struct RootView: View {
             shell.fileFrom = 0
         }
         shell.ribbon.release()
-        shell.ribbon.home?()
+        shell.ribbon.park()
     }
 
     // MARK: - Сообщение

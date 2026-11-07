@@ -62,15 +62,27 @@ final class Ribbon: ObservableObject {
         y = target
     }
 
-    /// Лента в покое без хода: сперва место дня подводится к экрану, потом
-    /// встаёт точно.
+    /// Лента в покое без хода. Место дня на экране или рядом — ставится по
+    /// замеру сразу. Далеко — лента сперва подводит его (своим переходом к
+    /// карточке), и ставим, когда тот переход улёгся: иначе он перебивал
+    /// установку (снимки CI к P777).
     func settle(_ dir: Int, then: (() -> Void)? = nil) {
+        if seen, !driving {
+            place(restY(dir))
+            then?()
+            return
+        }
         home?()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
             guard let self else { return }
             self.place(self.restY(dir))
             then?()
         }
+    }
+
+    /// Место дня — на верх экрана, под день, без хода.
+    func park() {
+        if seen, !driving { place(0) } else { home?() }
     }
 
     /// Ленту сейчас ведёт программа.
