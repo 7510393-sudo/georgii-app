@@ -214,8 +214,8 @@ final class SectionSwipe: NSObject, UIGestureRecognizerDelegate {
         let way = pan.translation(in: view)
         let dx = abs(way.x) > 0 ? way.x : speed.x
         let dy = abs(way.y) > 0 ? way.y : speed.y
-        // Вбок, а не вверх-вниз.
-        guard abs(dx) > abs(dy) * 1.2 else { return false }
+        // Вбок, а не вверх-вниз (больше вбок, чем вверх-вниз, — P785).
+        guard abs(dx) > abs(dy) else { return false }
         // Выделен текст — палец, скорее всего, тянет ручку выделения.
         guard !Self.selecting else { return false }
         let start = CGPoint(x: pan.location(in: view).x - way.x, y: pan.location(in: view).y - way.y)
@@ -295,15 +295,19 @@ struct SlideAlong: ViewModifier {
 final class SwipePan: UIPanGestureRecognizer {
     private var start: CGPoint = .zero
     private var since: CFTimeInterval = 0
+    /// Палец уже сдвинулся на 10 точек.
+    private var moved = false
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
         super.touchesBegan(touches, with: event)
         guard let touch = touches.first, let view else { return }
         start = touch.location(in: view)
+        moved = false
         let stamp = CACurrentMediaTime()
         since = stamp
         DispatchQueue.main.asyncAfter(deadline: .now() + Cross.hold) { [weak self] in
-            guard let self, self.since == stamp, self.state == .possible else { return }
+            // Палец стоит — это удержание, не свайп. Уже пошёл — решит ход.
+            guard let self, self.since == stamp, self.state == .possible, !self.moved else { return }
             self.state = .failed
         }
     }
@@ -312,8 +316,16 @@ final class SwipePan: UIPanGestureRecognizer {
         if state == .possible, let touch = touches.first, let view {
             let p = touch.location(in: view)
             let dx = p.x - start.x, dy = p.y - start.y
-            let late = CACurrentMediaTime() - since > Cross.hold
-            if late || (hypot(dx, dy) > 4 && abs(dy) * 1.2 >= abs(dx)) {
+            let far = hypot(dx, dy)
+            if far >= 10 { moved = true }
+            // Направление — по первым 10 точкам, а не по 4 (P785): в начале
+            // живой палец дрожит вверх-вниз, и свайп почти не брался.
+            if far < 10 {
+                if CACurrentMediaTime() - since > Cross.hold {
+                    state = .failed
+                    return
+                }
+            } else if abs(dy) > abs(dx) {
                 state = .failed
                 return
             }
@@ -324,6 +336,7 @@ final class SwipePan: UIPanGestureRecognizer {
     override func reset() {
         super.reset()
         since = 0
+        moved = false
     }
 }
 

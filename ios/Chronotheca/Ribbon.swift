@@ -91,6 +91,7 @@ final class Ribbon: ObservableObject {
     /// Дотянули до дня за порог и отпустили — в день.
     var wantDay: (() -> Void)?
     /// С какой стороны дня лента: 1 — прошлое (день ниже), -1 — будущее.
+    /// Считается заново при каждом сдвиге (P785).
     private var wallSide = 1
     /// Где был палец, когда лента упёрлась в стену.
     private var anchor: CGFloat?
@@ -118,7 +119,10 @@ final class Ribbon: ObservableObject {
         }
         let raw = slotTop - scroll.contentOffset.y
         let high = restY(1), low = restY(-1)
-        if raw >= high { wallSide = 1 } else if raw <= low { wallSide = -1 }
+        // Сторона — по тому, где место дня сейчас, а не по памяти (P785):
+        // прежде сторона по умолчанию была «прошлое», и открытое будущее,
+        // вставшее на долю точки мимо места, лента уводила в прошлое.
+        wallSide = raw >= (high + low) / 2 ? 1 : -1
         let wall = wallSide > 0 ? high : low
         let inside = wallSide > 0 ? raw < wall : raw > wall
         var target: CGFloat?
