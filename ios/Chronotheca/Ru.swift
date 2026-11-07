@@ -285,7 +285,6 @@ enum Look {
     /// Плашка дела (P413): желтоватая, как стикер, светлее у левого
     /// верхнего угла — свет падает оттуда.
     static let plateLight  = Color(light: 0xFFF9E3, dark: 0x3A3426)
-    static let plateDark   = Color(light: 0xF4E7BC, dark: 0x2B261A)
     static let stickerEdge = Color(light: 0xE8DCAE, dark: 0x3D3520)
     static let note        = Color(light: 0xE9F1F8, dark: 0x1A2430)
     /// Выбранный вариант в настройках (P600) — чуть тронут чернилами, а не

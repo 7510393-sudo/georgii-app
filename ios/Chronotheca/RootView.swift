@@ -341,7 +341,7 @@ struct RootView: View {
                                 .transition(.move(edge: .top).combined(with: .opacity))
                         }
                         if shell.showingSettings {
-                            SettingsSticker().frame(maxWidth: .infinity, alignment: .topLeading)
+                            SettingsSticker().frame(maxWidth: .infinity, alignment: .topTrailing)
                         }
                     }
                 }
@@ -573,6 +573,9 @@ struct RootView: View {
     /// пропадает, что бы ни было открыто (P188).
     private var corners: some View {
         HStack(alignment: .top) {
+            // Шестерёнка — справа (P793): слева сверху у «Дня» теперь
+            // корешок с его датой, как у карточек.
+            Spacer(minLength: 0)
             Button {
                 if closeDrawer() { return }
                 // Открытая клавиатура и строка над ней не должны мешать
@@ -590,8 +593,6 @@ struct RootView: View {
             // Уголок тянут вниз, и бумажка идёт за пальцем (P233).
             .simultaneousGesture(pull(\.showingSettings, \.settingsPull))
             .accessibilityLabel(T("Настройки", "Settings"))
-
-            Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
@@ -1146,16 +1147,19 @@ struct Corner: View {
     @State private var art: PageTexture.AgedArt?
 
     var body: some View {
-        ZStack(alignment: .topLeading) {
+        ZStack(alignment: .topTrailing) {
+            // Уголок — справа (P793): листок зеркально, рваные — левый и
+            // нижний края, за правый край экрана он заходит.
             sticker
+                .scaleEffect(x: -1, y: 1)
             Image(systemName: icon)
                 .font(.system(size: 18))
                 .foregroundStyle(tint)
                 .frame(width: 30, height: 26)
-                .padding(.leading, 9)
+                .padding(.trailing, 9)
                 .padding(.top, 7)
         }
-        .frame(width: Corner.size, height: Corner.size, alignment: .topLeading)
+        .frame(width: Corner.size, height: Corner.size, alignment: .topTrailing)
         // Сверху листок уходит под край ровно — без растворения (P735:
         // переход цвета сверху выбивался из старой бумаги).
         .clipShape(BelowTop())
@@ -1212,7 +1216,8 @@ private struct BelowTop: Shape {
 /// Видимая часть уголка — для касаний.
 struct CornerShape: Shape {
     func path(in r: CGRect) -> Path {
-        Path(CGRect(x: r.minX, y: r.minY, width: r.width * 0.86, height: r.height * 0.80))
+        // Уголок справа (P793).
+        Path(CGRect(x: r.maxX - r.width * 0.86, y: r.minY, width: r.width * 0.86, height: r.height * 0.80))
     }
 }
 

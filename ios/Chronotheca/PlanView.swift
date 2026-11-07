@@ -111,7 +111,7 @@ struct PlanRowLine: View {
         .padding(.vertical, 6)
         .frame(maxWidth: .infinity, alignment: .leading)
         }
-        // Каждое дело на своей плашке (P374, P413).
+        // Плашка — только у поднятого дела (P793).
         .background { contour }
     }
 
@@ -121,40 +121,22 @@ struct PlanRowLine: View {
     // Пустая плашка — ярче прежнего (P465: на 0,3 подсказка не читалась).
     private var dim: Double { ghost ? 0.55 : (row.done ? 0.42 : 1) }
 
-    /// Плашка дела (P413): выпуклая, как листок стикера, — свет падает с
-    /// левого верхнего угла: там она светлее и с бликом по кромке, а тень
-    /// ложится вправо вниз. Пустая плашка следующего дела — бледнее.
-    private var contour: some View {
-        let shape = RoundedRectangle(cornerRadius: 9)
-        // Плашка сплошная: клетка листа сквозь неё не видна (P415) — и у
-        // пустой плашки следующего дела тоже; та лишь бледнее цветом, тенью
-        // и кромкой.
-        // Пустая плашка — того же цвета, что все, отличается только
-        // бледными линиями (P421): светлая пестрила.
-        return shape
-            .fill(LinearGradient(colors: past ? [Ru.pastTint, Ru.pastTint]
-                                              : [Look.plateLight, Look.plateDark],
-                                 startPoint: .topLeading, endPoint: .bottomTrailing))
-            .overlay(shape.strokeBorder(LinearGradient(colors: [.white.opacity(past ? 0.6 : 0.9), .white.opacity(0)],
-                                                       startPoint: .topLeading, endPoint: .center),
-                                        lineWidth: 1.2))
-            .overlay(shape.strokeBorder(lifted ? Look.glow
-                                               : (past ? .clear : Look.inkFaint.opacity(ghost ? 0.2 : 0.4)),
-                                        lineWidth: lifted ? 3.25 : 0.8))
-            // Рельеф (P678): у кромки — плотная короткая тень, дальше — мягкая
-            // и длинная, обе вправо вниз, откуда свет не идёт; блик — по
-            // левой верхней кромке (и у прошедших дней). Тени нарисованы
-            // заранее (P675), у пустой плашки бледнее.
-            .background(PaintedShadow(radius: 5, corner: 9, x: 2.5, y: 3,
-                                      opacity: ghost ? 0.12 : 0.2))
-            .background(PaintedShadow(radius: 1.3, corner: 9, x: 0.8, y: 1.1,
-                                      opacity: ghost ? 0.14 : 0.26))
-            .shadow(color: Look.glow.opacity(lifted ? 0.9 : 0), radius: 5)
-            // Плашка уже с боков (P413).
-            .padding(.leading, 10)
-            .padding(.trailing, 10)
-            .padding(.vertical, 2)
-            .allowsHitTesting(false)
+    /// Дело пишется прямо по клетке листа, без жёлтой плашки (P793, вместо
+    /// плашек P374, P413, P415, P421, P678): лист дня не похож на стопку
+    /// карточек над и под ним. Плашка появляется, только пока дело подняли
+    /// и несут (P362), — синей рамкой, чтобы было видно, что в руке.
+    @ViewBuilder private var contour: some View {
+        if lifted {
+            let shape = RoundedRectangle(cornerRadius: 9)
+            shape
+                .fill(past ? Ru.pastTint : Look.plateLight)
+                .overlay(shape.strokeBorder(Look.glow, lineWidth: 3.25))
+                .shadow(color: Look.glow.opacity(0.9), radius: 5)
+                .padding(.leading, 10)
+                .padding(.trailing, 10)
+                .padding(.vertical, 2)
+                .allowsHitTesting(false)
+        }
     }
 
     /// Номер: коснуться — сделано (P383), подержать — поднять дело и вести

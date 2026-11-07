@@ -164,15 +164,24 @@ struct DayPage: View {
             // стрелки, слов «вчера / завтра» рядом больше нет (P229).
             // Имя дня и под ним день недели с датой — одним блоком между
             // стрелками (P434): шапка ниже на строку, под текст больше места.
+            // Слева — корешок, как у карточек картотеки, с именем дня и
+            // датой; стрелки — правее, у шестерёнки (P793, вместо имени
+            // посередине между стрелками P229, P434).
             HStack(spacing: 0) {
-                side(-1)
                 titleMenu
+                    .padding(.horizontal, 14)
+                    .padding(.top, 4)
+                    .frame(height: DayPage.headLine + 8)
+                    .background(DayTab(date: date))
+                Spacer(minLength: 6)
+                side(-1)
                 side(1)
             }
             .frame(height: DayPage.headLine + 8)
         }
-        // Шапка на 30% уже экрана: по бокам — уголки бумаги (P229).
-        .padding(.horizontal, Corner.size + 4)
+        // Слева — от края листа, справа — до уголка с шестерёнкой (P793).
+        .padding(.leading, 8)
+        .padding(.trailing, Corner.size + 2)
         // Верх поднят (P434): над шапкой воздуха меньше.
         .padding(.top, 2)
         .padding(.bottom, 4)
@@ -231,7 +240,7 @@ struct DayPage: View {
     }
 
     private var titleBlock: some View {
-                VStack(spacing: 0) {
+                VStack(alignment: .leading, spacing: 0) {
                     Text(live ? store.title : DayPage.title(for: date))
                         .font(.system(size: 21, weight: .semibold))
                         .tracking(-0.2)
@@ -251,7 +260,6 @@ struct DayPage: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.75)
                 }
-                .frame(maxWidth: .infinity)
     }
 
     /// Шаг назад и вперёд по всей странице, плану и дневнику разом (P408) —
@@ -456,6 +464,38 @@ struct DayPage: View {
         } else {
             SideDay(date: date)
         }
+    }
+}
+
+/// Корешок «Дня» (P793): как у карточек картотеки — выступ листа вверху
+/// слева, той же бумаги, что лист, с обводкой сверху и по бокам; снизу
+/// открыт и переходит в лист.
+struct DayTab: View {
+    let date: Date
+
+    var body: some View {
+        let shape = TabEdge()
+        Ru.tint(date)
+            .overlay(PageTexture(tab: .diary, aged: Ru.isPast(date)))
+            .overlay(Color.black.opacity(0.035))
+            .clipShape(shape)
+            .overlay(shape.stroke(Look.stickerEdge, lineWidth: 1))
+            .shadow(color: .black.opacity(0.08), radius: 1.5, x: 1, y: -0.5)
+    }
+}
+
+/// Контур корешка: скруглённый верх, отвесные бока, снизу открыт.
+struct TabEdge: Shape {
+    func path(in r: CGRect) -> Path {
+        let radius: CGFloat = 9
+        var p = Path()
+        p.move(to: CGPoint(x: r.minX, y: r.maxY))
+        p.addLine(to: CGPoint(x: r.minX, y: r.minY + radius))
+        p.addQuadCurve(to: CGPoint(x: r.minX + radius, y: r.minY), control: CGPoint(x: r.minX, y: r.minY))
+        p.addLine(to: CGPoint(x: r.maxX - radius, y: r.minY))
+        p.addQuadCurve(to: CGPoint(x: r.maxX, y: r.minY + radius), control: CGPoint(x: r.maxX, y: r.minY))
+        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
+        return p
     }
 }
 
