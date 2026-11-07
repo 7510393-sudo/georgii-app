@@ -70,6 +70,7 @@ final class Ribbon: ObservableObject {
         // отставать на кадр от прокрутки — не верим ему.
         guard !driving else { return }
         slotTop = value + scroll.contentOffset.y
+        known = true
         follow(scroll.contentOffset.y)
     }
 
@@ -96,6 +97,11 @@ final class Ribbon: ObservableObject {
     private var armed = false
     /// Лента ставится своей рукой — свой сдвиг не разбирать.
     private var fixing = false
+    /// Место дня хоть раз измерено. Стена держится и тогда, когда место
+    /// за краем и лента его не собирает (`seen` — нет): иначе лента
+    /// подъезжала к дню свободно, и порог начинал считаться поздно
+    /// (проверка движения к P779).
+    private var known = false
 
     /// Открытую ленту листают к дню — день не выезжает сразу (P779): лента
     /// упирается в стену у его края, за стеной идёт туго (как тяга из дня,
@@ -104,7 +110,7 @@ final class Ribbon: ObservableObject {
     /// останавливается у стены.
     private func scrolled(_ scroll: UIScrollView) {
         guard !fixing else { return }
-        guard walls(), !driving, link == nil, seen, height > 0 else {
+        guard walls(), !driving, link == nil, known, height > 0 else {
             anchor = nil
             armed = false
             follow(scroll.contentOffset.y)
