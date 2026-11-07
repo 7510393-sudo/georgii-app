@@ -235,9 +235,6 @@ struct SearchView: View {
             : times.contains { $0.contains(where: \.isLetter) } ? "00:00 PM" : "00:00"
         let items = entries(past, future)
         let ribbon = shell.ribbon
-        // Края ленты у дня — для покоя: вчера и завтра.
-        let yesterday: String? = Search.deep ? (past.isEmpty ? nil : "p\(past.count - 1)") : past.last?.id
-        ribbon.ends = (yesterday, future.first?.id)
         return ScrollViewReader { proxy in ScrollView {
             // Карточки — вид сверху: нижняя лежит поверх верхней и своим
             // корешком с датой закрывает её низ (P694, P695).
@@ -260,15 +257,6 @@ struct SearchView: View {
         .modifier(SnapToDay(shell: shell))
         .onAppear {
             ribbon.home = { proxy.scrollTo(Ribbon.slotID, anchor: .top) }
-            ribbon.rest = { [ribbon] dir in
-                if dir > 0, let last = ribbon.ends.past {
-                    proxy.scrollTo(last, anchor: .bottom)
-                } else if dir < 0, let first = ribbon.ends.future {
-                    proxy.scrollTo(first, anchor: .top)
-                } else {
-                    proxy.scrollTo(Ribbon.slotID, anchor: .top)
-                }
-            }
             DispatchQueue.main.async {
                 if shell.ribbonOpen { settle() } else { ribbon.home?() }
                 // Ленивая стопка ставит дальнюю карточку со второго раза.
@@ -317,7 +305,7 @@ struct SearchView: View {
     private func settle() {
         guard shell.ribbonOpen, !shell.pulling, !shell.ribbon.busy else { return }
         shell.ribbon.opened()
-        shell.ribbon.rest?(shell.fileFrom < 0 ? -1 : 1)
+        shell.ribbon.settle(shell.fileFrom < 0 ? -1 : 1)
     }
 
     @ViewBuilder private func piece(_ entry: Entry, sample: String?) -> some View {

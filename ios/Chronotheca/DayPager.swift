@@ -421,9 +421,8 @@ struct DayPage: View {
                          Feel.thud()
                          shell.ribbonOpen = true
                          shell.screen = .search
-                         let h = ribbon.height
-                         let target = dir > 0 ? h : Search.fieldHeight + Search.restTop - h
-                         ribbon.glide(to: target) {
+                         ribbon.opened()
+                         ribbon.glide(to: ribbon.restY(dir)) {
                              shell.pulling = false
                              ribbon.release()
                          }

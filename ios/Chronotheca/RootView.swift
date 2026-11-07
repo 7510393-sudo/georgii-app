@@ -985,10 +985,9 @@ struct RootView: View {
         if ribbon.seen {
             ribbon.glide(to: 0, then: finish)
         } else {
-            // Место дня далеко в ленте: сперва лента встаёт у дня, затем
-            // доезжает до него.
-            ribbon.rest?(ribbon.y < 0 ? -1 : 1)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            // Место дня далеко в ленте: сперва лента встаёт у дня (день за
+            // краем, с той стороны, где он был), затем доезжает до него.
+            ribbon.settle(ribbon.y < 0 ? -1 : 1) {
                 ribbon.glide(to: 0, then: finish)
             }
         }

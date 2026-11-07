@@ -30,12 +30,6 @@ final class Ribbon: ObservableObject {
     var seen = false
     /// Поставить место дня на верх экрана (ставит сама лента, без хода).
     var home: (() -> Void)?
-    /// Поставить ленту в покой: 1 — прошлое (вчера над нижней строкой),
-    /// -1 — будущее (завтра под строкой поиска). Без хода.
-    var rest: ((Int) -> Void)?
-    /// Вчерашняя и завтрашняя карточки ленты — ключи для покоя.
-    var ends: (past: String?, future: String?) = (nil, nil)
-
     /// Ленту ведёт программа — замеры не перебивают её.
     private var driving = false
     /// Прокрутка, при которой место дня стоит на верху экрана.
@@ -54,6 +48,30 @@ final class Ribbon: ObservableObject {
     private var openedAt: CFTimeInterval = 0
     func opened() { openedAt = CACurrentMediaTime() }
     var fresh: Bool { CACurrentMediaTime() - openedAt < 1.5 }
+
+    /// Где место дня стоит в покое: 1 — прошлое (вчера над нижней строкой,
+    /// день за нижним краем), -1 — будущее (завтра под строкой поиска).
+    func restY(_ dir: Int) -> CGFloat {
+        dir > 0 ? height : Search.fieldHeight + Search.restTop - height
+    }
+
+    /// Поставить место дня на `target` без хода — по замеру, как при тяге.
+    func place(_ target: CGFloat) {
+        guard let scroll = box.view, seen, !driving else { return }
+        scroll.contentOffset.y += y - target
+        y = target
+    }
+
+    /// Лента в покое без хода: сперва место дня подводится к экрану, потом
+    /// встаёт точно.
+    func settle(_ dir: Int, then: (() -> Void)? = nil) {
+        home?()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+            guard let self else { return }
+            self.place(self.restY(dir))
+            then?()
+        }
+    }
 
     /// Ленту сейчас ведёт программа.
     var busy: Bool { driving }
