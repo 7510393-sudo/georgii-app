@@ -271,6 +271,10 @@ struct SearchView: View {
             }
             DispatchQueue.main.async {
                 if shell.ribbonOpen { settle() } else { ribbon.home?() }
+                // Ленивая стопка ставит дальнюю карточку со второго раза.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    if shell.ribbonOpen && ribbon.fresh { settle() }
+                }
                 // Снимок «лента поиска»: список пролистан, как у человека.
                 if Search.deep {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
@@ -281,9 +285,19 @@ struct SearchView: View {
         }
         // Опись перечитана, пока лента спрятана: место дня — снова под днём,
         // чтобы тяга из дня начиналась сразу.
+        // Только что открытую ленту (снимок, запуск на картотеке) опись
+        // догоняет позже — встаём в покой ещё раз.
         .onChange(of: items.count) { _, _ in
-            guard !shell.ribbonLive else { return }
-            DispatchQueue.main.async { ribbon.home?() }
+            DispatchQueue.main.async {
+                if !shell.ribbonLive { ribbon.home?() } else if ribbon.fresh { settle() }
+            }
+        }
+        // Высота экрана известна не с первого кадра: до неё место дня
+        // нулевое, и лента вставала не там (снимки CI к P777).
+        .onChange(of: height) { _, _ in
+            DispatchQueue.main.async {
+                if !shell.ribbonLive { ribbon.home?() } else if ribbon.fresh { settle() }
+            }
         }
         // Ленту открыли не тягой (снимок, запуск на картотеке) — в покой.
         .onChange(of: shell.ribbonOpen) { _, open in
@@ -301,7 +315,8 @@ struct SearchView: View {
 
     /// Лента в покое: вчера над нижней строкой или завтра под строкой поиска.
     private func settle() {
-        guard shell.ribbonOpen, !shell.pulling else { return }
+        guard shell.ribbonOpen, !shell.pulling, !shell.ribbon.busy else { return }
+        shell.ribbon.opened()
         shell.ribbon.rest?(shell.fileFrom < 0 ? -1 : 1)
     }
 

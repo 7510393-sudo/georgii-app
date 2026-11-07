@@ -49,6 +49,12 @@ final class Ribbon: ObservableObject {
     private var length: CFTimeInterval = 0.3
     private var done: (() -> Void)?
 
+    /// Когда ленту открыли — первые полторы секунды она ещё встаёт в покой,
+    /// пока догоняют высота экрана и опись.
+    private var openedAt: CFTimeInterval = 0
+    func opened() { openedAt = CACurrentMediaTime() }
+    var fresh: Bool { CACurrentMediaTime() - openedAt < 1.5 }
+
     /// Ленту сейчас ведёт программа.
     var busy: Bool { driving }
 
