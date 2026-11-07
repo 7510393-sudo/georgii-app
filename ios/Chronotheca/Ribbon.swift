@@ -78,7 +78,89 @@ final class Ribbon: ObservableObject {
         guard watched !== scroll else { return }
         watched = scroll
         watch = scroll.observe(\.contentOffset, options: [.new]) { [weak self] view, _ in
-            self?.follow(view.contentOffset.y)
+            self?.scrolled(view)
+        }
+        scroll.panGestureRecognizer.addTarget(self, action: #selector(panned(_:)))
+    }
+
+    // MARK: - Порог у дня (P779)
+
+    /// Держать ли сейчас стену у дня: лента открыта, её не тянут из дня.
+    var walls: () -> Bool = { false }
+    /// Дотянули до дня за порог и отпустили — в день.
+    var wantDay: (() -> Void)?
+    /// С какой стороны дня лента: 1 — прошлое (день ниже), -1 — будущее.
+    private var wallSide = 1
+    /// Где был палец, когда лента упёрлась в стену.
+    private var anchor: CGFloat?
+    private var armed = false
+    /// Лента ставится своей рукой — свой сдвиг не разбирать.
+    private var fixing = false
+
+    /// Открытую ленту листают к дню — день не выезжает сразу (P779): лента
+    /// упирается в стену у его края, за стеной идёт туго (как тяга из дня,
+    /// `EdgePull.resisted`), на пороге — толчок в руку; отпустили за
+    /// порогом — день, нет — лента возвращается к стене. Разгон пальца
+    /// останавливается у стены.
+    private func scrolled(_ scroll: UIScrollView) {
+        guard !fixing else { return }
+        guard walls(), !driving, link == nil, seen, height > 0 else {
+            anchor = nil
+            armed = false
+            follow(scroll.contentOffset.y)
+            return
+        }
+        let raw = slotTop - scroll.contentOffset.y
+        let high = restY(1), low = restY(-1)
+        if raw >= high { wallSide = 1 } else if raw <= low { wallSide = -1 }
+        let wall = wallSide > 0 ? high : low
+        let inside = wallSide > 0 ? raw < wall : raw > wall
+        var target: CGFloat?
+        if scroll.isTracking {
+            let t = scroll.panGestureRecognizer.translation(in: scroll.window ?? scroll).y
+            if inside, anchor == nil { anchor = t }
+            if let a = anchor {
+                // Прошлое: день снизу, палец идёт вверх; будущее — вниз.
+                let over = wallSide > 0 ? a - t : t - a
+                if over <= 0 {
+                    anchor = nil
+                    armed = false
+                    if inside { target = wall }
+                } else {
+                    let shown = EdgePull.resisted(over)
+                    target = wallSide > 0 ? wall - shown : wall + shown
+                    let on = over >= EdgePull.threshold
+                    if on && !armed { Feel.light() }
+                    armed = on
+                }
+            }
+        } else if inside {
+            target = wall
+        }
+        if let target {
+            fixing = true
+            scroll.setContentOffset(CGPoint(x: scroll.contentOffset.x, y: slotTop - target),
+                                    animated: false)
+            fixing = false
+        }
+        follow(scroll.contentOffset.y)
+    }
+
+    @objc private func panned(_ pan: UIPanGestureRecognizer) {
+        guard pan.state == .ended || pan.state == .cancelled || pan.state == .failed else { return }
+        let go = armed && pan.state == .ended
+        anchor = nil
+        armed = false
+        // После того как прокрутка сама решит про разгон.
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.walls(), !self.driving else { return }
+            if go {
+                self.wantDay?()
+                return
+            }
+            let wall = self.restY(self.wallSide)
+            let inside = self.wallSide > 0 ? self.y < wall - 0.5 : self.y > wall + 0.5
+            if inside { self.glide(to: wall) }
         }
     }
 
@@ -212,26 +294,5 @@ struct FollowRibbon: ViewModifier {
 
     func body(content: Content) -> some View {
         content.offset(y: live ? ribbon.y : 0)
-    }
-}
-
-/// Ленту отпустили, и место дня видно больше чем наполовину — она сама
-/// доезжает до дня, и день снова живой (P777). Ход прокрутки знает только
-/// iOS 18; на iOS 17 в день возвращает касание по нему или «День» внизу.
-struct SnapToDay: ViewModifier {
-    let shell: Shell
-
-    func body(content: Content) -> some View {
-        if #available(iOS 18.0, *) {
-            content.onScrollPhaseChange { _, phase in
-                let ribbon = shell.ribbon
-                guard phase == .idle, shell.screen == .search, shell.ribbonOpen,
-                      !shell.pulling, !ribbon.busy, ribbon.seen,
-                      abs(ribbon.y) < ribbon.height * 0.5 else { return }
-                shell.screen = .today
-            }
-        } else {
-            content
-        }
     }
 }

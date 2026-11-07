@@ -2,11 +2,12 @@ import SwiftUI
 import UIKit
 
 /// Свайп между разделами (P778): «Календарь», «День», «Карта» лежат в ряд,
-/// как в нижней строке. Палец ведут вбок — открытый раздел уезжает, соседний
+/// как в нижней строке, и по кругу (P779): за картой снова календарь, перед
+/// календарём — карта. Палец ведут вбок — открытый раздел уезжает, соседний
 /// выезжает за ним вплотную; отпустили за порогом — соседний доезжает, «тик»
 /// в руку; не дотянули — оба мягко возвращаются. Вместо перелистывания дня
 /// пальцем (P532, P540, P550 — отменены): дни меняют стрелки ‹ › у страницы
-/// и карточки картотеки.
+/// и карточки картотеки. Из открытой картотеки — так же, как из «Дня».
 ///
 /// Сдвиг живёт здесь, а не в оболочке: на каждый кадр перерисовываются
 /// только две едущие плашки, а не весь экран (как у ленты, P777).
@@ -30,12 +31,19 @@ final class SectionSlide: ObservableObject {
     /// Доезжает своим ходом — второго свайпа не начинать.
     private(set) var settling = false
 
-    /// Сосед открытого раздела: 1 — справа, -1 — слева.
-    static func neighbour(of screen: Shell.Screen, _ side: Int) -> Shell.Screen? {
-        guard let i = order.firstIndex(of: screen) else { return nil }
-        let j = i + side
-        return order.indices.contains(j) ? order[j] : nil
+    /// Где раздел в ряду; открытая картотека — на месте «Дня».
+    private static func place(_ screen: Shell.Screen) -> Int? {
+        order.firstIndex(of: screen == .search ? .today : screen)
     }
+
+    /// Сосед раздела по кругу (P779): 1 — справа, -1 — слева.
+    static func neighbour(of screen: Shell.Screen, _ side: Int) -> Shell.Screen? {
+        guard let i = place(screen) else { return nil }
+        return order[(i + side + order.count) % order.count]
+    }
+
+    /// С какой стороны выезжает сосед: 1 — справа, -1 — слева.
+    private var side = 1
 
     func begin(from screen: Shell.Screen, width: CGFloat) {
         var still = Transaction()
@@ -53,25 +61,22 @@ final class SectionSlide: ObservableObject {
     func move(_ dx: CGFloat) {
         guard active, !settling else { return }
         // Палец влево — едет сосед справа.
-        let side = dx < 0 ? 1 : -1
+        side = dx < 0 ? 1 : -1
         let next = dx == 0 ? nil : Self.neighbour(of: from, side)
         var still = Transaction()
         still.disablesAnimations = true
         withTransaction(still) {
             if target != next { target = next }
-            // Соседа нет — раздел упирается, идёт втрое туже.
-            x = next == nil ? dx * 0.3 : dx
+            x = dx
         }
     }
 
     /// Где плашка раздела по горизонтали; `nil` — стоит, как стояла.
     func offset(for screen: Shell.Screen) -> CGFloat? {
         guard active else { return nil }
-        if screen == from { return x }
-        if let target, screen == target {
-            let right = (Self.order.firstIndex(of: target) ?? 0) > (Self.order.firstIndex(of: from) ?? 0)
-            return x + (right ? width : -width)
-        }
+        // Из картотеки уезжают и лента, и день, стоящий в ней.
+        if screen == from || (from == .search && screen == .today) { return x }
+        if let target, screen == target { return x + CGFloat(side) * width }
         return nil
     }
 
@@ -141,7 +146,7 @@ struct FollowSlide: ViewModifier {
         let shown = down || dx != nil
         content
             .offset(x: dx ?? 0, y: shown ? 0 : away)
-            .zIndex(dx != nil ? (which == slide.from ? 100 : 101) : z)
+            .zIndex(dx != nil ? (which == slide.target ? 101 : 100) : z)
     }
 }
 
@@ -152,11 +157,13 @@ struct FollowSlide: ViewModifier {
 final class SectionSwipe: NSObject, UIGestureRecognizerDelegate {
 
     static let shared = SectionSwipe()
-    /// На карте свайп начинают у левого края — полоса около 7 мм (P767).
+    /// На карте свайп начинают у края — полоса около 7 мм (P767), у обоих
+    /// краёв (P779).
     static let mapEdge: CGFloat = 40
 
-    /// Можно ли начать отсюда: точка в окне и куда идёт палец (1 — вправо).
-    var allowed: ((CGPoint, Int) -> Bool)?
+    /// Можно ли начать отсюда: точка в окне, куда идёт палец (1 — вправо)
+    /// и ширина окна.
+    var allowed: ((CGPoint, Int, CGFloat) -> Bool)?
     /// Свайп начался, едет, кончился.
     var began: ((CGFloat) -> Void)?
     var moved: ((CGFloat) -> Void)?
@@ -210,7 +217,7 @@ final class SectionSwipe: NSObject, UIGestureRecognizerDelegate {
         // Выделен текст — палец, скорее всего, тянет ручку выделения.
         guard !Self.selecting else { return false }
         let start = CGPoint(x: pan.location(in: view).x - way.x, y: pan.location(in: view).y - way.y)
-        return allowed?(start, dx > 0 ? 1 : -1) ?? false
+        return allowed?(start, dx > 0 ? 1 : -1, view.bounds.width) ?? false
     }
 
     func gestureRecognizer(_ g: UIGestureRecognizer,
@@ -264,5 +271,14 @@ final class SectionSwipe: NSObject, UIGestureRecognizerDelegate {
         if let text = view as? UITextView, text.isFirstResponder { return text }
         for sub in view.subviews { if let found = firstResponderText(in: sub) { return found } }
         return nil
+    }
+}
+
+/// Лента картотеки уезжает вбок вместе с днём, стоящим в ней (P779).
+struct SlideAlong: ViewModifier {
+    @ObservedObject var slide: SectionSlide
+
+    func body(content: Content) -> some View {
+        content.offset(x: slide.active && slide.from == .search ? slide.x : 0)
     }
 }

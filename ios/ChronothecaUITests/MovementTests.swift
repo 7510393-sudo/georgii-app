@@ -143,7 +143,7 @@ final class MovementTests: XCTestCase {
     }
 
     /// Лента картотеки (P777) тянется из дня настоящим пальцем: вниз за
-    /// верх — прошлое, касание по дню — назад в день, вверх за низ —
+    /// верх — прошлое, к дню через порог (P779) — назад в день, вверх за низ —
     /// будущее. Снимки — чтобы видеть стык дня и карточек.
     func testRibbonFromDay() {
         launch()
@@ -155,15 +155,19 @@ final class MovementTests: XCTestCase {
         XCTAssertTrue(wait(4) { openScreen == "search" }, "лента прошлого не открылась: \(openScreen)")
         sleep(1)
         save("07-лента-прошлое")
-        // Подтянуть день из-под нижней строки и коснуться его.
+        // К дню — через порог (P779): чуть потянули — лента у стены, день
+        // не выехал; дотянули — назад в день.
         let low = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
         low.press(forDuration: 0.05,
-                  thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.45)),
-                  withVelocity: .slow, thenHoldForDuration: 0.3)
+                  thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.66)),
+                  withVelocity: .slow, thenHoldForDuration: 0.1)
         sleep(1)
-        save("08-лента-день-внизу")
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.82)).tap()
-        XCTAssertTrue(wait(4) { openScreen == "today" }, "касание по дню не вернуло в день: \(openScreen)")
+        XCTAssertEqual(openScreen, "search", "день выехал без порога")
+        save("08-лента-у-стены")
+        low.press(forDuration: 0.05,
+                  thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.35)),
+                  withVelocity: .slow, thenHoldForDuration: 0.1)
+        XCTAssertTrue(wait(4) { openScreen == "today" }, "за порогом лента не вернула в день: \(openScreen)")
         sleep(1)
         save("09-лента-снова-день")
         // Будущее — вверх за низ листа: сперва долистать лист до конца.
@@ -178,10 +182,10 @@ final class MovementTests: XCTestCase {
         save("10-лента-будущее")
     }
 
-    /// Свайп между разделами (P778): с «Дня» влево — карта; с карты от
-    /// левого края вправо — «День»; вправо — календарь; с календаря влево —
-    /// снова «День». День при этом не перелистывается: пальцем его больше
-    /// не листают (прежние P532, P549 отменены).
+    /// Свайп между разделами (P778, по кругу — P779): с «Дня» влево —
+    /// карта; на карте с середины — ничего (палец двигает карту); от правого
+    /// края влево — по кругу календарь; с календаря вправо — по кругу карта;
+    /// от левого края вправо — «День». День при этом не перелистывается.
     func testSwipeSections() {
         launch()
         XCTAssertEqual(openScreen, "today")
@@ -197,19 +201,18 @@ final class MovementTests: XCTestCase {
         XCTAssertEqual(openDay, "today", "свайп перелистнул день")
         sleep(2)
         save("02-свайп-карта")
-        // На карте — только от левого края.
-        swipe(0.5, 0.95)
+        swipe(0.5, 0.05)
         sleep(1)
         XCTAssertEqual(openScreen, "map", "с середины карты свайп увёл с карты")
-        swipe(0.02, 0.9)
-        XCTAssertTrue(wait(6) { openScreen == "today" }, "от края карты свайп не вернул «День»: \(openScreen)")
-        sleep(1)
-        swipe(0.2, 0.9)
-        XCTAssertTrue(wait(6) { openScreen == "calendar" }, "свайп вправо не открыл календарь: \(openScreen)")
+        swipe(0.98, 0.1)
+        XCTAssertTrue(wait(6) { openScreen == "calendar" }, "от правого края карты не открылся календарь: \(openScreen)")
         sleep(1)
         save("02-свайп-календарь")
-        swipe(0.8, 0.1)
-        XCTAssertTrue(wait(6) { openScreen == "today" }, "с календаря свайп не вернул «День»: \(openScreen)")
+        swipe(0.2, 0.9)
+        XCTAssertTrue(wait(6) { openScreen == "map" }, "с календаря вправо по кругу не открылась карта: \(openScreen)")
+        sleep(1)
+        swipe(0.02, 0.9)
+        XCTAssertTrue(wait(6) { openScreen == "today" }, "от левого края карты свайп не вернул «День»: \(openScreen)")
         XCTAssertEqual(openDay, "today", "свайп перелистнул день")
     }
 

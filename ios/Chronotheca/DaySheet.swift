@@ -448,6 +448,13 @@ final class EdgePull: NSObject, ObservableObject, UIGestureRecognizerDelegate {
     /// Сколько точек протянуть за край, чтобы открыть картотеку.
     static let threshold: CGFloat = 90
 
+    /// До порога лист идёт туго — вчетверо медленнее пальца, — после порога
+    /// за пальцем (P779): картотека не выезжает от лёгкого касания, сперва
+    /// нужно усилие, на пороге — толчок в руку.
+    static func resisted(_ over: CGFloat) -> CGFloat {
+        over < threshold ? over * 0.25 : threshold * 0.25 + (over - threshold)
+    }
+
     /// 1 — тянут вниз за верх, -1 — вверх за низ, 0 — не тянут.
     private var dir = 0
 
@@ -505,7 +512,7 @@ final class EdgePull: NSObject, ObservableObject, UIGestureRecognizerDelegate {
             guard let start = anchor else { return }
             let now = (t.y - start) * CGFloat(dir)
             if now <= 0 { reset(); return }
-            progress?(now, dir)
+            progress?(Self.resisted(now), dir)
             let over = now >= Self.threshold
             if over && !armed { Feel.light() }
             armed = over

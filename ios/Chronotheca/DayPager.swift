@@ -5,11 +5,12 @@ import Photos
 import UniformTypeIdentifiers
 import CoreTransferable
 
-/// Дни листаются как страницы книги.
+/// Открытый день.
 ///
-/// Вместе со страницей едет всё, что к этому дню относится: имя дня, день
-/// недели, дата, вкладки и полоска вложений. Неподвижны только шестерёнка,
-/// три точки и три раздела внизу — то, что принадлежит приложению, а не дню.
+/// Вместе со страницей меняется всё, что к этому дню относится: имя дня,
+/// день недели, дата, вкладки и полоска вложений. Неподвижны только
+/// шестерёнка и три раздела внизу — то, что принадлежит приложению, а не дню.
+/// Соседний день встаёт на место без загиба листа (P779).
 struct DayPages: View {
 
     @EnvironmentObject private var vault: Vault
@@ -17,19 +18,14 @@ struct DayPages: View {
     @EnvironmentObject private var shell: Shell
     @EnvironmentObject private var archive: Archive
 
-    @State private var plan: [Int] = []
-
     var body: some View {
-        PageCurl(content: { offset in
-            DayPage(date: shift(offset), live: offset == 0)
+        PageHost {
+            DayPage(date: store.date, live: true)
                 .environmentObject(vault)
                 .environmentObject(store)
                 .environmentObject(shell)
                 .environmentObject(archive)
-        }, onTurn: { step in
-            hideKeyboard()
-            shell.turn(step, store)
-        }, plan: $plan)
+        }
         // Лента превью и строка вложений — одна, у низа экрана, над всеми
         // страницами (P544): не листается с днём, а с клавиатурой едет вверх.
         // Взятое из ленты превью — поверх всего (P545).
@@ -37,23 +33,17 @@ struct DayPages: View {
         .onChange(of: shell.goHome) { _, want in
             guard want else { return }
             shell.goHome = false
-            plan = DayPages.wayHome(from: store.date)
+            let days = Calendar.current.dateComponents([.day], from: store.date,
+                                                       to: DayStore.today()).day ?? 0
+            guard days != 0 else { return }
+            hideKeyboard()
+            shell.turn(days, store)
         }
         // Ушли со вкладки в режиме изменений — режим выключается сам, а не
         // остаётся включённым за спиной (P330).
         .onChange(of: shell.tab) { _, now in
             for t in Shell.Tab.allCases where t != now { store.setEditing(t, false) }
         }
-    }
-
-    /// Сколько дней до сегодняшнего и в какую сторону.
-    static func wayHome(from date: Date, to home: Date = DayStore.today()) -> [Int] {
-        let days = Calendar.current.dateComponents([.day], from: date, to: home).day ?? 0
-        return Chronotheca.wayHome(days)
-    }
-
-    private func shift(_ days: Int) -> Date {
-        Calendar.current.date(byAdding: .day, value: days, to: store.date) ?? store.date
     }
 }
 

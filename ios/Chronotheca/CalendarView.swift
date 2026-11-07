@@ -32,7 +32,6 @@ struct CalendarView: View {
     /// месяца на снимке иначе не было бы прошедших дней. Календарь собран
     /// заранее, поэтому месяц ставится, когда его открывают.
     static var previewStart: Date?
-    @State private var plan: [Int] = []
     @State private var selected: String? = Vault.stamp(DayStore.today())
 
     private var cal: Calendar { Prefs.calendar }
@@ -64,17 +63,13 @@ struct CalendarView: View {
             .padding(.top, 12)
             .padding(.bottom, 10)
 
-            PageCurl(content: { offset in
-                page(at: step(offset), current: offset == 0)
+            // Месяц или год встаёт на место без загиба листа (P779).
+            PageHost {
+                page(at: shown, current: true)
                     .environmentObject(store)
                     .environmentObject(archive)
                     .environmentObject(shell)
-            }, onTurn: { step in
-                shown = shift(shown, by: step)
-                // Бегунок снимается: дело выбранного дня к новому месяцу
-                // отношения не имеет и висеть под ним не должно.
-                selected = nil
-            }, plan: $plan)
+            }
         }
         .onAppear {
             DayEvents.forgetCache()
@@ -129,10 +124,7 @@ struct CalendarView: View {
         goHome()
     }
 
-    /// Вернуться к нынешнему месяцу или году, перелистнув страницы.
-    ///
-    /// Не прыжком: дорога домой должна быть видна — то же правило, что у
-    /// кнопки «Сегодня» (решение P164).
+    /// Вернуться к нынешнему месяцу или году (без загиба листа — P779).
     private func goHome(asked: Bool = false) {
         let unit: Calendar.Component = kind == .year ? .year : .month
         let c = cal.dateComponents([unit], from: period(shown),
@@ -148,7 +140,7 @@ struct CalendarView: View {
             }
             return
         }
-        plan = wayHome(steps)
+        shown = shift(shown, by: steps)
         shell.say(kind == .year ? T("Вернулись на этот год", "Back to this year")
                                 : T("Вернулись на этот месяц", "Back to this month"))
     }
@@ -157,8 +149,6 @@ struct CalendarView: View {
         k == .year ? T("Нажмите ещё раз, чтобы вернуться на этот год", "Tap again to go back to this year")
                    : T("Нажмите ещё раз, чтобы вернуться на этот месяц", "Tap again to go back to this month")
     }
-
-    private func step(_ offset: Int) -> Date { shift(shown, by: offset) }
 
     private func shift(_ date: Date, by n: Int) -> Date {
         let unit: Calendar.Component = kind == .year ? .year : .month

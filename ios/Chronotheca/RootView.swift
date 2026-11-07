@@ -662,6 +662,8 @@ struct RootView: View {
                     .zIndex(shell.ribbonLive ? Double(shell.stack.firstIndex(of: .today) ?? 0) + 0.5 : -1)
                     .allowsHitTesting(shell.screen == .search)
                     .accessibilityHidden(!shell.ribbonLive)
+                    // Свайп из картотеки (P779): лента уезжает вбок с днём.
+                    .modifier(SlideAlong(slide: shell.slide))
             }
             .frame(width: geo.size.width, height: geo.size.height)
         }
@@ -785,32 +787,45 @@ struct RootView: View {
         }
     }
 
-    /// Свайп между разделами (P778): палец вбок — соседний раздел едет за
-    /// ним. Не во время ленты, листков, переноса дела и переезда папки; на
-    /// карте палец двигает карту — на «День» от левого края (P767).
+    /// Свайп между разделами (P778, по кругу — P779): палец вбок — соседний
+    /// раздел едет за ним. И из открытой картотеки: вбок она не двигается.
+    /// Не пока тянут картотеку, не во время листков, переноса дела и
+    /// переезда папки; на карте палец двигает карту — свайп от края, у обоих
+    /// краёв (P767, P779).
     private func wireSwipe() {
         let swipe = SectionSwipe.shared
         let slide = shell.slide
-        swipe.allowed = { [shell, vault] point, way in
+        swipe.allowed = { [shell, vault] point, way, width in
+            let edge = SectionSwipe.mapEdge
             guard !slide.active, !slide.settling,
-                  SectionSlide.order.contains(shell.screen),
-                  !shell.ribbonLive, !shell.showingSettings, shell.settingsPull == nil,
+                  shell.screen != .search || (shell.ribbonOpen && !shell.ribbon.busy),
+                  !shell.pulling, !shell.showingSettings, shell.settingsPull == nil,
                   shell.drawer == nil, shell.movingTask == nil, shell.openedPhoto == nil,
                   vault.root != nil, vault.moving == nil,
                   shell.barTop == 0 || point.y < shell.barTop
             else { return false }
-            if shell.screen == .map { return way > 0 && point.x < SectionSwipe.mapEdge }
+            if shell.screen == .map {
+                return (way > 0 && point.x < edge) || (way < 0 && point.x > width - edge)
+            }
             return true
         }
         swipe.began = { [shell] width in
             // Карта выезжает сбоку — она должна быть собрана.
-            if shell.screen == .today && !mapReady { mapReady = true }
+            if !mapReady { mapReady = true }
             slide.begin(from: shell.screen, width: width)
         }
         swipe.moved = { dx in slide.move(dx) }
         swipe.ended = { speed in slide.end(speed: speed) { target in swipeTo(target) } }
         swipe.cancelled = { slide.cancel() }
         swipe.install()
+        // Порог у дня в открытой картотеке (P779).
+        shell.ribbon.walls = { [shell] in
+            shell.screen == .search && shell.ribbonOpen && !shell.pulling
+        }
+        shell.ribbon.wantDay = { [shell] in
+            guard shell.screen == .search else { return }
+            shell.screen = .today
+        }
     }
 
     /// Свайп довёз соседний раздел (P778): он уже на экране — ложится в
@@ -863,8 +878,8 @@ struct RootView: View {
             switch target {
             case .today:
                 if !store.isToday {
-                    // Возвращаемся не мгновенно, а перелистнув страницы:
-                    // дорога домой должна быть видна (решение P164).
+                    // Без загиба листа (P779; прежде дорога домой
+                    // листалась, P164).
                     shell.say(T("Вернулись на сегодня", "Back to today"))
                     shell.goHome = true
                 }

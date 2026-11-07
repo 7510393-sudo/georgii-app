@@ -254,7 +254,6 @@ struct SearchView: View {
         }
         .coordinateSpace(.named(Ribbon.space))
         .scrollDismissesKeyboard(.interactively)
-        .modifier(SnapToDay(shell: shell))
         .onAppear {
             ribbon.home = { proxy.scrollTo(Ribbon.slotID, anchor: .top) }
             DispatchQueue.main.async {
