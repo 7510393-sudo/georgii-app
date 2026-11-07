@@ -59,6 +59,7 @@ struct SearchView: View {
             back.commit = { [shell] _ in
                 guard shell.screen == .search else { return }
                 // Плашка уже наполовину ушла — уезжает отсюда; день под ней.
+                shell.fileReturn = true
                 shell.screen = .today
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
                     var still = Transaction()

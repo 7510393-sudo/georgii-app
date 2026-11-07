@@ -701,12 +701,21 @@ struct RootView: View {
             // Обратно — так же: картотека уезжает за пальцем и открывает день
             // под собой (P773).
             .offset(y: down ? (which == .today ? shell.filePull : which == .search ? shell.fileBack : 0)
-                            : away + (which == .search ? shell.filePull : 0))
+                            : away + (which == .search ? shell.filePull + gapClose(away) : 0))
             // Новая плашка ложится поверх прежних (P501).
             .zIndex(down ? Double((shell.stack.firstIndex(of: which) ?? 0) + 1) : 0)
             // Ловит касания только верхняя: под ней другая плашка или
             // живая книга.
             .allowsHitTesting(on)
+    }
+
+    /// Щель между картотекой и днём при вытягивании (P774): плашка стоит за
+    /// краем с запасом на тень, и пока тянут, между ней и днём видно
+    /// то, что лежит ниже, — карту. Запас убирается по мере вытягивания; с
+    /// запасом в точку сверху — под днём, чтобы не было волоска.
+    private func gapClose(_ away: CGFloat) -> CGFloat {
+        let k = min(abs(shell.filePull), BoardEdge.shade + 1)
+        return away < 0 ? k : -k
     }
 
     // MARK: - Разделы
@@ -921,6 +930,16 @@ struct RootView: View {
             still.disablesAnimations = true
             withTransaction(still) { shell.stack = [new] }
             return
+        }
+        // Из картотеки жестом (P774): уезжает только её плашка, день под ней
+        // стоит. Прежде день снимали и роняли заново — на ходу он пропадал
+        // и выезжал сверху.
+        if shell.fileReturn {
+            shell.fileReturn = false
+            if new == .today, shell.stack.contains(.today) {
+                withAnimation(heavy) { shell.stack.removeAll { $0 == .search } }
+                return
+            }
         }
         // Толчок — в начале хода, вместе с нажатием (P268).
         Feel.thud()
