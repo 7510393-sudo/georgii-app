@@ -17,7 +17,8 @@ final class MovementTests: XCTestCase {
 
     /// Запуск на образцах. Экран снимков ставится ещё раз через 1,5 и 4
     /// секунды (P448) — поэтому трогать приложение только после этого.
-    private func launch(_ screen: String = "", big: Bool = false) {
+    /// `trace` — имя файла следа жестов в папке снимков (P787).
+    private func launch(_ screen: String = "", big: Bool = false, trace: String = "") {
         app = XCUIApplication()
         app.launchEnvironment["CHRONOTHECA_PREVIEW"] = "1"
         app.launchEnvironment["CHRONOTHECA_UITEST"] = "1"
@@ -29,6 +30,9 @@ final class MovementTests: XCTestCase {
             }
         }
         if !screen.isEmpty { app.launchEnvironment["CHRONOTHECA_SCREEN"] = screen }
+        if !trace.isEmpty, let dir = ProcessInfo.processInfo.environment["MOTION_DIR"], !dir.isEmpty {
+            app.launchEnvironment["CHRONOTHECA_TRACE"] = dir + "/" + trace + ".txt"
+        }
         app.launch()
         sleep(5)
     }
@@ -146,7 +150,7 @@ final class MovementTests: XCTestCase {
     /// верх — прошлое, к дню через порог (P779) — назад в день, вверх за низ —
     /// будущее. Снимки — чтобы видеть стык дня и карточек.
     func testRibbonFromDay() {
-        launch()
+        launch(trace: "след-лента")
         XCTAssertEqual(openDay, "today")
         let top = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2))
         top.press(forDuration: 0.05,
@@ -187,7 +191,7 @@ final class MovementTests: XCTestCase {
     /// края влево — по кругу календарь; с календаря вправо — по кругу карта;
     /// от левого края вправо — «День». День при этом не перелистывается.
     func testSwipeSections() {
-        launch()
+        launch(trace: "след-свайп")
         XCTAssertEqual(openScreen, "today")
         func swipe(_ from: CGFloat, _ to: CGFloat) {
             app.coordinate(withNormalizedOffset: CGVector(dx: from, dy: 0.55))
@@ -214,6 +218,26 @@ final class MovementTests: XCTestCase {
         swipe(0.02, 0.9)
         XCTAssertTrue(wait(6) { openScreen == "today" }, "от левого края карты свайп не вернул «День»: \(openScreen)")
         XCTAssertEqual(openDay, "today", "свайп перелистнул день")
+    }
+
+    /// Свайп как живым пальцем (P787): палец лёг и чуть постоял, ведут с
+    /// обычной скоростью — с дела в плане и с записи дневника. На телефоне
+    /// свайп почти не брался, а быстрый свайп проверки проходил.
+    func testSwipeLikeFinger() {
+        launch(trace: "след-свайп-палец")
+        XCTAssertEqual(openScreen, "today")
+        for (row, name) in [(0.3, "дело"), (0.62, "запись")] {
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.75, dy: row))
+                .press(forDuration: 0.12,
+                       thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.2, dy: row + 0.01)),
+                       withVelocity: 500,
+                       thenHoldForDuration: 0)
+            XCTAssertTrue(wait(6) { openScreen == "map" }, "свайп с места «\(name)» не открыл карту: \(openScreen)")
+            sleep(1)
+            app.buttons["bottom.today"].firstMatch.tap()
+            XCTAssertTrue(wait(6) { openScreen == "today" }, "«День» не вернул")
+            sleep(2)
+        }
     }
 
     /// Пока пишут, быстрый свайп вбок тоже меняет раздел, клавиатура

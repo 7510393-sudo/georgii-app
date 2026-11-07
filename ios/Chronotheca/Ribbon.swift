@@ -112,6 +112,10 @@ final class Ribbon: ObservableObject {
     private func scrolled(_ scroll: UIScrollView) {
         guard !fixing else { return }
         guard walls(), !driving, link == nil, known, height > 0 else {
+            if scroll.isTracking {
+                Trace.note("лента: стены нет — открыта \(walls()) ведёт \(driving) ход \(link != nil) "
+                    + "мерена \(known) высота \(Int(height))")
+            }
             anchor = nil
             armed = false
             follow(scroll.contentOffset.y)
@@ -126,6 +130,8 @@ final class Ribbon: ObservableObject {
         let wall = wallSide > 0 ? high : low
         let inside = wallSide > 0 ? raw < wall : raw > wall
         var target: CGFloat?
+        Trace.note(String(format: "лента: день %.0f стена %.0f сторона %ld за стеной %@ палец ведёт %@",
+                          raw, wall, wallSide, inside ? "да" : "нет", scroll.isTracking ? "да" : "нет"))
         if scroll.isTracking {
             // Где палец, а не сколько прошла тяга прокрутки: прокрутка сама
             // обнуляет свой ход по шагам, и порог не набирался (P783).
@@ -142,6 +148,7 @@ final class Ribbon: ObservableObject {
                     let shown = EdgePull.resisted(over)
                     target = wallSide > 0 ? wall - shown : wall + shown
                     let on = over >= EdgePull.threshold
+                    Trace.note(String(format: "лента: за стеной на %.0f, порог %@", over, on ? "взят" : "нет"))
                     if on && !armed { Feel.light() }
                     armed = on
                 }
@@ -161,6 +168,7 @@ final class Ribbon: ObservableObject {
     @objc private func panned(_ pan: UIPanGestureRecognizer) {
         guard pan.state == .ended || pan.state == .cancelled || pan.state == .failed else { return }
         let go = armed && pan.state == .ended
+        Trace.note("лента: отпустили — \(go ? "в день" : "к стене") (состояние \(pan.state.rawValue))")
         anchor = nil
         armed = false
         // После того как прокрутка сама решит про разгон.

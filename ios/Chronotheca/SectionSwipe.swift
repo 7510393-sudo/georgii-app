@@ -87,7 +87,11 @@ final class SectionSlide: ObservableObject {
         guard active, !settling else { return }
         let far = abs(x) > width * 0.2
         let flung = abs(speed) > 500 && abs(x) > 30 && (speed < 0) == (x < 0)
+        Trace.note(String(format: "разделы: ход %.0f из %.0f, скорость %.0f, сосед %@ — %@",
+                          x, width, speed, target.map { "\($0)" } ?? "нет",
+                          target != nil && (far || flung) ? "едем" : "назад"))
         settling = true
+        settleSoon()
         let ease = Animation.spring(response: 0.3, dampingFraction: 0.9)
         if let target, far || flung {
             // Толчок — тот же, что при касании раздела внизу (P780; прежде
@@ -112,10 +116,21 @@ final class SectionSlide: ObservableObject {
     func cancel() {
         guard active, !settling else { return }
         settling = true
+        settleSoon()
         withAnimation(.spring(response: 0.3, dampingFraction: 0.9), completionCriteria: .logicallyComplete) {
             x = 0
         } completion: { [weak self] in
             self?.finish()
+        }
+    }
+
+    /// Подстраховка (P787): если ход почему-то не скажет, что кончился,
+    /// свайп не должен запереться навсегда.
+    private func settleSoon() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { [weak self] in
+            guard let self, self.settling else { return }
+            Trace.note("разделы: ход не кончился сам — снимаем")
+            self.finish()
         }
     }
 
@@ -202,6 +217,7 @@ final class SectionSwipe: NSObject, UIGestureRecognizerDelegate {
     func gestureRecognizer(_ g: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
         // Поверх приложения листок или вопрос — свайп не для них.
         if let root = g.view?.window?.rootViewController, root.presentedViewController != nil {
+            Trace.note("свайп: поверх листок — не берём")
             return false
         }
         touched = touch.view
@@ -215,11 +231,20 @@ final class SectionSwipe: NSObject, UIGestureRecognizerDelegate {
         let dx = abs(way.x) > 0 ? way.x : speed.x
         let dy = abs(way.y) > 0 ? way.y : speed.y
         // Вбок, а не вверх-вниз (больше вбок, чем вверх-вниз, — P785).
-        guard abs(dx) > abs(dy) else { return false }
+        guard abs(dx) > abs(dy) else {
+            Trace.note(String(format: "свайп: не вбок dx %.0f dy %.0f", dx, dy))
+            return false
+        }
         // Выделен текст — палец, скорее всего, тянет ручку выделения.
-        guard !Self.selecting else { return false }
+        guard !Self.selecting else {
+            Trace.note("свайп: выделен текст")
+            return false
+        }
         let start = CGPoint(x: pan.location(in: view).x - way.x, y: pan.location(in: view).y - way.y)
-        return allowed?(start, dx > 0 ? 1 : -1, view.bounds.width) ?? false
+        let ok = allowed?(start, dx > 0 ? 1 : -1, view.bounds.width) ?? false
+        Trace.note(String(format: "свайп: начать? %@ с %.0f,%.0f dx %.0f dy %.0f",
+                          ok ? "да" : "нет (раздел не пускает)", start.x, start.y, dx, dy))
+        return ok
     }
 
     func gestureRecognizer(_ g: UIGestureRecognizer,
@@ -229,6 +254,7 @@ final class SectionSwipe: NSObject, UIGestureRecognizerDelegate {
         guard let view = pan.view else { return }
         switch pan.state {
         case .began:
+            Trace.note("свайп: взят")
             // Свайп взят — прокрутка или карта под пальцем больше не едут.
             stopOthers()
             began?(view.bounds.width)
@@ -236,8 +262,10 @@ final class SectionSwipe: NSObject, UIGestureRecognizerDelegate {
         case .changed:
             moved?(pan.translation(in: view).x)
         case .ended:
+            Trace.note(String(format: "свайп: отпустили, ход %.0f", pan.translation(in: view).x))
             ended?(pan.velocity(in: view).x)
         default:
+            Trace.note("свайп: сорвался (\(pan.state.rawValue))")
             cancelled?()
         }
     }
@@ -308,6 +336,7 @@ final class SwipePan: UIPanGestureRecognizer {
         DispatchQueue.main.asyncAfter(deadline: .now() + Cross.hold) { [weak self] in
             // Палец стоит — это удержание, не свайп. Уже пошёл — решит ход.
             guard let self, self.since == stamp, self.state == .possible, !self.moved else { return }
+            Trace.note("свайп: палец стоит — удержание")
             self.state = .failed
         }
     }
@@ -322,10 +351,12 @@ final class SwipePan: UIPanGestureRecognizer {
             // живой палец дрожит вверх-вниз, и свайп почти не брался.
             if far < 10 {
                 if CACurrentMediaTime() - since > Cross.hold {
+                    Trace.note("свайп: медленно сдвинулся — удержание")
                     state = .failed
                     return
                 }
             } else if abs(dy) > abs(dx) {
+                Trace.note(String(format: "свайп: пошёл вверх-вниз dx %.0f dy %.0f", dx, dy))
                 state = .failed
                 return
             }

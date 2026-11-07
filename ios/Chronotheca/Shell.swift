@@ -454,6 +454,30 @@ enum LagWatch {
     }
 }
 
+/// След жестов для проверок движения (P787): только когда приложение
+/// запустила проверка и назвала файл. По нему видно, на каком шаге свайп
+/// или порог ленты отказали, а не гадать.
+enum Trace {
+    private static var last = ""
+
+    static func note(_ line: String) {
+        guard Vault.isUITest,
+              let path = ProcessInfo.processInfo.environment["CHRONOTHECA_TRACE"], !path.isEmpty,
+              line != last
+        else { return }
+        last = line
+        let url = URL(fileURLWithPath: path)
+        let text = String(format: "%.2f ", Date().timeIntervalSince(LaunchClock.start)) + line + "\n"
+        if let handle = try? FileHandle(forWritingTo: url) {
+            handle.seekToEndOfFile()
+            handle.write(Data(text.utf8))
+            try? handle.close()
+        } else {
+            try? text.write(to: url, atomically: true, encoding: .utf8)
+        }
+    }
+}
+
 /// Сколько шёл запуск и открывались разделы — по шагам (P581).
 ///
 /// Видно в «Проверке скорости» (долгое нажатие на «Версия» в настройках)

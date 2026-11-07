@@ -808,7 +808,14 @@ struct RootView: View {
                   shell.drawer == nil, shell.movingTask == nil, shell.openedPhoto == nil,
                   vault.root != nil, vault.moving == nil,
                   shell.barTop == 0 || point.y < shell.barTop
-            else { return false }
+            else {
+                Trace.note("свайп не пускает: едет \(slide.active) доезжает \(slide.settling) "
+                    + "раздел \(shell.screen) лента \(shell.ribbonOpen)/\(shell.ribbon.busy) "
+                    + "тянут \(shell.pulling) листок \(shell.showingSettings) "
+                    + "дело \(shell.movingTask != nil) снимок \(shell.openedPhoto != nil) "
+                    + "низ \(Int(shell.barTop)) палец \(Int(point.y))")
+                return false
+            }
             if shell.screen == .map {
                 return (way > 0 && point.x < edge) || (way < 0 && point.x > width - edge)
             }
