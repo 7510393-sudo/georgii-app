@@ -140,7 +140,10 @@ final class Ribbon: ObservableObject {
             if let a = anchor {
                 // Прошлое: день снизу, палец идёт вверх; будущее — вниз.
                 let over = wallSide > 0 ? a - t : t - a
-                if over <= 0 {
+                // Ровно ноль — палец только что упёрся: отметку не сбрасывать
+                // (P788; прежде сбрасывалась в тот же миг, и порог никогда не
+                // набирался — видно по следу проверки).
+                if over < 0 {
                     anchor = nil
                     armed = false
                     if inside { target = wall }

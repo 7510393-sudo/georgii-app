@@ -353,8 +353,12 @@ final class SwipePan: UIPanGestureRecognizer {
                 if CACurrentMediaTime() - since > Cross.hold {
                     Trace.note("свайп: медленно сдвинулся — удержание")
                     state = .failed
-                    return
                 }
+                // Первые 10 точек тяге не показываем (P788): иначе она сама
+                // начиналась с 3–5 точек, где дрожь пальца больше хода, и
+                // свайп «как живым пальцем» решал «не вбок» (след проверки:
+                // dx −3, dy 4).
+                return
             } else if abs(dy) > abs(dx) {
                 Trace.note(String(format: "свайп: пошёл вверх-вниз dx %.0f dy %.0f", dx, dy))
                 state = .failed
