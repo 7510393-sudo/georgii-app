@@ -114,9 +114,15 @@ struct CalendarView: View {
             }
             .scrollTargetLayout()
         }
+        // Один месяц (год) на экран (P792): лента встаёт страницами, не
+        // останавливается посередине между двумя месяцами.
+        .scrollTargetBehavior(.paging)
         .scrollPosition(id: $top, anchor: .top)
-        .onChange(of: top) { _, now in
-            if let now { shown = now }
+        .onChange(of: top) { old, now in
+            guard let now else { return }
+            shown = now
+            // Сменился месяц — толчок в руку (P792).
+            if old != nil && old != now { Feel.light() }
         }
         // Тот же тёплый стол, что под поиском (P755).
         .background(Desk())
@@ -131,8 +137,10 @@ struct CalendarView: View {
         return (-back...ahead).compactMap { cal.date(byAdding: unit, value: $0, to: home) }
     }
 
-    /// Один месяц или год ленты: своё название и сетка.
-    @ViewBuilder private func section(_ p: Date) -> some View {
+    /// Один месяц или год ленты — ровно на экран (P792): своё название,
+    /// сетка, под ней дела выбранного дня. Высота у всех страниц одна, и
+    /// ленте не приходится угадывать её на ходу — не дёргается.
+    private func section(_ p: Date) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(kind == .year ? String(cal.component(.year, from: p)) : Ru.monthTitle(p))
                 .font(Look.sans(15, weight: .semibold))
@@ -140,10 +148,15 @@ struct CalendarView: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 10)
             switch kind {
-            case .year:  yearGrid(of: p)
-            case .month: monthGrid(of: p, current: listHere(p))
+            case .year:
+                yearGrid(of: p)
+                Spacer(minLength: 0)
+            case .month:
+                monthGrid(of: p, current: listHere(p))
             }
         }
+        .containerRelativeFrame(.vertical, alignment: .top)
+        .clipped()
     }
 
     /// Список дел — под месяцем выбранного дня; ничего не выбрано — под
@@ -382,7 +395,12 @@ struct CalendarView: View {
 
             monthStats(cells)
             Rectangle().fill(Look.rule).frame(height: 1).padding(.vertical, 10)
-            if current { dayList }
+            // Дела дня — своей прокруткой в остатке страницы (P792).
+            if current {
+                ScrollView { dayList.padding(.bottom, 12) }
+            } else {
+                Spacer(minLength: 0)
+            }
         }
         .padding(.bottom, 20)
     }
