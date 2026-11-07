@@ -35,7 +35,10 @@ struct SearchView: View {
                     .animation(.easeOut(duration: 0.2), value: shell.screen == .search)
             }
             .keyboardHeight($keyboard)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            // Своя высота — экран раздела; запас ленты ниже экрана (P791)
+            // выходит за неё вниз, а не сдвигает ленту.
+            .frame(maxWidth: .infinity)
+            .frame(height: height, alignment: .top)
             .onAppear { shell.ribbon.height = height }
             .onChange(of: height) { _, h in shell.ribbon.height = h }
     }
@@ -170,12 +173,14 @@ struct SearchView: View {
         var over = false
         /// Отступ сверху, когда не заходит.
         var gap: CGFloat = 0
+        /// Карточка под днём (P791): у дня из прошлого там прошлое после него.
+        var below = false
 
         /// Куда уходит даль (P782): 1 — прошлое, вдаль вверх; -1 — будущее,
         /// вдаль вниз; 0 — не карточка (место дня, поля).
         var depth: Int {
             switch kind {
-            case .past: return 1
+            case .past: return below ? -1 : 1
             case .future: return -1
             default: return 0
             }
@@ -184,10 +189,9 @@ struct SearchView: View {
 
     /// Будущее ленты (P771): месяц подряд, и пустые дни тоже, потом только
     /// дни с делами. Когда ищут — только находки.
-    private func ahead(_ days: [Archive.Day]) -> [Archive.Day] {
+    private func ahead(_ days: [Archive.Day], from today: Date) -> [Archive.Day] {
         let needle = query.trimmingCharacters(in: .whitespaces)
         guard needle.isEmpty, shell.find == .all else { return days }
-        let today = DayStore.today()
         let byStamp = Dictionary(days.map { ($0.stamp, $0) }, uniquingKeysWith: { first, _ in first })
         var out: [Archive.Day] = []
         var last = Vault.stamp(today)
@@ -204,14 +208,15 @@ struct SearchView: View {
     /// Вся лента одной стопкой (P777, вместо двух картотек P771): старые
     /// сверху, внизу прошлого вчера, ниже место сегодняшнего дня, под ним
     /// завтра и дальше. Сегодняшней карточки нет: на её месте сам день.
-    private func entries(_ past: [Archive.Day], _ future: [Archive.Day]) -> [Entry] {
+    private func entries(_ past: [Archive.Day], _ future: [Archive.Day],
+                         later: [Archive.Day]) -> [Entry] {
         var out: [Entry] = []
         // Над самой старой — место под строку поиска; в коротком архиве —
         // стол до верха экрана, чтобы лента могла встать вчерашним днём
         // над нижней строкой.
         let lead = max(Search.fieldHeight + Search.restTop, height - CGFloat(past.count) * 60)
         out.append(Entry(id: "lead", kind: .pad(lead)))
-        if !query.trimmingCharacters(in: .whitespaces).isEmpty && past.isEmpty && future.isEmpty {
+        if !query.trimmingCharacters(in: .whitespaces).isEmpty && past.isEmpty && future.isEmpty && later.isEmpty {
             out.append(Entry(id: "note", kind: .note))
         }
         for (i, day) in past.enumerated() {
@@ -228,9 +233,22 @@ struct SearchView: View {
             out.append(Entry(id: day.id, kind: .future(day), over: i > 0,
                              gap: i == 0 ? BoardEdge.depth : 0))
         }
-        let tail = max(8, height - CGFloat(future.count) * 60)
+        // У дня из прошлого под ним — прошлое после него (P791), такими же
+        // карточками, как над ним: ближайший следующий день сверху.
+        for (i, day) in later.enumerated() {
+            out.append(Entry(id: day.id, kind: .past(day), over: i > 0,
+                             gap: i == 0 ? BoardEdge.depth : 0, below: true))
+        }
+        let tail = max(8, height - CGFloat(future.count + later.count) * 60)
         out.append(Entry(id: "tail", kind: .pad(tail)))
         return out
+    }
+
+    /// В дне есть запись дневника — заголовок, текст или снимки (P791).
+    private static func written(_ day: Archive.Day) -> Bool {
+        !day.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || !day.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || day.photos > 0
     }
 
     /// Подходит ли день под «что искать» из меню поиска (P249).
@@ -248,20 +266,27 @@ struct SearchView: View {
     }
 
     private var ribbonList: some View {
+        // Лента — вокруг открытого дня, а не сегодняшнего (P791): над ним
+        // дни до него; под ним — у сегодняшнего и будущего дела вперёд, у
+        // прошлого — записанные дни после него.
         let todayStamp = Vault.stamp(DayStore.today())
+        let anchor = Vault.stamp(store.date)
         // Опись читается один раз за перерисовку (P771): старые сверху.
         let all = Array(found.reversed())
-        var past = all.filter { $0.stamp < todayStamp }
+        var past = all.filter { $0.stamp < anchor }
         // На снимке CI «лента поиска» находки повторены, чтобы было что
         // листать (P717).
         if Search.deep { past = Array(repeating: past, count: 12).flatMap { $0 } }
-        let future = ahead(all.filter { $0.stamp > todayStamp })
+        let future = anchor >= todayStamp
+            ? ahead(all.filter { $0.stamp > anchor }, from: store.date) : []
+        let later = anchor < todayStamp
+            ? all.filter { $0.stamp > anchor && $0.stamp <= todayStamp && Self.written($0) } : []
         // Столбец времени у будущих карточек один на всю стопку, как в
         // «Списке» календаря (P756): по самому длинному виду времени.
         let times = future.flatMap { plan($0).compactMap(\.time) }
         let sample: String? = times.isEmpty ? nil
             : times.contains { $0.contains(where: \.isLetter) } ? "00:00 PM" : "00:00"
-        let items = entries(past, future)
+        let items = entries(past, future, later: later)
         let ribbon = shell.ribbon
         return ScrollViewReader { proxy in ScrollView {
             // Карточки — вид сверху: нижняя лежит поверх верхней и своим
@@ -283,6 +308,9 @@ struct SearchView: View {
         }
         .coordinateSpace(.named(Ribbon.space))
         .scrollDismissesKeyboard(.interactively)
+        // Ниже экрана — запас (P791): лента там уже собрана, и карточка,
+        // подтянутая наползанием из-за нижнего края, выходит плавно.
+        .frame(height: height + Afar.reserve(height), alignment: .top)
         .onAppear {
             ribbon.home = { proxy.scrollTo(Ribbon.slotID, anchor: .top) }
             DispatchQueue.main.async {
@@ -742,12 +770,12 @@ private struct FolderShape: Shape {
     }
 }
 
-/// Карточки наползают у дальнего края (P789; размер карточек больше не
-/// меняется — «пирамида» P782 и сжатие пространства P786 отменены). В
-/// дальней трети экрана передняя карточка всё сильнее заходит на заднюю —
-/// от пяти видимых строк на границе трети до четырёх у самого края. У
-/// прошлого дальний край вверху, у будущего — внизу. Только при показе:
-/// раскладка ленты, замеры места дня и прокрутка те же.
+/// Карточки наползают друг на друга по всему экрану (P791, вместо «только в
+/// дальней трети» P789; размер карточек не меняется). У ближнего края шаг
+/// между ними прежний, к дальнему плавно убывает — до края передняя карточка
+/// закрывает у задней на одну строку больше (от пяти видимых строк до
+/// четырёх). У прошлого дальний край вверху, у будущего — внизу. Только при
+/// показе: раскладка ленты, замеры места дня и прокрутка те же.
 private struct Distance: ViewModifier {
     let side: Int
     let height: CGFloat
@@ -764,31 +792,39 @@ private struct Distance: ViewModifier {
     }
 }
 
-/// Мера наползания (P789).
+/// Мера наползания (P791).
 enum Afar {
     /// Сколько от прежнего шага остаётся у дальнего края: 4 строки из 5.
     static let tightest: CGFloat = 0.8
 
+    /// Сколько ленты собрано ниже экрана (P791): карточки, что подтягиваются
+    /// к дальнему нижнему краю из-за экрана, уже нарисованы и выходят плавно,
+    /// а не появляются на глазах. С запасом к наибольшему сдвигу у края.
+    static func reserve(_ height: CGFloat) -> CGFloat { height * (1 - tightest) / 2 + 40 }
+
     /// `top` — верх карточки на экране ленты, `height` — высота экрана.
-    /// Возвращает сдвиг по вертикали: в дальней трети шаг между карточками
-    /// плавно убывает от прежнего на границе до `tightest` у края, за краем —
-    /// как у края. Карточки только сдвигаются к ближнему краю, поэтому
-    /// щели между ними не бывает.
-    static func shift(_ top: CGFloat, side: Int, height: CGFloat) -> CGFloat {
+    /// Возвращает сдвиг по вертикали: шаг между карточками — прежний у
+    /// ближнего края и плавно убывает до `tightest` у дальнего, за дальним
+    /// краем — как у края. Карточки только сближаются — щели нет.
+    static func shift(_ top: CGFloat, side: Int, height h: CGFloat) -> CGFloat {
         // Расстояние до дальнего края: у прошлого — от верха экрана,
         // у будущего — от низа.
-        let t = side > 0 ? top : height - top
-        let third = height / 3
+        let t = side > 0 ? top : h - top
         let loss = 1 - tightest
+        // Сколько показанной длины у ленты от `t` до ближнего края: шаг k(u)
+        // = tightest + loss·u/h, сложенный от t до h.
+        func shown(_ u: CGFloat) -> CGFloat {
+            tightest * (h - u) + loss * (h * h - u * u) / (2 * h)
+        }
         let f: CGFloat
-        if t >= third {
+        if t >= h {
             f = t
         } else if t >= 0 {
-            f = third - (tightest * (third - t) + loss / 2 * (third * third - t * t) / third)
+            f = h - shown(t)
         } else {
-            f = loss / 2 * third + tightest * t
+            f = h - shown(0) + tightest * t
         }
-        let shown = side > 0 ? f : height - f
-        return shown - top
+        let place = side > 0 ? f : h - f
+        return place - top
     }
 }

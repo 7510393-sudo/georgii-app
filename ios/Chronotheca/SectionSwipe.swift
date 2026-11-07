@@ -168,8 +168,8 @@ struct FollowSlide: ViewModifier {
     }
 }
 
-/// Распознаватель свайпа: один на окно, рядом со всеми прочими — касаний
-/// не задерживает. Начинается только быстрым движением вбок сразу после
+/// Распознаватель свайпа: на странице каждого раздела (P790), рядом со всеми
+/// прочими — касаний не задерживает. Начинается только быстрым движением вбок сразу после
 /// касания: то, что берут удержанием (дело, снимок, курсор, выделение), он
 /// не перехватывает.
 final class SectionSwipe: NSObject, UIGestureRecognizerDelegate {
@@ -188,30 +188,23 @@ final class SectionSwipe: NSObject, UIGestureRecognizerDelegate {
     var ended: ((CGFloat) -> Void)?
     var cancelled: (() -> Void)?
 
-    private weak var pan: UIPanGestureRecognizer?
     /// Когда лёг палец и на что.
     private weak var touched: UIView?
 
-    /// Повесить на окно приложения. Повторный вызов ничего не меняет.
-    func install() {
-        guard pan == nil else { return }
-        guard let window = UIApplication.shared.connectedScenes
-                .compactMap({ ($0 as? UIWindowScene)?.keyWindow }).first
-        else {
-            // Окно ещё не готово — чуть позже.
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in self?.install() }
-            return
-        }
+    /// Повесить тягу свайпа на страницу раздела (P790): на книгу дня и
+    /// календаря, на ленту картотеки, на карту — туда, где много сборок жила
+    /// тяга прежнего перелистывания и работала на телефоне. Прежде одна тяга
+    /// висела на всём окне: в симуляторе брала, на телефоне — нет.
+    func attach(_ view: UIView) {
+        guard !(view.gestureRecognizers ?? []).contains(where: { $0 is SwipePan }) else { return }
         let g = SwipePan(target: self, action: #selector(panned(_:)))
         g.delegate = self
         g.maximumNumberOfTouches = 1
-        // Касаний не отнимает и не задерживает (P783): на телефоне день
-        // переставал прокручиваться и откликаться, пока свайп решал.
+        // Касаний не отнимает и не задерживает (P783).
         g.cancelsTouchesInView = false
         g.delaysTouchesBegan = false
         g.delaysTouchesEnded = false
-        window.addGestureRecognizer(g)
-        pan = g
+        view.addGestureRecognizer(g)
     }
 
     func gestureRecognizer(_ g: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
@@ -240,8 +233,12 @@ final class SectionSwipe: NSObject, UIGestureRecognizerDelegate {
             Trace.note("свайп: выделен текст")
             return false
         }
-        let start = CGPoint(x: pan.location(in: view).x - way.x, y: pan.location(in: view).y - way.y)
-        let ok = allowed?(start, dx > 0 ? 1 : -1, view.bounds.width) ?? false
+        // Точка — в окне: тяги висят на разных страницах (P790).
+        let space = view.window ?? view
+        let at = pan.location(in: space)
+        let shift = pan.translation(in: space)
+        let start = CGPoint(x: at.x - shift.x, y: at.y - shift.y)
+        let ok = allowed?(start, dx > 0 ? 1 : -1, space.bounds.width) ?? false
         Trace.note(String(format: "свайп: начать? %@ с %.0f,%.0f dx %.0f dy %.0f",
                           ok ? "да" : "нет (раздел не пускает)", start.x, start.y, dx, dy))
         return ok
@@ -251,7 +248,9 @@ final class SectionSwipe: NSObject, UIGestureRecognizerDelegate {
                            shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool { true }
 
     @objc private func panned(_ pan: UIPanGestureRecognizer) {
-        guard let view = pan.view else { return }
+        guard let page = pan.view else { return }
+        // Ход — по окну: страница сама уезжает вбок вместе с пальцем.
+        let view: UIView = page.window ?? page
         switch pan.state {
         case .began:
             Trace.note("свайп: взят")
@@ -275,7 +274,7 @@ final class SectionSwipe: NSObject, UIGestureRecognizerDelegate {
     private func stopOthers() {
         var v = touched
         while let view = v {
-            for g in view.gestureRecognizers ?? [] where g !== pan && g is UIPanGestureRecognizer {
+            for g in view.gestureRecognizers ?? [] where !(g is SwipePan) && g is UIPanGestureRecognizer {
                 if g.state == .began || g.state == .changed {
                     g.isEnabled = false
                     g.isEnabled = true

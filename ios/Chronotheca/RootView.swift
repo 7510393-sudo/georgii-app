@@ -814,6 +814,10 @@ struct RootView: View {
                     + "тянут \(shell.pulling) листок \(shell.showingSettings) "
                     + "дело \(shell.movingTask != nil) снимок \(shell.openedPhoto != nil) "
                     + "низ \(Int(shell.barTop)) палец \(Int(point.y))")
+                // Временно (P790): на телефоне свайп не брался, а в
+                // симуляторе брался — причину говорим вслух, коротко.
+                // Убрать, когда свайп заработает у автора.
+                shell.say(swipeRefusal(point))
                 return false
             }
             if shell.screen == .map {
@@ -829,7 +833,6 @@ struct RootView: View {
         swipe.moved = { dx in slide.move(dx) }
         swipe.ended = { speed in slide.end(speed: speed) { target in swipeTo(target) } }
         swipe.cancelled = { slide.cancel() }
-        swipe.install()
         // Порог у дня в открытой картотеке (P779).
         shell.ribbon.walls = { [shell] in
             shell.screen == .search && shell.ribbonOpen && !shell.pulling
@@ -838,6 +841,28 @@ struct RootView: View {
             guard shell.screen == .search else { return }
             shell.screen = .today
         }
+    }
+
+    /// Временно (P790), для проверки на телефоне: почему свайп не пустили.
+    /// Только по-русски — это не надпись приложения, а записка автору;
+    /// убрать вместе с вызовом, когда свайп заработает.
+    private func swipeRefusal(_ point: CGPoint) -> String {
+        var why: [String] = []
+        if shell.slide.active { why.append("раздел ещё едет") }
+        if shell.slide.settling { why.append("раздел доезжает") }
+        if shell.screen == .search && !(shell.ribbonOpen && !shell.ribbon.busy) {
+            why.append("картотека занята (открыта \(shell.ribbonOpen), едет \(shell.ribbon.busy))")
+        }
+        if shell.pulling { why.append("картотеку тянут") }
+        if shell.showingSettings || shell.settingsPull != nil { why.append("настройки") }
+        if shell.drawer != nil { why.append("шторка") }
+        if shell.movingTask != nil { why.append("перенос дела") }
+        if shell.openedPhoto != nil { why.append("снимок") }
+        if vault.root == nil || vault.moving != nil { why.append("папка") }
+        if shell.barTop > 0 && point.y >= shell.barTop {
+            why.append("палец на нижней строке (\(Int(point.y)) ≥ \(Int(shell.barTop)))")
+        }
+        return "Свайп не пущен: " + (why.isEmpty ? "?" : why.joined(separator: ", "))
     }
 
     /// Свайп довёз соседний раздел (P778): он уже на экране — ложится в

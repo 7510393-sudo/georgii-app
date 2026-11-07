@@ -1123,6 +1123,8 @@ struct NativeMap: UIViewRepresentable {
 
     func makeUIView(context: Context) -> MKMapView {
         let map = MKMapView()
+        // Свайп между разделами — от краёв карты (P790).
+        SectionSwipe.shared.attach(map)
         map.delegate = context.coordinator
         map.showsUserLocation = true
         map.showsCompass = false
