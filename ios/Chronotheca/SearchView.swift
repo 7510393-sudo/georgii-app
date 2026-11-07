@@ -742,13 +742,12 @@ private struct FolderShape: Shape {
     }
 }
 
-/// Карточки уходят вдаль (P782; прежняя лента к горизонту — P699–P719 —
-/// отменена за сложность). Каждая карточка сама по себе меняется по тому,
-/// где она сейчас на экране: у ближнего края — как есть, к дальнему —
-/// вместе с текстом на 15% меньше; в дальней трети экрана передняя
-/// карточка всё сильнее заходит на заднюю — от пяти видимых строк до
-/// четырёх у самого края. У прошлого даль вверху, у будущего — внизу.
-/// Только при показе: раскладка ленты, замеры места дня и прокрутка те же.
+/// Карточки наползают у дальнего края (P789; размер карточек больше не
+/// меняется — «пирамида» P782 и сжатие пространства P786 отменены). В
+/// дальней трети экрана передняя карточка всё сильнее заходит на заднюю —
+/// от пяти видимых строк на границе трети до четырёх у самого края. У
+/// прошлого дальний край вверху, у будущего — внизу. Только при показе:
+/// раскладка ленты, замеры места дня и прокрутка те же.
 private struct Distance: ViewModifier {
     let side: Int
     let height: CGFloat
@@ -759,64 +758,37 @@ private struct Distance: ViewModifier {
         } else {
             content.visualEffect { [side, height] view, geo in
                 let top = geo.frame(in: .scrollView).minY
-                let (shift, scale) = Afar.place(top, side: side, height: height)
-                return view
-                    .scaleEffect(scale, anchor: .top)
-                    .offset(y: shift)
+                return view.offset(y: Afar.shift(top, side: side, height: height))
             }
         }
     }
 }
 
-/// Меры дали (P782): где карточка видна и насколько она меньше.
+/// Мера наползания (P789).
 enum Afar {
-    /// Насколько уже карточка у дальнего края.
-    static let smallest: CGFloat = 0.85
     /// Сколько от прежнего шага остаётся у дальнего края: 4 строки из 5.
     static let tightest: CGFloat = 0.8
 
     /// `top` — верх карточки на экране ленты, `height` — высота экрана.
-    /// Возвращает сдвиг по вертикали и масштаб.
-    ///
-    /// Пространство ленты сжимается плавно (P786): каждый отрезок ленты
-    /// показывается в `k` раз короче, где `k` — масштаб карточки в этом
-    /// месте, а в дальней трети — ещё и на долю наползания. Карточка встаёт
-    /// в сжатом пространстве и уменьшается вместе с ним, поэтому стык с
-    /// соседней не расходится. Прежде шаг сжимался только в дальней трети, а
-    /// карточки уменьшались по всему экрану — в середине между ними
-    /// открывалась щель.
-    static func place(_ top: CGFloat, side: Int, height: CGFloat) -> (CGFloat, CGFloat) {
+    /// Возвращает сдвиг по вертикали: в дальней трети шаг между карточками
+    /// плавно убывает от прежнего на границе до `tightest` у края, за краем —
+    /// как у края. Карточки только сдвигаются к ближнему краю, поэтому
+    /// щели между ними не бывает.
+    static func shift(_ top: CGFloat, side: Int, height: CGFloat) -> CGFloat {
         // Расстояние до дальнего края: у прошлого — от верха экрана,
         // у будущего — от низа.
         let t = side > 0 ? top : height - top
-        let f = height - squeezed(from: t, height: height)
-        let shown = side > 0 ? f : height - f
-        let near = min(1, max(0, f / height))
-        return (shown - top, smallest + (1 - smallest) * near)
-    }
-
-    /// Сколько показанной длины у отрезка ленты от `t` до ближнего края
-    /// (`height`): сумма `k` по отрезку. За ближним краем — как есть.
-    private static func squeezed(from t: CGFloat, height h: CGFloat) -> CGFloat {
-        if t >= h { return h - t }
-        let a = smallest, b = 1 - smallest
-        let third = h / 3
-        // Ближние две трети: k = масштаб, a + b·t/h.
-        func near(_ t: CGFloat) -> CGFloat { a * (h - t) + b * (h * h - t * t) / (2 * h) }
-        if t >= third { return near(t) }
-        // Дальняя треть: k = масштаб × наползание (от 1 у границы до
-        // `tightest` у края).
-        let beta = b / h
-        let gamma = (1 - tightest) / third
-        func far(_ t: CGFloat) -> CGFloat {
-            near(third)
-                + tightest * a * (third - t)
-                + (a * gamma + tightest * beta) * (third * third - t * t) / 2
-                + beta * gamma * (third * third * third - t * t * t) / 3
+        let third = height / 3
+        let loss = 1 - tightest
+        let f: CGFloat
+        if t >= third {
+            f = t
+        } else if t >= 0 {
+            f = third - (tightest * (third - t) + loss / 2 * (third * third - t * t) / third)
+        } else {
+            f = loss / 2 * third + tightest * t
         }
-        if t >= 0 { return far(t) }
-        // За дальним краем — как у края.
-        return far(0) - a * tightest * t
+        let shown = side > 0 ? f : height - f
+        return shown - top
     }
 }
-
