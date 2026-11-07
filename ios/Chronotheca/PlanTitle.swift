@@ -54,9 +54,14 @@ struct PlanTitle: UIViewRepresentable {
     /// первой строки больше нет (P186): шаг в клетку и так выше голов строки.
     static var spacing: CGFloat { pitch - UIFont.systemFont(ofSize: size).lineHeight }
 
-    /// Сколько от верха строки дела до верха букв, чтобы строчка письма
-    /// легла на линию клетки (P795).
-    static var lead: CGFloat { max(0, PageTexture.cell - baseline) }
+    /// Насколько строчка письма выше линии клетки (P797): буквы стоят над
+    /// линией и хвостами опираются на неё, как пишут от руки, а не лежат
+    /// на ней (P795).
+    static let above: CGFloat = 4
+
+    /// Сколько от верха строки дела до верха букв — так строчка письма
+    /// встаёт на `above` выше линии клетки.
+    static var lead: CGFloat { max(0, PageTexture.cell - baseline - above) }
 
     /// Где проходит строчка письма, считая от верха поля. По ней голова
     /// строки садится на первую строку названия (P171).

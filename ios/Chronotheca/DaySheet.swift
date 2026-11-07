@@ -446,13 +446,14 @@ private struct DiaryTopMark: View {
 /// касаний не забирает. Вбок не срабатывает — там свайп разделов (P778).
 final class EdgePull: NSObject, ObservableObject, UIGestureRecognizerDelegate {
     /// Сколько точек протянуть за край, чтобы открыть картотеку.
-    static let threshold: CGFloat = 90
+    /// Туже прежних 90 (P797: «слишком легко преодолевается»).
+    static let threshold: CGFloat = 150
 
     /// До порога лист идёт туго — вчетверо медленнее пальца, — после порога
     /// за пальцем (P779): картотека не выезжает от лёгкого касания, сперва
     /// нужно усилие, на пороге — толчок в руку.
     static func resisted(_ over: CGFloat) -> CGFloat {
-        over < threshold ? over * 0.25 : threshold * 0.25 + (over - threshold)
+        over < threshold ? over * 0.2 : threshold * 0.2 + (over - threshold)
     }
 
     /// 1 — тянут вниз за верх, -1 — вверх за низ, 0 — не тянут.

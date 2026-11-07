@@ -26,26 +26,37 @@ struct SearchView: View {
 
     var body: some View {
         ribbonList
-            // Строка поиска — над лентой, полупрозрачная (P718, P719), и
-            // только у открытой ленты: на стыке с днём её нет (P777).
-            .overlay(alignment: .top) {
-                field
-                    .opacity(shell.screen == .search ? 1 : 0)
-                    .allowsHitTesting(shell.screen == .search)
-                    .animation(.easeOut(duration: 0.2), value: shell.screen == .search)
-            }
             .keyboardHeight($keyboard)
             // Своя высота — экран раздела; запас ленты ниже экрана (P791)
             // выходит за неё вниз, а не сдвигает ленту.
             .frame(maxWidth: .infinity)
             .frame(height: height, alignment: .top)
+            // Строка поиска — внизу, над нижней строкой, полупрозрачная
+            // (P797, прежде вверху — P334, P718): карточки идут от самого
+            // верха до самого низа, у будущего завтрашняя — у самого верха.
+            // Только у открытой ленты (P777). Пока набирают — над клавиатурой.
+            .overlay(alignment: .bottom) {
+                field
+                    .padding(.bottom, fieldLift)
+                    .opacity(shell.screen == .search ? 1 : 0)
+                    .allowsHitTesting(shell.screen == .search)
+                    .animation(.easeOut(duration: 0.2), value: shell.screen == .search)
+            }
             .onAppear { shell.ribbon.height = height }
             .onChange(of: height) { _, h in shell.ribbon.height = h }
     }
 
-    /// Строка поиска стоит вместо заголовка «Поиск» — между уголками
-    /// шестерёнки и трёх точек, лупа слева на том же месте, что и на
-    /// карте (P334).
+    /// Насколько поднять строку поиска над клавиатурой (P797): строка стоит
+    /// над нижней строкой разделов, клавиатура поднимается от низа экрана.
+    private var fieldLift: CGFloat {
+        guard keyboard > 0, shell.barTop > 0 else { return 0 }
+        let safe = UIApplication.shared.connectedScenes
+            .compactMap { ($0 as? UIWindowScene)?.keyWindow?.safeAreaInsets.bottom }.first ?? 0
+        let keysTop = UIScreen.main.bounds.height - safe - keyboard
+        return max(0, shell.barTop - keysTop + 4)
+    }
+
+    /// Строка поиска — внизу ленты (P797).
     private var field: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
@@ -62,24 +73,11 @@ struct SearchView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 9)
-        // Полупрозрачная: под ней видно, как лента уходит к горизонту (P718).
+        // Полупрозрачная: под ней видны карточки (P718, P797).
         .background(Look.fieldBg, in: RoundedRectangle(cornerRadius: 10))
-        // Тот же отступ от уголков, что у строки поиска на карте.
-        .padding(.leading, Corner.size + 8)
-        .padding(.trailing, Corner.size + 8)
-        .padding(.top, 8)
-        .padding(.bottom, 10)
-        // Под строкой — полоса стола, тающая книзу (P781): прежде сквозь
-        // полупрозрачную строку читался текст верхней карточки, и слово
-        // «Поиск» тонуло в нём. Лента по-прежнему уходит под строку (P718).
-        .background {
-            Desk()
-                .mask(LinearGradient(stops: [.init(color: .black, location: 0),
-                                             .init(color: .black, location: 0.8),
-                                             .init(color: .clear, location: 1)],
-                                     startPoint: .top, endPoint: .bottom))
-                .allowsHitTesting(false)
-        }
+        .padding(.horizontal, 16)
+        .padding(.top, 6)
+        .padding(.bottom, 8)
     }
 
     /// Где и что искать — меню в самой строке поиска (P632; прежде в меню
@@ -171,8 +169,6 @@ struct SearchView: View {
         let kind: Kind
         /// Заходит на предыдущую карточку (P694, P695).
         var over = false
-        /// Отступ сверху, когда не заходит.
-        var gap: CGFloat = 0
         /// Карточка под днём (P791): у дня из прошлого там прошлое после него.
         var below = false
 
@@ -214,7 +210,7 @@ struct SearchView: View {
         // Над самой старой — место под строку поиска; в коротком архиве —
         // стол до верха экрана, чтобы лента могла встать вчерашним днём
         // над нижней строкой.
-        let lead = max(Search.fieldHeight + Search.restTop, height - CGFloat(past.count) * 60)
+        let lead = max(8, height - CGFloat(past.count) * 60)
         out.append(Entry(id: "lead", kind: .pad(lead)))
         if !query.trimmingCharacters(in: .whitespaces).isEmpty && past.isEmpty && future.isEmpty && later.isEmpty {
             out.append(Entry(id: "note", kind: .note))
@@ -224,22 +220,17 @@ struct SearchView: View {
         }
         // Место дня заходит на нижний край вчерашней карточки, как
         // следующая карточка; завтрашняя лежит под днём своим корешком.
-        // Торец дня (P780) ложится на вчерашнюю туда, где её закрыл бы день,
-        // а под днём завтрашняя отступает на его толщину: корешок с датой не
-        // прячется под торцом.
-        out.append(Entry(id: Ribbon.slotID, kind: .slot,
-                         gap: past.isEmpty ? BoardEdge.depth : BoardEdge.depth - Search.overlap))
+        out.append(Entry(id: Ribbon.slotID, kind: .slot, over: !past.isEmpty))
         for (i, day) in future.enumerated() {
-            out.append(Entry(id: day.id, kind: .future(day), over: i > 0,
-                             gap: i == 0 ? BoardEdge.depth : 0))
+            out.append(Entry(id: day.id, kind: .future(day), over: i > 0))
         }
         // У дня из прошлого под ним — прошлое после него (P791), такими же
         // карточками, как над ним: ближайший следующий день сверху.
         for (i, day) in later.enumerated() {
-            out.append(Entry(id: day.id, kind: .past(day), over: i > 0,
-                             gap: i == 0 ? BoardEdge.depth : 0, below: true))
+            out.append(Entry(id: day.id, kind: .past(day), over: i > 0, below: true))
         }
-        let tail = max(8, height - CGFloat(future.count + later.count) * 60)
+        // Под последней — место под строку поиска внизу (P797).
+        let tail = max(Search.fieldHeight + 8, height - CGFloat(future.count + later.count) * 60)
         out.append(Entry(id: "tail", kind: .pad(tail)))
         return out
     }
@@ -294,7 +285,7 @@ struct SearchView: View {
             LazyVStack(spacing: 0) {
                 ForEach(items) { entry in
                     piece(entry, sample: sample)
-                        .padding(.top, entry.over ? -Search.overlap : entry.gap)
+                        .padding(.top, entry.over ? -Search.overlap : 0)
                         .modifier(Distance(side: entry.depth, height: height))
                         .id(entry.id)
                 }
@@ -499,6 +490,7 @@ struct SearchView: View {
         }
         ribbon.release()
         ribbon.park()
+        archive.reloadSoon()
     }
 
     private func row(_ day: Archive.Day) -> some View {
@@ -599,8 +591,6 @@ enum Search {
     /// Промежуток между строками будущей карточки (P774).
     static let futureGap: CGFloat = 1
 
-    /// Где стоит первая находка, пока список не листали (от верха списка).
-    static let restTop: CGFloat = 4
     /// Высота строки поиска над списком (с отступами): под неё уходит
     /// список (P716, P719).
     static let fieldHeight: CGFloat = 56
@@ -758,11 +748,14 @@ private struct CardPaper: View {
 }
 
 /// Контур карточки с корешком на левой трети: корешок и лист — одна фигура.
-private struct FolderShape: Shape {
+struct FolderShape: Shape {
     let tabHeight: CGFloat
+    /// Доля ширины под корешок: у карточек треть, у листа «Дня» шире —
+    /// там имя дня и дата (P797).
+    var tabShare: CGFloat = 1.0 / 3
 
     func path(in r: CGRect) -> Path {
-        let tabWidth = r.width / 3
+        let tabWidth = r.width * tabShare
         let tabR: CGFloat = 10, bodyR: CGFloat = 12, inner: CGFloat = 6
         var p = Path()
         p.move(to: CGPoint(x: r.minX, y: r.minY + tabR))

@@ -187,6 +187,9 @@ final class SectionSwipe: NSObject, UIGestureRecognizerDelegate {
     var moved: ((CGFloat) -> Void)?
     var ended: ((CGFloat) -> Void)?
     var cancelled: (() -> Void)?
+    /// Временно (P797): сказать вслух, почему свайп не взялся, — на
+    /// телефоне он не берётся, а в симуляторе берётся.
+    var report: ((String) -> Void)?
 
     /// Когда лёг палец и на что.
     private weak var touched: UIView?
@@ -231,6 +234,7 @@ final class SectionSwipe: NSObject, UIGestureRecognizerDelegate {
         // Выделен текст — палец, скорее всего, тянет ручку выделения.
         guard !Self.selecting else {
             Trace.note("свайп: выделен текст")
+            report?("Свайп не пущен: выделен текст")
             return false
         }
         // Точка — в окне: тяги висят на разных страницах (P790).
@@ -324,12 +328,15 @@ final class SwipePan: UIPanGestureRecognizer {
     private var since: CFTimeInterval = 0
     /// Палец уже сдвинулся на 10 точек.
     private var moved = false
+    /// Проверка «взяла ли тяга» уже назначена (временно, P797).
+    private var checking = false
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
         super.touchesBegan(touches, with: event)
         guard let touch = touches.first, let view else { return }
         start = touch.location(in: view)
         moved = false
+        checking = false
         let stamp = CACurrentMediaTime()
         since = stamp
         DispatchQueue.main.asyncAfter(deadline: .now() + Cross.hold) { [weak self] in
@@ -362,6 +369,16 @@ final class SwipePan: UIPanGestureRecognizer {
                 Trace.note(String(format: "свайп: пошёл вверх-вниз dx %.0f dy %.0f", dx, dy))
                 state = .failed
                 return
+            } else if !checking {
+                // Пошёл вбок — проверить, взяла ли тяга (временно, P797).
+                checking = true
+                let stamp = since
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+                    guard let self, self.since == stamp else { return }
+                    if self.state == .possible || self.state == .failed || self.state == .cancelled {
+                        SectionSwipe.shared.report?("Свайп: пошёл вбок, но не взят (\(self.state.rawValue))")
+                    }
+                }
             }
         }
         super.touchesMoved(touches, with: event)

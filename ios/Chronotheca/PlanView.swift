@@ -65,9 +65,11 @@ struct PlanRowLine: View {
     // ширину головы отступает первая строка названия, и разойдись они хоть
     // на точку — название наползёт на колокольчик или отскочит от него.
 
-    static let badgeWidth: CGFloat = 24
+    /// Квадратики головы — в клетку листа (P797): на точку внутри клетки с
+    /// каждой стороны.
+    static let badgeWidth: CGFloat = PageTexture.cell - 2
     static let timeWidth: CGFloat = 64
-    static let bellWidth: CGFloat = 40
+    static let bellWidth: CGFloat = PageTexture.cell * 2
     static let gap: CGFloat = 8
     /// Высота площадки для пальца у номера, времени и колокольчика (P465).
     static let reach: CGFloat = 44
@@ -99,7 +101,7 @@ struct PlanRowLine: View {
             // а не складываются в столбик (решение P177).
             ZStack(alignment: Alignment(horizontal: .leading,
                                         vertical: .firstTextBaseline)) {
-                title
+                title.opacity(ghost ? 0 : 1)
                 head
             }
         }
@@ -195,8 +197,11 @@ struct PlanRowLine: View {
     private var head: some View {
         HStack(alignment: .firstTextBaseline, spacing: Self.gap) {
             badge
-            time
-            bell
+            // Пустая строка следующего дела — только бледный номер (P797):
+            // время, колокольчик и подсказка появляются, когда по ней
+            // коснулись и дело завелось.
+            time.opacity(ghost ? 0 : 1).allowsHitTesting(!ghost)
+            bell.opacity(ghost ? 0 : 1).allowsHitTesting(!ghost)
         }
     }
 
@@ -218,7 +223,7 @@ struct PlanRowLine: View {
         .accessibilityLabel(row.done ? T("Дело \(number): сделано", "Task \(number): done")
                                      : T("Дело \(number)", "Task \(number)"))
         .accessibilityAddTraits(onCheck != nil ? .isButton : [])
-        .alignmentGuide(.firstTextBaseline) { $0[.bottom] - 6 }
+        .alignmentGuide(.firstTextBaseline) { $0[.bottom] - PlanTitle.above + 1 }
         .highPriorityGesture(onLift != nil || onCheck != nil ? handle : nil)
         // Жест оборвался сам (палец увела прокрутка) — дело опускается.
         .onChange(of: holding) { _, now in
@@ -280,7 +285,7 @@ struct PlanRowLine: View {
                                                height: PlanRowLine.reach)
                                          .offset(x: -PlanRowLine.gap / 2,
                                                  y: -(PlanRowLine.reach - PlanRowLine.badgeWidth) / 2))
-                .alignmentGuide(.firstTextBaseline) { $0[.bottom] - 6 }
+                .alignmentGuide(.firstTextBaseline) { $0[.bottom] - PlanTitle.above + 1 }
         }
         .opacity(dim)
         .buttonStyle(.plain)
@@ -318,7 +323,7 @@ struct PlanRowLine: View {
                                                  y: -(PlanRowLine.reach - PlanRowLine.badgeWidth) / 2))
                 // Середины у колокольчика и номера общие: иначе голова
                 // строки выглядит нестройно.
-                .alignmentGuide(.firstTextBaseline) { $0[.bottom] - 6 }
+                .alignmentGuide(.firstTextBaseline) { $0[.bottom] - PlanTitle.above + 1 }
         }
         .buttonStyle(.plain)
         .opacity(dim)

@@ -699,23 +699,20 @@ struct RootView: View {
             // Календарь — целиком на тёплом столе, и шапка тоже
             // (P758: на снимке шапка календаря была серой).
             .background {
-                if which == .calendar { Desk() } else { Look.chrome }
+                // Под «Днём» — стол, как под картотекой: справа от корешка
+                // листа виден он (P797).
+                if which == .calendar || which == .today { Desk() } else { Look.chrome }
             }
             // Торец стоит с той стороны, которой плашка идёт вперёд, и
             // выступает за её край — то есть лежит на книге, а не на самой
             // плашке. На месте он уходит за край экрана и не виден: толщина
             // показывается движением, а стоящее не должно ничего занимать.
             .overlay(alignment: edge == .top ? .bottom : .top) {
-                BoardEdge(fromTop: edge == .top)
-                    .offset(y: edge == .top ? BoardEdge.depth : -BoardEdge.depth)
-            }
-            // В ленте у дня торец и с другой стороны (P780, вместо «без
-            // торца» P777): день лежит толстым листом поверх карточек и не
-            // похож на них — сверху на вчерашние, снизу на завтрашние.
-            .overlay(alignment: .top) {
-                if which == .today && shell.ribbonLive {
-                    BoardEdge(fromTop: false)
-                        .offset(y: -BoardEdge.depth)
+                // У «Дня» торца нет (P797, вместо торца P780): полосы по
+                // краям листа выглядели чужими; лист — карточка с корешком.
+                if which != .today {
+                    BoardEdge(fromTop: edge == .top)
+                        .offset(y: edge == .top ? BoardEdge.depth : -BoardEdge.depth)
                 }
             }
             // День стоит в ленте картотеки на своём месте и едет с ней (P777).
@@ -834,6 +831,8 @@ struct RootView: View {
         swipe.moved = { dx in slide.move(dx) }
         swipe.ended = { speed in slide.end(speed: speed) { target in swipeTo(target) } }
         swipe.cancelled = { slide.cancel() }
+        // Временно (P790, P797): причины отказа свайпа — вслух.
+        swipe.report = { [shell] text in shell.say(text) }
         // Порог у дня в открытой картотеке (P779).
         shell.ribbon.walls = { [shell] in
             shell.screen == .search && shell.ribbonOpen && !shell.pulling
@@ -1079,13 +1078,15 @@ struct RootView: View {
     /// Лента доезжает местом дня на экран, и день снова живой (P777).
     private func backToDay() {
         let ribbon = shell.ribbon
-        let finish = { [shell] in
+        let finish = { [shell, archive] in
             var still = Transaction()
             still.disablesAnimations = true
             withTransaction(still) {
                 shell.ribbonOpen = false
                 shell.fileFrom = 0
             }
+            // Опись — когда лента уже закрыта (P797).
+            archive.reloadSoon()
         }
         if ribbon.seen {
             ribbon.glide(to: 0, then: finish)
@@ -1110,6 +1111,7 @@ struct RootView: View {
         }
         shell.ribbon.release()
         shell.ribbon.park()
+        archive.reloadSoon()
     }
 
     // MARK: - Сообщение
