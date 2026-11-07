@@ -73,8 +73,10 @@ struct SearchView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 9)
-        // Полупрозрачная: под ней видны карточки (P718, P797).
-        .background(Look.fieldBg, in: RoundedRectangle(cornerRadius: 10))
+        // Полупрозрачная, как стекло (P797): карточки под ней видны, но
+        // размыто — иначе их текст спорил со словом «Поиск».
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
+        .background(Look.fieldBg.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
         .padding(.horizontal, 16)
         .padding(.top, 6)
         .padding(.bottom, 8)
