@@ -17,6 +17,8 @@ struct SearchView: View {
     /// Строка поиска лежит в оболочке: её очищает и меню поиска.
     private var query: String { shell.query }
     @FocusState private var typing: Bool
+    /// Строка поиска раскрыта (P798): иначе — только лупа в кружке.
+    @State private var searching = false
 
     /// Насколько клавиатура закрывает список находок.
     @State private var keyboard: CGFloat = 0
@@ -35,12 +37,30 @@ struct SearchView: View {
             // (P797, прежде вверху — P334, P718): карточки идут от самого
             // верха до самого низа, у будущего завтрашняя — у самого верха.
             // Только у открытой ленты (P777). Пока набирают — над клавиатурой.
+            // Поиск — лупа в полупрозрачном кружке там же, где у дня «＋»
+            // (P798, вместо постоянной строки P797): касание — строка
+            // раскрывается и поднимается клавиатура; убрали клавиатуру с
+            // пустой строкой — снова лупа.
             .overlay(alignment: .bottom) {
-                field
-                    .padding(.bottom, fieldLift)
-                    .opacity(shell.screen == .search ? 1 : 0)
-                    .allowsHitTesting(shell.screen == .search)
-                    .animation(.easeOut(duration: 0.2), value: shell.screen == .search)
+                Group {
+                    if searching || !query.isEmpty {
+                        field.padding(.bottom, fieldLift)
+                    } else {
+                        HStack {
+                            Spacer(minLength: 0)
+                            loupe
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.bottom, 8)
+                    }
+                }
+                .opacity(shell.screen == .search ? 1 : 0)
+                .allowsHitTesting(shell.screen == .search)
+                .animation(.easeOut(duration: 0.2), value: shell.screen == .search)
+                .animation(.easeOut(duration: 0.2), value: searching)
+            }
+            .onChange(of: typing) { _, now in
+                if !now && query.isEmpty { searching = false }
             }
             .onAppear { shell.ribbon.height = height }
             .onChange(of: height) { _, h in shell.ribbon.height = h }
@@ -54,6 +74,24 @@ struct SearchView: View {
             .compactMap { ($0 as? UIWindowScene)?.keyWindow?.safeAreaInsets.bottom }.first ?? 0
         let keysTop = UIScreen.main.bounds.height - safe - keyboard
         return max(0, shell.barTop - keysTop + 4)
+    }
+
+    /// Лупа в стеклянном кружке, размером с «＋» дня (P798).
+    private var loupe: some View {
+        Button {
+            searching = true
+            DispatchQueue.main.async { typing = true }
+        } label: {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundStyle(Look.inkSoft)
+                .frame(width: 44, height: 44)
+                .background(.ultraThinMaterial, in: Circle())
+                .overlay(Circle().strokeBorder(Look.inkFaint.opacity(0.5), lineWidth: 1))
+                .shadow(color: .black.opacity(0.15), radius: 3, x: 1.5, y: 1.5)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(T("Поиск", "Search"))
     }
 
     /// Строка поиска — внизу ленты (P797).

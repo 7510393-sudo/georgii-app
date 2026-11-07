@@ -290,7 +290,7 @@ struct CalendarView: View {
                         if monthIsPast(year: year, month: m) {
                             // Кромка — у целого листа под рваным (P728).
                             ZStack {
-                                OldPaper(seed: year * 12 + m, base: Ru.pastTint)
+                                OldPaper(seed: m, base: Ru.pastTint)
                                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                                     .strokeBorder(Look.stickerEdge, lineWidth: 1)
                             }
@@ -451,7 +451,9 @@ struct CalendarView: View {
             // со своим износом и травмами края (P723).
             .background {
                 if !isToday && Ru.isPast(date) {
-                    OldPaper(seed: PageTexture.seed(date), base: tint(date))
+                    // Износ — по числу месяца, один набор на все месяцы и годы (P798):
+                    // готовая бумага берётся из запаса, а не рисуется на ходу.
+                    OldPaper(seed: cal.component(.day, from: date), base: tint(date))
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                 } else {
                     RoundedRectangle(cornerRadius: 8).fill(isToday ? Look.accent : tint(date))
