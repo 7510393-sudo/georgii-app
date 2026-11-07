@@ -157,6 +157,8 @@ struct SearchView: View {
         let kind: Kind
         /// Заходит на предыдущую карточку (P694, P695).
         var over = false
+        /// Отступ сверху, когда не заходит.
+        var gap: CGFloat = 0
     }
 
     /// Будущее ленты (P771): месяц подряд, и пустые дни тоже, потом только
@@ -196,9 +198,14 @@ struct SearchView: View {
         }
         // Место дня заходит на нижний край вчерашней карточки, как
         // следующая карточка; завтрашняя лежит под днём своим корешком.
-        out.append(Entry(id: Ribbon.slotID, kind: .slot, over: !past.isEmpty))
+        // Торец дня (P780) ложится на вчерашнюю туда, где её закрыл бы день,
+        // а под днём завтрашняя отступает на его толщину: корешок с датой не
+        // прячется под торцом.
+        out.append(Entry(id: Ribbon.slotID, kind: .slot,
+                         gap: past.isEmpty ? BoardEdge.depth : BoardEdge.depth - Search.overlap))
         for (i, day) in future.enumerated() {
-            out.append(Entry(id: day.id, kind: .future(day), over: i > 0))
+            out.append(Entry(id: day.id, kind: .future(day), over: i > 0,
+                             gap: i == 0 ? BoardEdge.depth : 0))
         }
         let tail = max(8, height - CGFloat(future.count) * 60)
         out.append(Entry(id: "tail", kind: .pad(tail)))
@@ -241,7 +248,7 @@ struct SearchView: View {
             LazyVStack(spacing: 0) {
                 ForEach(items) { entry in
                     piece(entry, sample: sample)
-                        .padding(.top, entry.over ? -Search.overlap : 0)
+                        .padding(.top, entry.over ? -Search.overlap : entry.gap)
                         .id(entry.id)
                 }
             }
@@ -317,10 +324,13 @@ struct SearchView: View {
                       "No entries \(whereNot)match “\(query)”."))
                 .frame(height: 160)
         case .past(let day):
+            // Карточки уже дня (P780): по бокам виден стол, день — во всю
+            // ширину, и его не спутать с карточкой.
             SearchCard(stamp: Search.stamp(day.date), past: Ru.isPast(day.date),
                        seed: PageTexture.seed(day.date) &+ (Search.deep ? (Int(entry.id.dropFirst()) ?? 0) * 7 : 0)) {
                 row(day)
             }
+            .padding(.horizontal, Search.cardInset)
         case .slot:
             daySlot
         case .future(let day):
@@ -328,6 +338,7 @@ struct SearchView: View {
                        seed: PageTexture.seed(day.date), tight: true) {
                 futureRow(day, sample: sample)
             }
+            .padding(.horizontal, Search.cardInset)
         }
     }
 
@@ -506,6 +517,8 @@ enum Search {
     /// На сколько карточка заходит на предыдущую: корешок и ещё немного
     /// листа, чтобы нижний край предыдущей скрылся под ней (P696).
     static let overlap: CGFloat = tabHeight + 10
+    /// Карточки ленты уже дня (P780): ещё столько с каждого бока.
+    static let cardInset: CGFloat = 14
 
     static let lineGap: CGFloat = 3
 

@@ -705,11 +705,16 @@ struct RootView: View {
             // плашке. На месте он уходит за край экрана и не виден: толщина
             // показывается движением, а стоящее не должно ничего занимать.
             .overlay(alignment: edge == .top ? .bottom : .top) {
-                // В ленте у дня торца нет (P777): он лёг бы на корешок
-                // завтрашней карточки.
-                if !(which == .today && shell.ribbonLive) {
-                    BoardEdge(fromTop: edge == .top)
-                        .offset(y: edge == .top ? BoardEdge.depth : -BoardEdge.depth)
+                BoardEdge(fromTop: edge == .top)
+                    .offset(y: edge == .top ? BoardEdge.depth : -BoardEdge.depth)
+            }
+            // В ленте у дня торец и с другой стороны (P780, вместо «без
+            // торца» P777): день лежит толстым листом поверх карточек и не
+            // похож на них — сверху на вчерашние, снизу на завтрашние.
+            .overlay(alignment: .top) {
+                if which == .today && shell.ribbonLive {
+                    BoardEdge(fromTop: false)
+                        .offset(y: -BoardEdge.depth)
                 }
             }
             // День стоит в ленте картотеки на своём месте и едет с ней (P777).
