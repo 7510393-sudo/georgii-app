@@ -353,36 +353,49 @@ struct CalendarView: View {
     }
 
     private func miniMonth(year: Int, month: Int) -> some View {
-        let first = cal.date(from: DateComponents(year: year, month: month, day: 1)) ?? Date()
-        let cells = MonthGrid.cells(of: first, calendar: cal, firstWeekday: cal.firstWeekday)
+        let c = cal
+        let first = c.date(from: DateComponents(year: year, month: month, day: 1)) ?? Date()
+        let cells = MonthGrid.cells(of: first, calendar: c, firstWeekday: c.firstWeekday)
         let today = Vault.stamp(DayStore.today())
+        // Числа — по номеру клетки, без календаря на каждую (P827).
+        let lead = cells.firstIndex { $0 != nil } ?? 0
+        let rows = stride(from: 0, to: cells.count, by: 7).map { start in
+            Array(start..<min(start + 7, cells.count))
+        }
 
-        // Крупнее прежнего — цифры было плохо видно (P319).
-        return LazyVGrid(columns: Array(repeating: GridItem(.fixed(14), spacing: 2), count: 7),
-                         spacing: 2) {
-            ForEach(Array(cells.enumerated()), id: \.offset) { _, day in
-                if let day {
-                    let stamp = Vault.stamp(day)
-                    let filled = archive.day(stamp)?.hasSomething == true
-                    // День с записью — чёткий кружок с тонкой рамкой и плотной
-                    // цифрой, а не бледное серое пятно (P499): издали год
-                    // читается ровно.
-                    Text("\(cal.component(.day, from: day))")
-                        .font(.system(size: 9, weight: filled ? .semibold : .regular))
-                        .frame(width: 14, height: 14)
-                        .foregroundStyle(stamp == today ? Color.white
-                                         : (filled ? Look.accent : Look.inkFaint))
-                        .background(stamp == today ? Look.accent
-                                    : (filled ? Look.accent.opacity(0.12) : .clear),
-                                    in: Circle())
-                        .overlay(Circle().strokeBorder(
-                            stamp != today && filled ? Look.accent.opacity(0.8) : .clear,
-                            lineWidth: 1))
-                } else {
-                    Color.clear.frame(height: 14)
+        // Крупнее прежнего — цифры было плохо видно (P319). Простые ряды
+        // вместо ленивой сетки (P827): у сотен клеток страницы «Года» ленивая
+        // сетка заново решала, что показывать, при каждом появлении.
+        return VStack(alignment: .leading, spacing: 2) {
+            ForEach(rows, id: \.first) { row in
+                HStack(spacing: 2) {
+                    ForEach(row, id: \.self) { i in
+                        if let day = cells[i] {
+                            dayDot(number: i - lead + 1, stamp: Vault.stamp(day), today: today)
+                        } else {
+                            Color.clear.frame(width: 14, height: 14)
+                        }
+                    }
                 }
             }
         }
+        .frame(maxWidth: .infinity)
+    }
+
+    /// Число в маленьком месяце «Года».
+    private func dayDot(number: Int, stamp: String, today: String) -> some View {
+        let filled = archive.day(stamp)?.hasSomething == true
+        // День с записью — чёткий кружок с тонкой рамкой и плотной цифрой, а
+        // не бледное серое пятно (P499): издали год читается ровно.
+        let fill: Color = stamp == today ? Look.accent : (filled ? Look.accent.opacity(0.12) : .clear)
+        let ink: Color = stamp == today ? .white : (filled ? Look.accent : Look.inkFaint)
+        let ring: Color = stamp != today && filled ? Look.accent.opacity(0.8) : .clear
+        return Text("\(number)")
+            .font(.system(size: 9, weight: filled ? .semibold : .regular))
+            .frame(width: 14, height: 14)
+            .foregroundStyle(ink)
+            .background(fill, in: Circle())
+            .overlay(Circle().strokeBorder(ring, lineWidth: 1))
     }
 
     // MARK: - Месяц

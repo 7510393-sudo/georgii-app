@@ -1421,18 +1421,25 @@ final class Vault: ObservableObject {
         // Ровно ГГГГ-ММ-ДД и ничего сверх: «2026-09-24 — вторая версия»
         // лежит рядом с днём, но днём не является (P183).
         guard stamp.count == 10 else { return nil }
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "en_US_POSIX")
-        f.dateFormat = "yyyy-MM-dd"
-        f.timeZone = TimeZone.current
-        guard let d = f.date(from: stamp) else { return nil }
+        guard let d = stampFormat.date(from: stamp) else { return nil }
         return Calendar.current.startOfDay(for: d)
     }
 
     static func stamp(_ date: Date) -> String {
+        stampFormat.string(from: date)
+    }
+
+    /// Один «переводчик» дат на всё приложение (P827): прежде он создавался
+    /// заново на каждое число — на странице «Года» около четырёхсот раз при
+    /// каждом её появлении, и год дёргался при листании. Пояс — всегда
+    /// нынешний, как и прежде; переводчик дат iPhone можно звать из разных
+    /// потоков.
+    private static let stampFormat: DateFormatter = {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX")
         f.dateFormat = "yyyy-MM-dd"
-        return f.string(from: date)
-    }
+        f.timeZone = .autoupdatingCurrent
+        f.calendar = Calendar(identifier: .gregorian)
+        return f
+    }()
 }
