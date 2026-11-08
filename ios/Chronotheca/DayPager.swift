@@ -358,22 +358,26 @@ struct DayPage: View {
                              return
                          }
                          hideKeyboard()
-                         store.prune()
                          // Толчка нет: он был на пороге (P800; прежде
                          // второй — по отпусканию, два на одно движение).
-                         shell.ribbonOpen = true
-                         shell.screen = .search
+                         // Сначала ход, раздел — когда лента встала (P828):
+                         // смена раздела в миг отпускания перестраивала весь
+                         // экран, ход на это время вставал и потом догонял
+                         // прыжком (видео автора к 251). Запись дня — тоже
+                         // после хода: она шла посреди него.
                          ribbon.opened()
                          ribbon.glide(to: ribbon.restY(dir)) {
+                             shell.ribbonOpen = true
+                             shell.screen = .search
                              shell.pulling = false
                              ribbon.release()
-                         }
-                         // Запись дня — после хода. Опись перечитывается, когда
-                         // лента закроется (P797): перечитанная сразу после
-                         // открытия, она меняла высоту карточек над днём, и
-                         // лента прыгала, едва отпустили палец.
-                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                             store.save()
+                             store.prune()
+                             // Опись перечитывается, когда лента закроется
+                             // (P797): перечитанная сразу после открытия, она
+                             // меняла высоту карточек над днём.
+                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                 store.save()
+                             }
                          }
                      },
                      onPullMove: { [shell] amount, dir in

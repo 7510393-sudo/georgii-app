@@ -228,7 +228,7 @@ final class MovementTests: XCTestCase {
                    withVelocity: .slow, thenHoldForDuration: 0.1)
         XCTAssertTrue(wait(4) { openScreen == "search" }, "лента прошлого не открылась: \(openScreen)")
         sleep(2)
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.4, dy: 0.62)).tap()
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.4, dy: 0.42)).tap()
         XCTAssertTrue(wait(5) { openScreen == "today" && openDay != "today" },
                       "карточка не открыла прошлый день: \(openScreen) \(openDay)")
         sleep(2)

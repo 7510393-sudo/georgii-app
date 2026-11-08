@@ -803,9 +803,19 @@ struct RootView: View {
         shell.ribbon.walls = { [shell] in
             shell.screen == .search && shell.ribbonOpen && !shell.pulling
         }
+        // В день тягой (P828): сперва лента доезжает до места дня, раздел
+        // меняется, когда встала, — как и при открытии картотеки. Прежде
+        // раздел менялся в миг отпускания, экран перестраивался, и ход
+        // догонял прыжком.
         shell.ribbon.wantDay = { [shell] in
             guard shell.screen == .search else { return }
-            shell.screen = .today
+            backToDay {
+                // Толчок был на пороге (P800).
+                shell.ribbon.felt = false
+                var still = Transaction()
+                still.disablesAnimations = true
+                withTransaction(still) { shell.screen = .today }
+            }
         }
     }
 
@@ -977,7 +987,7 @@ struct RootView: View {
     }
 
     /// Лента доезжает местом дня на экран, и день снова живой (P777).
-    private func backToDay() {
+    private func backToDay(then: (() -> Void)? = nil) {
         let ribbon = shell.ribbon
         let finish = { [shell, archive] in
             var still = Transaction()
@@ -988,6 +998,7 @@ struct RootView: View {
             }
             // Опись — когда лента уже закрыта (P797).
             archive.reloadSoon()
+            then?()
         }
         if ribbon.seen {
             ribbon.glide(to: 0, then: finish)
