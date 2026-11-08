@@ -19,6 +19,11 @@ final class PaperShop: ObservableObject {
     private static let version = "p748"  // P748: края дня уже — старые листы не годятся
 
     private let queue = DispatchQueue(label: "graphomanus.paper", qos: .utility)
+    /// Мелкая бумага — клетки календаря, строки (P808): своя очередь, не за
+    /// большими карточками ленты. На большом архиве клетки ждали за
+    /// десятками карточек, бумага приходила по капле секундами, и
+    /// календарь всё это время не успокаивался.
+    private let quick = DispatchQueue(label: "graphomanus.paper.quick", qos: .userInitiated)
     private let lock = NSLock()
     private var waiting: Set<String> = []
     private let arts: NSCache<NSString, PageTexture.AgedArt> = {
@@ -46,10 +51,11 @@ final class PaperShop: ObservableObject {
     /// Отдаётся только тому, кто просил (P732: прежде о каждом готовом листе
     /// узнавали все экраны и перерисовывались — на большом архиве карта
     /// стояла по полминуты).
-    func art(_ key: String, build: @escaping () -> PageTexture.AgedArt) async -> PageTexture.AgedArt {
+    func art(_ key: String, small: Bool = false,
+             build: @escaping () -> PageTexture.AgedArt) async -> PageTexture.AgedArt {
         if let made = arts.object(forKey: key as NSString) { return made }
         return await withCheckedContinuation { done in
-            queue.async { [weak self] in
+            (small ? quick : queue).async { [weak self] in
                 guard let self else { return done.resume(returning: build()) }
                 if let made = self.arts.object(forKey: key as NSString) { return done.resume(returning: made) }
                 let art: PageTexture.AgedArt
@@ -82,7 +88,7 @@ final class PaperShop: ObservableObject {
     func cell(_ name: String, build: @escaping () -> PageTexture.CellArt) async -> PageTexture.CellArt {
         if let made = cells.object(forKey: name as NSString) { return made }
         return await withCheckedContinuation { done in
-            queue.async { [weak self] in
+            quick.async { [weak self] in
                 guard let self else { return done.resume(returning: build()) }
                 if let made = self.cells.object(forKey: name as NSString) { return done.resume(returning: made) }
                 let made = build()

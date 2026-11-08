@@ -285,8 +285,22 @@ final class MovementTests: XCTestCase {
         note("запуск", String(format: "%.2f с", opened))
         sleep(3)
 
+        // Главное — часы самого приложения: от нажатия до открытого
+        // раздела (P808). Робот на каждом нажатии сам тратит секунду-две и
+        // на пустом месте, поэтому его часы — только страховка от грубой
+        // поломки.
         for (screen, took) in sections("", shot: "big") {
-            XCTAssertLessThan(took, 1.5, "\(screen) открывался \(took) с")
+            XCTAssertLessThan(took, 4, "\(screen) открывался у робота \(took) с")
+            if let own = ownTime(screen) {
+                XCTAssertLessThan(own, 0.5, "\(screen) открывался в приложении \(own) с")
+            } else {
+                XCTFail("приложение не записало, как открылся \(screen)")
+            }
+        }
+        // Самое долгое замирание главного потока на каждом разделе — пока
+        // только запись, без требования (P808): по ним следующий шаг.
+        for screen in ["calendar", "map", "today"] {
+            note("замирание " + screen, String(format: "%.2f с", longestStall(screen)))
         }
         save("06-большой-архив")
         XCTAssertLessThan(opened, 8, "запуск занял \(opened) с")
@@ -299,6 +313,33 @@ final class MovementTests: XCTestCase {
         XCTAssertTrue(app.buttons["bottom.calendar"].firstMatch.waitForExistence(timeout: 60))
         sleep(8)
         _ = sections("без бумаги ", shot: "plain")
+    }
+
+    /// Сколько, по часам приложения, открывался раздел последний раз
+    /// (строка «шаг calendar: 0.26 с» в файле замираний, `LaunchClock`).
+    private func ownTime(_ screen: String) -> Double? {
+        guard let dir = ProcessInfo.processInfo.environment["MOTION_DIR"], !dir.isEmpty,
+              let text = try? String(contentsOf: URL(fileURLWithPath: dir).appendingPathComponent("замирания.txt"),
+                                     encoding: .utf8)
+        else { return nil }
+        let prefix = "шаг \(screen): "
+        guard let line = text.split(separator: "\n").last(where: { $0.hasPrefix(prefix) }) else { return nil }
+        return Double(line.dropFirst(prefix.count).split(separator: " ").first ?? "")
+    }
+
+    /// Самое долгое «экран стоял … (раздел)» в файле замираний (`LagWatch`).
+    private func longestStall(_ screen: String) -> Double {
+        guard let dir = ProcessInfo.processInfo.environment["MOTION_DIR"], !dir.isEmpty,
+              let text = try? String(contentsOf: URL(fileURLWithPath: dir).appendingPathComponent("замирания.txt"),
+                                     encoding: .utf8)
+        else { return 0 }
+        return text.split(separator: "\n")
+            .filter { $0.hasSuffix("(\(screen))") }
+            .compactMap { line -> Double? in
+                guard let r = line.range(of: "экран стоял ") else { return nil }
+                return Double(line[r.upperBound...].split(separator: " ").first ?? "")
+            }
+            .max() ?? 0
     }
 
     /// Те же замеры на маленьком образце (P806) — без требований, только для
@@ -336,15 +377,6 @@ final class MovementTests: XCTestCase {
             _ = openScreen
             let t5 = Date()
             let took = t3.timeIntervalSince(t0)
-            // Что робот видит на разделе (P808): дерево элементов целиком —
-            // по нему видно, что раздувает его обход.
-            if let dir = ProcessInfo.processInfo.environment["MOTION_DIR"], !dir.isEmpty {
-                let tree = app.debugDescription
-                let lines = tree.split(separator: "\n").count
-                note(tag + screen + " дерево", "\(lines) строк")
-                try? tree.write(to: URL(fileURLWithPath: dir).appendingPathComponent("tree-\(shot)-\(screen).txt"),
-                                atomically: true, encoding: .utf8)
-            }
             note(tag + screen, String(format: "%.2f с (найти %.2f, нажать %.2f, увидеть %.2f, прочесть потом %.2f)",
                                       took, t1.timeIntervalSince(t0), t2.timeIntervalSince(t1),
                                       t3.timeIntervalSince(t2), t5.timeIntervalSince(t4)))

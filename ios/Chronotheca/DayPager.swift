@@ -1263,7 +1263,7 @@ struct PageTexture: View {
 
     /// Лист — когда будет готов (в стороне от экрана).
     static func aged(_ order: AgedOrder) async -> AgedArt {
-        await PaperShop.shared.art(order.key) {
+        await PaperShop.shared.art(order.key, small: min(order.w, order.h) < 60) {
             makeAged(size: CGSize(width: order.w, height: order.h), band: order.band, seed: order.variant + 1,
                      openBottom: order.openBottom, light: order.light)
         }
