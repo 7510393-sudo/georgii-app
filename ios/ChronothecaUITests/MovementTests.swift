@@ -291,6 +291,15 @@ final class MovementTests: XCTestCase {
         // показали, что на большом архиве робот медлит сам — при запуске
         // iOS подключает к приложению службы VoiceOver для робота, а пока
         // он «нажимает» календарь, приложение почти не работает.
+        // Карта собирается при первом открытии (P814) — это её цена, а не
+        // архива: открыть её один раз до замера, считать только после.
+        app.buttons["bottom.map"].firstMatch.tap()
+        XCTAssertTrue(wait(15) { openScreen == "map" }, "карта не открылась")
+        sleep(3)
+        app.buttons["bottom.today"].firstMatch.tap()
+        XCTAssertTrue(wait(10) { openScreen == "today" }, "«Дневник» не вернулся")
+        sleep(2)
+        traceFrom = traceText().count
         _ = sections("", shot: "big")
         for screen in ["calendar", "map", "today"] {
             if let own = ownTime(screen) {
@@ -308,13 +317,21 @@ final class MovementTests: XCTestCase {
         save("06-большой-архив")
     }
 
-    /// Сколько, по часам приложения, открывался раздел последний раз
-    /// (строка «шаг calendar: 0.26 с» в файле замираний, `LaunchClock`).
-    private func ownTime(_ screen: String) -> Double? {
+    /// С какого знака файла замираний считать (P814): раньше — разогрев.
+    private var traceFrom = 0
+
+    private func traceText() -> String {
         guard let dir = ProcessInfo.processInfo.environment["MOTION_DIR"], !dir.isEmpty,
               let text = try? String(contentsOf: URL(fileURLWithPath: dir).appendingPathComponent("замирания.txt"),
                                      encoding: .utf8)
-        else { return nil }
+        else { return "" }
+        return text
+    }
+
+    /// Сколько, по часам приложения, открывался раздел последний раз
+    /// (строка «шаг calendar: 0.26 с» в файле замираний, `LaunchClock`).
+    private func ownTime(_ screen: String) -> Double? {
+        let text = String(traceText().dropFirst(traceFrom))
         let prefix = "шаг \(screen): "
         guard let line = text.split(separator: "\n").last(where: { $0.hasPrefix(prefix) }) else { return nil }
         return Double(line.dropFirst(prefix.count).split(separator: " ").first ?? "")
@@ -322,10 +339,7 @@ final class MovementTests: XCTestCase {
 
     /// Самое долгое «экран стоял … (раздел)» в файле замираний (`LagWatch`).
     private func longestStall(_ screen: String) -> Double {
-        guard let dir = ProcessInfo.processInfo.environment["MOTION_DIR"], !dir.isEmpty,
-              let text = try? String(contentsOf: URL(fileURLWithPath: dir).appendingPathComponent("замирания.txt"),
-                                     encoding: .utf8)
-        else { return 0 }
+        let text = String(traceText().dropFirst(traceFrom))
         return text.split(separator: "\n")
             .filter { $0.hasSuffix("(\(screen))") }
             .compactMap { line -> Double? in

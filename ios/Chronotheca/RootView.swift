@@ -429,6 +429,8 @@ struct RootView: View {
         .onChange(of: shell.screen) { old, new in
             LagWatch.note(new)
             follow(from: old, to: new)
+            // Карта собирается при первом открытии и дальше остаётся
+            // (P814, вместо сборки заранее P581, P582).
             if new == .map { mapReady = true }
         }
         // Снимок во весь экран — один на всё приложение: открывают его и
@@ -531,8 +533,6 @@ struct RootView: View {
             archive.reloadSoon()
             // Свои места — для подписи точек в дневнике (P559), тоже в стороне.
             Places.loadSoon(vault)
-            // Карту — заранее, когда запуск уже позади (P581).
-            warmMapSoon()
             // Свайп между разделами (P778).
             wireRibbon()
             LaunchClock.step(T("первый экран", "first screen"))
@@ -679,7 +679,7 @@ struct RootView: View {
     /// Страница карты. Палец двигает карту, поэтому лента на ней не листается
     /// — к «Дневнику» ведёт полоска у правого края: ведёшь по ней влево
     /// (P805; карта слева от «Дневника»).
-    /// Карта собирается заранее, через несколько секунд после запуска (P581).
+    /// Карта собирается при первом открытии и дальше остаётся (P814).
     private var mapPage: some View {
         ZStack(alignment: .trailing) {
             if mapReady || shell.screen == .map { MapScreen() } else { Color.clear }
@@ -766,20 +766,6 @@ struct RootView: View {
     private var homeLift: CGFloat {
         let bar = max(homeBar, windowBottom)
         return bar > 0 ? bar + 12 : 0
-    }
-
-    /// Собрать карту заранее, но не под пальцем (P582): сборка на полсекунды
-    /// занимает экран, и если в это время пишут или листают, жест мог
-    /// сорваться. Пока поднята клавиатура или открыт не «День» — позже.
-    private func warmMapSoon(after seconds: Double = 4) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + seconds) {
-            guard !mapReady else { return }
-            if keyboard.height > 0 || shell.screen != .today || shell.movingTask != nil {
-                warmMapSoon(after: 3)
-            } else {
-                mapReady = true
-            }
-        }
     }
 
     /// Порог у дня в открытой картотеке (P779) и «несут пальцем» (P799).
