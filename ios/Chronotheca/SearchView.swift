@@ -245,7 +245,7 @@ struct SearchView: View {
     /// сверху, внизу прошлого вчера, ниже место сегодняшнего дня, под ним
     /// завтра и дальше. Сегодняшней карточки нет: на её месте сам день.
     private func entries(_ past: [Archive.Day], _ future: [Archive.Day],
-                         later: [Archive.Day]) -> [Entry] {
+                         later: [Archive.Day], slot: Bool = true) -> [Entry] {
         var out: [Entry] = []
         // Над самой старой — место под строку поиска; в коротком архиве —
         // стол до верха экрана, чтобы лента могла встать вчерашним днём
@@ -260,14 +260,16 @@ struct SearchView: View {
         }
         // Место дня заходит на нижний край вчерашней карточки, как
         // следующая карточка; завтрашняя лежит под днём своим корешком.
-        out.append(Entry(id: Ribbon.slotID, kind: .slot, over: !past.isEmpty))
+        if slot { out.append(Entry(id: Ribbon.slotID, kind: .slot, over: !past.isEmpty)) }
         for (i, day) in future.enumerated() {
             out.append(Entry(id: day.id, kind: .future(day), over: i > 0))
         }
         // У дня из прошлого под ним — прошлое после него (P791), такими же
         // карточками, как над ним: ближайший следующий день сверху.
+        // День закрыт в карточку (P834) — после него дни идут обычной
+        // стопкой прошлого, наползая друг на друга.
         for (i, day) in later.enumerated() {
-            out.append(Entry(id: day.id, kind: .past(day), over: i > 0, below: true))
+            out.append(Entry(id: day.id, kind: .past(day), over: slot ? i > 0 : true, below: slot))
         }
         // Под последней — место под строку поиска внизу (P797).
         let tail = max(Search.fieldHeight + 8, height - CGFloat(future.count + later.count) * 60)
@@ -302,9 +304,12 @@ struct SearchView: View {
         // прошлого — записанные дни после него.
         let todayStamp = Vault.stamp(DayStore.today())
         let anchor = Vault.stamp(store.date)
+        // Прошедший день, закрытый в карточку (P834): он сам — карточка среди
+        // прошлых, места дня нет.
+        let card = shell.pastCard && anchor < todayStamp
         // Опись читается один раз за перерисовку (P771): старые сверху.
         let all = Array(found.reversed())
-        var past = all.filter { $0.stamp < anchor }
+        var past = all.filter { card ? $0.stamp <= anchor : $0.stamp < anchor }
         // На снимке CI «лента поиска» находки повторены, чтобы было что
         // листать (P717).
         if Search.deep { past = Array(repeating: past, count: 12).flatMap { $0 } }
@@ -317,7 +322,8 @@ struct SearchView: View {
         let times = future.flatMap { plan($0).compactMap(\.time) }
         let sample: String? = times.isEmpty ? nil
             : times.contains { $0.contains(where: \.isLetter) } ? "00:00 PM" : "00:00"
-        let items = entries(past, future, later: later)
+        let items = entries(past, future, later: later, slot: !card)
+        let firstLater = later.first?.id
         let ribbon = shell.ribbon
         return ScrollViewReader { proxy in ScrollView {
             // Карточки — вид сверху: нижняя лежит поверх верхней и своим
@@ -384,13 +390,22 @@ struct SearchView: View {
         .onChange(of: query) { _, _ in
             DispatchQueue.main.async { settle() }
         }
+        // День закрылся в карточку (P834). Будущее (день был выше ленты):
+        // место дня над экраном сменилось карточкой, и всё ниже поднялось бы
+        // — лента встаёт так, чтобы на экране ничто не сдвинулось.
+        .onChange(of: shell.pastCard) { _, now in
+            guard now, shell.fileFrom < 0, let firstLater else { return }
+            var still = Transaction()
+            still.disablesAnimations = true
+            withTransaction(still) { proxy.scrollTo(firstLater, anchor: .top) }
+        }
         }
         .animation(.easeOut(duration: 0.25), value: keyboard)
     }
 
     /// Лента в покое: вчера над нижней строкой или завтра под строкой поиска.
     private func settle() {
-        guard shell.ribbonOpen, !shell.pulling, !shell.ribbon.busy else { return }
+        guard shell.ribbonOpen, !shell.pulling, !shell.ribbon.busy, !shell.pastCard else { return }
         shell.ribbon.opened()
         shell.ribbon.settle(shell.fileFrom < 0 ? -1 : 1)
     }

@@ -371,6 +371,10 @@ struct DayPage: View {
                              shell.screen = .search
                              shell.pulling = false
                              ribbon.release()
+                             // Прошедший день закрывается в свою карточку
+                             // (P834): лист ушёл за край — на его месте в ленте
+                             // маленькая карточка, листом он больше не вернётся.
+                             if store.date < DayStore.today() { shell.pastCard = true }
                              store.prune()
                              // Опись перечитывается, когда лента закроется
                              // (P797): перечитанная сразу после открытия, она

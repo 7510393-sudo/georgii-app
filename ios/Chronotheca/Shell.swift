@@ -288,7 +288,13 @@ final class Shell: ObservableObject {
     /// День тянут за край — лента видна под ним и едет вместе с ним.
     @Published var pulling = false
     /// Лента открыта — день стоит в ней на своём месте, пока не вернутся.
-    @Published var ribbonOpen = false
+    @Published var ribbonOpen = false {
+        didSet { if !ribbonOpen && pastCard { pastCard = false } }
+    }
+    /// Прошедший день отодвинули в картотеку, и она встала (P834): в ленте
+    /// на его месте — его маленькая карточка, а не открытый лист. Открыть
+    /// снова — касанием по карточке.
+    @Published var pastCard = false
     /// Лента на экране: тянут или открыта.
     var ribbonLive: Bool { pulling || ribbonOpen }
 

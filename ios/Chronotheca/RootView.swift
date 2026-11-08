@@ -819,7 +819,9 @@ struct RootView: View {
             if shell.holding != now { shell.holding = now }
         }
         shell.ribbon.walls = { [shell] in
-            shell.screen == .search && shell.ribbonOpen && !shell.pulling
+            // У прошедшего дня, закрытого в карточку, места дня в ленте нет —
+            // нет и стены (P834).
+            shell.screen == .search && shell.ribbonOpen && !shell.pulling && !shell.pastCard
         }
         // В день тягой (P828): сперва лента доезжает до места дня, раздел
         // меняется, когда встала, — как и при открытии картотеки. Прежде
