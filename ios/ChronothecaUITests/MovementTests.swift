@@ -236,7 +236,17 @@ final class MovementTests: XCTestCase {
         for _ in 0..<5 { app.swipeUp() }
         sleep(2)
         save("13-прошлый-день-низ")
-        note("прошлый день", "открыт \(openDay)")
+        let past = openDay
+        note("прошлый день", "открыт \(past)")
+        // Снизу прошедшего дня — картотека на его месте, не сегодня (P826).
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
+            .press(forDuration: 0.05,
+                   thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3)),
+                   withVelocity: .slow, thenHoldForDuration: 0.1)
+        XCTAssertTrue(wait(4) { openScreen == "search" }, "снизу прошедшего дня не открылась картотека: \(openScreen)")
+        XCTAssertEqual(openDay, past, "тяга снизу сменила день")
+        sleep(1)
+        save("14-прошлый-день-картотека-снизу")
     }
 
     /// Календарь стоит, где его оставили (P821): по замечанию к 248 год и
