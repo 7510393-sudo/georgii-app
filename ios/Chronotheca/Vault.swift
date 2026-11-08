@@ -1429,17 +1429,23 @@ final class Vault: ObservableObject {
         stampFormat.string(from: date)
     }
 
-    /// Один «переводчик» дат на всё приложение (P827): прежде он создавался
-    /// заново на каждое число — на странице «Года» около четырёхсот раз при
-    /// каждом её появлении, и год дёргался при листании. Пояс — всегда
-    /// нынешний, как и прежде; переводчик дат iPhone можно звать из разных
-    /// потоков.
-    private static let stampFormat: DateFormatter = {
+    /// «Переводчик» дат — один на поток (P835; прежде, P827, один на всё
+    /// приложение). Создавался он заново на каждое число — на странице
+    /// «Года» около четырёхсот раз при каждом её появлении, и год дёргался.
+    /// Но один общий на всё приложение пропускает к себе по очереди: опись
+    /// архива в стороне звала его тысячи раз, и экран календаря ждал своей
+    /// очереди секундами (проверка большого архива: 4,35 с). У каждого потока
+    /// свой — и быстро, и без очереди. Пояс — всегда нынешний.
+    private static var stampFormat: DateFormatter {
+        let key = "graphomanus.stampFormat"
+        let local = Thread.current.threadDictionary
+        if let made = local[key] as? DateFormatter { return made }
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX")
         f.dateFormat = "yyyy-MM-dd"
         f.timeZone = .autoupdatingCurrent
         f.calendar = Calendar(identifier: .gregorian)
+        local[key] = f
         return f
-    }()
+    }
 }
