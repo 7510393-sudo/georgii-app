@@ -811,7 +811,8 @@ struct PageTexture: View {
     }
 
     private func thumbSmudge(radius: CGFloat, opacity: Double) -> some View {
-        RadialGradient(colors: [Color(red: 0.42, green: 0.30, blue: 0.16).opacity(opacity * Double(PageTexture.wearStrength)),
+        RadialGradient(colors: [(PageTexture.grey ? Color(red: 0.33, green: 0.32, blue: 0.31)
+                                                  : Color(red: 0.42, green: 0.30, blue: 0.16)).opacity(opacity * Double(PageTexture.wearStrength)),
                                 .clear],
                        center: .center, startRadius: 0, endRadius: radius)
             .frame(width: radius * 2, height: radius * 2)
@@ -821,9 +822,17 @@ struct PageTexture: View {
     /// эскиза `docs/paper/износ-по-образцу.png`); 1,7 — сильнее.
     static let wearStrength = CGFloat(1.05)
 
-    private static let amber: (r: Float, g: Float, b: Float) = (192 / 255, 132 / 255, 64 / 255)
+    /// Гамма «Без цвета» (P825): износ серый, без охры. Заготовки серой
+    /// бумаги лежат отдельно от тёплых (`PaperShop`, приставка «g-»).
+    static var grey: Bool { UserDefaults.standard.string(forKey: Prefs.calendarTint) == "none" }
+
+    private static var amber: (r: Float, g: Float, b: Float) {
+        grey ? (150 / 255, 148 / 255, 143 / 255) : (192 / 255, 132 / 255, 64 / 255)
+    }
     /// Подпалина у самого края (P722) — темнее и рыжее охры.
-    private static let burnt: (r: Float, g: Float, b: Float) = (110 / 255, 58 / 255, 22 / 255)
+    private static var burnt: (r: Float, g: Float, b: Float) {
+        grey ? (72 / 255, 70 / 255, 67 / 255) : (110 / 255, 58 / 255, 22 / 255)
+    }
 
     /// Круговое размытие: края плитки сходятся. Бегущей суммой — работа не
     /// растёт с радиусом (P679: прежнее перебирание окна заново для каждой
@@ -999,7 +1008,7 @@ struct PageTexture: View {
                 let fromTear = Float(d) - torn[a]             // пикселей от рваного края
                 if fromTear < 0 {
                     // Вырванное: тёмная тень под листом.
-                    write(&bytes, i * 4, (0.24, 0.15, 0.08), 0.85)
+                    write(&bytes, i * 4, grey ? (0.17, 0.17, 0.16) : (0.24, 0.15, 0.08), 0.85)
                     continue
                 }
                 let distance = fromTear / Float(px)
@@ -1255,7 +1264,10 @@ struct PageTexture: View {
         let w = max(4, size.width.rounded())
         let h = max(step, (size.height / step).rounded() * step)
         let variant = abs(number) % (kinds ?? (small ? 16 : 24))
+        // Серая бумага (P825) — свой ключ: лист, уже показанный тёплым,
+        // заказывается заново.
         let key = "\(Int(w))x\(Int(h))b\(Int(band * 10))v\(variant)\(openBottom ? "o" : "")\(light ? "l" : "")"
+            + (grey ? "g" : "")
         return AgedOrder(key: key, w: w, h: h, band: band, variant: variant, openBottom: openBottom, light: light)
     }
 

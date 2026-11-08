@@ -42,8 +42,8 @@ final class PaperShop: ObservableObject {
     }()
 
     /// Готовый лист из памяти — сразу, без ожидания; нет — `nil`.
-    func readyArt(_ key: String) -> PageTexture.AgedArt? {
-        arts.object(forKey: key as NSString)
+    func readyArt(_ plainKey: String) -> PageTexture.AgedArt? {
+        arts.object(forKey: Self.toned(plainKey) as NSString)
     }
 
     /// Лист износа (края и маска рваного края) по ключу: из памяти, из
@@ -53,6 +53,7 @@ final class PaperShop: ObservableObject {
     /// стояла по полминуты).
     func art(_ key: String, small: Bool = false,
              build: @escaping () -> PageTexture.AgedArt) async -> PageTexture.AgedArt {
+        let key = Self.toned(key)
         if let made = arts.object(forKey: key as NSString) { return made }
         return await withCheckedContinuation { done in
             (small ? quick : queue).async { [weak self] in
@@ -80,14 +81,15 @@ final class PaperShop: ObservableObject {
         return cache
     }()
 
-    func readyCell(_ name: String) -> PageTexture.CellArt? {
-        cells.object(forKey: name as NSString)
+    func readyCell(_ plainName: String) -> PageTexture.CellArt? {
+        cells.object(forKey: Self.toned(plainName) as NSString)
     }
 
     /// Клетка по имени — из памяти, из служебной папки или сложенная в
     /// стороне от экрана. `shape` — форма рваного листа (маска листа износа).
     func cell(_ name: String, shape: UIImage,
               build: @escaping () -> PageTexture.CellArt) async -> PageTexture.CellArt {
+        let name = Self.toned(name)
         if let made = cells.object(forKey: name as NSString) { return made }
         return await withCheckedContinuation { done in
             quick.async { [weak self] in
@@ -109,6 +111,7 @@ final class PaperShop: ObservableObject {
 
     /// Одна картинка (края страницы дня) по имени.
     func picture(_ name: String, build: @escaping () -> UIImage) -> UIImage? {
+        let name = Self.toned(name)
         if let made = pictures.object(forKey: name as NSString) { return made }
         order(name) { [weak self] in
             guard let self else { return }
@@ -145,6 +148,12 @@ final class PaperShop: ObservableObject {
                 self.stock += 1
             }
         }
+    }
+
+    /// Серая бумага гаммы «Без цвета» (P825) — свои заготовки, в памяти и
+    /// в папке рядом с тёплыми, не вместо них.
+    private static func toned(_ key: String) -> String {
+        PageTexture.grey ? "g-" + key : key
     }
 
     private func file(_ name: String) -> URL? {
