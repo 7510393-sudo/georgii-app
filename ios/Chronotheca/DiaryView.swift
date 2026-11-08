@@ -419,18 +419,19 @@ struct DiaryPage: View {
                             if let i = removing { onRemovePhoto?(i, delete) }
                             removing = nil
                         }))
-                    .background(GeometryReader { geo in
-                        let frame = geo.frame(in: .global)
+                    .background(Color.clear
                         // Полоска одна на страницу (P408): по ней узнают
-                        // «назад в полоску» и дневник, и план.
-                        Color.clear
-                            .onAppear { if editable { StripZones.strip = frame; PlanZones.strip = frame } }
-                            .onChange(of: frame) { _, now in
-                                if editable { StripZones.strip = now; PlanZones.strip = now }
-                            }
-                            // Ленты нет — нет и места, куда возвращать (P547).
-                            .onDisappear { if editable { StripZones.strip = nil; PlanZones.strip = nil } }
-                    })
+                        // «назад в полоску» и дневник, и план. Без пересчёта
+                        // на каждом кадре свайпа вбок (P833). Ленты нет — нет
+                        // и места, куда возвращать (P547).
+                        .trackFrame(appear: { frame in
+                                        if editable { StripZones.strip = frame; PlanZones.strip = frame }
+                                    },
+                                    change: { now in
+                                        if editable { StripZones.strip = now; PlanZones.strip = now }
+                                    },
+                                    gone: { if editable { StripZones.strip = nil; PlanZones.strip = nil } })
+                    )
             }
             footer
                 // Погода и шаги — у самой нижней строки (P619): место под
@@ -693,12 +694,8 @@ private struct TitlePoint: View {
 
     var body: some View {
         PointChipView(point: point)
-            .background(GeometryReader { geo in
-                let frame = geo.frame(in: .global)
-                Color.clear
-                    .onAppear { place = frame }
-                    .onChange(of: frame) { _, now in place = now }
-            })
+            // Без перерисовки на каждом кадре свайпа вбок (P833).
+            .trackFrame(appear: { place = $0 }, change: { place = $0 })
             .offset(y: drop)
             // Подержали — крестик сразу, ещё под пальцем, как у всех вложений
             // (P713, P720); повели — крестик уходит.

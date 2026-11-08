@@ -516,3 +516,46 @@ enum LaunchClock {
         }
     }
 }
+
+/// Где вид на экране — для переноса пальцем (P833). Свайп вбок между
+/// разделами двигает весь «День» по горизонтали каждый кадр; прежде каждое
+/// дело, полоска, точка и заголовок на каждом кадре заново записывали своё
+/// место, а точки ещё и перерисовывались — свайп шёл двадцатью кадрами в
+/// секунду вместо шестидесяти («дискретность», видео автора к 252). Теперь
+/// место записывается, только когда меняется высота или размер: по
+/// горизонтали после свайпа всё встаёт туда же, где было.
+extension View {
+    func trackFrame(appear: @escaping (CGRect) -> Void,
+                    change: @escaping (CGRect) -> Void,
+                    gone: @escaping () -> Void = {}) -> some View {
+        modifier(FrameTrack(appear: appear, change: change, gone: gone))
+    }
+}
+
+private struct FrameTrack: ViewModifier {
+    let appear: (CGRect) -> Void
+    let change: (CGRect) -> Void
+    let gone: () -> Void
+    final class Last { var rect: CGRect? }
+    @State private var last = Last()
+
+    func body(content: Content) -> some View {
+        content
+            .onGeometryChange(for: CGRect.self) { proxy in
+                proxy.frame(in: .global)
+            } action: { now in
+                guard let before = last.rect else {
+                    last.rect = now
+                    appear(now)
+                    return
+                }
+                guard abs(before.minY - now.minY) > 0.5 || before.size != now.size else { return }
+                last.rect = now
+                change(now)
+            }
+            .onDisappear {
+                last.rect = nil
+                gone()
+            }
+    }
+}

@@ -1096,19 +1096,16 @@ struct PlanView: View {
                         lifted: up || photoToEvent == e.key || shell.eventHover == e.key,
                         past: store.isPast)
         }
-        .background(GeometryReader { geo in
-            let frame = geo.frame(in: .global)
-            Color.clear
-                .onAppear {
-                    PlanZones.events[e.key] = frame
-                    PlanZones.marks[e.key] = DayEvents.Mark(key: e.key, time: e.row.time, title: e.row.text)
-                }
-                .onChange(of: frame) { _, now in PlanZones.events[e.key] = now }
-                .onDisappear {
+        // Без пересчёта на каждом кадре свайпа вбок (P833).
+        .trackFrame(appear: { frame in
+                        PlanZones.events[e.key] = frame
+                        PlanZones.marks[e.key] = DayEvents.Mark(key: e.key, time: e.row.time, title: e.row.text)
+                    },
+                    change: { PlanZones.events[e.key] = $0 },
+                    gone: {
                     PlanZones.events[e.key] = nil
                     PlanZones.marks[e.key] = nil
-                }
-        })
+                })
         .offset(x: up ? eventSlide : 0, y: up ? eventDrag : 0)
         .background {
             if up, eventSlide < 0 { Self.swipeBack(eventSlide, left: T("Убрать", "Remove")) }
@@ -1758,13 +1755,10 @@ private struct Zone: ViewModifier {
     let id: UUID
 
     func body(content: Content) -> some View {
-        content.background(GeometryReader { geo in
-            let frame = geo.frame(in: .global)
-            Color.clear
-                .onAppear { PlanZones.rows[id] = frame }
-                .onChange(of: frame) { _, now in PlanZones.rows[id] = now }
-                .onDisappear { PlanZones.rows[id] = nil }
-        })
+        // Без пересчёта на каждом кадре свайпа вбок (P833).
+        content.trackFrame(appear: { PlanZones.rows[id] = $0 },
+                           change: { PlanZones.rows[id] = $0 },
+                           gone: { PlanZones.rows[id] = nil })
     }
 }
 
@@ -1858,12 +1852,8 @@ struct PlanPointLine: View {
             // Такой же квадрат, как снимок и точка в дневнике (P587).
             PointSquare(point: point)
                 .frame(width: DiaryEditor.photoSize.width, height: DiaryEditor.photoSize.height)
-                .background(GeometryReader { geo in
-                    let frame = geo.frame(in: .global)
-                    Color.clear
-                        .onAppear { place = frame }
-                        .onChange(of: frame) { _, now in place = now }
-                })
+                // Без перерисовки на каждом кадре свайпа вбок (P833).
+                .trackFrame(appear: { place = $0 }, change: { place = $0 })
                 .contentShape(Rectangle())
                 .onTapGesture { open?(point) }
                 .accessibilityAddTraits(.isButton)

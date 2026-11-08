@@ -426,13 +426,11 @@ struct NoBounce: UIViewRepresentable {
 /// что снимок отпустили над дневником.
 private struct DiaryTopMark: View {
     var body: some View {
-        GeometryReader { geo in
-            let top = geo.frame(in: .global).minY
-            Color.clear
-                .onAppear { PlanZones.diaryTop = top }
-                .onChange(of: top) { _, now in PlanZones.diaryTop = now }
-                .onDisappear { PlanZones.diaryTop = nil }
-        }
+        // Без пересчёта на каждом кадре свайпа вбок (P833).
+        Color.clear
+            .trackFrame(appear: { PlanZones.diaryTop = $0.minY },
+                        change: { PlanZones.diaryTop = $0.minY },
+                        gone: { PlanZones.diaryTop = nil })
     }
 }
 
