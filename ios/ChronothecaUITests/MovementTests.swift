@@ -285,34 +285,24 @@ final class MovementTests: XCTestCase {
         note("запуск", String(format: "%.2f с", opened))
         sleep(3)
 
-        // Главное — часы самого приложения: от нажатия до открытого
-        // раздела (P808). Робот на каждом нажатии сам тратит секунду-две и
-        // на пустом месте, поэтому его часы — только страховка от грубой
-        // поломки.
-        for (screen, took) in sections("", shot: "big") {
-            XCTAssertLessThan(took, 4, "\(screen) открывался у робота \(took) с")
+        // Требования — по часам самого приложения (P810): от нажатия до
+        // открытого раздела и замирания главного потока на разделе. Часы
+        // робота и время запуска только записываются: снимки стека
+        // показали, что на большом архиве робот медлит сам — при запуске
+        // iOS подключает к приложению службы VoiceOver для робота, а пока
+        // он «нажимает» календарь, приложение почти не работает.
+        _ = sections("", shot: "big")
+        for screen in ["calendar", "map", "today"] {
             if let own = ownTime(screen) {
                 XCTAssertLessThan(own, 0.5, "\(screen) открывался в приложении \(own) с")
             } else {
                 XCTFail("приложение не записало, как открылся \(screen)")
             }
-        }
-        // Самое долгое замирание главного потока на каждом разделе — пока
-        // только запись, без требования (P808): по ним следующий шаг.
-        for screen in ["calendar", "map", "today"] {
-            note("замирание " + screen, String(format: "%.2f с", longestStall(screen)))
+            let stall = longestStall(screen)
+            note("замирание " + screen, String(format: "%.2f с", stall))
+            XCTAssertLessThan(stall, 1.0, "на разделе \(screen) экран стоял \(stall) с")
         }
         save("06-большой-архив")
-        XCTAssertLessThan(opened, 8, "запуск занял \(opened) с")
-
-        // Тот же архив без старой бумаги (P806): если разделы открываются
-        // заметно быстрее — время уходит на бумагу клеток, а не на архив.
-        app.terminate()
-        app.launchArguments += ["-prefs.plainPast", "YES"]
-        app.launch()
-        XCTAssertTrue(app.buttons["bottom.calendar"].firstMatch.waitForExistence(timeout: 60))
-        sleep(8)
-        _ = sections("без бумаги ", shot: "plain")
     }
 
     /// Сколько, по часам приложения, открывался раздел последний раз
@@ -340,14 +330,6 @@ final class MovementTests: XCTestCase {
                 return Double(line[r.upperBound...].split(separator: " ").first ?? "")
             }
             .max() ?? 0
-    }
-
-    /// Те же замеры на маленьком образце (P806) — без требований, только для
-    /// сравнения: растёт ли время с архивом или робот медлит всегда.
-    func testSmallArchiveTimes() {
-        launch()
-        sleep(3)
-        _ = sections("малый ", shot: "small")
     }
 
     /// Открыть по очереди календарь, карту, «Дневник» кнопками внизу и
