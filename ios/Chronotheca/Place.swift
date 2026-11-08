@@ -228,12 +228,16 @@ enum Places {
         }
     }
 
-    /// Прочитать места в стороне от экрана (P565) — при запуске.
-    static func loadSoon(_ vault: Vault) {
+    /// Прочитать места в стороне от экрана (P565) — при запуске и при
+    /// открытии карты (P811); `done` — уже на главном потоке.
+    static func loadSoon(_ vault: Vault, then done: (([Place]) -> Void)? = nil) {
         guard let folder = folder(vault) else { return }
-        DispatchQueue.global(qos: .utility).async {
+        DispatchQueue.global(qos: .userInitiated).async {
             let list = read(folder)
-            DispatchQueue.main.async { known = list }
+            DispatchQueue.main.async {
+                known = list
+                done?(list)
+            }
         }
     }
 

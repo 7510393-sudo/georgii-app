@@ -364,7 +364,11 @@ struct MapScreen: View {
         // кнопки посреди карты (P622, снимок автора). Раздел открывают —
         // своей клавиатуры у карты в этот миг нет.
         keyboard = 0
-        places = Places.all(in: vault)
+        // Места — сразу прочитанные в прошлый раз, свежие — следом, из
+        // папки в стороне от экрана (P811): чтение на главном потоке
+        // держало открытие карты до секунды.
+        places = Places.known
+        Places.loadSoon(vault) { places = $0 }
         if begun {
             if let point = shell.mapFocus { show(point) }
             return
