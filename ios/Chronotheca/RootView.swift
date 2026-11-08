@@ -648,9 +648,11 @@ struct RootView: View {
             // Карточки ленты заходят под нижнюю строку (P744).
             .scrollClipDisabled()
             .scrollDisabled(!pagingFree)
-            .onChange(of: pageAt) { _, now in
-                if let now { landed(on: now) }
-            }
+            // Толчок — когда страница перевалила за середину; раздел
+            // меняется, когда лента встала (P800: прежде менялся на ходу,
+            // экран перестраивался посреди хода и дёргался в миг толчка).
+            .modifier(PageWatch(at: $pageAt, idType: Shell.Screen.self,
+                                skip: { $0 == current }, feel: { Feel.thud() }, landed: { landed(on: $0) }))
         }
     }
 
@@ -697,12 +699,15 @@ struct RootView: View {
             && vault.moving == nil
     }
 
+    /// Открытый раздел; лента картотеки — продолжение «Дневника».
+    private var current: Shell.Screen {
+        shell.screen == .search ? .today : shell.screen
+    }
+
     /// Лента встала на страницу. Если её пролистали пальцем — раздел
     /// меняется, как по касанию внизу; если её повела кнопка — уже сменился.
     private func landed(on page: Shell.Screen) {
-        let current: Shell.Screen = shell.screen == .search ? .today : shell.screen
         guard page != current else { return }
-        Feel.thud()
         if shell.ribbonOpen { closeRibbonNow() }
         store.prune()
         LaunchClock.opened("\(page)", since: Date())
@@ -936,7 +941,8 @@ struct RootView: View {
         if shell.ribbonOpen {
             // Из ленты в день: лента доезжает до места дня (P777).
             if old == .search && new == .today && !instant {
-                Feel.thud()
+                if !shell.ribbon.felt { Feel.thud() }
+                shell.ribbon.felt = false
                 backToDay()
                 return
             }
@@ -1235,5 +1241,52 @@ enum TouchDown {
 private struct OpenBelow: Shape {
     func path(in r: CGRect) -> Path {
         Path(CGRect(x: r.minX, y: r.minY, width: r.width, height: r.height + 400))
+    }
+}
+
+/// Лента страниц (разделы, месяцы календаря) под пальцем (P800).
+/// Толчок — когда страница перевалила за середину, перемена — когда лента
+/// встала. Прежде её место читали прямо в виде, и он перестраивался посреди
+/// хода: лента подтягивала новую страницу к краю рывком, в миг толчка.
+/// Здесь место читается только в откликах, и вид посреди хода не трогается.
+struct PageWatch<ID: Hashable>: ViewModifier {
+    @Binding var at: ID?
+    let idType: ID.Type
+    /// Эту страницу не отмечать толчком (уже открыта кнопкой).
+    let skip: (ID) -> Bool
+    /// Какой толчок: у разделов — потвёрже, у месяцев — лёгкий.
+    let feel: () -> Void
+    let landed: (ID) -> Void
+
+    final class Seen { var last: AnyHashable? }
+    @State private var seen = Seen()
+
+    init(at: Binding<ID?>, idType: ID.Type, skip: @escaping (ID) -> Bool = { _ in false },
+         feel: @escaping () -> Void = { Feel.light() }, landed: @escaping (ID) -> Void) {
+        _at = at
+        self.idType = idType
+        self.skip = skip
+        self.feel = feel
+        self.landed = landed
+    }
+
+    func body(content: Content) -> some View {
+        if #available(iOS 18, *) {
+            content
+                .onScrollTargetVisibilityChange(idType: ID.self, threshold: 0.5) { ids in
+                    guard let id = ids.first else { return }
+                    if let last = seen.last, last != AnyHashable(id), !skip(id) { feel() }
+                    seen.last = AnyHashable(id)
+                }
+                .onScrollPhaseChange { _, now in
+                    if now == .idle, let at { landed(at) }
+                }
+        } else {
+            content.onChange(of: at) { old, now in
+                guard let now else { return }
+                if old != nil && old != now && !skip(now) { feel() }
+                landed(now)
+            }
+        }
     }
 }

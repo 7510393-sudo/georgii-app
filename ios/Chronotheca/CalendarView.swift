@@ -118,12 +118,11 @@ struct CalendarView: View {
         // останавливается посередине между двумя месяцами.
         .scrollTargetBehavior(.paging)
         .scrollPosition(id: $top, anchor: .top)
-        .onChange(of: top) { old, now in
-            guard let now else { return }
-            shown = now
-            // Сменился месяц — толчок в руку (P792).
-            if old != nil && old != now { Feel.light() }
-        }
+        // Сменился месяц — толчок в руку (P792); шапка меняется, когда
+        // лента встала (P800: менялась на ходу, и месяц прыгал на строки).
+        .modifier(PageWatch(at: $top, idType: Date.self) { now in
+            if shown != now { shown = now }
+        })
         // Тот же тёплый стол, что под поиском (P755).
         .background(Desk())
     }

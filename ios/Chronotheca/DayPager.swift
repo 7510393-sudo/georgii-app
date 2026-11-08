@@ -99,7 +99,11 @@ struct DayPage: View {
         // Лист «Дня» — карточка с корешком (P797): бумага по контуру карточки
         // картотеки, с чёткой обводкой; справа от корешка — стол.
         .background(background.clipShape(DayPage.folder))
-        .overlay(DayPage.folder.stroke(Look.stickerEdge, lineWidth: 1).allowsHitTesting(false))
+        // Позади листа — корешки карточек, уходящие вдаль (P802).
+        .background(alignment: .top) { BehindTabs(date: date) }
+        // Край листа — чёткой линией (P802): у сегодняшнего фактуры нет, и
+        // без линии глаз не видел, где кончается лист.
+        .overlay(DayPage.folder.stroke(DayPage.edge, lineWidth: 1).allowsHitTesting(false))
         // Фактура страницы и вкладок отсчитывается от одной точки — клетка
         // на вкладке продолжает клетку страницы (P246).
         .coordinateSpace(name: PageTexture.space)
@@ -153,36 +157,21 @@ struct DayPage: View {
 
     // MARK: - Шапка дня
 
-    /// Шапка дня: соседние дни названы, а стрелка в сторону сегодняшнего
-    /// горит. Уйдя на неделю назад, человек видит, что «сейчас» — справа,
-    /// и не гадает, в какую сторону возвращаться (то же правило, что в
-    /// календаре, P127).
+    /// Шапка дня: корешок листа с именем дня и датой (P793, P797, P802).
     private var heading: some View {
         VStack(spacing: 2) {
-            // Соседние дни стоят на одной строке с нынешним, а не над и под
-            // ним: иначе взгляд скачет вверх-вниз и всякий раз перестраивается
-            // с крупного на мелкое. Строка задана ростом жёстко, чтобы шапка
-            // была одной высоты на любой странице (P113).
-            // Имя дня поднялось на место прежней верхней строки, между
-            // уголками с шестерёнкой и тремя точками; по бокам — только
-            // стрелки, слов «вчера / завтра» рядом больше нет (P229).
-            // Имя дня и под ним день недели с датой — одним блоком между
-            // стрелками (P434): шапка ниже на строку, под текст больше места.
-            // Слева — корешок, как у карточек картотеки, с именем дня и
-            // датой; стрелки — правее, у шестерёнки (P793, вместо имени
-            // посередине между стрелками P229, P434).
+            // Строка задана ростом жёстко, чтобы шапка была одной высоты на
+            // любой странице (P113).
             // Корешок — тот же контур листа, что у карточек картотеки (P797):
-            // имя дня и дата в нём, слева; стрелки ‹ › — на столе справа от
-            // корешка, разведены и отступают от шестерёнки.
+            // имя дня и дата в нём, слева. Стрелок ‹ › больше нет (P802):
+            // день меняют тягой за край; справа от корешка — корешки
+            // карточек позади (`BehindTabs`).
             HStack(spacing: 0) {
                 titleMenu
                     .padding(.leading, 14)
                     .padding(.top, 4)
                     .frame(height: DayPage.headLine + 8)
                 Spacer(minLength: 6)
-                side(-1)
-                Color.clear.frame(width: 18, height: 1)
-                side(1)
             }
             .frame(height: DayPage.headLine + 8)
         }
@@ -286,70 +275,13 @@ struct DayPage: View {
     /// карточек, — в нём имя дня и дата.
     static let folder = FolderShape(tabHeight: headLine + 14, tabShare: 0.56)
 
+    /// Линия края листа и корешков позади (P802).
+    static let edge = Color(light: 0xB8A67C, dark: 0x5A4E33)
+
     /// Высота строки заголовка. Одна на всех страницах: шапка не должна
     /// менять рост от того, горит стрелка или нет (P113).
     /// Выше прежних 31: стрелки на 50% крупнее (P425).
     static let headLine: CGFloat = 38
-
-    /// Стрелка к соседнему дню. Слова «вчера / завтра» рядом с ней убраны
-    /// (P229): имя открытого дня и так говорит, где мы.
-    ///
-    /// Горит та стрелка, что показывает дорогу к сегодняшнему дню (P127).
-    /// Размер у обеих одинаковый: разным он менял бы рост строки.
-    private func side(_ step: Int) -> some View {
-        let lit = toward == step
-        let sign = step < 0 ? "‹" : "›"
-        // На 50% крупнее; к сегодняшнему дню — в обводке, как открытый
-        // раздел в нижней строке (P425).
-        let arrow = Text(sign)
-            .font(.system(size: 31.5, weight: lit ? .bold : .regular))
-            .foregroundStyle(lit ? Look.accent : Look.inkFaint)
-            .frame(width: 36, height: DayPage.headLine - 4)
-            .background(
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(lit ? Color.black.opacity(0.08) : .clear)
-                    .overlay(RoundedRectangle(cornerRadius: 10)
-                        .strokeBorder(lit ? Look.accent.opacity(0.75) : .clear, lineWidth: 1.3)))
-
-        return arrow
-            .frame(width: 44)
-        .contentShape(Rectangle())
-        .onTapGesture {
-            guard live else { return }
-            hideKeyboard()
-            // Вперёд — чуть выше тоном, назад — чуть ниже (P330).
-            Sounds.flip(rate: step > 0 ? 1.04 : 0.96)
-            // Тот же поворот, что пальцем: куда встанет новая страница —
-            // по тому же правилу (P441). Прежде стрелки шапки его не знали,
-            // и день всегда открывался на плане.
-            shell.turn(step, store)
-        }
-        .accessibilityLabel(neighbour(step))
-    }
-
-    /// В какой стороне сегодняшний день: −1 слева, +1 справа, 0 — мы на нём.
-    private var toward: Int {
-        let today = DayStore.today()
-        if date < today { return 1 }
-        if date > today { return -1 }
-        return 0
-    }
-
-    /// Как зовут соседний день. Дальше послезавтра имён нет — там просто
-    /// прошлое и будущее.
-    private func neighbour(_ step: Int) -> String {
-        let cal = Calendar.current
-        guard let day = cal.date(byAdding: .day, value: step, to: date) else { return "" }
-        let n = cal.dateComponents([.day], from: DayStore.today(), to: day).day ?? 0
-        switch n {
-        case -2: return T("позавчера", "two days ago")
-        case -1: return T("вчера", "yesterday")
-        case  0: return T("сегодня", "today")
-        case  1: return T("завтра", "tomorrow")
-        case  2: return T("послезавтра", "in two days")
-        default: return step < 0 ? T("прошлое", "the past") : T("будущее", "the future")
-        }
-    }
 
     /// Воздух над названием экрана. Один на всех трёх экранах, чтобы
     /// название не прыгало по высоте при переходе между ними.
@@ -417,14 +349,21 @@ struct DayPage: View {
                          // открыта (P769, P777): доезжает, пока вчера не встанет
                          // над нижней строкой, а завтра — под строкой поиска.
                          let ribbon = shell.ribbon
+                         // Будущее из прошедшего дня — это сегодня (P801):
+                         // лента будущего вокруг вчерашнего дня путала.
+                         if dir < 0 && store.date < DayStore.today() && !shell.pulling {
+                             guard shell.screen == .today, shell.movingTask == nil else { return }
+                             shell.goHome = true
+                             return
+                         }
                          guard shell.screen == .today, shell.movingTask == nil, shell.pulling else {
                              ribbon.glide(to: 0) { shell.pulling = false; ribbon.release() }
                              return
                          }
                          hideKeyboard()
                          store.prune()
-                         // Толчок смены раздела (P772).
-                         Feel.thud()
+                         // Толчка нет: он был на пороге (P800; прежде
+                         // второй — по отпусканию, два на одно движение).
                          shell.ribbonOpen = true
                          shell.screen = .search
                          ribbon.opened()
@@ -440,8 +379,11 @@ struct DayPage: View {
                              store.save()
                          }
                      },
-                     onPullMove: { [shell] amount, dir in
+                     onPullMove: { [shell, store] amount, dir in
                          guard shell.screen == .today, shell.movingTask == nil else { return }
+                         // Снизу прошедшего дня ленты нет — отпустишь за
+                         // порогом, и откроется сегодня (P801).
+                         if dir < 0 && store.date < DayStore.today() && !shell.pulling { return }
                          let ribbon = shell.ribbon
                          if dir == 0 {
                              // Не дотянули или вернули палец — мягко назад.
@@ -1841,5 +1783,57 @@ struct DayCloud: View {
                 .allowsHitTesting(live)
                 .transition(.opacity)
         }
+    }
+}
+
+/// Корешки карточек позади открытого листа (P802): на столе справа от его
+/// корешка — верхушки трёх карточек прошлого, одна за другой, каждая дальше,
+/// ниже и бледнее. Нижние края уходят под лист. Не до шестерёнки: место ей
+/// оставлено. Касаний не ловят.
+struct BehindTabs: View {
+    let date: Date
+
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width
+            let start = w * DayPage.folder.tabShare + 6
+            let end = w - Corner.size - 6
+            let tab = max(40, (end - start) / 2.2)
+            let step = max(0, (end - start - tab) / 2)
+            let base = DayPage.folder.tabHeight
+            ZStack(alignment: .topLeading) {
+                // Дальняя — первой, ближняя — поверх неё.
+                ForEach((0..<3).reversed(), id: \.self) { i in
+                    let day = Calendar.current.date(byAdding: .day, value: -(i + 1), to: date) ?? date
+                    let top = 6 + CGFloat(i) * 7
+                    TabTop()
+                        .fill(Ru.tint(day))
+                        .overlay(TabTop().stroke(DayPage.edge.opacity(1 - Double(i) * 0.25), lineWidth: 1))
+                        .opacity(1 - Double(i) * 0.15)
+                        .frame(width: tab, height: base - top + 2)
+                        .offset(x: start + CGFloat(i) * step, y: top)
+                }
+            }
+        }
+        .frame(height: DayPage.folder.tabHeight + 2)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
+/// Верх корешка: скруглённые верхние углы, низ открыт — уходит под лист.
+private struct TabTop: Shape {
+    func path(in r: CGRect) -> Path {
+        let rad: CGFloat = 9
+        var p = Path()
+        p.move(to: CGPoint(x: r.minX, y: r.maxY))
+        p.addLine(to: CGPoint(x: r.minX, y: r.minY + rad))
+        p.addArc(tangent1End: CGPoint(x: r.minX, y: r.minY),
+                 tangent2End: CGPoint(x: r.minX + rad, y: r.minY), radius: rad)
+        p.addLine(to: CGPoint(x: r.maxX - rad, y: r.minY))
+        p.addArc(tangent1End: CGPoint(x: r.maxX, y: r.minY),
+                 tangent2End: CGPoint(x: r.maxX, y: r.minY + rad), radius: rad)
+        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
+        return p
     }
 }

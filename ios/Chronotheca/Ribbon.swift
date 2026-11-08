@@ -92,6 +92,8 @@ final class Ribbon: ObservableObject {
     var walls: () -> Bool = { false }
     /// Дотянули до дня за порог и отпустили — в день.
     var wantDay: (() -> Void)?
+    /// В день вернули тягой: толчок уже был на пороге, второго не надо (P800).
+    var felt = false
     /// С какой стороны дня лента: 1 — прошлое (день ниже), -1 — будущее.
     /// Считается заново при каждом сдвиге (P785).
     private var wallSide = 1
@@ -180,6 +182,7 @@ final class Ribbon: ObservableObject {
         DispatchQueue.main.async { [weak self] in
             guard let self, self.walls(), !self.driving else { return }
             if go {
+                self.felt = true
                 self.wantDay?()
                 return
             }

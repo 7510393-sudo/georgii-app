@@ -1,49 +1,4 @@
-import AVFoundation
 import UIKit
-
-/// Звуки приложения (P265, P267). Тихие и бумажные: шелест страницы,
-/// шлепок листка, звон по окончании записи. Идут как звуки клавиатуры —
-/// переключатель «без звука» на iPhone их глушит, музыку они не
-/// прерывают. Молчат, когда iPhone на беззвучном (P633); выключателя нет.
-enum Sounds {
-
-    private static var cache: [String: Data] = [:]
-
-    /// Плееры, которые ещё звучат: отпущенный плеер замолкает на полуслове.
-    private static var playing: [AVAudioPlayer] = []
-
-    /// Шелест перевёрнутой страницы. `rate` чуть меняет высоту: в вихре
-    /// листы шуршат не одинаково, а вперёд и назад звучат чуть по-разному
-    /// тоном (P330).
-    /// Мягкий и тихий: без резкого начала (P287); тише на 10% (P313), ещё
-    /// тише (P330).
-    static func flip(volume: Float = 0.20, rate: Float = 1) {
-        play("page-flip", volume: volume, rate: rate)
-    }
-
-    static func play(_ name: String, volume: Float = 0.45, rate: Float = 1) {
-        guard let data = data(name) else { return }
-        let session = AVAudioSession.sharedInstance()
-        if session.category != .ambient {
-            try? session.setCategory(.ambient, options: [.mixWithOthers])
-        }
-        guard let player = try? AVAudioPlayer(data: data) else { return }
-        player.volume = volume
-        player.enableRate = true
-        player.rate = rate
-        playing.removeAll { !$0.isPlaying }
-        playing.append(player)
-        player.play()
-    }
-
-    private static func data(_ name: String) -> Data? {
-        if let known = cache[name] { return known }
-        let found = Bundle.main.url(forResource: name, withExtension: "wav")
-            .flatMap { try? Data(contentsOf: $0) }
-        cache[name] = found
-        return found
-    }
-}
 
 /// Толчки в руку (P263, P267): у каждого движения свой.
 enum Feel {

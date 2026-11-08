@@ -29,9 +29,6 @@ enum KeyboardBar {
 
     private static var holder: UIView?
 
-    /// Приставка, если она сейчас на экране — над клавиатурой поля дня.
-    static var shownHolder: UIView? { holder?.window == nil ? nil : holder }
-
     /// Одна приставка на все поля: видна она только у того, в котором пишут.
     ///
     /// Строка вложений — часть клавиатуры, как строка оформления в Diarium
@@ -57,14 +54,12 @@ enum KeyboardBar {
         // сразу (P674): приставка вне экрана не слышит смены гаммы и
         // всплывала в цвете прежней; а нарисованная по ходу подъёма, она
         // проступала уже после клавиатуры.
-        watch = NotificationCenter.default.addObserver(
+        _ = NotificationCenter.default.addObserver(
             forName: UIResponder.keyboardWillShowNotification, object: nil, queue: .main) { _ in
             refresh()
         }
         return box
     }
-
-    private static var watch: NSObjectProtocol?
 
     /// Перерисовать строку в нынешней гамме — сейчас, до хода клавиатуры.
     static func refresh() {
@@ -97,8 +92,6 @@ final class PassBox: UIView {
 }
 
 struct KeyboardBarView: View {
-    @AppStorage(Prefs.plainPast) private var plainPast = false
-
     /// Гамма, в которой строка нарисована (P674): другая гамма — другой вид,
     /// и строка перерисовывается.
     var palette = ""
