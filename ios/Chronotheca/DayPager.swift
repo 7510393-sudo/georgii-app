@@ -1843,11 +1843,12 @@ struct DayCloud: View {
 }
 
 /// Карточки позади открытого листа (P816, прежде вертикальные корешки
-/// P802): на столе справа от корешка листа — лежачие плечи трёх карточек
+/// P802): на столе справа от корешка листа — лежачие плечи пяти карточек
 /// прошлого, той же старой бумаги, что в картотеке, одна над другой: чем
 /// дальше, тем выше и короче справа. Это те самые карточки, что выезжают,
 /// если потянуть «День» вниз. Их корешки — за корешком листа, не видны.
-/// Нижние края уходят под лист. Касаний не ловят.
+/// Нижние края уходят под лист. Стол под ними — тот же, что под картотекой
+/// (`Desk`, P817): прежде там просвечивал белый. Касаний не ловят.
 struct BehindTabs: View {
     var body: some View {
         GeometryReader { geo in
@@ -1855,13 +1856,14 @@ struct BehindTabs: View {
             let start = w * DayPage.folder.tabShare
             let base = DayPage.folder.tabHeight
             ZStack(alignment: .topLeading) {
+                Desk()
                 // Дальняя — первой, ближняя — поверх неё.
-                ForEach((0..<3).reversed(), id: \.self) { i in
-                    let top = 12 + CGFloat(2 - i) * 9
-                    // Износ у каждой из трёх свой, но один и тот же на всех
+                ForEach((0..<5).reversed(), id: \.self) { i in
+                    let top = 6 + CGFloat(4 - i) * 7
+                    // Износ у каждой из пяти свой, но один и тот же на всех
                     // днях: заготовка рисуется один раз, листание не ждёт.
                     CardPaper(seed: 9_100 + i, past: true)
-                        .frame(width: w - 4 - CGFloat(i) * 5,
+                        .frame(width: w - 4 - CGFloat(i) * 4,
                                height: base - top + Search.tabHeight + 24)
                         .offset(y: top - Search.tabHeight)
                 }

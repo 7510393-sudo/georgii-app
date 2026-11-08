@@ -1036,11 +1036,11 @@ struct NativeMap: UIViewRepresentable {
         map.showsUserLocation = true
         map.showsCompass = false
         map.showsScale = true
-        // Знак «Карты» и ссылка «Правовые» Apple ставит по полям карты —
-        // поднимаем нижнее поле над своими кнопками внизу (52 точки и отступ
-        // 6), иначе кнопки ложатся на надпись, а её Apple велит оставлять
-        // видимой (P533).
-        map.layoutMargins = UIEdgeInsets(top: 8, left: 8, bottom: 64, right: 8)
+        // Знак «Карты» и ссылка «Правовые» Apple ставит по полям карты. Внизу
+        // слева своих кнопок больше нет (P804: только лупа справа) — надпись
+        // у самого низа (P819; прежде над кнопками, P533). Видимой её
+        // оставлять Apple велит, и она видна.
+        map.layoutMargins = UIEdgeInsets(top: 8, left: 8, bottom: 4, right: 8)
         map.register(MKMarkerAnnotationView.self,
                      forAnnotationViewWithReuseIdentifier: MKMapViewDefaultAnnotationViewReuseIdentifier)
 

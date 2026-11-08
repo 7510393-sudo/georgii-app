@@ -216,6 +216,49 @@ final class MovementTests: XCTestCase {
         XCTAssertEqual(openDay, "today", "свайп перелистнул день")
     }
 
+    /// Календарь стоит, где его оставили (P821): по замечанию к 248 год и
+    /// месяц сами уходили на 2020-й. В замеры пишется, что в шапке после
+    /// каждого шага.
+    func testCalendarStaysPut() {
+        launch()
+        app.buttons["bottom.calendar"].firstMatch.tap()
+        XCTAssertTrue(wait(6) { openScreen == "calendar" }, "календарь не открылся")
+        sleep(2)
+        let title = app.staticTexts["calendarTitle"].firstMatch
+        XCTAssertTrue(title.waitForExistence(timeout: 5), "нет шапки календаря")
+        var steps: [String] = []
+        func mark(_ what: String) { steps.append(what + " — " + title.label) }
+        func flick(up: Bool) {
+            let a = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: up ? 0.72 : 0.38))
+            let b = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: up ? 0.38 : 0.72))
+            a.press(forDuration: 0.05, thenDragTo: b, withVelocity: 1200, thenHoldForDuration: 0)
+            sleep(2)
+        }
+        mark("открыт")
+        let month = title.label
+        flick(up: true); mark("месяц вверх")
+        flick(up: false); mark("месяц вниз")
+        XCTAssertEqual(title.label, month, "месяц не вернулся: \(steps)")
+        app.buttons["kind.Год"].firstMatch.tap()
+        sleep(2); mark("год")
+        let year = title.label
+        flick(up: true); mark("год вверх")
+        flick(up: false); mark("год вниз")
+        XCTAssertEqual(title.label, year, "год не вернулся: \(steps)")
+        app.buttons["bottom.today"].firstMatch.tap()
+        XCTAssertTrue(wait(6) { openScreen == "today" }, "«Дневник» не открылся")
+        sleep(1)
+        app.buttons["bottom.calendar"].firstMatch.tap()
+        XCTAssertTrue(wait(6) { openScreen == "calendar" }, "календарь не открылся снова")
+        sleep(2); mark("после «Дневника»")
+        XCTAssertEqual(title.label, year, "год сбился после «Дневника»: \(steps)")
+        app.buttons["kind.Месяц"].firstMatch.tap()
+        sleep(2); mark("снова месяц")
+        XCTAssertEqual(title.label, month, "месяц сбился: \(steps)")
+        save("11-календарь")
+        note("календарь", steps.joined(separator: " · "))
+    }
+
     /// Свайп как живым пальцем (P787): палец лёг и чуть постоял, ведут с
     /// обычной скоростью — с дела в плане и с записи дневника. На телефоне
     /// свайп почти не брался, а быстрый свайп проверки проходил.

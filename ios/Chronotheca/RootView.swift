@@ -21,6 +21,9 @@ struct RootView: View {
     @State private var mapReady = false
     /// Какая страница ленты разделов стоит на экране (P799).
     @State private var pageAt: Shell.Screen? = .today
+    /// Насколько ленту разделов увели полоской у края карты (P819): лента
+    /// едет за пальцем, «Дневник» выезжает справа.
+    @State private var mapPull: CGFloat = 0
 
     /// Клавиатура: над ней встаёт полоска вложений (P253).
     @StateObject private var keyboard = KeyboardWatch()
@@ -627,19 +630,24 @@ struct RootView: View {
             ScrollView(.horizontal) {
                 // Карта слева, календарь справа (P805).
                 HStack(spacing: 0) {
-                    mapPage
+                    mapPage(width: geo.size.width)
                         .frame(width: geo.size.width, height: geo.size.height)
                         .background(Look.chrome)
                         .id(Shell.Screen.map)
                     dayPage(geo.size)
                         .frame(width: geo.size.width, height: geo.size.height)
+                        // Черта между разделами (P818): на ходу видно, где
+                        // кончается один и начинается другой.
+                        .overlay(alignment: .leading) { PageSeam() }
                         .id(Shell.Screen.today)
                     CalendarView()
                         .frame(width: geo.size.width, height: geo.size.height)
                         .background(Desk())
+                        .overlay(alignment: .leading) { PageSeam() }
                         .id(Shell.Screen.calendar)
                 }
                 .scrollTargetLayout()
+                .offset(x: mapPull)
             }
             .scrollTargetBehavior(.paging)
             .scrollPosition(id: $pageAt)
@@ -680,15 +688,34 @@ struct RootView: View {
     /// — к «Дневнику» ведёт полоска у правого края: ведёшь по ней влево
     /// (P805; карта слева от «Дневника»).
     /// Карта собирается при первом открытии и дальше остаётся (P814).
-    private var mapPage: some View {
+    /// Лента едет за пальцем (P819; прежде стояла и по отпусканию прыгала):
+    /// отпустили дальше четверти экрана или взмахом — доезжает до «Дневника»,
+    /// иначе мягко возвращается.
+    private func mapPage(width: CGFloat) -> some View {
         ZStack(alignment: .trailing) {
             if mapReady || shell.screen == .map { MapScreen() } else { Color.clear }
             Color.clear
                 .frame(width: 18)
                 .contentShape(Rectangle())
-                .gesture(DragGesture(minimumDistance: 16).onEnded { drag in
-                    if drag.translation.width < -50 { tapSection(.today) }
-                })
+                // Мерить в окне: полоска едет вместе с лентой.
+                .gesture(DragGesture(minimumDistance: 8, coordinateSpace: .global)
+                    .onChanged { drag in mapPull = min(0, drag.translation.width) }
+                    .onEnded { drag in
+                        let go = drag.translation.width < -width / 4
+                            || drag.predictedEndTranslation.width < -width / 2
+                        let glide = Animation.spring(response: 0.35, dampingFraction: 0.9)
+                        guard go else {
+                            withAnimation(glide) { mapPull = 0 }
+                            return
+                        }
+                        // Сдвиг уходит в ход ленты — одним движением.
+                        withAnimation(glide) {
+                            mapPull = 0
+                            pageAt = .today
+                        }
+                        Feel.thud()
+                        tapSection(.today)
+                    })
         }
         .accessibilityHidden(shell.screen != .map)
     }
@@ -1275,5 +1302,24 @@ struct PageWatch<ID: Hashable>: ViewModifier {
                 landed(now)
             }
         }
+    }
+}
+
+/// Черта между соседними разделами ленты (P818): тонкая линия и лёгкая тень
+/// на левом соседе. Стоит за левым краем раздела — в покое за экраном, видна
+/// только на ходу. Касаний не ловит.
+private struct PageSeam: View {
+    var body: some View {
+        HStack(spacing: 0) {
+            LinearGradient(colors: [.clear, .black.opacity(0.12)],
+                           startPoint: .leading, endPoint: .trailing)
+                .frame(width: 8)
+            Rectangle()
+                .fill(Look.ink.opacity(0.35))
+                .frame(width: 1)
+        }
+        .offset(x: -9)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }

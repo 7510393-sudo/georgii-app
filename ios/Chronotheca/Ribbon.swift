@@ -45,7 +45,16 @@ final class Ribbon: ObservableObject {
     private var shift: CGFloat = 0
     private var startTime: CFTimeInterval = 0
     private var length: CFTimeInterval = 0.3
+    /// С какой скоростью лента шла в миг начала хода (точек в секунду, в
+    /// мерах прокрутки) — ход подхватывает её (P820).
+    private var startSpeed: CGFloat = 0
     private var done: (() -> Void)?
+
+    /// Скорость дня на экране по последним сдвигам — чтобы ход после
+    /// отпускания продолжал движение пальца, а не срывался с места.
+    private var lastY: CGFloat = 0
+    private var lastTime: CFTimeInterval = 0
+    private var speed: CGFloat = 0
 
     /// Когда ленту открыли — первые полторы секунды она ещё встаёт в покой,
     /// пока догоняют высота экрана и опись.
@@ -194,6 +203,15 @@ final class Ribbon: ObservableObject {
 
     private func follow(_ offset: CGFloat) {
         let now = slotTop - offset
+        let t = CACurrentMediaTime()
+        let dt = t - lastTime
+        if dt > 0.12 {
+            speed = 0
+        } else if dt > 0.001 {
+            speed = speed * 0.4 + (now - lastY) / CGFloat(dt) * 0.6
+        }
+        lastY = now
+        lastTime = t
         if abs(now - y) > 0.25 { y = now }
     }
 
@@ -223,7 +241,12 @@ final class Ribbon: ObservableObject {
     }
 
     /// Довести место дня до `target` (от верха экрана) мягким ходом.
-    func glide(to target: CGFloat, duration: CFTimeInterval = 0.3,
+    ///
+    /// Ход подхватывает скорость, с которой лента шла под пальцем, и мягко
+    /// встаёт (P820). Прежде ход в 0,3 с с резким началом срывался с места
+    /// во много раз быстрее пальца — после плавной тяги был скачок. Чем
+    /// дальше ехать, тем дольше ход, от 0,3 до 0,55 с.
+    func glide(to target: CGFloat, duration: CFTimeInterval? = nil,
                then: (() -> Void)? = nil) {
         guard let scroll = box.view, seen || driving else {
             then?()
@@ -236,7 +259,14 @@ final class Ribbon: ObservableObject {
         startOffset = scroll.contentOffset.y
         shift = (slotTop - target) - startOffset
         startTime = CACurrentMediaTime()
-        length = duration
+        length = duration ?? min(0.55, max(0.3, 0.22 + Double(abs(shift)) / 1800))
+        // Скорость в мерах прокрутки: день вниз — прокрутка назад. Только
+        // свежая и в ту же сторону, куда ехать; не больше, чем даёт ход без
+        // проскока за цель.
+        var v = startTime - lastTime < 0.12 ? -speed : 0
+        if v * shift <= 0 { v = 0 }
+        let most = 2 * abs(shift) / CGFloat(length)
+        startSpeed = max(-most, min(most, v))
         done = then
         let made = CADisplayLink(target: self, selector: #selector(tick))
         made.add(to: .main, forMode: .common)
@@ -245,10 +275,12 @@ final class Ribbon: ObservableObject {
 
     @objc private func tick() {
         guard let scroll = box.view else { finish(); return }
-        let p = min(1, (CACurrentMediaTime() - startTime) / length)
-        // Мягкий конец хода, без отскока.
-        let e = 1 - pow(1 - p, 3)
-        scroll.contentOffset.y = startOffset + shift * e
+        let p = CGFloat(min(1, (CACurrentMediaTime() - startTime) / length))
+        // Начало — со скорости пальца, конец — мягко, без отскока (кривая
+        // Эрмита: начальная скорость задана, конечная ноль).
+        let carry = (p * p * p - 2 * p * p + p) * startSpeed * CGFloat(length)
+        let reach = (3 * p * p - 2 * p * p * p) * shift
+        scroll.contentOffset.y = startOffset + carry + reach
         if p >= 1 { finish() }
     }
 

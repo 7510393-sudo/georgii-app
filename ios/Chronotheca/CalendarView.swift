@@ -60,6 +60,7 @@ struct CalendarView: View {
                                 .strokeBorder(kind == k ? Look.accent : Look.rule))
                     }
                     .accessibilityHint(kind == k ? homeHint(k) : "")
+                    .accessibilityIdentifier("kind.\(k.rawValue)")
                 }
             }
             .padding(.horizontal, 12)
@@ -216,6 +217,8 @@ struct CalendarView: View {
                                : Ru.monthTitle(date))
                 .font(Look.sans(16, weight: .semibold))
                 .foregroundStyle(Look.ink)
+                // Для проверки движения (P821): что в шапке после листания.
+                .accessibilityIdentifier("calendarTitle")
             Spacer()
             arrow("›", lit: toward > 0, label: kind == .year ? T("Следующий год", "Next year")
                                                             : T("Следующий месяц", "Next month"))
