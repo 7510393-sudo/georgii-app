@@ -216,6 +216,29 @@ final class MovementTests: XCTestCase {
         XCTAssertEqual(openDay, "today", "свайп перелистнул день")
     }
 
+    /// Прошлый день, открытый из картотеки, долистан до конца (P823): у
+    /// автора низ листа иногда вставал посреди экрана, под ним — полоса
+    /// чужой бумаги. Снимок — глазами.
+    func testPastCardBottom() {
+        launch()
+        XCTAssertEqual(openDay, "today")
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2))
+            .press(forDuration: 0.05,
+                   thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.6)),
+                   withVelocity: .slow, thenHoldForDuration: 0.1)
+        XCTAssertTrue(wait(4) { openScreen == "search" }, "лента прошлого не открылась: \(openScreen)")
+        sleep(2)
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.4, dy: 0.62)).tap()
+        XCTAssertTrue(wait(5) { openScreen == "today" && openDay != "today" },
+                      "карточка не открыла прошлый день: \(openScreen) \(openDay)")
+        sleep(2)
+        save("12-прошлый-день-верх")
+        for _ in 0..<5 { app.swipeUp() }
+        sleep(2)
+        save("13-прошлый-день-низ")
+        note("прошлый день", "открыт \(openDay)")
+    }
+
     /// Календарь стоит, где его оставили (P821): по замечанию к 248 год и
     /// месяц сами уходили на 2020-й. В замеры пишется, что в шапке после
     /// каждого шага.

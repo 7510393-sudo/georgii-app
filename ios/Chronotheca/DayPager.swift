@@ -1300,13 +1300,13 @@ struct PageTexture: View {
         let deep: Float = (min(w, h) < 60 ? 0.9 : 1.6) * (light ? 0.45 : 1)
         let torn = [W, W, H, H].enumerated().map { e, n -> [Float] in
             if openBottom && e == 1 { return [Float](repeating: 0, count: n) }
-            // Верх карточки поиска (P742): «не архив после пожара, а архив,
-            // которым много пользовались» — край рвётся вдвое мельче.
-            return tornLine(length: n, scale: Float(px), deep: openBottom && e == 0 ? deep * 0.5 : deep,
-                            next: next)
+            // Верх карточки состарен так же, как бока (P823, автор: «в верхней
+            // части карточек прошлого не обработаны состариванием»; прежде
+            // вдвое мельче, P742).
+            return tornLine(length: n, scale: Float(px), deep: deep, next: next)
         }
         var power = (0..<4).map { _ in 0.75 + next() * 0.3 }        // верх, низ, лево, право
-        if openBottom { power[1] = 0; power[0] *= 0.6 }
+        if openBottom { power[1] = 0 }
         if light { power = power.map { $0 * 0.3 } }
         let fall = Float(wear) * Float(px) / 1.6                             // в пикселях
         let peak: Float = 0.45

@@ -745,7 +745,17 @@ struct CardPaper: View {
                         .frame(width: geo.size.width, height: geo.size.height)
                         .offset(y: Search.tabHeight)
                         .mask(alignment: .topLeading) { shoulder(geo.size) }
-                        .opacity(scheme == .dark ? 0.25 : 0.6)
+                        // В полную силу, как верх корешка (P823; прежде 0,6).
+                        .opacity(scheme == .dark ? 0.35 : 1)
+                    // Правый бок корешка (P823): тот же правый край листа,
+                    // сдвинутый к корешку, — видна только полоса вдоль бока.
+                    Image(uiImage: ready.frame)
+                        .resizable()
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        .offset(x: geo.size.width / 3 - geo.size.width)
+                        .mask(alignment: .topLeading) { tabSide(geo.size) }
+                        .clipShape(FolderShape(tabHeight: Search.tabHeight))
+                        .opacity(scheme == .dark ? 0.35 : 1)
                 }
                 FolderShape(tabHeight: Search.tabHeight)
                     .stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
@@ -773,6 +783,13 @@ struct CardPaper: View {
             .mask(LinearGradient(colors: [.clear, .black, .black, .clear],
                                  startPoint: .leading, endPoint: .trailing))
             .offset(x: from, y: Search.tabHeight)
+    }
+
+    /// Полоса вдоль правого бока корешка: от верха до плеча, книзу тает.
+    private func tabSide(_ size: CGSize) -> some View {
+        LinearGradient(colors: [.black, .black, .clear], startPoint: .top, endPoint: .bottom)
+            .frame(width: 16, height: Search.tabHeight + 6)
+            .offset(x: size.width / 3 - 16)
     }
 
     /// Старая бумага: цвет прошлого и рельеф плиткой — непрозрачная, иначе
