@@ -100,6 +100,11 @@ struct DiaryEditor: UIViewRepresentable {
     static let stamp = try! NSRegularExpression(
         pattern: #"^(\d{2}:\d{2}(?: [AP]M)?(?: \d{2}\.\d{2}\.\d{2})?)[  ]"#)
 
+    /// Отметка и сразу за ней строчная буква — её поднимают в заглавную
+    /// после диктовки (P815).
+    static let lowAfterStamp = try! NSRegularExpression(
+        pattern: #"^\d{2}:\d{2}(?: [AP]M)?(?: \d{2}\.\d{2}\.\d{2})?[  ]+(\p{Ll})"#)
+
     func makeUIView(context: Context) -> UITextView {
         let view = UITextView()
         // Метка для проверок движения (P552).
@@ -185,6 +190,10 @@ struct DiaryEditor: UIViewRepresentable {
         if context.coordinator.previewing {
             // Идёт перенос — в поле показано, как ляжет взятое; запись
             // поменяется, когда палец отпустят.
+        } else if view.isFirstResponder, Coordinator.dictating(view) {
+            // Идёт диктовка (P815): поле сейчас её. Переписать его целиком —
+            // и она продолжит писать с прежнего места, слово ляжет вокруг
+            // другого слова.
         } else if DiaryEditor.plain(view.attributedText) != text || view.attributedText.length == 0 {
             let selection = view.selectedRange
             view.attributedText = Self.styled(text, size: size, serif: serif, stamped: stamped,
@@ -597,6 +606,51 @@ struct DiaryEditor: UIViewRepresentable {
             вести.addObserver(self, selector: #selector(keyboardGone(_:)),
                               name: UIResponder.keyboardWillHideNotification,
                               object: nil)
+            // Микрофон выключили — первая буква за отметкой (P815).
+            вести.addObserver(self, selector: #selector(inputModeChanged(_:)),
+                              name: UITextInputMode.currentInputModeDidChangeNotification,
+                              object: nil)
+        }
+
+        @objc private func inputModeChanged(_ note: Notification) {
+            DispatchQueue.main.async { [weak self] in
+                guard let self, let view = self.view else { return }
+                self.restyle(view)
+                self.raiseFirst(view)
+            }
+        }
+
+        /// Идёт диктовка: в поле временный текст системы или включён
+        /// микрофон. Пока так, поле не правит текст само — ни отметку, ни
+        /// заглавную букву, ни краску (P815): правка посреди диктовки сбивала
+        /// ей место, и слова ложились вокруг других слов.
+        static func dictating(_ view: UITextView) -> Bool {
+            view.markedTextRange != nil || view.textInputMode?.primaryLanguage == "dictation"
+        }
+
+        /// Строчная первая буква за отметкой времени в строке под курсором —
+        /// заглавной (P815). Диктовка и набор росчерком вставляют слова
+        /// сами, мимо правила для одной буквы; поэтому буква поднимается
+        /// потом, когда диктовка отпустила поле. Длина та же — курсор и всё
+        /// после буквы остаются на местах.
+        func raiseFirst(_ view: UITextView) {
+            guard parent.stamped, parent.editable, !placing, !Self.dictating(view) else { return }
+            let storage = view.textStorage
+            let ns = storage.string as NSString
+            let at = min(view.selectedRange.location, ns.length)
+            let line = ns.lineRange(for: NSRange(location: at, length: 0))
+            guard let m = DiaryEditor.lowAfterStamp.firstMatch(in: storage.string, range: line),
+                  m.numberOfRanges > 1 else { return }
+            let r = m.range(at: 1)
+            let low = ns.substring(with: r)
+            let up = low.uppercased()
+            guard up != low, (up as NSString).length == r.length else { return }
+            let sel = view.selectedRange
+            placing = true
+            storage.replaceCharacters(in: r, with: up)
+            view.selectedRange = sel
+            placing = false
+            parent.text = DiaryEditor.plain(view.attributedText)
         }
 
         func textViewDidBeginEditing(_ view: UITextView) {
@@ -613,6 +667,7 @@ struct DiaryEditor: UIViewRepresentable {
             // Ушли из записи, ничего не написав за отметкой, — её нет (P711).
             settleStamp(view, leaving: true)
             scrub()
+            raiseFirst(view)
             makeRoom(scroll: false)
         }
 
@@ -1654,7 +1709,7 @@ struct DiaryEditor: UIViewRepresentable {
                 // от этого убиралась и вставала заново только с готовой
                 // фразой, когда микрофон выключали. Пока идёт временный
                 // текст или курсор на той же строке за отметкой — ждём.
-                if !leaving, view.markedTextRange != nil {
+                if !leaving, Self.dictating(view) {
                     provisional = p
                     return
                 }
@@ -1863,6 +1918,7 @@ struct DiaryEditor: UIViewRepresentable {
             } else {
                 restyle(view)
             }
+            raiseFirst(view)
             // Строка прибавилась — курсор мог уйти под клавиатуру.
             DispatchQueue.main.async { [weak self] in self?.showCaret(animated: false) }
         }
@@ -1874,6 +1930,10 @@ struct DiaryEditor: UIViewRepresentable {
         func textView(_ view: UITextView, shouldChangeTextIn range: NSRange,
                       replacementText text: String) -> Bool {
             typedLetters = text.contains { !$0.isWhitespace && $0 != "\u{FFFC}" }
+            // Диктовка пишет сама (P815): правка вместо неё и «нет» в ответ
+            // сбивали ей место — слова ложились вокруг других слов, а первая
+            // буква оставалась строчной. Букву поднимет `raiseFirst` потом.
+            if Self.dictating(view) { return true }
             if let decided = keepObjectsApart(view, range, text) { return decided }
             // Первая буква в новой строке под записью — и только тогда
             // перед ней встаёт время (P403). Буква — заглавная.
@@ -1896,7 +1956,9 @@ struct DiaryEditor: UIViewRepresentable {
                 textViewDidChange(view)
                 return false
             }
-            guard parent.stamped,
+            // Одна буква с клавиатуры. Слово целиком (росчерк, подсказка)
+            // поле принимает как есть и поднимает букву потом (P815).
+            guard parent.stamped, (text as NSString).length == 1,
                   let first = text.first, first.isLowercase else { return true }
             let before = (view.text as NSString).substring(to: range.location)
             guard let line = before.components(separatedBy: .newlines).last,
@@ -2010,6 +2072,9 @@ struct DiaryEditor: UIViewRepresentable {
         /// выдёргивала у диктовки её временный знак, и в записи оставалось
         /// «OBJ» (решение P197). Заодно курсор и выделение не трогаются.
         func restyle(_ view: UITextView) {
+            // Посреди диктовки краску не трогаем (P815) — докрасится, когда
+            // она отпустит поле.
+            guard !Self.dictating(view) else { return }
             let text = view.text ?? ""
             let now = key(view)
             guard now != styledKey else {

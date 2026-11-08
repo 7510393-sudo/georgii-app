@@ -99,8 +99,8 @@ struct DayPage: View {
         // Лист «Дня» — карточка с корешком (P797): бумага по контуру карточки
         // картотеки, с чёткой обводкой; справа от корешка — стол.
         .background(background.clipShape(DayPage.folder))
-        // Позади листа — корешки карточек, уходящие вдаль (P802).
-        .background(alignment: .top) { BehindTabs(date: date) }
+        // Позади листа — плечи карточек картотеки (P816).
+        .background(alignment: .top) { BehindTabs() }
         // Край листа — чёткой линией (P802): у сегодняшнего фактуры нет, и
         // без линии глаз не видел, где кончается лист.
         .overlay(DayPage.folder.stroke(DayPage.edge, lineWidth: 1).allowsHitTesting(false))
@@ -1842,54 +1842,40 @@ struct DayCloud: View {
     }
 }
 
-/// Корешки карточек позади открытого листа (P802): на столе справа от его
-/// корешка — верхушки трёх карточек прошлого, одна за другой, каждая дальше,
-/// ниже и бледнее. Нижние края уходят под лист. Не до шестерёнки: место ей
-/// оставлено. Касаний не ловят.
+/// Карточки позади открытого листа (P816, прежде вертикальные корешки
+/// P802): на столе справа от корешка листа — лежачие плечи трёх карточек
+/// прошлого, той же старой бумаги, что в картотеке, одна над другой: чем
+/// дальше, тем выше и короче справа. Это те самые карточки, что выезжают,
+/// если потянуть «День» вниз. Их корешки — за корешком листа, не видны.
+/// Нижние края уходят под лист. Касаний не ловят.
 struct BehindTabs: View {
-    let date: Date
-
     var body: some View {
         GeometryReader { geo in
             let w = geo.size.width
-            let start = w * DayPage.folder.tabShare + 6
-            let end = w - Corner.size - 6
-            let tab = max(40, (end - start) / 2.2)
-            let step = max(0, (end - start - tab) / 2)
+            let start = w * DayPage.folder.tabShare
             let base = DayPage.folder.tabHeight
             ZStack(alignment: .topLeading) {
                 // Дальняя — первой, ближняя — поверх неё.
                 ForEach((0..<3).reversed(), id: \.self) { i in
-                    let day = Calendar.current.date(byAdding: .day, value: -(i + 1), to: date) ?? date
-                    let top = 6 + CGFloat(i) * 7
-                    TabTop()
-                        .fill(Ru.tint(day))
-                        .overlay(TabTop().stroke(DayPage.edge.opacity(1 - Double(i) * 0.25), lineWidth: 1))
-                        .opacity(1 - Double(i) * 0.15)
-                        .frame(width: tab, height: base - top + 2)
-                        .offset(x: start + CGFloat(i) * step, y: top)
+                    let top = 12 + CGFloat(2 - i) * 9
+                    // Износ у каждой из трёх свой, но один и тот же на всех
+                    // днях: заготовка рисуется один раз, листание не ждёт.
+                    CardPaper(seed: 9_100 + i, past: true)
+                        .frame(width: w - 4 - CGFloat(i) * 5,
+                               height: base - top + Search.tabHeight + 24)
+                        .offset(y: top - Search.tabHeight)
                 }
+            }
+            // Видно только справа от корешка листа и над листом: корешки
+            // карточек и их низ спрятаны.
+            .mask(alignment: .topLeading) {
+                Rectangle()
+                    .frame(width: max(0, w - start), height: base + 2)
+                    .offset(x: start)
             }
         }
         .frame(height: DayPage.folder.tabHeight + 2)
         .allowsHitTesting(false)
         .accessibilityHidden(true)
-    }
-}
-
-/// Верх корешка: скруглённые верхние углы, низ открыт — уходит под лист.
-private struct TabTop: Shape {
-    func path(in r: CGRect) -> Path {
-        let rad: CGFloat = 9
-        var p = Path()
-        p.move(to: CGPoint(x: r.minX, y: r.maxY))
-        p.addLine(to: CGPoint(x: r.minX, y: r.minY + rad))
-        p.addArc(tangent1End: CGPoint(x: r.minX, y: r.minY),
-                 tangent2End: CGPoint(x: r.minX + rad, y: r.minY), radius: rad)
-        p.addLine(to: CGPoint(x: r.maxX - rad, y: r.minY))
-        p.addArc(tangent1End: CGPoint(x: r.maxX, y: r.minY),
-                 tangent2End: CGPoint(x: r.maxX, y: r.minY + rad), radius: rad)
-        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
-        return p
     }
 }
