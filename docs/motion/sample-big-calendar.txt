@@ -1,0 +1,130 @@
+    5 Thread_60091   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 5 start  (in dyld) + 6992  [0x1004704e4]
+    +   5 start_sim  (in dyld_sim) + 20  [0x1005b30e4]
+    +     5 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x102243470]  ChronothecaApp.swift:0
+    +       5 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1022433c4]  /<compiler-generated>:0
+    +         5 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           5 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             5 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               5 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 5 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   5 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     5 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       3 __CFRunLoopRun  (in CoreFoundation) + 760  [0x180421808]
+    +                       ! 3 __CFRunLoopDoSources0  (in CoreFoundation) + 312  [0x180422690]
+    +                       !   3 __CFRunLoopDoSource0  (in CoreFoundation) + 168  [0x180422ea4]
+    +                       !     3 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__  (in CoreFoundation) + 24  [0x180422f5c]
+    +                       !       3 BSServiceMainRunLoopSourceHandler  (in BoardServices) + 180  [0x188242210]
+    +                       !         3 __BSSERVICEMAINRUNLOOPQUEUE_IS_CALLING_OUT_TO_A_BLOCK__  (in BoardServices) + 44  [0x188243258]
+    +                       !           3 _dispatch_block_invoke_direct  (in libdispatch.dylib) + 376  [0x18018b5fc]
+    +                       !             3 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                       !               3 -[FBSWorkspace _calloutQueue_executeCalloutFromSource:withBlock:]  (in FrontBoardServices) + 168  [0x1887fb2b0]
+    +                       !                 3 __94-[FBSWorkspaceScenesClient _queue_updateScene:withSettings:diff:transitionContext:completion:]_block_invoke_2  (in FrontBoardServices) + 96  [0x18881ce90]
+    +                       !                   3 __94-[FBSWorkspaceScenesClient _queue_updateScene:withSettings:diff:transitionContext:completion:]_block_invoke_2.cold.1  (in FrontBoardServices) + 324  [0x18885b6fc]
+    +                       !                     3 -[FBSScene updater:didUpdateSettings:withDiff:transitionContext:completion:]  (in FrontBoardServices) + 640  [0x1887eed34]
+    +                       !                       3 -[FBSScene _callOutQueue_maybeCoalesceClientSettingsUpdates:]  (in FrontBoardServices) + 120  [0x1887edd30]
+    +                       !                         3 __76-[FBSScene updater:didUpdateSettings:withDiff:transitionContext:completion:]_block_invoke.99  (in FrontBoardServices) + 328  [0x1887ef050]
+    +                       !                           3 -[UIApplicationSceneClientAgent scene:handleEvent:withCompletion:]  (in UIKitCore) + 332  [0x185ebbf38]
+    +                       !                             3 -[UIScene scene:didUpdateWithDiff:transitionContext:completion:]  (in UIKitCore) + 196  [0x1857bed7c]
+    +                       !                               3 -[UIScene _emitSceneSettingsUpdateResponseForCompletion:afterSceneUpdateWork:]  (in UIKitCore) + 204  [0x1857bde1c]
+    +                       !                                 3 __64-[UIScene scene:didUpdateWithDiff:transitionContext:completion:]_block_invoke.190  (in UIKitCore) + 644  [0x1857bf11c]
+    +                       !                                   3 -[_UIWindowSceneFBSSceneTransitionContextDrivenLifecycleSettingsDiffAction _performActionsForUIScene:withUpdatedFBSScene:settingsDiff:fromSettings:transitionContext:lifecycleActionType:]  (in UIKitCore) + 276  [0x1859b0624]
+    +                       !                                     3 _UISceneSettingsDiffActionPerformChangesWithTransitionContextAndCompletion  (in UIKitCore) + 196  [0x185fc83c8]
+    +                       !                                       3 +[BSAnimationSettings(UIKit) tryAnimatingWithSettings:fromCurrentState:actions:completion:]  (in UIKitCore) + 652  [0x185e8e660]
+    +                       !                                         3 __186-[_UIWindowSceneFBSSceneTransitionContextDrivenLifecycleSettingsDiffAction _performActionsForUIScene:withUpdatedFBSScene:settingsDiff:fromSettings:transitionContext:lifecycleActionType:]_block_invoke  (in UIKitCore) + 116  [0x1859b0904]
+    +                       !                                           3 ___UISceneLifecycleSettingsUpdateBlockWithSceneAndTransitionContext_block_invoke  (in UIKitCore) + 280  [0x1859adf74]
+    +                       !                                             3 -[_UIWindowSceneFBSSceneLifecycleMonitor transitionToTargetState:fromState:withTransitionContext:preparations:]  (in UIKitCore) + 508  [0x18599b6b0]
+    +                       !                                               3 ___UISceneLifecycleSettingsUpdateBlockWithSceneAndTransitionContext_block_invoke_2  (in UIKitCore) + 292  [0x1859ae1bc]
+    +                       !                                                 3 __111-[_UIWindowSceneFBSSceneLifecycleMonitor transitionToTargetState:fromState:withTransitionContext:preparations:]_block_invoke_4  (in UIKitCore) + 140  [0x18599b938]
+    +                       !                                                   3 _UIScenePerformActionsWithLifecycleActionMask  (in UIKitCore) + 96  [0x185fafa28]
+    +                       !                                                     3 -[_UISceneLifecycleMonitor didBecomeActive]  (in UIKitCore) + 148  [0x18599aed8]
+    +                       !                                                       3 @objc AppSceneDelegate.sceneDidBecomeActive(_:)  (in SwiftUI) + 56  [0x1d293390c]
+    +                       !                                                         3 AppSceneDelegate.sceneDidBecomeActive(_:)  (in SwiftUI) + 208  [0x1d29337f8]
+    +                       !                                                           3 PlatformSceneCache.setPhase(_:id:host:)  (in SwiftUI) + 484  [0x1d2765148]
+    +                       !                                                             3 static Update.ensure<A>(_:)  (in SwiftUICore) + 96  [0x1d3d0a2f0]
+    +                       !                                                               3 closure #1 in static Update.ensure<A>(_:)  (in SwiftUICore) + 48  [0x1d3d0b718]
+    +                       !                                                                 3 partial apply for closure #1 in PlatformSceneCache.setPhase(_:id:host:)  (in SwiftUI) + 16  [0x1d2765520]
+    +                       !                                                                   3 closure #1 in PlatformSceneCache.setPhase(_:id:host:)  (in SwiftUI) + 164  [0x1d2765238]
+    +                       !                                                                     3 AppGraph.sceneList(namespace:)  (in SwiftUI) + 180  [0x1d35f6958]
+    +                       !                                                                       3 AGGraphGetValue  (in AttributeGraph) + 312  [0x1c42eaaf0]
+    +                       !                                                                         3 AG::Graph::value_ref(AG::AttributeID, unsigned int, AGSwiftMetadata const*, unsigned char&)  (in AttributeGraph) + 260  [0x1c42d2b48]
+    +                       !                                                                           3 AG::Graph::update_attribute(AG::data::ptr<AG::Node>, unsigned int)  (in AttributeGraph) + 88  [0x1c42cbca0]
+    +                       !                                                                             3 AG::Graph::call_update()  (in AttributeGraph) + 156  [0x1c42d0578]
+    +                       !                                                                               3 AG::Graph::Context::call_update()  (in AttributeGraph) + 232  [0x1c42cf8ac]
+    +                       !                                                                                 3 closure #1 in GraphHost.init(data:)  (in SwiftUICore) + 144  [0x1d3f35e58]
+    +                       !                                                                                   3 ViewGraphRootValueUpdater.updateGraph<A>(body:)  (in SwiftUICore) + 136  [0x1d43bf084]
+    +                       !                                                                                     3 ViewGraphRootValueUpdater._updateViewGraph<A>(body:)  (in SwiftUICore) + 184  [0x1d43c078c]
+    +                       !                                                                                       3 ViewGraphRootValueUpdater.updateGraph()  (in SwiftUICore) + 232  [0x1d43c0588]
+    +                       !                                                                                         2 closure #1 in ViewGraphRootValueUpdater.updateGraph()  (in SwiftUICore) + 180  [0x1d43c09d8]
+    +                       !                                                                                         : 2 _UIHostingView.updateRootView()  (in SwiftUI) + 108  [0x1d2952314]
+    +                       !                                                                                         :   2 ViewGraph.setRootView<A>(_:)  (in SwiftUICore) + 80  [0x1d43c4674]
+    +                       !                                                                                         :     2 <deduplicated_symbol>  (in SwiftUICore) + 72  [0x1d3a7a600]
+    +                       !                                                                                         :       2 partial apply for closure #1 in Attribute.setValue(_:)  (in SwiftUICore) + 36  [0x1d43e3120]
+    +                       !                                                                                         :         2 AG::Graph::value_set(AG::data::ptr<AG::Node>, AGSwiftMetadata const*, void const*)  (in AttributeGraph) + 160  [0x1c42d3158]
+    +                       !                                                                                         :           2 AG::Graph::propagate_dirty(AG::AttributeID)  (in AttributeGraph) + 320,416  [0x1c42ca9e0,0x1c42caa40]
+    +                       !                                                                                         1 closure #1 in ViewGraphRootValueUpdater.updateGraph()  (in SwiftUICore) + 316  [0x1d43c0a60]
+    +                       !                                                                                           1 _UIHostingView.updateEnvironment()  (in SwiftUI) + 2384  [0x1d2952c94]
+    +                       !                                                                                             1 <deduplicated_symbol>  (in SwiftUI) + 0  [0x1d276dab0]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    +                       ! 1 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    +                       !   1 mach_msg  (in libsystem_kernel.dylib) + 20  [0x100298ef0]
+    +                       !     1 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x1002a0c44]
+    +                       !       1 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x1002a9e84]
+    +                       !         1 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x100298b70]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 1884  [0x180421c6c]
+    +                         1 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__  (in CoreFoundation) + 12  [0x180422a94]
+    +                           1 _dispatch_main_queue_callback_4CF  (in libdispatch.dylib) + 40  [0x180195890]
+    +                             1 _dispatch_main_queue_drain  (in libdispatch.dylib) + 644  [0x180195b24]
+    +                               1 _dispatch_source_invoke  (in libdispatch.dylib) + 1800  [0x18019df44]
+    +                                 1 _dispatch_continuation_pop  (in libdispatch.dylib) + 776  [0x18018b068]
+    +                                   1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                                     1 thunk for @escaping @callee_guaranteed () -> ()  (in Chronotheca.debug.dylib) + 48  [0x102183f90]  /<compiler-generated>:0
+    +                                       1 closure #1 in closure #2 in ChronothecaApp.body.getter  (in Chronotheca.debug.dylib) + 320  [0x1022430f4]  ChronothecaApp.swift:116
+    +                                         1 DayStore.syncUpcomingReminders()  (in Chronotheca.debug.dylib) + 1748  [0x1022f72f0]  DayStore.swift:1398
+    +                                           1 Vault.reading(_:for:)  (in Chronotheca.debug.dylib) + 200  [0x1027fd950]  Vault.swift:1144
+    +                                             1 Vault.file(_:for:)  (in Chronotheca.debug.dylib) + 264  [0x1027fcfd0]  Vault.swift:1113
+    +                                               1 Vault.root.getter  (in Chronotheca.debug.dylib) + 104  [0x1027dc778]  Vault.swift:0
+    +                                                 1 static Published.subscript.getter  (in Combine) + 172  [0x1c3288ba8]
+    +                                                   1 specialized static Published.access<A>(_:keyPath:storage:)  (in Combine) + 112  [0x1c32895f4]
+    +                                                     1 __swift_instantiateConcreteTypeFromMangledNameV2  (in Combine) + 0  [0x1c325b064]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        29
+        start_wqthread  (in libsystem_pthread.dylib)        7
+        mach_msg2_trap  (in libsystem_kernel.dylib)        6
+
+Binary Images:
+       0x100284000 -        0x100287507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC/data/Containers/Bundle/Application/3AE3C186-74C0-4980-ABB6-2F0E5D1FFB2B/Chronotheca.app/Chronotheca
+       0x100298000 -        0x1002d2ee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
+       0x100318000 -        0x1003203d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
+       0x1003c0000 -        0x1003cc10b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
+       0x100450000 -        0x100503523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
+       0x1005a8000 -        0x1005f6e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x100664000 -        0x1006a765f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x1007b8000 -        0x1008512af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x100f24000 -        0x100f24b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x100f3c000 -        0x100f4403f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x101050000 -        0x10105b39f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x101074000 -        0x101076dff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x101094000 -        0x10109d49f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x1010b8000 -        0x1010beb7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x1010e8000 -        0x10110127f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
+       0x101138000 -        0x10113f2df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
+       0x1015a8000 -        0x1015abe5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x1015c0000 -        0x1015c5407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
+       0x10163c000 -        0x1016406ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
+       0x1016d8000 -        0x101933bbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+       0x101f8c000 -        0x101faecff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
+       0x102008000 -        0x10200b1ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
+       0x102024000 -        0x10204af5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
+       0x102070000 -        0x1020aa15f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
+       0x102178000 -        0x1028fe4b7 +Chronotheca.debug.dylib (0) <B5B765F7-3E77-31F4-A653-F211F140E01C> /Users/*/Library/Developer/CoreSimulator/Devices/FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC/data/Containers/Bundle/Application/3AE3C186-74C0-4980-ABB6-2F0E5D1FFB2B/Chronotheca.app/Chronotheca.debug.dylib
+       0x103510000 -        0x1035637bf  com.apple.dt.XCTAutomationSupport (26.5 - 24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
+       0x1036f0000 -        0x1037245bf  com.apple.MTLSimDriver (373.2 - 373.2) <8339CA77-3986-3588-9DF9-8B8D511AE608> /Volumes/*/MTLSimDriver.framework/MTLSimDriver
+       0x1065d0000 -        0x10663fcbf  com.apple.UIUnderstanding (1.0 - 1) <576E64EB-8AA4-3B1E-A89D-365C4DE0C7C8> /Volumes/*/UIUnderstanding.framework/UIUnderstanding
+       0x10670c000 -        0x10673a27f  com.apple.gpusw.MetalSerializer (1.0 - 1) <19460939-4BCE-3E8D-8868-5388DD78ACE3> /Volumes/*/MetalSerializer.framework/MetalSerializer
+       0x106e7c000 -        0x106e7ebdf  com.apple.GeoServices.axbundle (1.0 - 1.0) <69D2FB7A-6D7C-3EDE-9495-629B7904ED32> /Volumes/*/GeoServices
+       0x1073ec000 -        0x1075dfd3f  com.apple.UIKit.axbundle (1.0.0 - 1.0) <D3D808D1-AB02-3566-B2DD-1B139F8E9569> /Volumes/*/UIKit
+       0x108a7c000 -        0x108a817df  com.apple.LinkPresentation.axbundle (1.0 - 1.0) <7BAD0605-47F6-3470-9C28-AE38795FEC45> /Volumes/*/LinkPresentation
+       0x116edc000 -        0x116ef041f  com.apple.AVKit.axbundle (1.0 - 1.0) <C5AC1369-B745-33DD-9237-CBAAD541CBE3> /Volumes/*/AVKit
+       0x116f2c000 -        0x116f3b03f  com.apple.PreferencesFramework.axbundle (1.0 - 1.0) <CECA756F-AD42-3681-8023-94C05C2E12C6> /Volumes/*/PreferencesFramework
