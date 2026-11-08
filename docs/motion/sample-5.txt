@@ -1,0 +1,88 @@
+    1363 Thread_83604   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 1363 start  (in dyld) + 6992  [0x1048e84e4]
+    +   1363 start_sim  (in dyld_sim) + 20  [0x1046fb0e4]
+    +     1363 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x106619d14]  ChronothecaApp.swift:0
+    +       1363 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x106619c68]  /<compiler-generated>:0
+    +         1363 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           1363 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             1363 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               1363 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 1363 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   1363 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     1363 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       1295 __CFRunLoopRun  (in CoreFoundation) + 1884  [0x180421c6c]
+    +                       ! 1295 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__  (in CoreFoundation) + 12  [0x180422a94]
+    +                       !   1295 _dispatch_main_queue_callback_4CF  (in libdispatch.dylib) + 40  [0x180195890]
+    +                       !     1295 _dispatch_main_queue_drain  (in libdispatch.dylib) + 1172  [0x180195d34]
+    +                       !       1295 <deduplicated_symbol>  (in libdispatch.dylib) + 24  [0x1801bd748]
+    +                       !         1295 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                       !           1295 _dispatch_call_block_and_release  (in libdispatch.dylib) + 24  [0x1801866a0]
+    +                       !             1295 -[AXBinaryMonitor _handleLoadedImagePath:]  (in AXCoreUtilities) + 356  [0x192abf750]
+    +                       !               1295 -[AXBinaryMonitor _applyHandlerBlocks:handlerMap:]  (in AXCoreUtilities) + 172  [0x192abf574]
+    +                       !                 1295 __54+[AXMobileQuickLookGlue accessibilityInitializeBundle]_block_invoke_4  (in QuickLook) + 116  [0x11f3511e4]
+    +                       !                   1295 +[NSBundle bundleWithIdentifier:]  (in Foundation) + 32  [0x18103d4b8]
+    +                       !                     1295 _CFBundleGetBundleWithIdentifier  (in CoreFoundation) + 232  [0x1803af954]
+    +                       !                       1293 _CFBundleEnsureBundlesUpToDateWithHint  (in CoreFoundation) + 40  [0x1803b1924]
+    +                       !                       : 1293 _CFBundleEnsureBundlesExistForImagePaths  (in CoreFoundation) + 60  [0x1803b25a4]
+    +                       !                       :   1292 _CFBundleEnsureBundleExistsForImagePath  (in CoreFoundation) + 64  [0x1803b1ed0]
+    +                       !                       :   | 1292 _CFBundleCreate  (in CoreFoundation) + 372  [0x1803afd70]
+    +                       !                       :   |   1292 _CFBundleGetBundleVersionForURL  (in CoreFoundation) + 376  [0x1803b38a0]
+    +                       !                       :   |     1292 _CFIterateDirectory  (in CoreFoundation) + 96  [0x1803def78]
+    +                       !                       :   |       1292 readdir  (in libsystem_c.dylib) + 36  [0x1801303a4]
+    +                       !                       :   |         1292 _readdir_unlocked  (in libsystem_c.dylib) + 220  [0x1801302b0]
+    +                       !                       :   |           1292 __getdirentries64  (in libsystem_kernel.dylib) + 8  [0x1045b2670]
+    +                       !                       :   1 _CFBundleEnsureBundleExistsForImagePath  (in CoreFoundation) + 24  [0x1803b1ea8]
+    +                       !                       :     1 __CFBundleCopyFrameworkURLForExecutablePath  (in CoreFoundation) + 492  [0x1803b17c4]
+    +                       !                       :       1 CFStringFindWithOptionsAndLocale  (in CoreFoundation) + 4700  [0x180454020]
+    +                       !                       2 _CFBundleEnsureBundlesUpToDateWithHint  (in CoreFoundation) + 28  [0x1803b1918]
+    +                       !                         1 _CFBundleDYLDCopyLoadedImagePathsForHint  (in CoreFoundation) + 404  [0x1803e3708]
+    +                       !                         | 1 strrchr  (in libsystem_c.dylib) + 16  [0x18015a16c]
+    +                       !                         1 _CFBundleDYLDCopyLoadedImagePathsForHint  (in CoreFoundation) + 512  [0x1803e3774]
+    +                       !                           1 CFStringFindWithOptionsAndLocale  (in CoreFoundation) + 1496  [0x18045339c]
+    +                       68 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    +                         68 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    +                           68 mach_msg  (in libsystem_kernel.dylib) + 20  [0x1045b0ef0]
+    +                             68 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x1045b8c44]
+    +                               68 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x1045c1e84]
+    +                                 68 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x1045b0b70]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        9455
+        mach_msg2_trap  (in libsystem_kernel.dylib)        2794
+        __getdirentries64  (in libsystem_kernel.dylib)        1292
+        generationCountFromListOfSources  (in CoreFoundation)        96
+        static PageTexture.smooth(_:_:_:_:_:)  (in Chronotheca.debug.dylib)        66
+        pthread_getspecific  (in libsystem_pthread.dylib)        54
+        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        49
+        dyld4::LibSystemHelpers::os_unfair_recursive_lock_lock_with_options(os_unfair_recursive_lock_s*, os_unfair_lock_options_t) const  (in libdyld.dylib)        43
+        Array.subscript.getter  (in libswiftCore.dylib)        37
+        pthread_setspecific  (in libsystem_pthread.dylib)        37
+        min<A>(_:_:)  (in libswiftCore.dylib)        35
+        objc_msgSend  (in libobjc.A.dylib)        34
+        __CF_IS_OBJC  (in CoreFoundation)        30
+        Array._checkSubscript(_:wasNativeTypeChecked:)  (in libswiftCore.dylib)        29
+        -[__NSDictionaryM objectForKey:]  (in CoreFoundation)        28
+        _CFStringGetCStringPtrInternal  (in CoreFoundation)        28
+        _swift_isClassOrObjCExistentialType  (in libswiftCore.dylib)        26
+        __CFStringHash  (in CoreFoundation)        22
+        isEqualToString  (in CoreFoundation)        22
+        max<A>(_:_:)  (in libswiftCore.dylib)        21
+        static PageTexture.makeAged(size:band:seed:openBottom:light:)  (in Chronotheca.debug.dylib)        20
+        objc_retainAutoreleasedReturnValue  (in libobjc.A.dylib)        19
+        swift::metadataimpl::ValueWitnesses<swift::metadataimpl::NativeBox<unsigned int, 4ul, 4ul, 4ul>>::initializeWithCopy(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        19
+        os_unfair_lock_unlock  (in libsystem_platform.dylib)        17
+        -[__NSCFString isEqual:]  (in CoreFoundation)        16
+        kept #1 (_:_:) in static PageTexture.makeAged(size:band:seed:openBottom:light:)  (in Chronotheca.debug.dylib)        14
+        objc_release  (in libobjc.A.dylib)        14
+        swift::LockingConcurrentMap<(anonymous namespace)::TupleCacheEntry, (anonymous namespace)::TupleCacheStorage>::getOrInsert<(anonymous namespace)::TupleCacheEntry::Key, swift::MetadataRequest&, swift::TargetValueWitnessTable<swift::InProcess> const*&>((anonymous namespace)::TupleCacheEntry::Key, swift::MetadataRequest&, swift::TargetValueWitnessTable<swift::InProcess> const*&)  (in libswiftCore.dylib)        14
+        CFStringHashCString  (in CoreFoundation)        13
+        _Block_object_dispose  (in libsystem_blocks.dylib)        13
+        os_unfair_lock_lock  (in libsystem_platform.dylib)        13
+        os_unfair_lock_assert_not_owner  (in libsystem_platform.dylib)        12
+        CFEqual  (in CoreFoundation)        11
+        expf  (in libsystem_m.dylib)        11
+        normalizeQuintuplet  (in CoreFoundation)        11
+        os_log_type_enabled  (in libsystem_trace.dylib)        11
+        os_unfair_lock_assert_owner  (in libsystem_platform.dylib)        11
+        static PageTexture.paintAged(_:_:worn:distance:mottle:)  (in Chronotheca.debug.dylib)        11
+        CFStringGetLength  (in CoreFoundation)        10
