@@ -120,6 +120,12 @@ struct MapScreen: View {
         // Карта собрана заранее и ждёт на плашке (P581): о месте и о своих
         // местах — только когда её открыли, а не когда собрали.
         .onAppear { if shell.screen == .map { opened() } }
+        // Снимок CI «плашка точки» (P813): записанное место с открытой плашкой.
+        .onChange(of: shell.previewMapPoint) { _, _ in
+            choose(Place(name: "Café on the corner",
+                          coordinate: CLLocationCoordinate2D(latitude: 51.50135, longitude: -0.14189),
+                          text: "Coffee with Anna", file: "preview.md"))
+        }
         .onChange(of: shell.screen) { _, now in if now == .map { opened() } }
         // Карта ещё не ушла с экрана, а человек уже коснулся точки в
         // тексте, — плашка открывается и тогда.
@@ -1594,64 +1600,41 @@ struct PointPanel: View {
                 .background(Look.planBg, in: RoundedRectangle(cornerRadius: 8))
                 .overlay(RoundedRectangle(cornerRadius: 8)
                     .strokeBorder(Look.inkFaint.opacity(0.6), lineWidth: 1))
-            // Координаты — кнопкой во всю ширину (P803): касание кладёт их
-            // в буфер обмена.
-            HStack(spacing: 8) {
-                Button {
+            // Координаты — тихой строкой, не кнопкой (P813, вместо кнопки во
+            // всю ширину P803): копирует их «Копировать» внизу.
+            Text(Geo.text(place.coordinate))
+                .font(Look.mono(12))
+                .foregroundStyle(Look.inkSoft)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 4)
+            // Все кнопки плашки — одного вида (P813): надпись в окантовке,
+            // равной ширины в ряду. Вверху — куда деть точку (P804).
+            HStack(spacing: 6) {
+                key(T("В навигатор", "Directions")) { navigate(place) }
+                key(T("В сегодня", "To today")) { save(place) }
+                key(T("Поделиться", "Share")) {
+                    MapActions.share(GeoPoint(title: place.name, at: place.coordinate))
+                }
+            }
+            // Внизу — «Копировать» в одном ряду с «Отмена» и «Готово»;
+            // «Удалить» — у записанной точки (P803), у новой булавки её
+            // убирает «Отмена».
+            HStack(spacing: 6) {
+                if let remove {
+                    key(T("Удалить", "Delete"), run: remove)
+                }
+                key(copied ? T("Скопировано", "Copied") : T("Копировать", "Copy")) {
                     PlaceActions.copy(place.coordinate)
                     Feel.light()
                     copied = true
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { copied = false }
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: copied ? "checkmark" : "doc.on.doc")
-                            .font(.system(size: 12))
-                        Text(copied ? T("скопировано", "copied") : Geo.text(place.coordinate))
-                            .font(Look.mono(13))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.7)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .modifier(Outlined())
                 }
-                .buttonStyle(.plain)
-                .foregroundStyle(Look.inkSoft)
-                .accessibilityLabel(T("Координаты ", "Coordinates ") + Geo.text(place.coordinate) + T(", скопировать", ", copy"))
+                .accessibilityLabel(T("Скопировать координаты ", "Copy coordinates ") + Geo.text(place.coordinate))
+                key(T("Отмена", "Cancel"), run: cancel)
+                key(T("Готово", "Done"), strong: true) { done(place) }
             }
-            // В навигатор, в сегодняшний дневник, поделиться (P804; прежде
-            // первые две — кнопками внизу карты).
-            HStack(spacing: 8) {
-                action("arrow.triangle.turn.up.right.diamond", T("в навигатор", "directions")) {
-                    navigate(place)
-                }
-                action("pin.fill", T("сохранить\nв сегодня", "save to\ntoday")) { save(place) }
-                action("square.and.arrow.up", T("поделиться", "share")) {
-                    MapActions.share(GeoPoint(title: place.name, at: place.coordinate))
-                }
-            }
-            HStack {
-                // «Удалить» — здесь, а не в нижней строке (P803); у новой
-                // булавки его нет: её убирает «Отмена».
-                if let remove {
-                    Button(action: remove) {
-                        Text(T("Удалить", "Delete")).modifier(Outlined())
-                    }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(Look.inkSoft)
-                }
-                Spacer(minLength: 6)
-                // «Отмена» и «Готово» — в окантовке, как кнопки (P414).
-                Button(action: cancel) { Text(T("Отмена", "Cancel")).modifier(Outlined()) }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(Look.accent)
-                Button { done(place) } label: {
-                    Text(T("Готово", "Done")).fontWeight(.semibold).modifier(Outlined(strong: true))
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(Look.accent)
-            }
-            .font(Look.sans(15))
-            .padding(.horizontal, 4)
         }
         .font(Look.sans(15))
         .padding(12)
@@ -1670,20 +1653,16 @@ struct PointPanel: View {
         }
     }
 
-    /// Кнопка плашки: значок и подпись в одну-две строки.
-    private func action(_ icon: String, _ name: String, _ run: @escaping () -> Void) -> some View {
+    /// Кнопка плашки (P813): у всех один вид — надпись в окантовке, одна
+    /// высота, равная ширина в ряду; «Готово» — окантовкой плотнее.
+    private func key(_ name: String, strong: Bool = false, run: @escaping () -> Void) -> some View {
         Button(action: run) {
-            VStack(spacing: 2) {
-                Image(systemName: icon).font(.system(size: 15))
-                Text(name)
-                    .font(Look.sans(12))
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.8)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .frame(maxWidth: .infinity, minHeight: 40)
-            .modifier(Outlined())
+            Text(name)
+                .font(Look.sans(14, weight: strong ? .semibold : .regular))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .frame(maxWidth: .infinity, minHeight: 24)
+                .modifier(Outlined(strong: strong, narrow: true))
         }
         .buttonStyle(.plain)
         .foregroundStyle(Look.accent)
@@ -1764,10 +1743,12 @@ enum PlaceActions {
 /// подложке; главная — рамка толще.
 struct Outlined: ViewModifier {
     var strong = false
+    /// Узкие поля по бокам — кнопки в ряд по четыре (P813).
+    var narrow = false
 
     func body(content: Content) -> some View {
         content
-            .padding(.horizontal, 12)
+            .padding(.horizontal, narrow ? 4 : 12)
             .padding(.vertical, 6)
             .background(Look.planBg.opacity(0.85), in: RoundedRectangle(cornerRadius: 9))
             .overlay(RoundedRectangle(cornerRadius: 9)

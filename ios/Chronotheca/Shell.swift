@@ -45,6 +45,8 @@ final class Shell: ObservableObject {
     /// Счётчик, а не да/нет: экран для снимка ставится трижды, и записи к
     /// первому разу могут быть ещё не прочитаны.
     @Published var previewRemember = 0
+    /// Снимок плашки точки на карте (P813): растёт — карта открывает плашку.
+    @Published var previewMapPoint = 0
 
     /// Снимки для App Store (P530): без стрелок шага над страницей — на
     /// дневнике они ложатся на строку плана.
@@ -375,6 +377,7 @@ final class Shell: ObservableObject {
         case "search", "searchdeep": screen = .search
         case "settings":  showingSettings = true
         case "map":       screen = .map
+        case "mappoint":  screen = .map; previewMapPoint += 1
         case "remember":  tab = .diary; previewRemember += 1
         // Дни — от сегодняшнего, а не шагом: повтор не уводит дальше.
         case "past":      if store.date != day(-1) { store.go(to: day(-1)) }
