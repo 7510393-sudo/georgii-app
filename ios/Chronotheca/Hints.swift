@@ -100,12 +100,6 @@ final class Hints: ObservableObject {
         }
     }
 
-    /// «3 из 6» — сколько подсказок у этого экрана и какая по счёту.
-    func place(of hint: Hint) -> (Int, Int) {
-        // Подсказки приходят по одной и к месту — счёта «3 из 6» нет (P452).
-        (1, 1)
-    }
-
     func done(_ hint: Hint) {
         seen.insert(hint.id)
         UserDefaults.standard.set(Array(seen), forKey: Self.seenKey)
@@ -141,7 +135,6 @@ struct HintSticker: View {
     let hint: Hints.Hint
 
     var body: some View {
-        let (n, total) = hints.place(of: hint)
         VStack(alignment: .leading, spacing: 8) {
             Text(hint.title)
                 .font(Look.serif(17, weight: .semibold))
@@ -157,15 +150,10 @@ struct HintSticker: View {
                 .font(Look.sans(12.5))
                 .foregroundStyle(Look.inkFaint)
                 Spacer(minLength: 4)
-                if total > 1 {
-                    Text(T("\(n) из \(total)", "\(n) of \(total)"))
-                        .font(Look.mono(11.5))
-                        .foregroundStyle(Look.inkFaint)
-                }
                 Button {
                     withAnimation(.easeOut(duration: 0.2)) { hints.done(hint) }
                 } label: {
-                    Text(n < total ? T("Дальше", "Next") : T("Понятно", "Got it"))
+                    Text(T("Понятно", "Got it"))
                         .font(Look.sans(14, weight: .semibold))
                         .foregroundStyle(Look.accent)
                         .padding(.horizontal, 12)

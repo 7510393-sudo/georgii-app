@@ -7,6 +7,7 @@ import Speech
 enum Transcribe {
 
     /// Задача распознавания держится, пока идёт: иначе она обрывается.
+    // periphery:ignore - не читается: держит задачу, пока идёт
     private static var running: SFSpeechRecognitionTask?
 
     /// Распознаватель на языке приложения: сперва с краем телефона

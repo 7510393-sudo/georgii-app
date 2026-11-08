@@ -838,9 +838,8 @@ final class DayStore: ObservableObject {
     /// Оттуда её переносят туда, где ей место. Прежде точка вставала сразу
     /// на место курсора — в текст, в дело, в ответ (P213, P240, P276, P407).
     @discardableResult
-    func writePoint(_ point: GeoPoint, to tab: Shell.Tab, here: Bool = false) -> Bool {
+    func writePoint(_ point: GeoPoint, to tab: Shell.Tab) -> Bool {
         guard canEdit(tab) else { return false }
-        if here { notePlace(point) }
         attach(Geo.pointLine(point), to: tab)
         return true
     }
@@ -893,11 +892,6 @@ final class DayStore: ObservableObject {
         save()
         return true
     }
-
-    /// «Места дня» больше нет (P294): новые дни его не записывают. Уже
-    /// записанное в файлах строкой «место:» остаётся нетронутым — файл
-    /// принадлежит человеку.
-    func notePlace(_ point: GeoPoint) {}
 
     /// Вставить точку в текст там, где стоит курсор, — прямо в строку,
     /// отделив пробелами (P259). Возвращает текст и место курсора за

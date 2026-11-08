@@ -1045,13 +1045,8 @@ struct DiaryEditor: UIViewRepresentable {
                 let overEvent = planEvent(g) != nil
                 let toPlan = overEvent ? nil : planTask(g)
                 parent.onPlanHover?(toPlan, takenPiece.map(Self.isPhotoLine) ?? false)
-                if toPlan != nil { AskLine.carryOutAll() }
-                // Над строкой «Как прошло?» — встанет в конец ответа (P407):
-                // ответ показывает это у себя, запись остаётся как была.
-                let intoAnswer = toPlan == nil
-                    && takenPiece.map { AskLine.carry($0, at: DiaryEditor.aim(g.location(in: nil))) } == true
-                let away = toPlan != nil || overEvent || intoAnswer || overStrip(g, in: view) || overTitle(g, in: view)
-                ghost?.alpha = away && !intoAnswer && toPlan == nil ? 0.5 : 0.9
+                let away = toPlan != nil || overEvent || overStrip(g, in: view) || overTitle(g, in: view)
+                ghost?.alpha = away && toPlan == nil ? 0.5 : 0.9
                 if away { restore(view) } else { previewSoon(view) }
             case .ended:
                 stopPump()
@@ -1061,10 +1056,8 @@ struct DiaryEditor: UIViewRepresentable {
                 _ = parent.planEventTarget?(.zero)
                 let toPlan = toEvent == nil ? planTask(g) : nil
                 parent.onPlanHover?(nil, false)
-                let intoAnswer = toPlan == nil && toEvent == nil && takenPiece != nil
-                    && AskLine.under(DiaryEditor.aim(g.location(in: nil))) != nil
-                let back = !intoAnswer && toPlan == nil && overStrip(g, in: view)
-                let up = !intoAnswer && toPlan == nil && overTitle(g, in: view)
+                let back = toPlan == nil && overStrip(g, in: view)
+                let up = toPlan == nil && overTitle(g, in: view)
                 let moved = ghost != nil
                 ghost?.removeFromSuperview()
                 ghost = nil
@@ -1073,7 +1066,6 @@ struct DiaryEditor: UIViewRepresentable {
                 // Подержали и отпустили, не сдвинув: точка так и стоит
                 // крупнее, с крестиком; снимок — на месте.
                 guard moved else {
-                    AskLine.carryOutAll()
                     taken = nil
                     takenPiece = nil
                     rowSlots = nil
@@ -1081,7 +1073,7 @@ struct DiaryEditor: UIViewRepresentable {
                 }
                 // Отпустили — ложится ровно под пальцем, даже если наплыв
                 // ещё не успел показать это место (P406).
-                if !back, !up, !intoAnswer, toPlan == nil, toEvent == nil { preview(at, in: view) }
+                if !back, !up, toPlan == nil, toEvent == nil { preview(at, in: view) }
                 let done = result
                 let piece = takenPiece
                 restore(view)
@@ -1091,7 +1083,6 @@ struct DiaryEditor: UIViewRepresentable {
                 // Отпустили над делом плана — уходит из записи под него
                 // (P409).
                 if let task = toPlan, let piece {
-                    AskLine.carryOutAll()
                     if parent.onToPlan?(piece, task) == true {
                         remove(at: i, in: view)
                         Feel.light()
@@ -1100,17 +1091,7 @@ struct DiaryEditor: UIViewRepresentable {
                 }
                 // Отпустили над событием Календаря — вложение встаёт под него.
                 if let event = toEvent, let piece {
-                    AskLine.carryOutAll()
                     if parent.onToPlanEvent?(piece, event) == true {
-                        remove(at: i, in: view)
-                        Feel.light()
-                    }
-                    return
-                }
-                // Отпустили над строкой «Как прошло?» — вложение уходит из
-                // записи в конец ответа, в ту же строку (P407).
-                if intoAnswer {
-                    if AskLine.carryEnd(at: DiaryEditor.aim(g.location(in: nil))) {
                         remove(at: i, in: view)
                         Feel.light()
                     }
@@ -1145,7 +1126,6 @@ struct DiaryEditor: UIViewRepresentable {
                 }
             default:
                 stopPump()
-                AskLine.carryOutAll()
                 parent.onPlanHover?(nil, false)
                 _ = parent.planEventTarget?(.zero)
                 takenPiece = nil
@@ -1414,7 +1394,7 @@ struct DiaryEditor: UIViewRepresentable {
                 return
             }
             guard ghost != nil, taken != nil else { return }
-            if scrollTowardFinger(view) { ghostFollows(view) }
+            if scrollTowardFinger(view) { ghostFollows() }
             previewSoon(view)
         }
 
@@ -1442,7 +1422,7 @@ struct DiaryEditor: UIViewRepresentable {
         }
 
         /// Страница уехала — несомое остаётся под пальцем.
-        private func ghostFollows(_ view: UITextView) {
+        private func ghostFollows() {
             guard let ghost, let host = ghost.superview else { return }
             let local = host.convert(finger, from: nil)
             ghost.center = CGPoint(x: local.x, y: local.y - Self.lift)
@@ -1770,7 +1750,7 @@ struct DiaryEditor: UIViewRepresentable {
             }
         }
 
-        @objc private func keyboardGone(_ note: Notification) {
+        @objc private func keyboardGone(_: Notification) {
             keyboardTop = nil
             makeRoom(scroll: false)
         }
@@ -2247,17 +2227,15 @@ final class FileChip: NSTextAttachment {
 
 /// Снимок в тексте записи.
 ///
-/// Помнит свою строку-ссылку: по ней поле возвращает в файл ту же строку,
-/// какая там и была (решение P204).
+/// Строку-ссылку для файла хранит пометка текста `photoKey`, а не сам снимок:
+/// по ней поле возвращает в файл ту же строку, какая там и была (P204).
 final class PhotoAttachment: NSTextAttachment {
 
-    let link: String
     let url: URL?
     /// Картинку уже прочитали или читают — второй раз не надо.
     var loaded = false
 
     init(link: String, url: URL?) {
-        self.link = link
         self.url = url
         super.init(data: nil, ofType: nil)
         bounds = CGRect(origin: CGPoint(x: 0, y: -4), size: DiaryEditor.photoSize)

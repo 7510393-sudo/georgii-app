@@ -92,18 +92,6 @@ enum Ru {
         return "\(c.day ?? 1) \(months[(c.month ?? 1) - 1]) ’\(String(format: "%02d", (c.year ?? 2026) % 100))"
     }
 
-    /// «13 сент.» — когда «13 сентября» не умещается (P594).
-    static func shortestDate(_ date: Date) -> String {
-        let c = Calendar.current.dateComponents([.day, .month], from: date)
-        let m = (c.month ?? 1) - 1
-        if Lang.code == "ru" {
-            let short = ["янв.", "февр.", "марта", "апр.", "мая", "июня",
-                         "июля", "авг.", "сент.", "окт.", "нояб.", "дек."]
-            return "\(c.day ?? 1) \(short[m])"
-        }
-        return pattern("dMMM", date)
-    }
-
     /// «13 сентября»
     static func shortDate(_ date: Date) -> String {
         guard own else { return pattern("dMMMM", date) }
@@ -270,11 +258,6 @@ enum Look {
     /// на картах (P358).
     static let pin       = Color(light: 0xD8433A, dark: 0xFF7A6E)
 
-    /// Торец плашки: светлая грань, лицо, глубина и тёмная грань.
-    static let boardLit  = Color(light: 0xFCFAF4, dark: 0x3E4750)
-    static let boardFace = Color(light: 0xE9E5DB, dark: 0x2B3239)
-    static let boardDeep = Color(light: 0xCFC9BB, dark: 0x1B2127)
-    static let boardDark = Color(light: 0xA9A296, dark: 0x0B0F14)
 
     static let diaryBg   = Color(light: 0xFAF5EC, dark: 0x1B1812)
 
@@ -309,6 +292,7 @@ enum Look {
 /// темнее (как у поиска с P696). Прежде календарь лежал на почти белом
 /// `planBg`, а поиск — на тёплом: два раздела разного цвета.
 struct Desk: View {
+    // periphery:ignore - не читается, но перерисовывает вид при смене гаммы
     @AppStorage(Prefs.calendarTint) private var palette = "distance"
     var body: some View { Scheme.current.today.overlay(Color.black.opacity(0.05)) }
 }

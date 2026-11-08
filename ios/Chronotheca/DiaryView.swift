@@ -180,14 +180,8 @@ extension DiaryView {
             hover(overTask, photo: true)
             if shell.eventHover != overEvent?.key { shell.eventHover = overEvent?.key }
             if overTask != nil || overEvent != nil {
-                AskLine.carryOutAll()
-                DiaryEditor.active?.carryOut()
-            // Над строкой «Как прошло?» — встаёт в конец ответа, в ту же
-            // строку (P407).
-            } else if !overStrip, AskLine.carry(line, at: DiaryEditor.aim(spot)) {
                 DiaryEditor.active?.carryOut()
             } else if overStrip {
-                AskLine.carryOutAll()
                 DiaryEditor.active?.carryOut()
             } else {
                 DiaryEditor.active?.carryIn(line, at: CGPoint(x: spot.x, y: spot.y))
@@ -198,7 +192,6 @@ extension DiaryView {
             hover(nil, photo: false)
             shell.eventHover = nil
             if let task = overTask, spot != .zero {
-                AskLine.carryOutAll()
                 DiaryEditor.active?.carryOut()
                 if Diary.isPoint(link) {
                     store.stripPointToPlan(link, under: task)
@@ -207,16 +200,10 @@ extension DiaryView {
                 }
                 Feel.thud()
             } else if let mark = overEvent, spot != .zero {
-                AskLine.carryOutAll()
                 DiaryEditor.active?.carryOut()
                 store.stripToEvent(link, underEvent: mark)
                 Feel.thud()
-            } else if !overStrip, spot != .zero, AskLine.carryEnd(at: DiaryEditor.aim(spot)) {
-                DiaryEditor.active?.carryOut()
-                if i >= store.photos.count { store.dropFromPlanStrip(link) }
-                Feel.thud()
             } else if overStrip || spot == .zero {
-                AskLine.carryOutAll()
                 DiaryEditor.active?.carryOut()
                 let n = store.photos.count
                 if let to = StripZones.nearest(to: spot, count: links.count), to != i, spot != .zero {
@@ -241,7 +228,6 @@ extension DiaryView {
             DiaryEditor.active?.stopFollowingStrip()
             hover(nil, photo: false)
             shell.eventHover = nil
-            AskLine.carryOutAll()
             DiaryEditor.active?.carryOut()
             stripCarry = nil
             stripSpot = .zero

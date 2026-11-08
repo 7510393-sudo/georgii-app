@@ -531,6 +531,7 @@ struct PageSides: View {
     @ObservedObject var scroll: PageScroll
     @Environment(\.colorScheme) private var scheme
     @AppStorage(Prefs.plainPast) private var plainPast = false
+    // periphery:ignore - не читается, но перерисовывает вид, когда заготовки готовы
     @ObservedObject private var shop = PaperShop.shared
 
     var body: some View {
@@ -620,6 +621,7 @@ struct PageTexture: View {
     /// Старая бумага выключена в настройках (P730).
     @AppStorage(Prefs.plainPast) private var plainPast = false
     /// Готовые заготовки краёв приходят следом (P732).
+    // periphery:ignore - не читается, но перерисовывает вид, когда заготовки готовы
     @ObservedObject private var shop = PaperShop.shared
     private var dark: Bool { scheme == .dark }
 
@@ -1481,7 +1483,7 @@ struct AttachBar: View {
                                        "Could not find where you are — allow location for the app in iPhone Settings."))
                 }
                 // Под последним текстом записи, как всё новое (P615).
-                if store.writePoint(GeoPoint(title: "", at: location.coordinate), to: tab, here: true) {
+                if store.writePoint(GeoPoint(title: "", at: location.coordinate), to: tab) {
                     shell.say(T("Место добавлено", "Place added"))
                 }
             }

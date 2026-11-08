@@ -285,17 +285,56 @@ final class MovementTests: XCTestCase {
         note("запуск", String(format: "%.2f с", opened))
         sleep(3)
 
-        for (button, screen) in [("bottom.calendar", "calendar"),
-                                 ("bottom.map", "map"), ("bottom.today", "today")] {
-            let tap = Date()
-            app.buttons[button].firstMatch.tap()
-            XCTAssertTrue(wait(10) { openScreen == screen }, "\(screen) не открылся")
-            let took = Date().timeIntervalSince(tap)
-            note(screen, String(format: "%.2f с", took))
+        for (screen, took) in sections("") {
             XCTAssertLessThan(took, 1.5, "\(screen) открывался \(took) с")
-            sleep(2)
         }
         save("06-большой-архив")
         XCTAssertLessThan(opened, 8, "запуск занял \(opened) с")
+
+        // Тот же архив без старой бумаги (P806): если разделы открываются
+        // заметно быстрее — время уходит на бумагу клеток, а не на архив.
+        app.terminate()
+        app.launchArguments += ["-prefs.plainPast", "YES"]
+        app.launch()
+        XCTAssertTrue(app.buttons["bottom.calendar"].firstMatch.waitForExistence(timeout: 60))
+        sleep(8)
+        _ = sections("без бумаги ")
+    }
+
+    /// Те же замеры на маленьком образце (P806) — без требований, только для
+    /// сравнения: растёт ли время с архивом или робот медлит всегда.
+    func testSmallArchiveTimes() {
+        launch()
+        sleep(3)
+        _ = sections("малый ")
+    }
+
+    /// Открыть по очереди календарь, карту, «Дневник» кнопками внизу и
+    /// записать, на что уходит время (P806): найти кнопку, нажать (робот
+    /// ждёт, пока приложение затихнет), увидеть смену раздела, прочесть
+    /// надпись на уже открытом разделе.
+    private func sections(_ tag: String) -> [(String, Double)] {
+        var out: [(String, Double)] = []
+        for (button, screen) in [("bottom.calendar", "calendar"),
+                                 ("bottom.map", "map"), ("bottom.today", "today")] {
+            let t0 = Date()
+            let target = app.buttons[button].firstMatch
+            _ = target.exists
+            let t1 = Date()
+            target.tap()
+            let t2 = Date()
+            XCTAssertTrue(wait(10) { openScreen == screen }, "\(screen) не открылся")
+            let t3 = Date()
+            sleep(2)
+            let t4 = Date()
+            _ = openScreen
+            let t5 = Date()
+            let took = t3.timeIntervalSince(t0)
+            note(tag + screen, String(format: "%.2f с (найти %.2f, нажать %.2f, увидеть %.2f, прочесть потом %.2f)",
+                                      took, t1.timeIntervalSince(t0), t2.timeIntervalSince(t1),
+                                      t3.timeIntervalSince(t2), t5.timeIntervalSince(t4)))
+            out.append((screen, took))
+        }
+        return out
     }
 }

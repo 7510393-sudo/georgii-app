@@ -9,6 +9,7 @@ struct BarCover: View {
     var edged = true
     @AppStorage(Prefs.plainPast) private var plainPast = false
     /// Гамма меняется — картон перекрашивается (P498).
+    // periphery:ignore - не читается, но перерисовывает вид при смене гаммы
     @AppStorage(Prefs.calendarTint) private var palette = "distance"
 
     var body: some View {
@@ -169,7 +170,6 @@ enum Leather {
     /// клавиатурой — место под кромку и строчку, чтобы строчка не шла по
     /// значкам (P746; прежде — глубина зубцов рваного края, P517).
     static let lip: CGFloat = 10
-    static let uiBase = UIColor(red: 0.64, green: 0.46, blue: 0.28, alpha: 1)
 
     /// Фактура кожи (P749: «не пупырышки, а линии и потёртости»;
     /// бугорки P748 убраны): мягкие светлые потёртости и тёмные пятна

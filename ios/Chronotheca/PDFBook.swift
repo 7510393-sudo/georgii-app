@@ -169,7 +169,7 @@ enum PDFBook {
         }
 
         add(Ru.weekday(day.date).capitalized + ", " + Ru.longDate(day.date),
-            serif(20).withWeight(.semibold), after: 4)
+            serif(20).bolded(), after: 4)
         if let weather = day.weather, Prefs.weatherOn {
             add(Prefs.weatherText(weather), .systemFont(ofSize: 11), soft, after: 14)
         } else {
@@ -214,7 +214,7 @@ enum PDFBook {
             add("", .systemFont(ofSize: 6), after: 8)
         }
 
-        if !day.title.isEmpty { add(Geo.stripped(day.title), serif(16).withWeight(.semibold), after: 8) }
+        if !day.title.isEmpty { add(Geo.stripped(day.title), serif(16).bolded(), after: 8) }
 
         for line in day.text.components(separatedBy: .newlines) {
             // Одно вложение строкой или ряд снимков (P348) — каждый по
@@ -295,7 +295,7 @@ enum PDFBook {
 }
 
 private extension UIFont {
-    func withWeight(_ weight: UIFont.Weight) -> UIFont {
+    func bolded() -> UIFont {
         if let bold = fontDescriptor.withSymbolicTraits(.traitBold) { return UIFont(descriptor: bold, size: pointSize) }
         return self
     }

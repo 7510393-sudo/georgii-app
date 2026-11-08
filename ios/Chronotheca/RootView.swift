@@ -652,7 +652,7 @@ struct RootView: View {
             // Толчок — когда страница перевалила за середину; раздел
             // меняется, когда лента встала (P800: прежде менялся на ходу,
             // экран перестраивался посреди хода и дёргался в миг толчка).
-            .modifier(PageWatch(at: $pageAt, idType: Shell.Screen.self,
+            .modifier(PageWatch(at: $pageAt,
                                 skip: { $0 == current }, feel: { Feel.thud() }, landed: { landed(on: $0) }))
         }
     }
@@ -1254,7 +1254,6 @@ private struct OpenBelow: Shape {
 /// Здесь место читается только в откликах, и вид посреди хода не трогается.
 struct PageWatch<ID: Hashable>: ViewModifier {
     @Binding var at: ID?
-    let idType: ID.Type
     /// Эту страницу не отмечать толчком (уже открыта кнопкой).
     let skip: (ID) -> Bool
     /// Какой толчок: у разделов — потвёрже, у месяцев — лёгкий.
@@ -1264,10 +1263,9 @@ struct PageWatch<ID: Hashable>: ViewModifier {
     final class Seen { var last: AnyHashable? }
     @State private var seen = Seen()
 
-    init(at: Binding<ID?>, idType: ID.Type, skip: @escaping (ID) -> Bool = { _ in false },
+    init(at: Binding<ID?>, skip: @escaping (ID) -> Bool = { _ in false },
          feel: @escaping () -> Void = { Feel.light() }, landed: @escaping (ID) -> Void) {
         _at = at
-        self.idType = idType
         self.skip = skip
         self.feel = feel
         self.landed = landed

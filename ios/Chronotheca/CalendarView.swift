@@ -120,7 +120,7 @@ struct CalendarView: View {
         .scrollPosition(id: $top, anchor: .top)
         // Сменился месяц — толчок в руку (P792); шапка меняется, когда
         // лента встала (P800: менялась на ходу, и месяц прыгал на строки).
-        .modifier(PageWatch(at: $top, idType: Date.self) { now in
+        .modifier(PageWatch(at: $top) { now in
             if shown != now { shown = now }
         })
         // Тот же тёплый стол, что под поиском (P755).

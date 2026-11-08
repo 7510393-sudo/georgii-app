@@ -525,7 +525,7 @@ struct MapScreen: View {
         // Названием остались координаты — в текст они ляжут один раз.
         let title = place.name == Geo.text(place.coordinate) ? "" : place.name
         store.go(to: DayStore.today())
-        guard store.writePoint(GeoPoint(title: title, at: place.coordinate), to: .diary, here: mine) else {
+        guard store.writePoint(GeoPoint(title: title, at: place.coordinate), to: .diary) else {
             return shell.say(store.closedReason)
         }
         if let weather { store.noteWeather(at: weather) }

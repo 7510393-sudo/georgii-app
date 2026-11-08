@@ -314,7 +314,7 @@ struct PlanTitle: UIViewRepresentable {
             keyboardTop = window.convert(frame, from: nil).minY
         }
 
-        @objc private func keyboardGone(_ note: Notification) { keyboardTop = nil }
+        @objc private func keyboardGone(_: Notification) { keyboardTop = nil }
 
         /// Строка, которую пишут в плашке, не уходит под клавиатуру (P669):
         /// плашка растёт вниз с каждой новой строкой, и страница подъезжает

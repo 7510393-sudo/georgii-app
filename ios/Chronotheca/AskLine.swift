@@ -82,7 +82,6 @@ struct AskLine: UIViewRepresentable {
         context.coordinator.view = view
         view.isEditable = editable
         view.isSelectable = editable
-        if editable { AskLine.lines.add(context.coordinator) } else { AskLine.lines.remove(context.coordinator) }
         context.coordinator.apply(to: view)
 
         if typing, editable, !view.isFirstResponder {
@@ -153,41 +152,6 @@ struct AskLine: UIViewRepresentable {
         return out
     }
 
-    // MARK: - Перенос в ответ (P407)
-
-    /// Строки «Как прошло?» открытой страницы — в них несут вложения из
-    /// полоски и из записи.
-    static let lines = NSHashTable<Coordinator>.weakObjects()
-
-    /// Строка ответа под пальцем (в окне).
-    static func under(_ global: CGPoint) -> Coordinator? {
-        // «Итоги дня» вложений не принимают (решение автора, P643): перенос
-        // сюда отключён, строки ответа остаются только для текста.
-        nil
-    }
-
-    /// Несут вложение: строка под пальцем показывает его у себя в конце,
-    /// прочие — какими были. `true` — палец над строкой ответа.
-    @discardableResult
-    static func carry(_ piece: String, at global: CGPoint) -> Bool {
-        let target = under(global)
-        for line in lines.allObjects where line !== target { line.carryOut() }
-        target?.carryIn(piece)
-        return target != nil
-    }
-
-    /// Отпустили: вложение встаёт в ответ под пальцем. `true` — встало.
-    @discardableResult
-    static func carryEnd(at global: CGPoint) -> Bool {
-        let target = under(global)
-        for line in lines.allObjects where line !== target { line.carryOut() }
-        return target?.carryEnd() ?? false
-    }
-
-    static func carryOutAll() {
-        for line in lines.allObjects { line.carryOut() }
-    }
-
     // MARK: - Поведение
 
     final class Coordinator: NSObject, UITextViewDelegate, UIGestureRecognizerDelegate {
@@ -214,7 +178,7 @@ struct AskLine: UIViewRepresentable {
             keyboardTop = window.convert(frame, from: nil).minY
         }
 
-        @objc private func keyboardGone(_ note: Notification) { keyboardTop = nil }
+        @objc private func keyboardGone(_: Notification) { keyboardTop = nil }
 
         /// Строка, в которой пишут, не уходит под клавиатуру и строку кнопок
         /// над ней (P406): страница подъезжает ровно настолько, насколько
@@ -240,8 +204,8 @@ struct AskLine: UIViewRepresentable {
 
         /// Собрать строку: бледное название, ответ чернилами, а у пустого
         /// ответа, пока в нём не пишут, — бледное многоточие.
-        func styled(for view: UITextView, answer: String? = nil) -> NSAttributedString {
-            let answer = answer ?? parent.answer
+        func styled(for view: UITextView) -> NSAttributedString {
+            let answer = parent.answer
             let out = NSMutableAttributedString(string: parent.label + " ",
                                                 attributes: AskLine.style(Look.hint))
             if answer.isEmpty && !view.isFirstResponder {
@@ -262,7 +226,6 @@ struct AskLine: UIViewRepresentable {
         /// же самое, не переписывается: снимки в ней не мигают, а набор
         /// не сбивается (P407).
         func apply(to view: UITextView) {
-            guard carried == nil else { return }
             let empty = parent.answer.isEmpty && !view.isFirstResponder
             let wanted = parent.label + " " + (empty ? AskLine.placeholder : parent.answer)
             if view.attributedText.length > 0, empty == placeholderShown,
@@ -280,40 +243,6 @@ struct AskLine: UIViewRepresentable {
 
         /// В строке сейчас бледное многоточие пустого ответа.
         private var placeholderShown = false
-
-        // MARK: Перенос в ответ (P407)
-
-        /// Строка до переноса и ответ, каким он станет.
-        private var before: NSAttributedString?
-        private(set) var carried: String?
-
-        func carryIn(_ piece: String) {
-            guard let view, carried == nil else { return }
-            before = view.attributedText.copy() as? NSAttributedString
-            let next = Diary.adding(piece, to: parent.answer)
-            carried = next
-            view.attributedText = styled(for: view, answer: next)
-            DiaryEditor.loadPhotos(in: view)
-            view.invalidateIntrinsicContentSize()
-            Feel.light()
-        }
-
-        func carryOut() {
-            guard let view, carried != nil else { return }
-            if let before { view.attributedText = before }
-            before = nil
-            carried = nil
-            view.invalidateIntrinsicContentSize()
-        }
-
-        func carryEnd() -> Bool {
-            guard let next = carried else { return false }
-            before = nil
-            carried = nil
-            parent.answer = next
-            if let view { apply(to: view) }
-            return true
-        }
 
         // MARK: Касание и долгое нажатие по вложению
 
