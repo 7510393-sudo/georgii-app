@@ -336,6 +336,15 @@ final class MovementTests: XCTestCase {
             _ = openScreen
             let t5 = Date()
             let took = t3.timeIntervalSince(t0)
+            // Что робот видит на разделе (P808): дерево элементов целиком —
+            // по нему видно, что раздувает его обход.
+            if let dir = ProcessInfo.processInfo.environment["MOTION_DIR"], !dir.isEmpty {
+                let tree = app.debugDescription
+                let lines = tree.split(separator: "\n").count
+                note(tag + screen + " дерево", "\(lines) строк")
+                try? tree.write(to: URL(fileURLWithPath: dir).appendingPathComponent("tree-\(shot)-\(screen).txt"),
+                                atomically: true, encoding: .utf8)
+            }
             note(tag + screen, String(format: "%.2f с (найти %.2f, нажать %.2f, увидеть %.2f, прочесть потом %.2f)",
                                       took, t1.timeIntervalSince(t0), t2.timeIntervalSince(t1),
                                       t3.timeIntervalSince(t2), t5.timeIntervalSince(t4)))
