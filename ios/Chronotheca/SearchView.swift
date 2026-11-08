@@ -810,10 +810,16 @@ struct FolderShape: Shape {
     /// Доля ширины под корешок: у карточек треть, у листа «Дня» шире —
     /// там имя дня и дата (P797).
     var tabShare: CGFloat = 1.0 / 3
+    /// Скруглённый низ — у листа «Дня» (P830): у карточек картотеки низ
+    /// уходит под следующую и остаётся прямым (P725).
+    var roundBottom = false
 
     func path(in r: CGRect) -> Path {
         let tabWidth = r.width * tabShare
-        let tabR: CGFloat = 10, bodyR: CGFloat = 12, inner: CGFloat = 6
+        let tabR: CGFloat = 10, bodyR: CGFloat = 12
+        // Вырез у корешка — по большему радиусу (P830; прежде 6 — «очень
+        // условно»): насколько позволяет высота корешка.
+        let inner = max(6, min(16, tabHeight - tabR - 2))
         var p = Path()
         p.move(to: CGPoint(x: r.minX, y: r.minY + tabR))
         p.addArc(tangent1End: CGPoint(x: r.minX, y: r.minY),
@@ -827,10 +833,20 @@ struct FolderShape: Shape {
         p.addLine(to: CGPoint(x: r.maxX - bodyR, y: r.minY + tabHeight))
         p.addArc(tangent1End: CGPoint(x: r.maxX, y: r.minY + tabHeight),
                  tangent2End: CGPoint(x: r.maxX, y: r.minY + tabHeight + bodyR), radius: bodyR)
-        // Низ прямой, без скругления (P725): карточка уходит под следующую,
-        // и видно, что она выше видимой части.
-        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
-        p.addLine(to: CGPoint(x: r.minX, y: r.maxY))
+        if roundBottom {
+            // Низ листа — те же скругления, что вверху (P830).
+            p.addLine(to: CGPoint(x: r.maxX, y: r.maxY - bodyR))
+            p.addArc(tangent1End: CGPoint(x: r.maxX, y: r.maxY),
+                     tangent2End: CGPoint(x: r.maxX - bodyR, y: r.maxY), radius: bodyR)
+            p.addLine(to: CGPoint(x: r.minX + bodyR, y: r.maxY))
+            p.addArc(tangent1End: CGPoint(x: r.minX, y: r.maxY),
+                     tangent2End: CGPoint(x: r.minX, y: r.maxY - bodyR), radius: bodyR)
+        } else {
+            // Низ прямой, без скругления (P725): карточка уходит под
+            // следующую, и видно, что она выше видимой части.
+            p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
+            p.addLine(to: CGPoint(x: r.minX, y: r.maxY))
+        }
         p.closeSubpath()
         return p
     }

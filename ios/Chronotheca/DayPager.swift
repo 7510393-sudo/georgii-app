@@ -273,7 +273,7 @@ struct DayPage: View {
 
     /// Контур листа «Дня» (P797): корешок во всю высоту шапки, шире, чем у
     /// карточек, — в нём имя дня и дата.
-    static let folder = FolderShape(tabHeight: headLine + 14, tabShare: 0.56)
+    static let folder = FolderShape(tabHeight: headLine + 14, tabShare: 0.56, roundBottom: true)
 
     /// Линия края листа и корешков позади (P802).
     static let edge = Color(light: 0xB8A67C, dark: 0x5A4E33)
