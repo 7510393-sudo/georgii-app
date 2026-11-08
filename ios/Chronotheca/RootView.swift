@@ -668,12 +668,14 @@ struct RootView: View {
     /// Страница «Дневника»: лист дня, под ним — лента картотеки (P777).
     private func dayPage(_ size: CGSize) -> some View {
         ZStack {
+            // Стол — под всей страницей, не под лентой (P831): лист «Дня»
+            // уходит под картотеку будущего, и стол ленты закрыл бы его.
             SearchView(height: size.height)
                 .frame(width: size.width, height: size.height)
-                .background(Desk())
                 .opacity(shell.ribbonLive ? 1 : 0)
                 .allowsHitTesting(shell.screen == .search)
                 .accessibilityHidden(!shell.ribbonLive)
+                .zIndex(0)
             // Пока открыта лента, день пропускает касания к ней: ленту
             // листают и по месту дня (P777). Справа от корешка — стол (P797).
             DayPages()
@@ -682,6 +684,7 @@ struct RootView: View {
                 .modifier(FollowRibbon(ribbon: shell.ribbon, live: shell.ribbonLive))
                 .allowsHitTesting(shell.screen == .today)
         }
+        .background(Desk())
     }
 
     /// Страница карты. Палец двигает карту, поэтому лента на ней не листается

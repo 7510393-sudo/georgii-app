@@ -1863,32 +1863,59 @@ struct DayCloud: View {
 /// дальше, тем выше и короче справа. Это те самые карточки, что выезжают,
 /// если потянуть «День» вниз. Их корешки — за корешком листа, не видны.
 /// Нижние края уходят под лист. Стол под ними — тот же, что под картотекой
-/// (`Desk`, P817): прежде там просвечивал белый. Касаний не ловят.
+/// (`Desk`, P817). Касаний не ловят.
+///
+/// Тянут «День» вниз (P832) — плечи расходятся: дальние быстро уходят вверх
+/// за край, ближнее поднимается медленнее всех и тает, когда над листом
+/// выходит настоящая вчерашняя карточка.
 struct BehindTabs: View {
+    @EnvironmentObject private var shell: Shell
+
     var body: some View {
+        BehindSpread(ribbon: shell.ribbon, live: shell.ribbonLive)
+    }
+}
+
+private struct BehindSpread: View {
+    @ObservedObject var ribbon: Ribbon
+    let live: Bool
+
+    var body: some View {
+        // Насколько день стянут вниз; вверх (будущее) плечи стоят.
+        let pulled = live ? max(0, ribbon.y) : 0
         GeometryReader { geo in
             let w = geo.size.width
             let start = w * DayPage.folder.tabShare
             let base = DayPage.folder.tabHeight
             ZStack(alignment: .topLeading) {
                 Desk()
-                // Дальняя — первой, ближняя — поверх неё.
-                ForEach((0..<5).reversed(), id: \.self) { i in
-                    let top = 6 + CGFloat(4 - i) * 7
-                    // Износ у каждой из пяти свой, но один и тот же на всех
-                    // днях: заготовка рисуется один раз, листание не ждёт.
-                    CardPaper(seed: 9_100 + i, past: true)
-                        .frame(width: w - 4 - CGFloat(i) * 4,
-                               height: base - top + Search.tabHeight + 24)
-                        .offset(y: top - Search.tabHeight)
-                }
-            }
-            // Видно только справа от корешка листа и над листом: корешки
-            // карточек и их низ спрятаны.
-            .mask(alignment: .topLeading) {
-                Rectangle()
                     .frame(width: max(0, w - start), height: base + 2)
                     .offset(x: start)
+                ZStack(alignment: .topLeading) {
+                    // Дальняя — первой, ближняя — поверх неё.
+                    ForEach((0..<5).reversed(), id: \.self) { i in
+                        let rest: CGFloat = 6 + CGFloat(4 - i) * 7
+                        // Ближняя поднимается медленно, дальние — всё
+                        // быстрее: расстояние между ними растёт.
+                        let speed: CGFloat = i == 0 ? 0.35 : 0.6 + CGFloat(i) * 0.5
+                        let rise: CGFloat = pulled * speed
+                        let fade: Double = i == 0 ? Double(max(0, min(1, (pulled - 50) / 110))) : 0
+                        let height: CGFloat = base - rest + Search.tabHeight + 24
+                        // Износ у каждой из пяти свой, но один и тот же на всех
+                        // днях: заготовка рисуется один раз, листание не ждёт.
+                        CardPaper(seed: 9_100 + i, past: true)
+                            .frame(width: w - 4 - CGFloat(i) * 4, height: height)
+                            .offset(y: rest - rise - Search.tabHeight)
+                            .opacity(1 - fade)
+                    }
+                }
+                // Видно справа от корешка листа и над листом — и выше него,
+                // пока день стянут вниз: туда плечи и уходят.
+                .mask(alignment: .topLeading) {
+                    Rectangle()
+                        .frame(width: max(0, w - start), height: base + 2 + pulled)
+                        .offset(x: start, y: -pulled)
+                }
             }
         }
         .frame(height: DayPage.folder.tabHeight + 2)

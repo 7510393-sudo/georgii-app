@@ -353,6 +353,29 @@ struct FollowRibbon: ViewModifier {
     let live: Bool
 
     func body(content: Content) -> some View {
-        content.offset(y: live ? ribbon.y : 0)
+        let y = live ? ribbon.y : 0
+        content
+            .offset(y: FollowRibbon.shown(y, height: ribbon.height))
+            // За верхней четвертью лист уходит под картотеку (P831).
+            .zIndex(FollowRibbon.under(y, height: ribbon.height) ? -1 : 1)
+    }
+
+    /// Где лист «Дня», когда его место в ленте на `y` (P831). Вниз (прошлое)
+    /// — вместе с местом. Вверх (будущее): до верхней четверти экрана лист
+    /// поверх картотеки и чуть обгоняет место — завтрашняя карточка выходит
+    /// из-под него, и на верхней четверти нижний край листа сравнивается с
+    /// её верхним краем. Дальше лист отстаёт вдвое и уходит под картотеку:
+    /// завтрашняя карточка наползает на него, и в покое лист выглядывает над
+    /// ней, как карточка позади.
+    static func shown(_ y: CGFloat, height: CGFloat) -> CGFloat {
+        guard y < 0, height > 0 else { return y }
+        let swap = -0.75 * height
+        if y >= swap { return y - Search.overlap * (y / swap) }
+        return swap - Search.overlap + (y - swap) * 0.5
+    }
+
+    /// Лист под картотекой — за верхней четвертью (P831).
+    static func under(_ y: CGFloat, height: CGFloat) -> Bool {
+        height > 0 && y < -0.75 * height
     }
 }
