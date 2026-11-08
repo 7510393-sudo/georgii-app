@@ -182,10 +182,10 @@ final class MovementTests: XCTestCase {
         save("10-лента-будущее")
     }
 
-    /// Разделы — лента вбок (P799, без круга): с «Дневника» влево — карта;
-    /// на карте с середины — ничего (палец двигает карту); от левого края
-    /// вправо — «Дневник»; вправо — календарь; с календаря влево — снова
-    /// «Дневник». День при этом не перелистывается.
+    /// Разделы — лента вбок (P799, без круга; P805 — карта слева): с
+    /// «Дневника» влево — календарь, с календаря вправо — снова «Дневник»;
+    /// вправо — карта; на карте с середины — ничего (палец двигает карту);
+    /// от правого края влево — «Дневник». День при этом не перелистывается.
     func testSwipeSections() {
         launch(trace: "след-свайп")
         XCTAssertEqual(openScreen, "today")
@@ -197,22 +197,22 @@ final class MovementTests: XCTestCase {
                        thenHoldForDuration: 0)
         }
         swipe(0.8, 0.1)
-        XCTAssertTrue(wait(6) { openScreen == "map" }, "свайп влево не открыл карту: \(openScreen)")
+        XCTAssertTrue(wait(6) { openScreen == "calendar" }, "свайп влево не открыл календарь: \(openScreen)")
         XCTAssertEqual(openDay, "today", "свайп перелистнул день")
-        sleep(2)
-        save("02-свайп-карта")
-        swipe(0.5, 0.05)
-        sleep(1)
-        XCTAssertEqual(openScreen, "map", "с середины карты свайп увёл с карты")
-        swipe(0.02, 0.9)
-        XCTAssertTrue(wait(6) { openScreen == "today" }, "от левого края карты не вернулся «Дневник»: \(openScreen)")
-        sleep(1)
-        swipe(0.2, 0.9)
-        XCTAssertTrue(wait(6) { openScreen == "calendar" }, "свайп вправо не открыл календарь: \(openScreen)")
         sleep(1)
         save("02-свайп-календарь")
-        swipe(0.8, 0.1)
+        swipe(0.2, 0.9)
         XCTAssertTrue(wait(6) { openScreen == "today" }, "с календаря свайп не вернул «Дневник»: \(openScreen)")
+        sleep(1)
+        swipe(0.2, 0.9)
+        XCTAssertTrue(wait(6) { openScreen == "map" }, "свайп вправо не открыл карту: \(openScreen)")
+        sleep(2)
+        save("02-свайп-карта")
+        swipe(0.5, 0.95)
+        sleep(1)
+        XCTAssertEqual(openScreen, "map", "с середины карты свайп увёл с карты")
+        swipe(0.985, 0.1)
+        XCTAssertTrue(wait(6) { openScreen == "today" }, "от правого края карты не вернулся «Дневник»: \(openScreen)")
         XCTAssertEqual(openDay, "today", "свайп перелистнул день")
     }
 
@@ -228,7 +228,7 @@ final class MovementTests: XCTestCase {
                        thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.2, dy: row + 0.01)),
                        withVelocity: 500,
                        thenHoldForDuration: 0)
-            XCTAssertTrue(wait(6) { openScreen == "map" }, "свайп с места «\(name)» не открыл карту: \(openScreen)")
+            XCTAssertTrue(wait(6) { openScreen == "calendar" }, "свайп с места «\(name)» не открыл календарь: \(openScreen)")
             sleep(1)
             app.buttons["bottom.today"].firstMatch.tap()
             XCTAssertTrue(wait(6) { openScreen == "today" }, "«День» не вернул")
@@ -247,10 +247,10 @@ final class MovementTests: XCTestCase {
                    thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.1, dy: 0.3)),
                    withVelocity: 1500,
                    thenHoldForDuration: 0)
-        XCTAssertTrue(wait(6) { openScreen == "map" }, "с клавиатурой свайп не открыл карту: \(openScreen)")
+        XCTAssertTrue(wait(6) { openScreen == "calendar" }, "с клавиатурой свайп не открыл календарь: \(openScreen)")
         XCTAssertEqual(openDay, start, "свайп перелистнул день")
         sleep(2)
-        XCTAssertFalse(app.keyboards.firstMatch.exists, "клавиатура осталась на карте")
+        XCTAssertFalse(app.keyboards.firstMatch.exists, "клавиатура осталась в календаре")
         save("03-свайп-с-клавиатурой")
     }
 

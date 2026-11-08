@@ -619,24 +619,25 @@ struct RootView: View {
 
     /// Разделы — одна лента вбок (P799, вместо плашек, опускавшихся сверху,
     /// P501, и самодельного свайпа P778–P790, который на телефоне не
-    /// брался): «Календарь», «Дневник», «Карта». Листает сам iPhone — он и
+    /// брался): «Карта», «Дневник», «Календарь» (P805). Листает сам iPhone — он и
     /// отличает ход вбок от прокрутки вверх-вниз. Кнопки внизу ведут ленту к
     /// своей странице. Без круга: от карты — только назад к «Дневнику».
     private var screen: some View {
         GeometryReader { geo in
             ScrollView(.horizontal) {
+                // Карта слева, календарь справа (P805).
                 HStack(spacing: 0) {
-                    CalendarView()
-                        .frame(width: geo.size.width, height: geo.size.height)
-                        .background(Desk())
-                        .id(Shell.Screen.calendar)
-                    dayPage(geo.size)
-                        .frame(width: geo.size.width, height: geo.size.height)
-                        .id(Shell.Screen.today)
                     mapPage
                         .frame(width: geo.size.width, height: geo.size.height)
                         .background(Look.chrome)
                         .id(Shell.Screen.map)
+                    dayPage(geo.size)
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        .id(Shell.Screen.today)
+                    CalendarView()
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        .background(Desk())
+                        .id(Shell.Screen.calendar)
                 }
                 .scrollTargetLayout()
             }
@@ -676,16 +677,17 @@ struct RootView: View {
     }
 
     /// Страница карты. Палец двигает карту, поэтому лента на ней не листается
-    /// — к «Дневнику» ведёт полоска у левого края: ведёшь по ней вправо.
+    /// — к «Дневнику» ведёт полоска у правого края: ведёшь по ней влево
+    /// (P805; карта слева от «Дневника»).
     /// Карта собирается заранее, через несколько секунд после запуска (P581).
     private var mapPage: some View {
-        ZStack(alignment: .leading) {
+        ZStack(alignment: .trailing) {
             if mapReady || shell.screen == .map { MapScreen() } else { Color.clear }
             Color.clear
-                .frame(width: 24)
+                .frame(width: 18)
                 .contentShape(Rectangle())
                 .gesture(DragGesture(minimumDistance: 16).onEnded { drag in
-                    if drag.translation.width > 50 { tapSection(.today) }
+                    if drag.translation.width < -50 { tapSection(.today) }
                 })
         }
         .accessibilityHidden(shell.screen != .map)
@@ -722,9 +724,10 @@ struct RootView: View {
         HStack(spacing: 0) {
             // Календарь, день, карта (P773; прежде и поиск, P239): картотеку
             // вытягивают из «Дня». Глобус нарисован автором (P248).
-            section("календарь", T("Календарь", "Calendar"), .calendar)
-            section("сегодня", T("Дневник", "Diary"), .today)
+            // Как лента вбок: карта, дневник, календарь (P805).
             section("карта", T("Карта", "Map"), .map)
+            section("сегодня", T("Дневник", "Diary"), .today)
+            section("календарь", T("Календарь", "Calendar"), .calendar)
         }
         // Тоньше на пару миллиметров (P613; прежде 55 — P506): та же
         // строка встаёт над клавиатурой и не должна занимать там много.

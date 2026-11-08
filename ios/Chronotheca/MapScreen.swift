@@ -268,7 +268,7 @@ struct MapScreen: View {
             }
             .accessibilityLabel(T("Все места", "All places"))
         }
-        .padding(.trailing, 12)
+        .padding(.trailing, 22)
         .padding(.top, MapSide.top)
     }
 
@@ -349,7 +349,8 @@ struct MapScreen: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(T("Поиск на карте", "Search the map"))
-        .padding(.trailing, 8)
+        // Правее — полоска возврата к «Дневнику» (P805).
+        .padding(.trailing, 22)
         .frame(maxWidth: .infinity, alignment: .trailing)
     }
 
