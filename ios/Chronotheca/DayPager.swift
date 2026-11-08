@@ -348,14 +348,11 @@ struct DayPage: View {
                          // Дотянули до порога и отпустили — лента картотеки
                          // открыта (P769, P777): доезжает, пока вчера не встанет
                          // над нижней строкой, а завтра — под строкой поиска.
+                         // У прошедшего дня и вверх, и вниз — картотека на его
+                         // месте (P826, вместо «вверх — сегодня» P801): снизу
+                         // записанные дни после него. В сегодня — повторное
+                         // касание «Дневника».
                          let ribbon = shell.ribbon
-                         // Будущее из прошедшего дня — это сегодня (P801):
-                         // лента будущего вокруг вчерашнего дня путала.
-                         if dir < 0 && store.date < DayStore.today() && !shell.pulling {
-                             guard shell.screen == .today, shell.movingTask == nil else { return }
-                             shell.goHome = true
-                             return
-                         }
                          guard shell.screen == .today, shell.movingTask == nil, shell.pulling else {
                              ribbon.glide(to: 0) { shell.pulling = false; ribbon.release() }
                              return
@@ -379,11 +376,8 @@ struct DayPage: View {
                              store.save()
                          }
                      },
-                     onPullMove: { [shell, store] amount, dir in
+                     onPullMove: { [shell] amount, dir in
                          guard shell.screen == .today, shell.movingTask == nil else { return }
-                         // Снизу прошедшего дня ленты нет — отпустишь за
-                         // порогом, и откроется сегодня (P801).
-                         if dir < 0 && store.date < DayStore.today() && !shell.pulling { return }
                          let ribbon = shell.ribbon
                          if dir == 0 {
                              // Не дотянули или вернули палец — мягко назад.
