@@ -72,10 +72,26 @@ jobs:
             # процесса неудачен — и это не повод бросать снимки (P573).
             set +e +o pipefail
             n=0
-            while [ $n -lt 40 ]; do
-              sleep 12
-              log=../docs/motion/sampler.txt
+            tick=0
+            log=../docs/motion/sampler.txt
+            while [ $tick -lt 4000 ]; do
+              sleep 0.5
+              tick=$((tick + 1))
               pid=$(pgrep -f "Chronotheca.app/Chronotheca" | head -1)
+              # Проверка просит снимок в нужный миг (P808): кладёт файл
+              # want-<имя>, здесь снимается sample-<имя>.txt на 3 секунды.
+              for want in ../docs/motion/want-*; do
+                [ -f "$want" ] || continue
+                name=${want##*/want-}
+                rm -f "$want"
+                if [ -n "$pid" ]; then
+                  sample "$pid" 3 -file "../docs/motion/sample-$name.txt" >>"$log" 2>&1 \
+                    || sudo sample "$pid" 3 -file "../docs/motion/sample-$name.txt" >>"$log" 2>&1 \
+                    || echo "снимок $name не снялся (pid $pid)" >> "$log"
+                fi
+              done
+              [ $((tick % 24)) -eq 0 ] || continue
+              [ $n -lt 40 ] || continue
               if [ -n "$pid" ]; then
                 n=$((n + 1))
                 if ! sample "$pid" 2 -file "../docs/motion/sample-$n.txt" >>"$log" 2>&1; then

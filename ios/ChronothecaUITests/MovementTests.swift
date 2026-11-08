@@ -285,7 +285,7 @@ final class MovementTests: XCTestCase {
         note("запуск", String(format: "%.2f с", opened))
         sleep(3)
 
-        for (screen, took) in sections("") {
+        for (screen, took) in sections("", shot: "big") {
             XCTAssertLessThan(took, 1.5, "\(screen) открывался \(took) с")
         }
         save("06-большой-архив")
@@ -298,7 +298,7 @@ final class MovementTests: XCTestCase {
         app.launch()
         XCTAssertTrue(app.buttons["bottom.calendar"].firstMatch.waitForExistence(timeout: 60))
         sleep(8)
-        _ = sections("без бумаги ")
+        _ = sections("без бумаги ", shot: "plain")
     }
 
     /// Те же замеры на маленьком образце (P806) — без требований, только для
@@ -306,17 +306,23 @@ final class MovementTests: XCTestCase {
     func testSmallArchiveTimes() {
         launch()
         sleep(3)
-        _ = sections("малый ")
+        _ = sections("малый ", shot: "small")
     }
 
     /// Открыть по очереди календарь, карту, «Дневник» кнопками внизу и
     /// записать, на что уходит время (P806): найти кнопку, нажать (робот
     /// ждёт, пока приложение затихнет), увидеть смену раздела, прочесть
     /// надпись на уже открытом разделе.
-    private func sections(_ tag: String) -> [(String, Double)] {
+    private func sections(_ tag: String, shot: String) -> [(String, Double)] {
         var out: [(String, Double)] = []
         for (button, screen) in [("bottom.calendar", "calendar"),
                                  ("bottom.map", "map"), ("bottom.today", "today")] {
+            // Снимок стека ровно на нажатии (P808): CI снимает его по файлу.
+            if let dir = ProcessInfo.processInfo.environment["MOTION_DIR"], !dir.isEmpty {
+                let want = URL(fileURLWithPath: dir).appendingPathComponent("want-\(shot)-\(screen)")
+                try? Data().write(to: want)
+                Thread.sleep(forTimeInterval: 0.8)
+            }
             let t0 = Date()
             let target = app.buttons[button].firstMatch
             _ = target.exists
