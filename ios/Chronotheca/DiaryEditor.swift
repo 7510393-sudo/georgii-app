@@ -612,7 +612,7 @@ struct DiaryEditor: UIViewRepresentable {
                               object: nil)
         }
 
-        @objc private func inputModeChanged(_ note: Notification) {
+        @objc private func inputModeChanged(_: Notification) {
             DispatchQueue.main.async { [weak self] in
                 guard let self, let view = self.view else { return }
                 self.restyle(view)

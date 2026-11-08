@@ -89,6 +89,9 @@ struct CalendarView: View {
         // Сменили вид — лента встаёт на тот же месяц или его год.
         .onChange(of: stored) { _, _ in
             top = period(shown)
+            // Ещё раз, когда лента уже собрана заново из месяцев (лет): иначе
+            // она могла встать по прежнему сдвигу на чужой месяц (P822).
+            DispatchQueue.main.async { top = period(shown) }
         }
         // Просьба из меню календаря: та же дорога домой, что у кнопки вида.
         .onChange(of: shell.calendarHome) { _, want in
@@ -122,10 +125,21 @@ struct CalendarView: View {
         // Сменился месяц — толчок в руку (P792); шапка меняется, когда
         // лента встала (P800: менялась на ходу, и месяц прыгал на строки).
         .modifier(PageWatch(at: $top) { now in
-            if shown != now { shown = now }
+            let keep = keepMonth(now)
+            if shown != keep { shown = keep }
         })
         // Тот же тёплый стол, что под поиском (P755).
         .background(Desk())
+    }
+
+    /// Встал год — месяц остаётся прежним (P822): прежде `shown` становился
+    /// 1 января этого года, и «Месяц» открывался январём — так год, долистанный
+    /// до 2020-го, ставил и месяц на январь 2020-го (проверка движения P821).
+    private func keepMonth(_ landed: Date) -> Date {
+        guard kind == .year else { return landed }
+        let month = cal.component(.month, from: shown)
+        return cal.date(from: DateComponents(year: cal.component(.year, from: landed),
+                                             month: month, day: 1)) ?? landed
     }
 
     /// Начала месяцев или лет ленты — от нынешнего.
