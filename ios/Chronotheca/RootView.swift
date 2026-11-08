@@ -699,7 +699,10 @@ struct RootView: View {
                 .contentShape(Rectangle())
                 // Мерить в окне: полоска едет вместе с лентой.
                 .gesture(DragGesture(minimumDistance: 8, coordinateSpace: .global)
-                    .onChanged { drag in mapPull = min(0, drag.translation.width) }
+                    .onChanged { drag in
+                        if mapPull == 0 { Feel.warm() }
+                        mapPull = min(0, drag.translation.width)
+                    }
                     .onEnded { drag in
                         let go = drag.translation.width < -width / 4
                             || drag.predictedEndTranslation.width < -width / 2
@@ -708,13 +711,25 @@ struct RootView: View {
                             withAnimation(glide) { mapPull = 0 }
                             return
                         }
-                        // Сдвиг уходит в ход ленты — одним движением.
-                        withAnimation(glide) {
-                            mapPull = 0
+                        // Лента встаёт на «Дневник» без хода, а сдвиг
+                        // пересчитывается так, что на экране ничто не
+                        // шелохнулось; дальше сдвиг уходит в ноль ходом
+                        // (P829). Прежде сдвиг и лента шли каждый своим ходом:
+                        // карта на миг возвращалась, потом экран прыгал.
+                        var still = Transaction()
+                        still.disablesAnimations = true
+                        withTransaction(still) {
+                            mapPull += width
                             pageAt = .today
                         }
                         Feel.thud()
-                        tapSection(.today)
+                        // Раздел — когда ход кончился: смена раздела
+                        // перестраивает экран и посреди хода дала бы рывок.
+                        DispatchQueue.main.async {
+                            withAnimation(glide) { mapPull = 0 } completion: {
+                                tapSection(.today)
+                            }
+                        }
                     })
         }
         .accessibilityHidden(shell.screen != .map)
@@ -1304,6 +1319,8 @@ struct PageWatch<ID: Hashable>: ViewModifier {
                     seen.last = AnyHashable(id)
                 }
                 .onScrollPhaseChange { _, now in
+                    // Палец лёг — отклик будится заранее (P829).
+                    if now == .interacting { Feel.warm() }
                     if now == .idle, let at { landed(at) }
                 }
         } else {
