@@ -420,9 +420,9 @@ struct DayPage: View {
 
 /// Бумага прошедшего дня для мелких мест — клетки календаря, строки списка,
 /// панельки месяцев (P684): тот же рельеф и те же крапинки, что у страницы
-/// (`PageTexture.paper`), и затёртые края. У каждой клетки свой износ и свои
-/// травмы края (P723): картинка рисуется под её размер по номеру дня, ничего
-/// не повторяется плиткой. `base` — цвет бумаги под рельефом: он вырезается
+/// (`PageTexture.paper`), и затёртые края. Листов два на весь календарь
+/// (P809, вместо своего износа у каждой клетки, P723): нарисованы один раз,
+/// лежат готовыми, клетки чередуют их по номеру. `base` — цвет бумаги под рельефом: он вырезается
 /// вместе с ним, и выщербины по краю видны насквозь. Касаний не ловит.
 struct OldPaper: View {
     @Environment(\.colorScheme) private var scheme
@@ -441,9 +441,11 @@ struct OldPaper: View {
             if let base { base }
         } else {
             GeometryReader { geo in
-                let order = PageTexture.agedOrder(size: geo.size, band: band, seed: seed)
+                // Два листа на весь календарь (P809, по слову автора):
+                // нарисованы один раз, лежат готовыми, клетки их чередуют.
+                let order = PageTexture.agedOrder(size: geo.size, band: band, seed: seed, kinds: 2)
                 let dark = scheme == .dark
-                let name = PageTexture.cellName(order, seed: seed, dark: dark)
+                let name = PageTexture.cellName(order, dark: dark)
                 Group {
                     if let ready = cell ?? PaperShop.shared.readyCell(name) {
                         worn(ready, geo.size)
@@ -451,7 +453,7 @@ struct OldPaper: View {
                         base
                     }
                 }
-                .task(id: name) { cell = await PageTexture.agedCell(order, seed: seed, dark: dark) }
+                .task(id: name) { cell = await PageTexture.agedCell(order, dark: dark) }
             }
             .allowsHitTesting(false)
             .accessibilityHidden(true)
@@ -498,15 +500,16 @@ extension PageTexture {
         }
     }
 
-    static func cellName(_ order: AgedOrder, seed: Int, dark: Bool) -> String {
-        "\(order.key)s\(seed)\(dark ? "d" : "")"
+    static func cellName(_ order: AgedOrder, dark: Bool) -> String {
+        "\(order.key)\(dark ? "d" : "")-cell"
     }
 
-    /// Клетка — когда будет готова (в стороне от экрана).
-    static func agedCell(_ order: AgedOrder, seed: Int, dark: Bool) async -> CellArt {
+    /// Клетка — когда будет готова (в стороне от экрана). Рисуется один раз
+    /// и лежит в служебной папке (P809): следующие запуски берут готовую.
+    static func agedCell(_ order: AgedOrder, dark: Bool) async -> CellArt {
         let art = await aged(order)
-        return await PaperShop.shared.cell(cellName(order, seed: seed, dark: dark)) {
-            makeCell(art, size: CGSize(width: order.w, height: order.h), seed: seed, dark: dark)
+        return await PaperShop.shared.cell(cellName(order, dark: dark), shape: art.cut) {
+            makeCell(art, size: CGSize(width: order.w, height: order.h), seed: order.variant + 1, dark: dark)
         }
     }
 
@@ -1246,12 +1249,12 @@ struct PageTexture: View {
     }
 
     static func agedOrder(size: CGSize, band: CGFloat, seed number: Int, openBottom: Bool = false,
-                          light: Bool = false) -> AgedOrder {
+                          light: Bool = false, kinds: Int? = nil) -> AgedOrder {
         let small = min(size.width, size.height) < 60
         let step: CGFloat = small ? 4 : 20
         let w = max(4, size.width.rounded())
         let h = max(step, (size.height / step).rounded() * step)
-        let variant = abs(number) % (small ? 16 : 24)
+        let variant = abs(number) % (kinds ?? (small ? 16 : 24))
         let key = "\(Int(w))x\(Int(h))b\(Int(band * 10))v\(variant)\(openBottom ? "o" : "")\(light ? "l" : "")"
         return AgedOrder(key: key, w: w, h: h, band: band, variant: variant, openBottom: openBottom, light: light)
     }

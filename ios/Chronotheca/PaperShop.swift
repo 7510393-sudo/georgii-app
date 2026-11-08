@@ -72,8 +72,8 @@ final class PaperShop: ObservableObject {
         }
     }
 
-    /// Готовые клетки календаря (P807): только в памяти — складываются из
-    /// листа износа за доли секунды.
+    /// Готовые клетки календаря (P807): в памяти и в служебной папке (P809)
+    /// — рисуются один раз.
     private let cells: NSCache<NSString, PageTexture.CellArt> = {
         let cache = NSCache<NSString, PageTexture.CellArt>()
         cache.countLimit = 200
@@ -84,14 +84,23 @@ final class PaperShop: ObservableObject {
         cells.object(forKey: name as NSString)
     }
 
-    /// Клетка по имени — из памяти или сложенная в стороне от экрана.
-    func cell(_ name: String, build: @escaping () -> PageTexture.CellArt) async -> PageTexture.CellArt {
+    /// Клетка по имени — из памяти, из служебной папки или сложенная в
+    /// стороне от экрана. `shape` — форма рваного листа (маска листа износа).
+    func cell(_ name: String, shape: UIImage,
+              build: @escaping () -> PageTexture.CellArt) async -> PageTexture.CellArt {
         if let made = cells.object(forKey: name as NSString) { return made }
         return await withCheckedContinuation { done in
             quick.async { [weak self] in
                 guard let self else { return done.resume(returning: build()) }
                 if let made = self.cells.object(forKey: name as NSString) { return done.resume(returning: made) }
-                let made = build()
+                let made: PageTexture.CellArt
+                if let shadow = self.load(name + "-s"), let sheet = self.load(name + "-h") {
+                    made = PageTexture.CellArt(shadow: shadow, shape: shape, sheet: sheet)
+                } else {
+                    made = build()
+                    self.save(made.shadow, name + "-s")
+                    self.save(made.sheet, name + "-h")
+                }
                 self.cells.setObject(made, forKey: name as NSString)
                 done.resume(returning: made)
             }
