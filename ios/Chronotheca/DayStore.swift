@@ -1245,11 +1245,14 @@ final class DayStore: ObservableObject {
     private var mine: [Vault.Folder: String] = [:]
     private var retries = 0
 
-    func load() {
-        // Две версии дня с разных устройств — сперва в одну (P570).
-        let mergedPlan = vault.mergeConflicts(.planner, for: date)
-        let mergedDiary = vault.mergeConflicts(.diary, for: date)
-        if mergedPlan || mergedDiary { syncNotice += 1 }
+    /// `merge` — две версии дня с разных устройств сперва сложить в одну
+    /// (P570). Есть ли они, узнаётся в стороне (`lookForConflicts`, P807).
+    func load(merge: Bool = false) {
+        if merge {
+            let mergedPlan = vault.mergeConflicts(.planner, for: date)
+            let mergedDiary = vault.mergeConflicts(.diary, for: date)
+            if mergedPlan || mergedDiary { syncNotice += 1 }
+        }
         let plan = vault.reading(.planner, for: date)
         let diaryFile = vault.reading(.diary, for: date)
         var gone: Set<Vault.Folder> = []
@@ -1283,8 +1286,29 @@ final class DayStore: ObservableObject {
         seen = [.planner: plan.text, .diary: diaryFile.text]
         mine = [.planner: planFile().text, .diary: diaryFileNow().text]
         if away.isEmpty { retries = 0 } else { waitForCloud() }
+        if !merge { lookForConflicts() }
         // Следом, не задерживая открытый день.
         ReadyPages.shared.warm(around: date, vault: vault)
+    }
+
+    /// Есть ли у открытого дня вторая версия с другого устройства (P570) —
+    /// спрашивается в стороне от экрана (P807): вопрос идёт через iCloud и
+    /// держал открытие каждого дня, на большом архиве — секундами. Нашлась
+    /// — как при возвращении в приложение: сперва своя правка на диск,
+    /// потом обе версии в одну и день перечитывается.
+    private func lookForConflicts() {
+        let day = date
+        let files = [vault.file(.planner, for: day), vault.file(.diary, for: day)].compactMap { $0 }
+        guard !files.isEmpty else { return }
+        DispatchQueue.global(qos: .utility).async { [weak self] in
+            let found = files.contains { NSFileVersion.unresolvedConflictVersionsOfItem(at: $0)?.isEmpty == false }
+            guard found else { return }
+            DispatchQueue.main.async {
+                guard let self, self.date == day else { return }
+                self.save()
+                self.load(merge: true)
+            }
+        }
     }
 
     /// Сверить открытый день с диском.
@@ -1295,17 +1319,17 @@ final class DayStore: ObservableObject {
     func refresh() {
         guard vault.root != nil else { return }
         save()
-        // Пока приложение стояло, iCloud мог принести вторую версию дня.
-        if NSFileVersion.unresolvedConflictVersionsOfItem(at: vault.file(.planner, for: date) ?? URL(fileURLWithPath: "/"))?.isEmpty == false
-            || NSFileVersion.unresolvedConflictVersionsOfItem(at: vault.file(.diary, for: date) ?? URL(fileURLWithPath: "/"))?.isEmpty == false {
-            return load()
-        }
         let stale = [Vault.Folder.planner, .diary].contains { folder in
             let now = vault.reading(folder, for: date)
             if now == .away { return false }
             return away.contains(folder) || now.text != (seen[folder] ?? "")
         }
-        if stale { load() } else if !away.isEmpty { waitForCloud() }
+        // Пока приложение стояло, iCloud мог принести вторую версию дня —
+        // её ищет `load`, а если перечитывать нечего — поиск отдельно (P807).
+        if stale { load() } else {
+            lookForConflicts()
+            if !away.isEmpty { waitForCloud() }
+        }
     }
 
     /// Пока файл дня едет из iCloud, заглядывать за ним каждые две секунды.

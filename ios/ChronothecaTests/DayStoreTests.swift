@@ -228,7 +228,7 @@ extension DayStoreTests {
     func testТочкаГдеЯНеЗаводитМестаДня() {
         let день = store(0)
         let дом = CLLocationCoordinate2D(latitude: 54.3211, longitude: -2.7456)
-        день.writePoint(GeoPoint(title: "", at: дом), to: .diary, here: true)
+        день.writePoint(GeoPoint(title: "", at: дом), to: .diary)
         XCTAssertNil(день.place)
         XCTAssertEqual(день.photos, ["geo:54.32110,-2.74560"])
         XCTAssertEqual(день.diaryText, "")

@@ -433,8 +433,8 @@ struct OldPaper: View {
     var base: Color? = nil
     /// Старая бумага выключена в настройках (P730): только цвет прошлого.
     @AppStorage(Prefs.plainPast) private var plainPast = false
-    /// Лист из пачки заготовок приходит следом (P732).
-    @State private var art: PageTexture.AgedArt?
+    /// Готовая клетка приходит следом (P732, P807).
+    @State private var cell: PageTexture.CellArt?
 
     var body: some View {
         if plainPast {
@@ -442,60 +442,111 @@ struct OldPaper: View {
         } else {
             GeometryReader { geo in
                 let order = PageTexture.agedOrder(size: geo.size, band: band, seed: seed)
+                let dark = scheme == .dark
+                let name = PageTexture.cellName(order, seed: seed, dark: dark)
                 Group {
-                    if let art = art ?? PageTexture.agedReady(order) {
-                        worn(art, geo.size)
+                    if let ready = cell ?? PaperShop.shared.readyCell(name) {
+                        worn(ready, geo.size)
                     } else if let base {
                         base
                     }
                 }
-                .task(id: order) { art = await PageTexture.aged(order) }
+                .task(id: name) { cell = await PageTexture.agedCell(order, seed: seed, dark: dark) }
             }
             .allowsHitTesting(false)
             .accessibilityHidden(true)
         }
     }
 
-    private func worn(_ art: PageTexture.AgedArt, _ size: CGSize) -> some View {
-        return Group {
-            let tile = PageTexture.paper.size
-            // Рельеф сдвинут по номеру дня — соседние клетки не одинаковы.
-            let dx = CGFloat(abs(seed &* 97) % Int(tile.width))
-            let dy = CGFloat(abs(seed &* 61) % Int(tile.height))
-            // Каждый слой — ровно в размер клетки (P726: узор бумаги был
-            // больше клетки на 384 точки, и картинка износа растягивалась
-            // вместе с ним — отсюда «подковы», полосы и тёмные клетки).
-            ZStack {
+    /// Клетка — три готовые картинки (P807): тень рваного края, лист цвета
+    /// дня по форме рваного края и бумага с износом поверх. Прежде слои
+    /// складывались на ходу с маской и тенью — у каждой из сотни клеток
+    /// свой отдельный проход рисования: календарь открывался секундами.
+    private func worn(_ ready: PageTexture.CellArt, _ size: CGSize) -> some View {
+        ZStack {
             // Под рваным листком — целый лист того же цвета (P728, по
             // образцу автора: под повреждением не пустота, а следующий лист).
             if let base {
                 base.overlay(Color.black.opacity(scheme == .dark ? 0.12 : 0.06))
             }
-            ZStack(alignment: .topLeading) {
-                if let base { base }
-                Image(uiImage: PageTexture.paper)
-                    .resizable(resizingMode: .tile)
-                    .frame(width: size.width + tile.width, height: size.height + tile.height)
-                    .offset(x: -dx, y: -dy)
-                    .frame(width: size.width, height: size.height, alignment: .topLeading)
-                    .clipped()
-                    // Вдвое слабее, чем на странице (P685): рельеф подобран под
-                    // лист во весь экран, на мелких клетках он выходил «пухлым».
-                    .opacity(scheme == .dark ? 0.15 : 0.25)
-                Image(uiImage: art.frame)
-                    .resizable()
-                    .frame(width: size.width, height: size.height)
-                    .opacity(scheme == .dark ? 0.35 : 1)
-            }
-            .frame(width: size.width, height: size.height, alignment: .topLeading)
-            .clipped()
-            .mask(Image(uiImage: art.cut).resizable())
             // Рваный край отбрасывает тонкую тень на лист под ним.
-            .shadow(color: .black.opacity(0.28), radius: 0.8, x: 0.4, y: 0.6)
+            Image(uiImage: ready.shadow).resizable()
+            if let base {
+                Image(uiImage: ready.shape).renderingMode(.template).resizable().foregroundStyle(base)
             }
+            Image(uiImage: ready.sheet).resizable()
         }
+        .frame(width: size.width, height: size.height)
         .allowsHitTesting(false)
         .accessibilityHidden(true)
+    }
+}
+
+extension PageTexture {
+
+    /// Готовая клетка старой бумаги (P807): что прежде складывалось на ходу
+    /// — рельеф, износ, маска рваного края и тень — сложено заранее, в
+    /// стороне от экрана.
+    final class CellArt: NSObject {
+        let shadow: UIImage
+        /// Форма рваного листа — красится цветом дня.
+        let shape: UIImage
+        /// Рельеф и износ, уже обрезанные по рваному краю.
+        let sheet: UIImage
+        init(shadow: UIImage, shape: UIImage, sheet: UIImage) {
+            self.shadow = shadow; self.shape = shape; self.sheet = sheet
+        }
+    }
+
+    static func cellName(_ order: AgedOrder, seed: Int, dark: Bool) -> String {
+        "\(order.key)s\(seed)\(dark ? "d" : "")"
+    }
+
+    /// Клетка — когда будет готова (в стороне от экрана).
+    static func agedCell(_ order: AgedOrder, seed: Int, dark: Bool) async -> CellArt {
+        let art = await aged(order)
+        return await PaperShop.shared.cell(cellName(order, seed: seed, dark: dark)) {
+            makeCell(art, size: CGSize(width: order.w, height: order.h), seed: seed, dark: dark)
+        }
+    }
+
+    /// Те же слои, что прежде складывались на экране: под рельефом цвет дня,
+    /// рельеф сдвинут по номеру дня, износ поверх, всё обрезано рваным
+    /// краем; тень — по рваному краю, без самого листа.
+    fileprivate static func makeCell(_ art: AgedArt, size: CGSize, seed: Int, dark: Bool) -> CellArt {
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = CGFloat(px)
+        format.opaque = false
+        let rect = CGRect(origin: .zero, size: size)
+        let tile = paper.size
+        let dx = CGFloat(abs(seed &* 97) % max(1, Int(tile.width)))
+        let dy = CGFloat(abs(seed &* 61) % max(1, Int(tile.height)))
+        let shape = art.cut.withTintColor(.black, renderingMode: .alwaysOriginal)
+        let sheet = UIGraphicsImageRenderer(size: size, format: format).image { _ in
+            var y = -dy
+            while y < size.height {
+                var x = -dx
+                while x < size.width {
+                    paper.draw(in: CGRect(x: x, y: y, width: tile.width, height: tile.height),
+                               blendMode: .normal, alpha: dark ? 0.15 : 0.25)
+                    x += tile.width
+                }
+                y += tile.height
+            }
+            art.frame.draw(in: rect, blendMode: .normal, alpha: dark ? 0.35 : 1)
+            art.cut.draw(in: rect, blendMode: .destinationIn, alpha: 1)
+        }
+        let shadow = UIGraphicsImageRenderer(size: size, format: format).image { ctx in
+            let scale = CGFloat(px)
+            // Сдвиг и размытие тени — в пикселях, и вверх там плюс.
+            ctx.cgContext.setShadow(offset: CGSize(width: 0.4 * scale, height: -0.6 * scale),
+                                    blur: 1.6 * scale,
+                                    color: UIColor.black.withAlphaComponent(0.28).cgColor)
+            shape.draw(in: rect)
+            ctx.cgContext.setShadow(offset: .zero, blur: 0, color: nil)
+            shape.draw(in: rect, blendMode: .destinationOut, alpha: 1)
+        }
+        return CellArt(shadow: shadow, shape: art.cut, sheet: sheet)
     }
 }
 

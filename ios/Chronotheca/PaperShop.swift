@@ -66,6 +66,32 @@ final class PaperShop: ObservableObject {
         }
     }
 
+    /// Готовые клетки календаря (P807): только в памяти — складываются из
+    /// листа износа за доли секунды.
+    private let cells: NSCache<NSString, PageTexture.CellArt> = {
+        let cache = NSCache<NSString, PageTexture.CellArt>()
+        cache.countLimit = 200
+        return cache
+    }()
+
+    func readyCell(_ name: String) -> PageTexture.CellArt? {
+        cells.object(forKey: name as NSString)
+    }
+
+    /// Клетка по имени — из памяти или сложенная в стороне от экрана.
+    func cell(_ name: String, build: @escaping () -> PageTexture.CellArt) async -> PageTexture.CellArt {
+        if let made = cells.object(forKey: name as NSString) { return made }
+        return await withCheckedContinuation { done in
+            queue.async { [weak self] in
+                guard let self else { return done.resume(returning: build()) }
+                if let made = self.cells.object(forKey: name as NSString) { return done.resume(returning: made) }
+                let made = build()
+                self.cells.setObject(made, forKey: name as NSString)
+                done.resume(returning: made)
+            }
+        }
+    }
+
     /// Одна картинка (края страницы дня) по имени.
     func picture(_ name: String, build: @escaping () -> UIImage) -> UIImage? {
         if let made = pictures.object(forKey: name as NSString) { return made }
