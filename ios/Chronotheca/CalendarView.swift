@@ -308,7 +308,7 @@ struct CalendarView: View {
                             ZStack {
                                 OldPaper(seed: m, base: Ru.pastTint)
                                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .strokeBorder(Look.stickerEdge, lineWidth: 1)
+                                    .strokeBorder(Scheme.current.rim, lineWidth: 1)
                             }
                             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                         }
@@ -335,7 +335,7 @@ struct CalendarView: View {
                                                 startPoint: .top, endPoint: .bottom)
                             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous)))
                         .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .strokeBorder(Look.stickerEdge, lineWidth: 1))
+                            .strokeBorder(Scheme.current.rim, lineWidth: 1))
                         .shadow(color: .black.opacity(down ? 0.06 : 0.16),
                                 radius: down ? 1 : 3, x: down ? 0.5 : 2, y: down ? 0.5 : 2)
                 )

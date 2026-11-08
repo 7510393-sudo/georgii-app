@@ -156,6 +156,9 @@ struct Scheme {
     let kraftInk: Color
     /// Кромка крафта и корешков карточек поиска.
     let kraftEdge: Color
+    /// Тонкая рамка панелек календаря (P824): прежде у всех гамм один
+    /// жёлтый (`Look.stickerEdge`), и в «Без цвета» он просвечивал по краям.
+    var rim = Color(light: 0xE8DCAE, dark: 0x3D3520)
 
     static let apricot = Scheme(
         // Прошлое — одна выцветшая сливочная бумага во всех гаммах, жёлтее и
@@ -189,7 +192,8 @@ struct Scheme {
         today: Color(light: 0xF5F4F1, dark: 0x262625),
         kraft: Color(light: 0xB9B6AF, dark: 0x363634),
         kraftInk: Color(light: 0x2B2A27, dark: 0xE4E3DF),
-        kraftEdge: Color(light: 0x86837C, dark: 0x181817))
+        kraftEdge: Color(light: 0x86837C, dark: 0x181817),
+        rim: Color(light: 0xD3D1CB, dark: 0x3A3A38))
 
     /// Выбранная в настройках; «distance» — прежний ключ абрикосовой, «weekday»
     /// (цвет по дням недели) убран, он читается как абрикосовая.
