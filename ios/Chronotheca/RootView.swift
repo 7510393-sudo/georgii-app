@@ -682,6 +682,10 @@ struct RootView: View {
                 .frame(width: size.width, height: size.height)
                 .background(Desk())
                 .modifier(FollowRibbon(ribbon: shell.ribbon, live: shell.ribbonLive))
+                // День закрыт в карточку (P834) — листа нет: место дня из
+                // ленты ушло, и лист повисал бы где придётся (снимок проверки:
+                // полэкрана листа, под ним пустой стол).
+                .opacity(shell.pastCard ? 0 : 1)
                 .allowsHitTesting(shell.screen == .today)
         }
         .background(Desk())
