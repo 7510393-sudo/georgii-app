@@ -830,14 +830,16 @@ struct PageTexture: View {
 
     private typealias Tone = (r: Float, g: Float, b: Float)
     private static let warmAmber: Tone = (r: 0.753, g: 0.518, b: 0.251)
-    private static let greyAmber: Tone = (r: 0.588, g: 0.580, b: 0.561)
+    // Серые — светлее прежних (P848): подпалина 0,28 читалась почти чёрной
+    // обводкой, край выглядел грубо, как сборки назад.
+    private static let greyAmber: Tone = (r: 0.700, g: 0.690, b: 0.670)
     private static var amber: Tone { grey ? greyAmber : warmAmber }
     /// Подпалина у самого края (P722) — темнее и рыжее охры.
     private static let warmBurnt: Tone = (r: 0.431, g: 0.227, b: 0.086)
-    private static let greyBurnt: Tone = (r: 0.282, g: 0.275, b: 0.263)
+    private static let greyBurnt: Tone = (r: 0.470, g: 0.460, b: 0.440)
     private static var burnt: Tone { grey ? greyBurnt : warmBurnt }
     private static let warmTorn: (Float, Float, Float) = (0.24, 0.15, 0.08)
-    private static let greyTorn: (Float, Float, Float) = (0.17, 0.17, 0.16)
+    private static let greyTorn: (Float, Float, Float) = (0.36, 0.35, 0.34)
     private static let warmSmudge = Color(red: 0.42, green: 0.30, blue: 0.16)
     private static let greySmudge = Color(red: 0.33, green: 0.32, blue: 0.31)
 
@@ -1129,7 +1131,10 @@ struct PageTexture: View {
     /// чуть неровный (`mottle`), без бугорков и бликов.
     private static func paintAged(_ bytes: inout [UInt8], _ i: Int, worn: Float, distance: Float, mottle: Float) {
         let rim = 0.55 * exp(-distance / 1.4)
-        let alpha = min(1 - (1 - max(0, worn * (1 + 0.3 * mottle))) * (1 - rim), 0.9)
+        // Серый износ — на четверть прозрачнее (P848): на светлой серой бумаге
+        // он виден резче тёплого.
+        let soften: Float = grey ? 0.75 : 1
+        let alpha = min(1 - (1 - max(0, worn * (1 + 0.3 * mottle))) * (1 - rim), 0.9) * soften
         guard alpha > 0.003 else { return }
         let t = min(1, rim / 0.4 + max(0, worn - 0.3) * 0.8)
         let c = (amber.r + (burnt.r - amber.r) * t,
@@ -1322,7 +1327,10 @@ struct PageTexture: View {
             // Верх карточки состарен так же, как бока (P823, автор: «в верхней
             // части карточек прошлого не обработаны состариванием»; прежде
             // вдвое мельче, P742).
-            return tornLine(length: n, scale: Float(px), deep: deep, next: next)
+            // Верх карточки рвётся мельче боков (P848: во всю глубину, P823,
+            // край выглядел грубо), но заметнее прежней половины (P742).
+            return tornLine(length: n, scale: Float(px), deep: openBottom && e == 0 ? deep * 0.7 : deep,
+                            next: next)
         }
         var power = (0..<4).map { _ in 0.75 + next() * 0.3 }        // верх, низ, лево, право
         if openBottom { power[1] = 0 }

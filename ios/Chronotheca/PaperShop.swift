@@ -16,7 +16,7 @@ final class PaperShop: ObservableObject {
     @Published private(set) var stock = 0
 
     /// Меняется, когда меняется рисунок бумаги, — старые заготовки не берутся.
-    private static let version = "p748"  // P748: края дня уже — старые листы не годятся
+    private static let version = "p848"  // P848: серый износ мягче, верх карточек мельче — старые листы не годятся
 
     private let queue = DispatchQueue(label: "graphomanus.paper", qos: .utility)
     /// Мелкая бумага — клетки календаря, строки (P808): своя очередь, не за
