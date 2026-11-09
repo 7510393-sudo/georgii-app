@@ -1600,15 +1600,8 @@ struct PointPanel: View {
                 .background(Look.planBg, in: RoundedRectangle(cornerRadius: 8))
                 .overlay(RoundedRectangle(cornerRadius: 8)
                     .strokeBorder(Look.inkFaint.opacity(0.6), lineWidth: 1))
-            // Координаты — тихой строкой, не кнопкой (P813, вместо кнопки во
-            // всю ширину P803): копирует их «Копировать» внизу.
-            Text(Geo.text(place.coordinate))
-                .font(Look.mono(12))
-                .foregroundStyle(Look.inkSoft)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 4)
+            // Строки координат нет (P851, отменяет тихую строку P813):
+            // копирует их «Копировать» внизу.
             // Все кнопки плашки — одного вида (P813): надпись в окантовке,
             // равной ширины в ряду. Вверху — куда деть точку (P804).
             HStack(spacing: 6) {
@@ -1644,7 +1637,9 @@ struct PointPanel: View {
         .overlay(RoundedRectangle(cornerRadius: 14)
             .strokeBorder(Look.inkSoft.opacity(0.6), lineWidth: 1))
         .padding(.horizontal, 10)
-        .padding(.top, Corner.size + 2)
+        // Плашка — у самого верха (P851, вместо «под уголком» —
+        // шестерёнка заходит на поле названия, так решил автор).
+        .padding(.top, 4)
         .onAppear {
             // Клавиатура — только у новой точки: записанное место сперва
             // смотрят (P803).
