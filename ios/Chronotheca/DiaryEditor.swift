@@ -634,7 +634,8 @@ struct DiaryEditor: UIViewRepresentable {
         /// потом, когда диктовка отпустила поле. Длина та же — курсор и всё
         /// после буквы остаются на местах.
         func raiseFirst(_ view: UITextView) {
-            guard parent.stamped, parent.editable, !placing, !Self.dictating(view) else { return }
+            guard parent.stamped, parent.editable, !placing, !Self.dictating(view),
+                  view.markedTextRange == nil else { return }
             let storage = view.textStorage
             let ns = storage.string as NSString
             let at = min(view.selectedRange.location, ns.length)
@@ -2071,6 +2072,41 @@ struct DiaryEditor: UIViewRepresentable {
         /// Краска кладётся на тот же текст, а не заменяет его новым: замена
         /// выдёргивала у диктовки её временный знак, и в записи оставалось
         /// «OBJ» (решение P197). Заодно курсор и выделение не трогаются.
+        /// Какой шрифт где должен быть: текст, отметка времени, место (P856).
+        struct Paint {
+            let body: UIFont?
+            let stamp: UIFont
+            let place: UIFont?
+
+            /// Строка уже окрашена как надо — трогать её незачем.
+            func fits(_ storage: NSTextStorage, line: NSRange, stamp: NSRange?, place: NSRange?) -> Bool {
+                guard NSMaxRange(line) <= storage.length else { return false }
+                let ns = storage.string as NSString
+                var right = true
+                storage.enumerateAttribute(.font, in: line, options: []) { value, range, stop in
+                    // Вложения и перевод строки — не в счёт.
+                    let piece = ns.substring(with: range)
+                    if piece.allSatisfy({ $0 == "\u{FFFC}" || $0.isNewline }) { return }
+                    let font = value as? UIFont
+                    let want: UIFont?
+                    if let place, NSIntersectionRange(range, place).length > 0 {
+                        want = NSEqualRanges(NSUnionRange(range, place), place) ? self.place : nil
+                    } else if let stamp, NSIntersectionRange(range, stamp).length > 0 {
+                        want = NSEqualRanges(NSUnionRange(range, stamp), stamp) ? self.stamp : nil
+                    } else {
+                        want = body
+                    }
+                    if !Self.same(font, want) { right = false; stop.pointee = true }
+                }
+                return right
+            }
+
+            private static func same(_ a: UIFont?, _ b: UIFont?) -> Bool {
+                guard let a, let b else { return false }
+                return a.fontName == b.fontName && abs(a.pointSize - b.pointSize) < 0.01
+            }
+        }
+
         func restyle(_ view: UITextView) {
             // Посреди диктовки краску не трогаем (P815) — докрасится, когда
             // она отпустит поле.
@@ -2083,31 +2119,49 @@ struct DiaryEditor: UIViewRepresentable {
             }
             styledKey = now
             let ns = text as NSString
-            let всё = NSRange(location: 0, length: ns.length)
             let body = DiaryEditor.body(parent.size, serif: parent.serif)
+            let look = Paint(body: body[.font] as? UIFont,
+                            stamp: UIFont.monospacedSystemFont(ofSize: parent.size * 0.84, weight: .regular),
+                            place: DiaryEditor.placeLook(parent.size)[.font] as? UIFont)
             let storage = view.textStorage
-            storage.beginEditing()
-            storage.addAttributes(body, range: всё)
+            // Краска кладётся только на строки, где она не та (P856). Прежде
+            // каждая буква перекрашивала всё поле разом, и iPhone на миг
+            // терял место курсора: набранная буква оказывалась справа от
+            // него, следующая ложилась перед ней — почти на каждой строке.
             // Отметка ищется в начале каждой строки — так же, как при
             // первой раскраске поля.
+            var stale: [(line: NSRange, stamp: NSRange?, place: NSRange?)] = []
             var start = 0
-            while parent.stamped, start < ns.length {
+            while start < ns.length {
                 let line = ns.lineRange(for: NSRange(location: start, length: 0))
-                if let place = DiaryEditor.placeRange(in: ns, line: line) {
-                    storage.addAttributes(DiaryEditor.placeLook(parent.size), range: place)
+                let place = parent.stamped ? DiaryEditor.placeRange(in: ns, line: line) : nil
+                var stamp: NSRange?
+                if parent.stamped, let m = DiaryEditor.stamp.firstMatch(in: text, range: line),
+                   m.numberOfRanges > 1, m.range(at: 1).location != NSNotFound {
+                    stamp = m.range(at: 1)
                 }
-                if let m = DiaryEditor.stamp.firstMatch(in: text, range: line),
-                   m.numberOfRanges > 1 {
-                    storage.addAttributes([
-                        .font: UIFont.monospacedSystemFont(ofSize: parent.size * 0.84,
-                                                           weight: .regular),
-                        .foregroundColor: UIColor(Look.inkFaint),
-                    ], range: m.range(at: 1))
+                if !look.fits(storage, line: line, stamp: stamp, place: place) {
+                    stale.append((line, stamp, place))
                 }
                 guard line.length > 0 else { break }
                 start = line.location + line.length
             }
-            storage.endEditing()
+            if !stale.isEmpty {
+                storage.beginEditing()
+                for item in stale {
+                    storage.addAttributes(body, range: item.line)
+                    if let place = item.place {
+                        storage.addAttributes(DiaryEditor.placeLook(parent.size), range: place)
+                    }
+                    if let stamp = item.stamp {
+                        storage.addAttributes([
+                            .font: look.stamp,
+                            .foregroundColor: UIColor(Look.inkFaint),
+                        ], range: stamp)
+                    }
+                }
+                storage.endEditing()
+            }
             view.typingAttributes = body
         }
     }
