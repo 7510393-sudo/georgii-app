@@ -673,7 +673,10 @@ struct RootView: View {
             // уходит под картотеку будущего, и стол ленты закрыл бы его.
             SearchView(height: size.height)
                 .frame(width: size.width, height: size.height)
-                .opacity(shell.ribbonLive ? 1 : 0)
+                // Картотека проступает плавно, по мере того как лист уходит
+                // (P858): прежде появлялась разом с первым движением.
+                .modifier(RibbonFade(ribbon: shell.ribbon, live: shell.ribbonLive,
+                                     card: shell.pastCard))
                 .allowsHitTesting(shell.screen == .search)
                 .accessibilityHidden(!shell.ribbonLive)
                 .zIndex(0)
@@ -1421,5 +1424,19 @@ private struct PullShift: ViewModifier {
     @ObservedObject var pull: SidePull
     func body(content: Content) -> some View {
         content.offset(x: pull.x)
+    }
+}
+
+/// Картотека под листом проступает по мере тяги (P858): в покое её нет —
+/// так легче телефону, — а с первыми точками хода место справа от корешка
+/// плавно рассеивается и из него выходят карточки.
+private struct RibbonFade: ViewModifier {
+    @ObservedObject var ribbon: Ribbon
+    let live: Bool
+    let card: Bool
+
+    func body(content: Content) -> some View {
+        let shown: Double = !live ? 0 : card ? 1 : Double(min(1, abs(ribbon.y) / 90))
+        content.opacity(shown)
     }
 }
