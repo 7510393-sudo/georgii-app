@@ -323,10 +323,6 @@ struct SearchView: View {
         let sample: String? = times.isEmpty ? nil
             : times.contains { $0.contains(where: \.isLetter) } ? "00:00 PM" : "00:00"
         let items = entries(past, future, later: later, slot: !card)
-        // Карточка прямо над местом дня — та, в которую превращается ближнее
-        // плечо позади листа (P837).
-        let beside: String? = card ? nil
-            : past.indices.last.map { Search.deep ? "p\($0)" : past[$0].id }
         let firstLater = later.first?.id
         let ribbon = shell.ribbon
         return ScrollViewReader { proxy in ScrollView {
@@ -337,8 +333,6 @@ struct SearchView: View {
                     piece(entry, sample: sample)
                         .padding(.top, entry.over ? -Search.overlap : 0)
                         .modifier(Distance(side: entry.depth, height: height))
-                        .modifier(BesideDay(on: entry.id == beside, ribbon: ribbon,
-                                            live: shell.ribbonLive))
                         .id(entry.id)
                 }
             }
@@ -931,35 +925,3 @@ enum Afar {
         return place - top
     }
 }
-
-/// Карточка прямо над местом дня (P837): мерит, насколько выступает над ним,
-/// и прячется, пока ближнее плечо позади листа едет на её место, — плечо и
-/// становится ею. Остальные карточки не трогает и за лентой не следят.
-private struct BesideDay: ViewModifier {
-    let on: Bool
-    let ribbon: Ribbon
-    let live: Bool
-
-    func body(content: Content) -> some View {
-        if on {
-            content.modifier(BesideReveal(ribbon: ribbon, live: live))
-        } else {
-            content
-        }
-    }
-}
-
-private struct BesideReveal: ViewModifier {
-    @ObservedObject var ribbon: Ribbon
-    let live: Bool
-
-    func body(content: Content) -> some View {
-        let hidden = live && ribbon.y > 0.5 && ribbon.y < Ribbon.reveal
-        content
-            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { h in
-                ribbon.aboveGap = max(0, h - Search.overlap)
-            }
-            .opacity(hidden ? 0 : 1)
-    }
-}
-
