@@ -164,8 +164,8 @@ struct DayPage: View {
             // любой странице (P113).
             // Корешок — тот же контур листа, что у карточек картотеки (P797):
             // имя дня и дата в нём, слева. Стрелок ‹ › больше нет (P802):
-            // день меняют тягой за край; справа от корешка — корешки
-            // карточек позади (`BehindTabs`).
+            // день меняют тягой за край; справа от корешка — пустой стол,
+            // при тяге вниз он тает и проступает картотека (`BehindTabs`).
             HStack(spacing: 0) {
                 titleMenu
                     .padding(.leading, 14)
@@ -1861,68 +1861,38 @@ struct DayCloud: View {
     }
 }
 
-/// Карточки позади открытого листа (P816, прежде вертикальные корешки
-/// P802): на столе справа от корешка листа — лежачие плечи пяти карточек
-/// прошлого, той же старой бумаги, что в картотеке, одна над другой: чем
-/// дальше, тем выше и короче справа. Это те самые карточки, что выезжают,
-/// если потянуть «День» вниз. Их корешки — за корешком листа, не видны.
-/// Нижние края уходят под лист. Стол под ними — тот же, что под картотекой
-/// (`Desk`, P817). Касаний не ловят.
-///
-/// Тянут «День» вниз (P832) — плечи расходятся: дальние быстро уходят вверх
-/// за край, ближнее поднимается медленнее всех и тает, когда над листом
-/// выходит настоящая вчерашняя карточка.
+/// Место справа от корешка листа (P842, вариант автора 1; вместо плеч
+/// карточек P816, P817, P832): в покое — пустой стол. Тянут «День» вниз —
+/// стол здесь тает, и сквозь него проступает настоящая вчерашняя карточка
+/// картотеки: она и так лежит здесь, под листом, своим нижним краем. Ничего
+/// не рисуется заново — меняется только прозрачность одного места. Касаний
+/// не ловит.
 struct BehindTabs: View {
     @EnvironmentObject private var shell: Shell
 
     var body: some View {
-        BehindSpread(ribbon: shell.ribbon, live: shell.ribbonLive)
+        NotchDesk(ribbon: shell.ribbon, live: shell.ribbonLive)
     }
 }
 
-private struct BehindSpread: View {
+private struct NotchDesk: View {
     @ObservedObject var ribbon: Ribbon
     let live: Bool
 
     var body: some View {
-        // Насколько день стянут вниз; вверх (будущее) плечи стоят.
-        let pulled = live ? max(0, ribbon.y) : 0
+        // Насколько день стянут вниз; вверх (будущее) место не тает.
+        let pulled: CGFloat = live ? max(0, ribbon.y) : 0
+        // Тает за первые 90 точек тяги.
+        let fade: Double = Double(max(0, min(1, pulled / 90)))
         GeometryReader { geo in
             let w = geo.size.width
             let start = w * DayPage.folder.tabShare
-            let base = DayPage.folder.tabHeight
-            ZStack(alignment: .topLeading) {
-                Desk()
-                    .frame(width: max(0, w - start), height: base + 2)
-                    .offset(x: start)
-                ZStack(alignment: .topLeading) {
-                    // Дальняя — первой, ближняя — поверх неё.
-                    ForEach((0..<5).reversed(), id: \.self) { i in
-                        let rest: CGFloat = 6 + CGFloat(4 - i) * 7
-                        // Ближняя поднимается медленно, дальние — всё
-                        // быстрее: расстояние между ними растёт.
-                        let speed: CGFloat = i == 0 ? 0.35 : 0.6 + CGFloat(i) * 0.5
-                        let rise: CGFloat = pulled * speed
-                        let fade: Double = i == 0 ? Double(max(0, min(1, (pulled - 50) / 110))) : 0
-                        let height: CGFloat = base - rest + Search.tabHeight + 24
-                        // Износ у каждой из пяти свой, но один и тот же на всех
-                        // днях: заготовка рисуется один раз, листание не ждёт.
-                        CardPaper(seed: 9_100 + i, past: true)
-                            .frame(width: w - 4 - CGFloat(i) * 4, height: height)
-                            .offset(y: rest - rise - Search.tabHeight)
-                            .opacity(1 - fade)
-                    }
-                }
-                // Видно справа от корешка листа и над листом — и выше него,
-                // пока день стянут вниз: туда плечи и уходят.
-                .mask(alignment: .topLeading) {
-                    Rectangle()
-                        .frame(width: max(0, w - start), height: base + 2 + pulled)
-                        .offset(x: start, y: -pulled)
-                }
-            }
+            Desk()
+                .frame(width: max(0, w - start), height: DayPage.folder.tabHeight + 2)
+                .offset(x: start)
         }
         .frame(height: DayPage.folder.tabHeight + 2)
+        .opacity(1 - fade)
         .allowsHitTesting(false)
         .accessibilityHidden(true)
     }

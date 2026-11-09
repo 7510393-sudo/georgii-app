@@ -746,7 +746,7 @@ private struct SearchCard<Content: View>: View {
 /// Лист карточки поиска (P732): старая бумага, затёртые края и рваный край —
 /// один лист из пачки заготовок; пока его нет — ровная бумага. Сегодняшний
 /// день слегка тронут (P728), без «Старой бумаги» (P730) — ровная бумага.
-struct CardPaper: View {
+private struct CardPaper: View {
     let seed: Int
     let past: Bool
     @Environment(\.colorScheme) private var scheme
