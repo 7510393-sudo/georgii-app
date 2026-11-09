@@ -211,6 +211,25 @@ struct SearchView: View {
         var over = false
         /// Карточка под днём (P791): у дня из прошлого там прошлое после него.
         var below = false
+        /// Первая карточка своего месяца — на поле его название (P844).
+        var newMonth = false
+        /// Первая карточка будущего, когда дня между прошлым и будущим нет
+        /// (P844): на полях — граница.
+        var border = false
+
+        /// Карточка будущего.
+        var isFuture: Bool {
+            if case .future = kind { return true }
+            return false
+        }
+
+        /// День карточки.
+        var day: Archive.Day? {
+            switch kind {
+            case .past(let d), .future(let d): return d
+            default: return nil
+            }
+        }
 
         /// Куда уходит даль (P782): 1 — прошлое, вдаль вверх; -1 — будущее,
         /// вдаль вниз; 0 — не карточка (место дня, поля).
@@ -281,6 +300,22 @@ struct SearchView: View {
         // Под последней — место под строку поиска внизу (P797).
         let tail = max(Search.fieldHeight + 8, height - CGFloat(future.count + later.count) * 60)
         out.append(Entry(id: "tail", kind: .pad(tail)))
+        // Метки полей (P844): первая карточка месяца; граница прошлого и
+        // будущего, когда дня между ними нет. По строке даты — без календаря.
+        var month = ""
+        var sawPast = false
+        var bordered = false
+        for i in out.indices {
+            guard let day = out[i].day else { continue }
+            let m = String(day.stamp.prefix(7))
+            if m != month { out[i].newMonth = true; month = m }
+            if case .future = out[i].kind {
+                if !slot, sawPast, !bordered { out[i].border = true }
+                bordered = true
+            } else {
+                sawPast = true
+            }
+        }
         return out
     }
 
@@ -347,6 +382,12 @@ struct SearchView: View {
             LazyVStack(spacing: 0) {
                 ForEach(items) { entry in
                     piece(entry, sample: sample)
+                        .overlay {
+                            if let day = entry.day {
+                                Margins(future: entry.isFuture, newMonth: entry.newMonth,
+                                        border: entry.border, day: day)
+                            }
+                        }
                         .padding(.top, entry.over ? -Search.overlap : 0)
                         .modifier(Distance(side: entry.depth, height: height))
                         .id(entry.id)
@@ -438,7 +479,8 @@ struct SearchView: View {
         case .past(let day):
             // Карточки уже дня (P780): по бокам виден стол, день — во всю
             // ширину, и его не спутать с карточкой.
-            SearchCard(stamp: Search.stamp(day.date), past: Ru.isPast(day.date),
+            SearchCard(stamp: Search.stamp(day.date), weekday: Search.weekday(day.date),
+                       past: Ru.isPast(day.date),
                        seed: PageTexture.seed(day.date) &+ (Search.deep ? (Int(entry.id.dropFirst()) ?? 0) * 7 : 0)) {
                 row(day)
             }
@@ -446,7 +488,8 @@ struct SearchView: View {
         case .slot:
             daySlot
         case .future(let day):
-            SearchCard(stamp: Search.stamp(day.date), past: false,
+            SearchCard(stamp: Search.stamp(day.date), weekday: Search.weekday(day.date),
+                       weekend: Calendar.current.isDateInWeekend(day.date), past: false,
                        seed: PageTexture.seed(day.date), tight: true) {
                 futureRow(day, sample: sample)
             }
@@ -680,6 +723,38 @@ enum Search {
     }
 
     /// «2026 сентябрь 22» — от крупного к мелкому, как ищут в архиве.
+    /// День недели двумя буквами (P844): ПН, ВТ, СР… — на языке приложения
+    /// (у английского Mo, Tu…). Названия берутся у календаря один раз.
+    static func weekday(_ date: Date) -> String {
+        if weekdayCode != Lang.code {
+            var cal = Calendar(identifier: .gregorian)
+            cal.locale = Lang.locale
+            weekdayNames = cal.shortStandaloneWeekdaySymbols.map {
+                String($0.replacingOccurrences(of: ".", with: "").prefix(2)).uppercased()
+            }
+            weekdayCode = Lang.code
+        }
+        let i = Calendar.current.component(.weekday, from: date) - 1
+        return weekdayNames.indices.contains(i) ? weekdayNames[i] : ""
+    }
+    private static var weekdayCode = ""
+    private static var weekdayNames: [String] = []
+
+    /// Месяц тремя буквами для полей картотеки (P844): НОЯ, ДЕК…
+    static func monthShort(_ month: Int) -> String {
+        if monthCode != Lang.code {
+            var cal = Calendar(identifier: .gregorian)
+            cal.locale = Lang.locale
+            monthNames = cal.shortStandaloneMonthSymbols.map {
+                String($0.replacingOccurrences(of: ".", with: "").prefix(3)).uppercased()
+            }
+            monthCode = Lang.code
+        }
+        return monthNames.indices.contains(month - 1) ? monthNames[month - 1] : ""
+    }
+    private static var monthCode = ""
+    private static var monthNames: [String] = []
+
     static func stamp(_ date: Date) -> String {
         let c = Calendar.current.dateComponents([.day, .month, .year], from: date)
         // Промежутки — в один пробел, вдвое уже прежних (P282).
@@ -698,6 +773,10 @@ enum Search {
 private struct SearchCard<Content: View>: View {
     @Environment(\.colorScheme) private var scheme
     let stamp: String
+    /// День недели двумя буквами после даты (P844).
+    var weekday = ""
+    /// Выходной будущего — день недели красным (P844).
+    var weekend = false
     /// Прошедший день — края затёрты, как у его страницы (P722).
     var past = true
     /// Номер дня — у каждой карточки свой износ (P723).
@@ -707,13 +786,20 @@ private struct SearchCard<Content: View>: View {
     var tight = false
     @ViewBuilder let content: () -> Content
 
+    /// Дата и день недели на корешке (P844); выходной будущего — красным.
+    private var tabText: Text {
+        let date = Text(stamp).foregroundColor(Look.dateBlue)
+        guard !weekday.isEmpty else { return date }
+        let ink: Color = weekend ? Ru.weekendColour : Look.dateBlue
+        return date + Text(" " + weekday).foregroundColor(ink)
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
-                Text(stamp)
+                tabText
                     .font(Look.mono(11.5, weight: .medium))
                     .tracking(0.3)
-                    .foregroundStyle(Look.dateBlue)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
                     .padding(.horizontal, 8)
@@ -941,3 +1027,77 @@ enum Afar {
         return place - top
     }
 }
+
+/// Поля картотеки по бокам карточек (P844): где ты в картотеке. Слева —
+/// тонкая линия во всю ленту: в прошлом цвета бумаги, в будущем синяя, — где
+/// она меняет цвет, там граница; у первой карточки месяца — его название (и
+/// год, если не нынешний); у будущих выходных — красная точка. Справа —
+/// сколько дней до сегодня: «−3», «+12» (до ста; дальше хватает месяцев).
+/// Рисуется с карточкой и едет с ней — отдельного счёта нет.
+private struct Margins: View {
+    let future: Bool
+    let newMonth: Bool
+    let border: Bool
+    let day: Archive.Day
+
+    var body: some View {
+        let away = Calendar.current.dateComponents([.day], from: DayStore.today(),
+                                                   to: Calendar.current.startOfDay(for: day.date)).day ?? 0
+        let line: Color = future ? Look.dateBlue.opacity(0.35) : Look.inkFaint.opacity(0.35)
+        let weekend = future && Calendar.current.isDateInWeekend(day.date)
+        HStack(spacing: 0) {
+            // Левое поле: поля ленты 10 и карточки 14 — 24 точки.
+            ZStack(alignment: .top) {
+                Rectangle().fill(line).frame(width: 1.5)
+                if border {
+                    Capsule().fill(Look.accent).frame(width: 14, height: 3)
+                }
+                if weekend {
+                    Circle().fill(Ru.weekendColour).frame(width: 5, height: 5)
+                        .offset(y: Search.tabHeight / 2 - 2.5)
+                }
+                if newMonth {
+                    monthLabel
+                        .offset(y: Search.tabHeight + 4)
+                }
+            }
+            .frame(width: 24)
+            .offset(x: -10)
+            Spacer(minLength: 0)
+            // Правое поле — дни до сегодня.
+            ZStack(alignment: .top) {
+                if border {
+                    Capsule().fill(Look.accent).frame(width: 14, height: 3)
+                }
+                if away != 0, abs(away) < 100 {
+                    Text(away > 0 ? "+\(away)" : "−\(-away)")
+                        .font(Look.mono(8))
+                        .foregroundStyle(Look.inkFaint)
+                        .lineLimit(1)
+                        .fixedSize()
+                        .offset(y: Search.tabHeight / 2 - 5)
+                }
+            }
+            .frame(width: 24)
+            .offset(x: 10)
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    private var monthLabel: some View {
+        let parts = day.stamp.split(separator: "-")
+        let year = parts.first.flatMap { Int($0) } ?? 0
+        let month = parts.count > 1 ? Int(parts[1]) ?? 1 : 1
+        let thisYear = Calendar.current.component(.year, from: DayStore.today())
+        return VStack(spacing: 0) {
+            Text(Search.monthShort(month))
+            if year != thisYear { Text("’" + String(String(year).suffix(2))) }
+        }
+        .font(Look.mono(7.5, weight: .medium))
+        .foregroundStyle(Look.inkSoft)
+        .padding(.vertical, 2)
+        .background(Desk().clipShape(RoundedRectangle(cornerRadius: 3)))
+    }
+}
+

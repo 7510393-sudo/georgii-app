@@ -115,7 +115,8 @@ enum Ru {
         Calendar.current.isDateInWeekend(date) ? weekendColour : Look.inkSoft
     }
 
-    private static let weekendColour = Color(light: 0xB0403A, dark: 0xE08B84)
+    /// Красный выходных — и у дат будущих карточек картотеки (P844).
+    static let weekendColour = Color(light: 0xB0403A, dark: 0xE08B84)
 
     /// Цвет страницы дня — по тому, прошлое это, сегодня или будущее
     /// (P330; раньше было семь ступеней по удалённости, P245, — решили, что
