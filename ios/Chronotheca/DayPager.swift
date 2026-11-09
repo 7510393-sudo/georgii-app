@@ -100,7 +100,7 @@ struct DayPage: View {
         // картотеки, с чёткой обводкой; справа от корешка — стол.
         .background(background.clipShape(DayPage.folder))
         // Позади листа — плечи карточек картотеки (P816).
-        .background(alignment: .top) { BehindTabs() }
+        .background(alignment: .top) { BehindTabs(date: date) }
         // Край листа — чёткой линией (P802): у сегодняшнего фактуры нет, и
         // без линии глаз не видел, где кончается лист.
         .overlay(DayPage.folder.stroke(DayPage.edge, lineWidth: 1).allowsHitTesting(false))
@@ -1873,16 +1873,34 @@ struct DayCloud: View {
 /// за край, ближнее поднимается медленнее всех и тает, когда над листом
 /// выходит настоящая вчерашняя карточка.
 struct BehindTabs: View {
+    let date: Date
     @EnvironmentObject private var shell: Shell
+    @EnvironmentObject private var archive: Archive
 
     var body: some View {
-        BehindSpread(ribbon: shell.ribbon, live: shell.ribbonLive)
+        BehindSpread(ribbon: shell.ribbon, live: shell.ribbonLive,
+                     yesterday: BehindTabs.before(date, in: archive, shell: shell),
+                     fromDay: shell.pulling && shell.fileFrom > 0)
+    }
+
+    /// Карточка, что лежит в картотеке прямо над этим днём (P838): та же, что
+    /// в ленте над местом дня. Пока ищут или отбирают — ленту строит поиск, и
+    /// карточки под листом нет. Для снимков CI — тоже нет.
+    static func before(_ date: Date, in archive: Archive, shell: Shell) -> Archive.Day? {
+        guard !Search.deep, shell.find == .all,
+              shell.query.trimmingCharacters(in: .whitespaces).isEmpty else { return nil }
+        let stamp = Vault.stamp(date)
+        return archive.newestFirst.first { $0.stamp < stamp }
     }
 }
 
 private struct BehindSpread: View {
     @ObservedObject var ribbon: Ribbon
     let live: Bool
+    /// Вчерашняя карточка — лежит под листом (P838); нет — только плечи.
+    let yesterday: Archive.Day?
+    /// Тянут из «Дня» вниз — карточка стоит, пока лист её не откроет.
+    let fromDay: Bool
 
     var body: some View {
         // Насколько день стянут вниз; вверх (будущее) плечи стоят.
@@ -1897,7 +1915,9 @@ private struct BehindSpread: View {
                     .offset(x: start)
                 ZStack(alignment: .topLeading) {
                     // Дальняя — первой, ближняя — поверх неё.
-                    ForEach((0..<5).reversed(), id: \.self) { i in
+                    // Ближнее плечо — сама вчерашняя карточка (P838), если
+                    // она есть.
+                    ForEach(((yesterday == nil ? 0 : 1)..<5).reversed(), id: \.self) { i in
                         let rest: CGFloat = 6 + CGFloat(4 - i) * 7
                         // Ближняя поднимается медленно, дальние — всё
                         // быстрее: расстояние между ними растёт.
@@ -1920,10 +1940,39 @@ private struct BehindSpread: View {
                         .frame(width: max(0, w - start), height: base + 2 + pulled)
                         .offset(x: start, y: -pulled)
                 }
+                if let yesterday {
+                    card(yesterday, w: w, pulled: pulled)
+                }
             }
         }
         .frame(height: DayPage.folder.tabHeight + 2)
         .allowsHitTesting(false)
         .accessibilityHidden(true)
+    }
+
+    /// Вчерашняя карточка под листом (P838, по замыслу автора). В покое её
+    /// плечо выглядывает справа от корешка листа ближним из плеч. Тянут лист
+    /// вниз — карточка стоит, лист её открывает; открыл целиком — тянет за
+    /// собой: она уже на своём месте в картотеке, где её двойник в ленте, и
+    /// за ней выходят остальные. Двойник, пока тянут из дня, спрятан
+    /// (`SearchView`), потом виден — они совпадают, подмены нет. Обратно в
+    /// день лента едет вместе с ней. Размер карточки прошлого постоянный —
+    /// мерить ничего не надо.
+    private func card(_ day: Archive.Day, w: CGFloat, pulled: CGFloat) -> some View {
+        let side: CGFloat = 10 + Search.cardInset
+        let height: CGFloat = Search.tabHeight + 8 + Search.body + Search.overlap + 6
+        // Над местом дня карточка выступает на свою высоту без наползания.
+        let above: CGFloat = height - Search.overlap
+        // В покое плечо карточки — на 34 точки ниже верха листа.
+        let rest: CGFloat = 6 + 4 * 7 - Search.tabHeight
+        // Тянут из дня — стоит, пока не откроется; лента едет к дню —
+        // вместе с ней; тянут вверх или покой — на месте под листом.
+        let top: CGFloat = fromDay ? max(rest - pulled, -above) : (pulled > 0 ? -above : rest)
+        return SearchCard(stamp: Search.stamp(day.date), past: Ru.isPast(day.date),
+                          seed: PageTexture.seed(day.date)) {
+            CardFace(day: day)
+        }
+        .frame(width: max(0, w - 2 * side))
+        .offset(x: side, y: top)
     }
 }
