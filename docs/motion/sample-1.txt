@@ -1,0 +1,132 @@
+    439 Thread_45946   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 439 start  (in dyld) + 6992  [0x1028a84e4]
+    +   439 start_sim  (in dyld_sim) + 20  [0x1026cb0e4]
+    +     439 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x1045fede8]  ChronothecaApp.swift:0
+    +       439 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1045fed3c]  /<compiler-generated>:0
+    +         439 static App.main()  (in SwiftUI) + 132  [0x1d2c5f084]
+    +           439 protocol witness for App.init() in conformance ChronothecaApp  (in Chronotheca.debug.dylib) + 12  [0x1045fedd4]  /<compiler-generated>:0
+    +             439 ChronothecaApp.init()  (in Chronotheca.debug.dylib) + 604  [0x1045fb36c]  ChronothecaApp.swift:30
+    +               439 Vault.__allocating_init()  (in Chronotheca.debug.dylib) + 44  [0x104badc24]  Vault.swift:0
+    +                 439 Vault.init()  (in Chronotheca.debug.dylib) + 2036  [0x104bae424]  Vault.swift:227
+    +                   439 Vault.usePreviewFolder()  (in Chronotheca.debug.dylib) + 904  [0x104baef08]  Vault.swift:259
+    +                     411 Vault.seedPreview()  (in Chronotheca.debug.dylib) + 1028  [0x104bb1d98]  Vault.swift:284
+    +                     ! 411 Vault.write(_:to:for:)  (in Chronotheca.debug.dylib) + 316  [0x104bb3390]  Vault.swift:1266
+    +                     !   411 static Vault.write(_:to:)  (in Chronotheca.debug.dylib) + 116  [0x104bb7be0]  Vault.swift:1274
+    +                     !     411 static Vault.write(data:to:)  (in Chronotheca.debug.dylib) + 796  [0x104bb77e0]  Vault.swift:1290
+    +                     !       411 -[NSFileCoordinator coordinateWritingItemAtURL:options:error:byAccessor:]  (in Foundation) + 84  [0x1811c78b4]
+    +                     !         411 -[NSFileCoordinator(NSPrivate) _coordinateWritingItemAtURL:options:error:byAccessor:]  (in Foundation) + 540  [0x1811c9c3c]
+    +                     !           411 -[NSFileCoordinator(NSPrivate) _blockOnAccessClaim:withAccessArbiter:]  (in Foundation) + 320  [0x1811c8c0c]
+    +                     !             411 interposed_dispatch_semaphore_wait  (in libRPAC.dylib) + 124  [0x102bbc458]
+    +                     !               411 _dispatch_semaphore_wait_slow  (in libdispatch.dylib) + 128  [0x1801883c0]
+    +                     !                 411 _dispatch_sema4_wait  (in libdispatch.dylib) + 24  [0x180187d60]
+    +                     !                   411 semaphore_wait_trap  (in libsystem_kernel.dylib) + 8  [0x102580aec]
+    +                     28 Vault.seedPreview()  (in Chronotheca.debug.dylib) + 1188  [0x104bb1e38]  Vault.swift:311
+    +                       28 static Photo.sample()  (in Chronotheca.debug.dylib) + 92  [0x10489b528]  Photo.swift:138
+    +                         28 UIGraphicsImageRenderer.__allocating_init(size:)  (in Chronotheca.debug.dylib) + 52  [0x104603d68]  UIGraphicsImageRenderer.h:0
+    +                           28 @nonobjc UIGraphicsImageRenderer.init(size:)  (in Chronotheca.debug.dylib) + 36  [0x10460430c]  /<compiler-generated>:0
+    +                             28 -[UIGraphicsImageRenderer initWithSize:]  (in UIKitCore) + 40  [0x185f8f2c0]
+    +                               28 +[UIGraphicsImageRendererFormat defaultFormat]  (in UIKitCore) + 44  [0x185f8e4a8]
+    +                                 28 +[UIGraphicsRendererFormat defaultFormat]  (in UIKitCore) + 12  [0x185f95af8]
+    +                                   28 -[UIGraphicsImageRendererFormat init]  (in UIKitCore) + 76  [0x185f8e744]
+    +                                     28 _UIScreenForcedMainScreenScale  (in UIKitCore) + 40  [0x185fe7a50]
+    +                                       28 _objc_msgSend_uncached  (in libobjc.A.dylib) + 64  [0x18003af00]
+    +                                         28 lookUpImpOrForward  (in libobjc.A.dylib) + 208  [0x1800533a4]
+    +                                           28 initializeAndMaybeRelock(objc_class*, objc_object*, locker_mixin<lockdebug::lock_mixin<objc_lock_base_t>>&, bool)  (in libobjc.A.dylib) + 216  [0x1800410e0]
+    +                                             28 initializeNonMetaClass  (in libobjc.A.dylib) + 532  [0x18003fe70]
+    +                                               28 CALLING_SOME_+initialize_METHOD  (in libobjc.A.dylib) + 20  [0x18003f1ec]
+    +                                                 23 +[UIScreen initialize]  (in UIKitCore) + 140  [0x185fe19ac]
+    +                                                 : 23 -[_UIScreenInitialDisplayConfigurationLoader initialDisplayContext]  (in UIKitCore) + 140  [0x185fe16f0]
+    +                                                 :   23 -[_UIApplicationConfigurationLoader applicationInitializationContext]  (in UIKitCore) + 20  [0x186002c94]
+    +                                                 :     23 -[_UIApplicationConfigurationLoader _loadInitializationContext]  (in UIKitCore) + 128  [0x186002a3c]
+    +                                                 :       23 _dispatch_once_wait  (in libdispatch.dylib) + 60  [0x1801880e4]
+    +                                                 :         23 _dispatch_once_wait.cold.1  (in libdispatch.dylib) + 144  [0x1801bbaa8]
+    +                                                 :           23 _dlock_wait  (in libdispatch.dylib) + 52  [0x180188190]
+    +                                                 :             23 __ulock_wait  (in libsystem_kernel.dylib) + 8  [0x102582788]
+    +                                                 5 +[UIScreen initialize]  (in UIKitCore) + 216  [0x185fe19f8]
+    +                                                   3 +[UIScreen _FBSDisplayConfigurationConnected:forInitialDisplayContext:andNotify:forceMain:]  (in UIKitCore) + 188  [0x185fe3344]
+    +                                                   | 3 -[UIScreen initWithDisplayConfiguration:forceMainScreen:]  (in UIKitCore) + 132  [0x185fe3a7c]
+    +                                                   |   3 _UIScreenWriteDisplayConfiguration  (in UIKitCore) + 240  [0x185fe4040]
+    +                                                   |     3 BSDispatchMain  (in BaseBoard) + 56  [0x18407b7b4]
+    +                                                   |       3 ___UIScreenWriteDisplayConfiguration_block_invoke  (in UIKitCore) + 36  [0x185fed9b0]
+    +                                                   |         2 -[UIScreen _evaluateCapturedStateForReason:]  (in UIKitCore) + 540  [0x185fe456c]
+    +                                                   |         + 1 __UILogGetCategoryImpl  (in UIKitCore) + 812  [0x18690a508]
+    +                                                   |         + ! 1 _UIKitUserDefaults  (in UIKitCore) + 76  [0x18691c4bc]
+    +                                                   |         + !   1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +                                                   |         + !     1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                                                   |         + !       1 ___UIKitUserDefaults_block_invoke  (in UIKitCore) + 56  [0x18691c4f8]
+    +                                                   |         + !         1 _os_feature_enabled_SLOWPATH  (in libsystem_featureflags.dylib) + 1088  [0x1cc2c1ed8]
+    +                                                   |         + !           1 _os_feature_enabled_load  (in libsystem_featureflags.dylib) + 248  [0x1cc2c2380]
+    +                                                   |         + !             1 pread  (in libsystem_kernel.dylib) + 8  [0x10258234c]
+    +                                                   |         + 1 __UILogGetCategoryImpl  (in UIKitCore) + 876  [0x18690a548]
+    +                                                   |         +   1 __associateFlagWithPreferencesKeyLocked  (in UIKitCore) + 56  [0x18690a854]
+    +                                                   |         +     1 -[NSUserDefaults(NSUserDefaults) objectForKey:]  (in Foundation) + 56  [0x181167208]
+    +                                                   |         +       1 _CFPreferencesCopyAppValueWithContainerAndConfiguration  (in CoreFoundation) + 108  [0x18052b3dc]
+    +                                                   |         +         1 -[_CFXPreferences copyAppValueForKey:identifier:container:configurationURL:]  (in CoreFoundation) + 128  [0x1805289f8]
+    +                                                   |         +           1 -[_CFXPreferences withSearchListForIdentifier:container:cloudConfigurationURL:perform:]  (in CoreFoundation) + 136  [0x18054bee4]
+    +                                                   |         +             1 normalizeQuintuplet  (in CoreFoundation) + 396  [0x1804ee91c]
+    +                                                   |         +               1 __108-[_CFXPreferences(SearchListAdditions) withSearchListForIdentifier:container:cloudConfigurationURL:perform:]_block_invoke  (in CoreFoundation) + 348  [0x1804ef088]
+    +                                                   |         +                 1 __76-[_CFXPreferences copyAppValueForKey:identifier:container:configurationURL:]_block_invoke  (in CoreFoundation) + 28  [0x180528a70]
+    +                                                   |         +                   1 -[CFPrefsSource copyValueForKey:]  (in CoreFoundation) + 40  [0x18047a678]
+    +                                                   |         +                     1 -[CFPrefsSearchListSource alreadylocked_copyValueForKey:]  (in CoreFoundation) + 144  [0x1804ec2e8]
+    +                                                   |         +                       1 -[CFPrefsSearchListSource alreadylocked_getDictionary:]  (in CoreFoundation) + 384  [0x18054b7f8]
+    +                                                   |         +                         1 -[CFPrefsSearchListSource alreadylocked_generationCountFromListOfSources:count:]  (in CoreFoundation) + 236  [0x18054bd14]
+    +                                                   |         +                           1 -[CFPrefsSearchListSource synchronouslySendSystemMessage:andUserMessage:andDirectMessage:replyHandler:]  (in CoreFoundation) + 268  [0x18054b324]
+    +                                                   |         +                             1 CFPREFERENCES_IS_WAITING_FOR_USER_CFPREFSD  (in CoreFoundation) + 92  [0x1804ed558]
+    +                                                   |         +                               1 __103-[CFPrefsSearchListSource synchronouslySendSystemMessage:andUserMessage:andDirectMessage:replyHandler:]_block_invoke  (in CoreFoundation) + 112  [0x1804ed66c]
+    +                                                   |         +                                 1 -[_CFXPreferences withConnectionForRole:andUserIdentifier:performBlock:]  (in CoreFoundation) + 44  [0x18054fe64]
+    +                                                   |         +                                   1 __103-[CFPrefsSearchListSource synchronouslySendSystemMessage:andUserMessage:andDirectMessage:replyHandler:]_block_invoke_2  (in CoreFoundation) + 72  [0x1804ed6dc]
+    +                                                   |         +                                     1 __80-[CFPrefsSearchListSource alreadylocked_generationCountFromListOfSources:count:]_block_invoke  (in CoreFoundation) + 56  [0x1804ed9f8]
+    +                                                   |         +                                       1 -[CFPrefsSearchListSource handleReply:toRequestNewDataMessage:onConnection:retryCount:error:]  (in CoreFoundation) + 196  [0x1804ed0f4]
+    +                                                   |         +                                         1 _xpc_dictionary_look_up  (in libxpc.dylib) + 148  [0x1800d62e8]
+    +                                                   |         +                                           1 _xpc_dictionary_unpack_value_and_vend  (in libxpc.dylib) + 24  [0x1800d77f4]
+    +                                                   |         +                                             1 _xpc_dictionary_unpack_value  (in libxpc.dylib) + 116  [0x1800d762c]
+    +                                                   |         +                                               1 _xpc_array_deserialize  (in libxpc.dylib) + 88  [0x1800c7a98]
+    +                                                   |         +                                                 1 _xpc_array_create  (in libxpc.dylib) + 40  [0x1800c7f88]
+    +                                                   |         +                                                   1 _os_object_alloc_realized  (in libdispatch.dylib) + 28  [0x180187294]
+    +                                                   |         +                                                     1 class_createInstance  (in libobjc.A.dylib) + 72  [0x180057034]
+    +                                                   |         +                                                       1 _xzm_xzone_malloc_tiny  (in libsystem_malloc.dylib) + 564  [0x1801ee584]
+    +                                                   |         1 -[UIScreen _evaluateCapturedStateForReason:]  (in UIKitCore) + 88  [0x185fe43a8]
+    +                                                   |           1 -[FBSDisplayConfiguration CADisplay]  (in FrontBoardServices) + 112  [0x188806cfc]
+    +                                                   |             1 getCADisplayClass  (in FrontBoardServices) + 108  [0x1888426c0]
+    +                                                   |               1 __getCADisplayClass_block_invoke  (in FrontBoardServices) + 20  [0x188842718]
+    +                                                   |                 1 QuartzCoreLibrary  (in FrontBoardServices) + 28  [0x188842550]
+    +                                                   |                   1 QuartzCoreLibraryCore  (in FrontBoardServices) + 104  [0x1888424d0]
+    +                                                   |                     1 _sl_dlopen  (in SoftLinking) + 88  [0x23206b550]
+    +                                                   |                       1 dyld4::APIs::dlopen_from(char const*, int, void*)  (in dyld_sim) + 344  [0x1026c3b1c]
+    +                                                   |                         1 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const  (in dyld_sim) + 184  [0x1026c8390]
+    +                                                   |                           1 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const::'lambda'()::operator()() const  (in dyld_sim) + 280  [0x1026c8bc0]
+    +                                                   |                             1 dyld4::Loader::getLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 828  [0x1026dda70]
+    +                                                   |                               1 dyld4::Loader::forEachPath(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer)  (in dyld_sim) + 236  [0x1026dd378]
+    +                                                   |                                 1 dyld4::ProcessConfig::PathOverrides::forEachPathVariant(char const*, mach_o::Platform, bool, bool, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer) const  (in dyld_sim) + 356  [0x1026d05d0]
+    +                                                   |                                   1 dyld4::ProcessConfig::PathOverrides::forEachInColonList(char const*, char const*, bool&, void (char const*, bool&) block_pointer)  (in dyld_sim) + 224  [0x1026cf860]
+    +                                                   |                                     1 invocation function for block in dyld4::ProcessConfig::PathOverrides::forEachPathVariant(char const*, mach_o::Platform, bool, bool, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer) const  (in dyld_sim) + 164  [0x1026d0dfc]
+    +                                                   |                                       1 dyld4::Loader::forEachResolvedAtPathVar(dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, dyld4::ProcessConfig::PathOverrides::Type, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer)  (in dyld_sim) + 468  [0x1026dd6f4]
+    +                                                   |                                         1 invocation function for block in dyld4::Loader::getLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 252  [0x1026ddf00]
+    +                                                   |                                           1 dyld4::JustInTimeLoader::matchesPath(dyld4::RuntimeState const&, char const*) const  (in dyld_sim) + 56  [0x1026d9168]
+    +                                                   |                                             1 mach_o::UnsafeHeader::installName() const  (in dyld_sim) + 40  [0x1026fed70]
+    +                                                   |                                               1 mach_o::UnsafeHeader::getDylibInstallName(char const**, mach_o::Version32*, mach_o::Version32*) const  (in dyld_sim) + 104  [0x102700170]
+    +                                                   |                                                 1 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 168  [0x1026fe9fc]
+    +                                                   1 +[UIScreen _FBSDisplayConfigurationConnected:forInitialDisplayContext:andNotify:forceMain:]  (in UIKitCore) + 208  [0x185fe3358]
+    +                                                   | 1 objc_msgSend$_setInitialDisplayContext:  (in UIKitCore) + 0  [0x18740cc40]
+    +                                                   1 +[UIScreen _FBSDisplayConfigurationConnected:forInitialDisplayContext:andNotify:forceMain:]  (in UIKitCore) + 232  [0x185fe3370]
+    +                                                     1 -[UIScreen _connectScreen]  (in UIKitCore) + 20  [0x185fe7d44]
+    +                                                       1 -[UIScreen _setUserInterfaceIdiom:]  (in UIKitCore) + 60  [0x185fe85a8]
+    +                                                         1 +[UIView _performInitializationForIdiomIfNeccessary:]  (in UIKitCore) + 52  [0x186aaa3fc]
+    +                                                           1 _objc_msgSend_uncached  (in libobjc.A.dylib) + 64  [0x18003af00]
+    +                                                             1 lookUpImpOrForward  (in libobjc.A.dylib) + 208  [0x1800533a4]
+    +                                                               1 initializeAndMaybeRelock(objc_class*, objc_object*, locker_mixin<lockdebug::lock_mixin<objc_lock_base_t>>&, bool)  (in libobjc.A.dylib) + 216  [0x1800410e0]
+    +                                                                 1 initializeNonMetaClass  (in libobjc.A.dylib) + 532  [0x18003fe70]
+    +                                                                   1 CALLING_SOME_+initialize_METHOD  (in libobjc.A.dylib) + 20  [0x18003f1ec]
+    +                                                                     1 +[UIView initialize]  (in UIKitCore) + 288  [0x186a80f28]
+    +                                                                       1 _class_setCustomDeallocInitiation  (in libobjc.A.dylib) + 204  [0x18004fcb8]
+    +                                                                         1 ___class_setCustomDeallocInitiation_block_invoke  (in libobjc.A.dylib) + 8  [0x18004fd74]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        450
+        semaphore_wait_trap  (in libsystem_kernel.dylib)        411
+        __ulock_wait  (in libsystem_kernel.dylib)        23
+        __ulock_wait2  (in libsystem_kernel.dylib)        21
+        mach_msg2_trap  (in dyld)        21
+
+Binary images description not available
+
