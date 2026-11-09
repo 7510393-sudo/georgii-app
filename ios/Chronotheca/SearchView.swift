@@ -356,6 +356,14 @@ struct SearchView: View {
         let sample: String? = times.isEmpty ? nil
             : times.contains { $0.contains(where: \.isLetter) } ? "00:00 PM" : "00:00"
         let items = entries(past, future, later: later, slot: !card)
+        // Мера для линии слева (P850).
+        var plan = Ribbon.Plan()
+        if case .pad(let h) = items.first?.kind { plan.lead = h }
+        if case .pad(let h) = items.last?.kind { plan.tail = h }
+        plan.before = past.count + later.count
+        plan.total = past.count + later.count + future.count
+        plan.slot = !card
+        shell.ribbon.plan = plan
         let firstLater = later.first?.id
         let ribbon = shell.ribbon
         return ScrollViewReader { proxy in ScrollView {
@@ -892,9 +900,8 @@ private struct CardPaper: View {
 
 /// Контур карточки с корешком на левой трети: корешок и лист — одна фигура.
 struct FolderShape: Shape {
-    /// Половина ширины волны, которой корешок листа «Дня» переходит в плечо
-    /// (P845).
-    static let wave: CGFloat = 28
+    /// Радиус углов корешка листа «Дня» (P850).
+    static let wave: CGFloat = 14
 
     let tabHeight: CGFloat
     /// Доля ширины под корешок: у карточек треть, у листа «Дня» шире —
@@ -946,22 +953,26 @@ struct FolderShape: Shape {
         return p
     }
 
-    /// Мягкий контур листа «Дня» (P845): углы радиусом 18 и 16, корешок
-    /// переходит в плечо S-образной волной — касательные на обоих концах
-    /// горизонтальны, излома нет.
+    /// Мягкий контур листа «Дня» (P850, вместо волны P845 — «чрезмерно
+    /// наклонен, почти нет вертикальной части»): правый край корешка
+    /// вертикален, оба его угла — и верхний, и внутренний у плеча — круглые,
+    /// радиусом 14; углы листа — 18 сверху слева и 16 у плеча и внизу.
     private func softPath(in r: CGRect) -> Path {
         let tabWidth = r.width * tabShare
         let tabR: CGFloat = 18, bodyR: CGFloat = 16
-        let s = min(Self.wave, tabHeight * 0.6)
+        let corner = min(Self.wave, (tabHeight - 4) / 2)
         let shoulder = r.minY + tabHeight
+        let edge = r.minX + tabWidth
         var p = Path()
         p.move(to: CGPoint(x: r.minX, y: r.minY + tabR))
         p.addArc(tangent1End: CGPoint(x: r.minX, y: r.minY),
                  tangent2End: CGPoint(x: r.minX + tabR, y: r.minY), radius: tabR)
-        p.addLine(to: CGPoint(x: r.minX + tabWidth - s, y: r.minY))
-        p.addCurve(to: CGPoint(x: r.minX + tabWidth + s, y: shoulder),
-                   control1: CGPoint(x: r.minX + tabWidth + s * 0.1, y: r.minY),
-                   control2: CGPoint(x: r.minX + tabWidth - s * 0.1, y: shoulder))
+        p.addLine(to: CGPoint(x: edge - corner, y: r.minY))
+        p.addArc(tangent1End: CGPoint(x: edge, y: r.minY),
+                 tangent2End: CGPoint(x: edge, y: r.minY + corner), radius: corner)
+        p.addLine(to: CGPoint(x: edge, y: shoulder - corner))
+        p.addArc(tangent1End: CGPoint(x: edge, y: shoulder),
+                 tangent2End: CGPoint(x: edge + corner, y: shoulder), radius: corner)
         p.addLine(to: CGPoint(x: r.maxX - bodyR, y: shoulder))
         p.addArc(tangent1End: CGPoint(x: r.maxX, y: shoulder),
                  tangent2End: CGPoint(x: r.maxX, y: shoulder + bodyR), radius: bodyR)
@@ -992,16 +1003,12 @@ private struct Distance: ViewModifier {
         } else {
             content.visualEffect { [side, height] view, geo in
                 let frame = geo.frame(in: .scrollView)
-                var shift = Afar.shift(frame.minY, side: side, height: height)
-                // Прошлое уходит за верхний край (P845): лента убирает
-                // карточку, когда та ушла за край, — а сдвиг наползания держал
-                // её ещё на экране, и верхняя карточка пропадала на глазах. У
-                // самого края сдвиг сходит на нет: карточка уходит вверх
-                // целиком и тогда же исчезает из ленты.
-                if side > 0, frame.maxY < 140 {
-                    shift *= max(0, frame.maxY / 140)
-                }
-                return view.offset(y: shift)
+                let shift = Afar.shift(frame.minY, side: side, height: height)
+                // Прошлое у верхнего края (P850, вместо сжатия сдвига P845 —
+                // с ним карточки на ходу подскакивали вверх): верхняя карточка
+                // тает, пока лента не убрала её, и не пропадает на глазах.
+                let fade: Double = side > 0 ? Double(min(1, max(0, (frame.maxY + shift) / 60))) : 1
+                return view.offset(y: shift).opacity(fade)
             }
         }
     }

@@ -19,7 +19,7 @@ struct DayPages: View {
     @EnvironmentObject private var archive: Archive
 
     var body: some View {
-        PageHost {
+        PageHost(clear: true) {
             DayPage(date: store.date, live: true)
                 .environmentObject(vault)
                 .environmentObject(store)
@@ -93,15 +93,37 @@ struct DayPage: View {
                 // Черты между шапкой и страницей больше нет (P434, прежде
                 // P250): шапка — продолжение листа.
         }
+        // Бумага, бока и обводка листа — на `DayPage.under` ниже страницы
+        // (P850): нижние скругления листа уходят под нижнюю строку, и в покое
+        // их не видно — прежде по ним проходил затёртый край страницы и
+        // выдавал подделку. Всё, что на странице, — на прежних местах.
         // Затёртые бока — на всю страницу разом, без шва под шапкой (P735).
-        .overlay(PageSides(aged: Ru.isPast(date), seed: PageTexture.seed(date), scroll: scroll)
-            .clipShape(DayPage.folder))
+        .overlay(alignment: .top) {
+            GeometryReader { g in
+                PageSides(aged: Ru.isPast(date), seed: PageTexture.seed(date), scroll: scroll)
+                    .frame(height: g.size.height + DayPage.under)
+                    .clipShape(DayPage.folder)
+            }
+            .allowsHitTesting(false)
+        }
         // Лист «Дня» — карточка с корешком (P797): бумага по контуру карточки
-        // картотеки, с чёткой обводкой; справа от корешка — стол.
-        .background(background.clipShape(DayPage.folder))
+        // картотеки, с чёткой обводкой.
+        .background(alignment: .top) {
+            GeometryReader { g in
+                background
+                    .frame(height: g.size.height + DayPage.under)
+                    .clipShape(DayPage.folder)
+            }
+        }
         // Край листа — чёткой линией (P802): у сегодняшнего фактуры нет, и
         // без линии глаз не видел, где кончается лист.
-        .overlay(DayPage.folder.stroke(DayPage.edge, lineWidth: 1).allowsHitTesting(false))
+        .overlay(alignment: .top) {
+            GeometryReader { g in
+                DayPage.folder.stroke(DayPage.edge, lineWidth: 1)
+                    .frame(height: g.size.height + DayPage.under)
+            }
+            .allowsHitTesting(false)
+        }
         // Фактура страницы и вкладок отсчитывается от одной точки — клетка
         // на вкладке продолжает клетку страницы (P246).
         .coordinateSpace(name: PageTexture.space)
@@ -272,6 +294,8 @@ struct DayPage: View {
     /// Контур листа «Дня» (P797): корешок во всю высоту шапки, шире, чем у
     /// карточек, — в нём имя дня и дата.
     static let folder = FolderShape(tabHeight: headLine + 14, tabShare: 0.56, roundBottom: true, soft: true)
+    /// Насколько лист продолжается ниже страницы — под нижнюю строку (P850).
+    static let under: CGFloat = 20
 
     /// Линия края листа и корешков позади (P802).
     static let edge = Color(light: 0xB8A67C, dark: 0x5A4E33)
@@ -602,9 +626,43 @@ struct PageSides: View {
                         .scaleEffect(x: -1)
                 }
             }
+            // Верх листа (P850): прежде у прошедшего дня он оставался
+            // чистым — износ шёл только по бокам и низу. Та же полоса, что
+            // внизу, перевёрнутая: по верху корешка и по плечу справа от него.
+            .overlay(alignment: .topLeading) { top }
             .allowsHitTesting(false)
             .accessibilityHidden(true)
         }
+    }
+
+    @ViewBuilder private var top: some View {
+        if let foot = PageTexture.footEdge {
+            let folder = DayPage.folder
+            GeometryReader { geo in
+                let tab: CGFloat = geo.size.width * folder.tabShare
+                ZStack(alignment: .topLeading) {
+                    band(foot, width: tab, from: seed &* 151)
+                    band(foot, width: max(0, geo.size.width - tab), from: seed &* 307 &+ 97)
+                        .offset(x: tab, y: folder.tabHeight)
+                }
+            }
+        }
+    }
+
+    /// Полоса износа вдоль верхнего края: картинка низа, отражённая.
+    private func band(_ foot: UIImage, width: CGFloat, from: Int) -> some View {
+        let length = foot.size.width
+        let shift = CGFloat(abs(from) % max(1, Int(length)))
+        return GeometryReader { _ in
+            Image(uiImage: foot).resizable(resizingMode: .tile)
+                .frame(width: width + length, height: PageTexture.footDepth)
+                .offset(x: -shift)
+        }
+        .frame(width: width, height: PageTexture.footDepth)
+        .clipped()
+        .mask(LinearGradient(stops: PageSides.fade(full: 3, gone: 15, depth: PageTexture.footDepth),
+                             startPoint: .bottom, endPoint: .top))
+        .scaleEffect(x: 1, y: -1)
     }
 
     /// Кусок края — с места `from` (кусок замкнут сам на себя, шва нет),
