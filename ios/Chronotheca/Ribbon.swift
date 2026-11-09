@@ -24,47 +24,6 @@ final class Ribbon: ObservableObject {
 
     /// Прокрутка ленты.
     let box = SheetScroller()
-
-    /// Где лента в архиве — для линии слева (P850): 0 — у дня; к 1 — к самой
-    /// старой карточке; к −1 — к самой дальней будущей.
-    @Published private(set) var reach: CGFloat = 0
-    /// Как собрана лента: поля сверху и снизу, карточек до будущего и
-    /// всего, есть ли место дня. Ставит картотека при каждой сборке.
-    var plan = Plan()
-    struct Plan {
-        var lead: CGFloat = 0
-        var tail: CGFloat = 0
-        var before = 0
-        var total = 0
-        var slot = true
-    }
-
-    /// Доля пройденного архива. Прошлое — от покоя «вчера над нижней
-    /// строкой» до самого верха ленты; будущее — от покоя «завтра у верха»
-    /// до самого низа. Без места дня (день закрыт в карточку, P834) граница
-    /// будущего — по числу карточек: они одной высоты.
-    private func measureReach(_ scroll: UIScrollView) {
-        let offset = scroll.contentOffset.y
-        let most = max(0, scroll.contentSize.height - scroll.bounds.height)
-        let line: CGFloat
-        if plan.slot {
-            line = slotTop
-        } else {
-            let cards = scroll.contentSize.height - plan.lead - plan.tail
-            let pitch = plan.total > 0 ? cards / CGFloat(plan.total) : 0
-            line = plan.lead + CGFloat(plan.before) * pitch
-        }
-        let pastRest = line - height
-        let futureRest = plan.slot ? slotTop + height : line
-        var r: CGFloat = 0
-        if offset < pastRest, pastRest > 0 {
-            r = (pastRest - offset) / pastRest
-        } else if offset > futureRest, most > futureRest {
-            r = -(offset - futureRest) / (most - futureRest)
-        }
-        r = min(1, max(-1, r))
-        if abs(r - reach) > 0.002 { reach = r }
-    }
     /// Высота места дня — высота экрана раздела.
     var height: CGFloat = 0
     /// Место дня собрано в ленте и его замер верен.
@@ -164,7 +123,6 @@ final class Ribbon: ObservableObject {
     /// порогом — день, нет — лента возвращается к стене. Разгон пальца
     /// останавливается у стены.
     private func scrolled(_ scroll: UIScrollView) {
-        measureReach(scroll)
         guard !fixing else { return }
         guard walls(), !driving, link == nil, known, height > 0 else {
             if scroll.isTracking {
@@ -433,13 +391,10 @@ struct TimeLine: View {
     let height: CGFloat
 
     var body: some View {
-        // Доля пройденного архива (P850, вместо «насколько ушли» P845):
-        // прошлое растёт от середины вверх — на середине архива линия в
-        // половину, у самой старой записи — до верха; будущее так же вниз.
-        let reach: CGFloat = ribbon.reach
-        let most: CGFloat = max(0, height / 2 - 70)
-        let length: CGFloat = most * abs(reach)
-        let past = reach > 0
+        let away: CGFloat = ribbon.y
+        let most: CGFloat = height * 0.4
+        let length: CGFloat = most * (1 - exp(-abs(away) / max(1, height * 2)))
+        let past = away > 0
         // Цвет — как у карточек картотеки, по гамме (P846): та же бумага цвета
         // прошлого и та же кромка; прошлое — с кромкой темнее (его края
         // затёрты сильнее), будущее — светлее.
@@ -448,8 +403,8 @@ struct TimeLine: View {
             .fill(Scheme.current.past)
             .overlay(Capsule().strokeBorder(rim, lineWidth: 1))
             .frame(width: 5, height: max(0, length))
-            // Прошлое — вверх от середины, будущее — вниз.
-            .offset(y: past ? -length / 2 : length / 2)
+            // Прошлое — вниз от середины, будущее — вверх.
+            .offset(y: past ? length / 2 : -length / 2)
             .frame(width: 24, height: height)
             .opacity(length < 1 ? 0 : 1)
             .allowsHitTesting(false)

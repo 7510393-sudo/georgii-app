@@ -94,10 +94,6 @@ struct MapScreen: View {
         }
         .animation(.easeOut(duration: 0.15), value: panel)
         .overlay(alignment: .bottom) { bar }
-        // Вкладка у правого края посередине (P855): подсказывает, что
-        // экран смахивается к «Дневнику». Касаний не берёт — край
-        // по-прежнему тянется пальцем (P840).
-        .overlay(alignment: .trailing) { SwipeTab() }
         .background(Look.chrome)
         .background(GeometryReader { geo in
             let bottom = geo.frame(in: .global).maxY
@@ -1604,8 +1600,15 @@ struct PointPanel: View {
                 .background(Look.planBg, in: RoundedRectangle(cornerRadius: 8))
                 .overlay(RoundedRectangle(cornerRadius: 8)
                     .strokeBorder(Look.inkFaint.opacity(0.6), lineWidth: 1))
-            // Строки координат нет (P851, отменяет тихую строку P813):
-            // копирует их «Копировать» внизу.
+            // Координаты — тихой строкой, не кнопкой (P813, вместо кнопки во
+            // всю ширину P803): копирует их «Копировать» внизу.
+            Text(Geo.text(place.coordinate))
+                .font(Look.mono(12))
+                .foregroundStyle(Look.inkSoft)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 4)
             // Все кнопки плашки — одного вида (P813): надпись в окантовке,
             // равной ширины в ряду. Вверху — куда деть точку (P804).
             HStack(spacing: 6) {
@@ -1641,9 +1644,7 @@ struct PointPanel: View {
         .overlay(RoundedRectangle(cornerRadius: 14)
             .strokeBorder(Look.inkSoft.opacity(0.6), lineWidth: 1))
         .padding(.horizontal, 10)
-        // Плашка — у самого верха (P851, вместо «под уголком» —
-        // шестерёнка заходит на поле названия, так решил автор).
-        .padding(.top, 4)
+        .padding(.top, Corner.size + 2)
         .onAppear {
             // Клавиатура — только у новой точки: записанное место сперва
             // смотрят (P803).
@@ -1753,40 +1754,5 @@ struct Outlined: ViewModifier {
             .overlay(RoundedRectangle(cornerRadius: 9)
                 .strokeBorder(Look.accent.opacity(strong ? 0.9 : 0.6), lineWidth: strong ? 1.5 : 1))
             .contentShape(RoundedRectangle(cornerRadius: 9))
-    }
-}
-
-/// Вкладка у правого края карты (P855): маленькая, со скошенными краями и
-/// стрелкой влево — заметна, но не мешает карте.
-private struct SwipeTab: View {
-    var body: some View {
-        TabOutline()
-            .fill(Look.chrome.opacity(0.85))
-            .overlay(TabOutline().stroke(Look.inkSoft.opacity(0.5), lineWidth: 1))
-            .overlay(
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(Look.inkSoft)
-                    .offset(x: 1))
-            .frame(width: 16, height: 54)
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
-    }
-}
-
-/// Трапеция, прижатая к краю экрана: у края шире, внутрь скошена.
-private struct TabOutline: Shape {
-    func path(in r: CGRect) -> Path {
-        let bevel: CGFloat = 8
-        var p = Path()
-        p.move(to: CGPoint(x: r.maxX + 1, y: r.minY))
-        p.addLine(to: CGPoint(x: r.minX + 3, y: r.minY + bevel))
-        p.addQuadCurve(to: CGPoint(x: r.minX, y: r.minY + bevel + 4),
-                       control: CGPoint(x: r.minX, y: r.minY + bevel + 0.5))
-        p.addLine(to: CGPoint(x: r.minX, y: r.maxY - bevel - 4))
-        p.addQuadCurve(to: CGPoint(x: r.minX + 3, y: r.maxY - bevel),
-                       control: CGPoint(x: r.minX, y: r.maxY - bevel - 0.5))
-        p.addLine(to: CGPoint(x: r.maxX + 1, y: r.maxY))
-        return p
     }
 }

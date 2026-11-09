@@ -16,9 +16,6 @@ import UIKit
 /// (решение P191).
 struct PageHost<Content: View>: UIViewControllerRepresentable {
 
-    /// Прозрачная рамка (P850): у листа «Дня» вокруг корешка и скруглений
-    /// видно то, что под листом, — прежде там была светлая заливка рамки.
-    var clear = false
     let content: () -> Content
 
     /// Страница лежит в той же книге системы, что и прежде (P783): голая
@@ -31,10 +28,10 @@ struct PageHost<Content: View>: UIViewControllerRepresentable {
             navigationOrientation: .horizontal,
             options: [.spineLocation: UIPageViewController.SpineLocation.min.rawValue])
         book.isDoubleSided = false
-        book.view.backgroundColor = clear ? .clear : UIColor(Look.chrome)
+        book.view.backgroundColor = UIColor(Look.chrome)
         let host = UIHostingController(rootView: content())
-        host.view.backgroundColor = clear ? .clear : UIColor(Look.chrome)
-        host.view.isOpaque = !clear
+        host.view.backgroundColor = UIColor(Look.chrome)
+        host.view.isOpaque = true
         host.safeAreaRegions = []
         book.setViewControllers([host], direction: .forward, animated: false)
         for gesture in book.gestureRecognizers {

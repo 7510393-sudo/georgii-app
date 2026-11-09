@@ -356,14 +356,6 @@ struct SearchView: View {
         let sample: String? = times.isEmpty ? nil
             : times.contains { $0.contains(where: \.isLetter) } ? "00:00 PM" : "00:00"
         let items = entries(past, future, later: later, slot: !card)
-        // Мера для линии слева (P850).
-        var measure = Ribbon.Plan()
-        if case .pad(let h) = items.first?.kind { measure.lead = h }
-        if case .pad(let h) = items.last?.kind { measure.tail = h }
-        measure.before = past.count + later.count
-        measure.total = past.count + later.count + future.count
-        measure.slot = !card
-        shell.ribbon.plan = measure
         let firstLater = later.first?.id
         let ribbon = shell.ribbon
         return ScrollViewReader { proxy in ScrollView {
@@ -829,24 +821,30 @@ private struct CardPaper: View {
                         .opacity(scheme == .dark ? 0.35 : 1)
                         .clipShape(FolderShape(tabHeight: Search.tabHeight))
                 }
-                if ready != nil {
-                    // Вырез корешка — бок корешка, дуга и плечо — затёрт по
-                    // самому контуру (P854, вместо картинки края, сдвинутой
-                    // к плечу и к боку, P738/P823: она шла прямоугольником
-                    // и не повторяла дугу выреза).
-                    EdgeWear(shape: FolderShape(tabHeight: Search.tabHeight), depth: 9)
-                        .mask(alignment: .topLeading) {
-                            WearNotch.region(width: geo.size.width, tab: geo.size.width / 3,
-                                           tabHeight: Search.tabHeight, depth: 9)
-                        }
-                        .opacity((scheme == .dark ? 0.35 : 1) * (past ? 1 : 0.4))
-                } else {
-                    // Тонкая линия края — только у ровной бумаги (P854): у
-                    // затёртой край виден и так, а линия шла вторым краем
-                    // над затёртым.
-                    FolderShape(tabHeight: Search.tabHeight)
-                        .stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
+                if let ready {
+                    // Плечо карточки (P738) — справа от корешка, где лист
+                    // ступенькой ниже корешка, — затёрто той же полосой, что
+                    // верх корешка: та же картинка, опущенная на высоту
+                    // корешка, видна только вдоль плеча и сходит на нет.
+                    Image(uiImage: ready.frame)
+                        .resizable()
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        .offset(y: Search.tabHeight)
+                        .mask(alignment: .topLeading) { shoulder(geo.size) }
+                        // В полную силу, как верх корешка (P823; прежде 0,6).
+                        .opacity(scheme == .dark ? 0.35 : 1)
+                    // Правый бок корешка (P823): тот же правый край листа,
+                    // сдвинутый к корешку, — видна только полоса вдоль бока.
+                    Image(uiImage: ready.frame)
+                        .resizable()
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        .offset(x: geo.size.width / 3 - geo.size.width)
+                        .mask(alignment: .topLeading) { tabSide(geo.size) }
+                        .clipShape(FolderShape(tabHeight: Search.tabHeight))
+                        .opacity(scheme == .dark ? 0.35 : 1)
                 }
+                FolderShape(tabHeight: Search.tabHeight)
+                    .stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
             }
             .frame(width: geo.size.width, height: geo.size.height)
             .mask {
@@ -860,6 +858,25 @@ private struct CardPaper: View {
         .allowsHitTesting(false)
     }
 
+    /// Полоса вдоль плеча: от корешка до правого края, книзу и к правому
+    /// краю тает (правый край затёрт и так).
+    private func shoulder(_ size: CGSize) -> some View {
+        let from = size.width / 3 + 6
+        return LinearGradient(colors: [.black, .black, .clear], startPoint: .top, endPoint: .bottom)
+            .frame(width: max(0, size.width - from - 10), height: 30)
+            // С обоих концов тает (P742): на снимке автора начало и конец
+            // полосы читались чёрточками.
+            .mask(LinearGradient(colors: [.clear, .black, .black, .clear],
+                                 startPoint: .leading, endPoint: .trailing))
+            .offset(x: from, y: Search.tabHeight)
+    }
+
+    /// Полоса вдоль правого бока корешка: от верха до плеча, книзу тает.
+    private func tabSide(_ size: CGSize) -> some View {
+        LinearGradient(colors: [.black, .black, .clear], startPoint: .top, endPoint: .bottom)
+            .frame(width: 16, height: Search.tabHeight + 6)
+            .offset(x: size.width / 3 - 16)
+    }
 
     /// Старая бумага: цвет прошлого и рельеф плиткой — непрозрачная, иначе
     /// корешок соседа просвечивал бы.
@@ -873,49 +890,11 @@ private struct CardPaper: View {
     }
 }
 
-/// Затёртый край по самому контуру (P854): охра, к краю гуще, и неровная
-/// тёмная кромка. Повторяет форму как есть — дугу выреза корешка, плечо,
-/// скруглённые углы, — где картинки края, нарисованные прямоугольником, не
-/// повторяли. Видна только внутренняя половина — снаружи листа ничего.
-struct EdgeWear<S: Shape>: View {
-    let shape: S
-    var depth: CGFloat = 10
-
-    var body: some View {
-        ZStack {
-            shape.stroke(PageTexture.wearAmber.opacity(0.5), lineWidth: depth * 2)
-                .blur(radius: depth * 0.45)
-            shape.stroke(PageTexture.wearAmber.opacity(0.45), lineWidth: depth * 0.8)
-                .blur(radius: depth * 0.2)
-            shape.stroke(PageTexture.wearBurnt.opacity(0.7),
-                         style: StrokeStyle(lineWidth: 3.5, lineCap: .round, dash: [9, 2, 4, 3, 13, 2, 6, 4]))
-                .blur(radius: 0.7)
-        }
-        .clipShape(shape)
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
-    }
-}
-
-/// Где виден затёртый край выреза корешка (P854).
-enum WearNotch {
-    /// Где виден затёртый вырез корешка: бок корешка, дуга, плечо; к правому
-    /// краю тает — там свой затёртый край.
-    static func region(width: CGFloat, tab: CGFloat, tabHeight: CGFloat, depth: CGFloat) -> some View {
-        let from = max(0, tab - depth * 2.5)
-        return LinearGradient(stops: [.init(color: .black, location: 0),
-                                      .init(color: .black, location: 0.85),
-                                      .init(color: .clear, location: 1)],
-                              startPoint: .leading, endPoint: .trailing)
-            .frame(width: max(0, width - from), height: tabHeight + depth * 2.5)
-            .offset(x: from)
-    }
-}
-
 /// Контур карточки с корешком на левой трети: корешок и лист — одна фигура.
 struct FolderShape: Shape {
-    /// Радиус углов корешка листа «Дня» (P850).
-    static let wave: CGFloat = 14
+    /// Половина ширины волны, которой корешок листа «Дня» переходит в плечо
+    /// (P845).
+    static let wave: CGFloat = 28
 
     let tabHeight: CGFloat
     /// Доля ширины под корешок: у карточек треть, у листа «Дня» шире —
@@ -967,26 +946,22 @@ struct FolderShape: Shape {
         return p
     }
 
-    /// Мягкий контур листа «Дня» (P850, вместо волны P845 — «чрезмерно
-    /// наклонен, почти нет вертикальной части»): правый край корешка
-    /// вертикален, оба его угла — и верхний, и внутренний у плеча — круглые,
-    /// радиусом 14; углы листа — 18 сверху слева и 16 у плеча и внизу.
+    /// Мягкий контур листа «Дня» (P845): углы радиусом 18 и 16, корешок
+    /// переходит в плечо S-образной волной — касательные на обоих концах
+    /// горизонтальны, излома нет.
     private func softPath(in r: CGRect) -> Path {
         let tabWidth = r.width * tabShare
         let tabR: CGFloat = 18, bodyR: CGFloat = 16
-        let corner = min(Self.wave, (tabHeight - 4) / 2)
+        let s = min(Self.wave, tabHeight * 0.6)
         let shoulder = r.minY + tabHeight
-        let edge = r.minX + tabWidth
         var p = Path()
         p.move(to: CGPoint(x: r.minX, y: r.minY + tabR))
         p.addArc(tangent1End: CGPoint(x: r.minX, y: r.minY),
                  tangent2End: CGPoint(x: r.minX + tabR, y: r.minY), radius: tabR)
-        p.addLine(to: CGPoint(x: edge - corner, y: r.minY))
-        p.addArc(tangent1End: CGPoint(x: edge, y: r.minY),
-                 tangent2End: CGPoint(x: edge, y: r.minY + corner), radius: corner)
-        p.addLine(to: CGPoint(x: edge, y: shoulder - corner))
-        p.addArc(tangent1End: CGPoint(x: edge, y: shoulder),
-                 tangent2End: CGPoint(x: edge + corner, y: shoulder), radius: corner)
+        p.addLine(to: CGPoint(x: r.minX + tabWidth - s, y: r.minY))
+        p.addCurve(to: CGPoint(x: r.minX + tabWidth + s, y: shoulder),
+                   control1: CGPoint(x: r.minX + tabWidth + s * 0.1, y: r.minY),
+                   control2: CGPoint(x: r.minX + tabWidth - s * 0.1, y: shoulder))
         p.addLine(to: CGPoint(x: r.maxX - bodyR, y: shoulder))
         p.addArc(tangent1End: CGPoint(x: r.maxX, y: shoulder),
                  tangent2End: CGPoint(x: r.maxX, y: shoulder + bodyR), radius: bodyR)
@@ -1017,12 +992,16 @@ private struct Distance: ViewModifier {
         } else {
             content.visualEffect { [side, height] view, geo in
                 let frame = geo.frame(in: .scrollView)
-                let shift = Afar.shift(frame.minY, side: side, height: height)
-                // Прошлое у верхнего края (P850, вместо сжатия сдвига P845 —
-                // с ним карточки на ходу подскакивали вверх): верхняя карточка
-                // тает, пока лента не убрала её, и не пропадает на глазах.
-                let fade: Double = side > 0 ? Double(min(1, max(0, (frame.maxY + shift) / 60))) : 1
-                return view.offset(y: shift).opacity(fade)
+                var shift = Afar.shift(frame.minY, side: side, height: height)
+                // Прошлое уходит за верхний край (P845): лента убирает
+                // карточку, когда та ушла за край, — а сдвиг наползания держал
+                // её ещё на экране, и верхняя карточка пропадала на глазах. У
+                // самого края сдвиг сходит на нет: карточка уходит вверх
+                // целиком и тогда же исчезает из ленты.
+                if side > 0, frame.maxY < 140 {
+                    shift *= max(0, frame.maxY / 140)
+                }
+                return view.offset(y: shift)
             }
         }
     }

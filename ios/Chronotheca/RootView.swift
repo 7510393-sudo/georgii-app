@@ -692,7 +692,7 @@ struct RootView: View {
         }
         // Где ты в картотеке (P845): линия от середины левого края.
         .overlay(alignment: .leading) {
-            if shell.ribbonLive {
+            if shell.ribbonLive && !shell.pastCard {
                 TimeLine(ribbon: shell.ribbon, height: size.height)
             }
         }
@@ -853,27 +853,6 @@ struct RootView: View {
             return
         }
         store.prune()
-        // «Дневник» из картотеки, когда открыт прошедший день, — на сегодня
-        // (P850): прежде лента доезжала к открытому дню, и кнопка вела в
-        // прошлое. Сразу, без хода, как касание карточки (P796).
-        if target == .today && shell.screen == .search && !store.isToday {
-            Feel.thud()
-            store.save()
-            var still = Transaction()
-            still.disablesAnimations = true
-            withTransaction(still) {
-                shell.instant = true
-                shell.ribbonOpen = false
-                shell.pulling = false
-                shell.fileFrom = 0
-                store.go(to: DayStore.today())
-                shell.screen = .today
-            }
-            shell.ribbon.release()
-            shell.ribbon.park()
-            archive.reloadSoon()
-            return
-        }
         // Раздел меняется сразу, а запись дня и перечитывание папки идут
         // следом, в следующем такте (P472): раньше они шли до смены экрана
         // и держали палец — перечитывание читает каждый файл папки, чем
