@@ -357,13 +357,13 @@ struct SearchView: View {
             : times.contains { $0.contains(where: \.isLetter) } ? "00:00 PM" : "00:00"
         let items = entries(past, future, later: later, slot: !card)
         // Мера для линии слева (P850).
-        var plan = Ribbon.Plan()
-        if case .pad(let h) = items.first?.kind { plan.lead = h }
-        if case .pad(let h) = items.last?.kind { plan.tail = h }
-        plan.before = past.count + later.count
-        plan.total = past.count + later.count + future.count
-        plan.slot = !card
-        shell.ribbon.plan = plan
+        var measure = Ribbon.Plan()
+        if case .pad(let h) = items.first?.kind { measure.lead = h }
+        if case .pad(let h) = items.last?.kind { measure.tail = h }
+        measure.before = past.count + later.count
+        measure.total = past.count + later.count + future.count
+        measure.slot = !card
+        shell.ribbon.plan = measure
         let firstLater = later.first?.id
         let ribbon = shell.ribbon
         return ScrollViewReader { proxy in ScrollView {
