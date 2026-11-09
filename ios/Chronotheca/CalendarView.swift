@@ -36,6 +36,9 @@ struct CalendarView: View {
     /// Месяц или год, что стоит вверху ленты календаря (P784): по нему
     /// название в шапке, его ставят стрелки и «домой».
     @State private var top: Date?
+    /// Вид сменили, лента собирается заново (P840): пока она не встала на
+    /// нужный месяц (год), её промежуточные остановки — не выбор человека.
+    @State private var switching = false
 
     private var cal: Calendar { Prefs.calendar }
 
@@ -88,10 +91,21 @@ struct CalendarView: View {
         }
         // Сменили вид — лента встаёт на тот же месяц или его год.
         .onChange(of: stored) { _, _ in
-            top = period(shown)
-            // Ещё раз, когда лента уже собрана заново из месяцев (лет): иначе
-            // она могла встать по прежнему сдвигу на чужой месяц (P822).
-            DispatchQueue.main.async { top = period(shown) }
+            // Месяц и год — те, что были до смены вида (P840): лента, собранная
+            // заново, вставала по прежнему сдвигу на чужой месяц и успевала его
+            // запомнить — «Месяц» открывался не тем месяцем и годом.
+            let keep = shown
+            switching = true
+            top = period(keep)
+            // Ещё раз, когда лента уже собрана заново из месяцев (лет) (P822).
+            DispatchQueue.main.async {
+                shown = keep
+                top = period(keep)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    shown = keep
+                    switching = false
+                }
+            }
         }
         // Просьба из меню календаря: та же дорога домой, что у кнопки вида.
         .onChange(of: shell.calendarHome) { _, want in
@@ -125,6 +139,7 @@ struct CalendarView: View {
         // Сменился месяц — толчок в руку (P792); шапка меняется, когда
         // лента встала (P800: менялась на ходу, и месяц прыгал на строки).
         .modifier(PageWatch(at: $top) { now in
+            guard !switching else { return }
             let keep = keepMonth(now)
             if shown != keep { shown = keep }
         })

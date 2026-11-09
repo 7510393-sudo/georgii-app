@@ -718,25 +718,14 @@ struct RootView: View {
                             withAnimation(glide) { mapPull = 0 }
                             return
                         }
-                        // Лента встаёт на «Дневник» без хода, а сдвиг
-                        // пересчитывается так, что на экране ничто не
-                        // шелохнулось; дальше сдвиг уходит в ноль ходом
-                        // (P829). Прежде сдвиг и лента шли каждый своим ходом:
-                        // карта на миг возвращалась, потом экран прыгал.
-                        var still = Transaction()
-                        still.disablesAnimations = true
-                        withTransaction(still) {
-                            mapPull += width
-                            pageAt = .today
-                        }
-                        Feel.thud()
-                        // Раздел — когда ход кончился: смена раздела
-                        // перестраивает экран и посреди хода дала бы рывок.
-                        DispatchQueue.main.async {
-                            withAnimation(glide) { mapPull = 0 } completion: {
-                                tapSection(.today)
-                            }
-                        }
+                        // Сперва раздел (P840): на карте лента разделов
+                        // заперта — палец двигает карту, — и ход ленты,
+                        // заказанный до смены раздела, не шёл (P829: карта
+                        // возвращалась, потом мелькал календарь). Раздел
+                        // меняется — лента отпирается, и `follow` ведёт её к
+                        // «Дневнику» тем же ходом, каким уходит сдвиг за
+                        // пальцем: одно движение с места, где отпустили.
+                        tapSection(.today)
                     })
         }
         .accessibilityHidden(shell.screen != .map)
@@ -1006,7 +995,12 @@ struct RootView: View {
         } else {
             // Толчок — вместе с нажатием (P268).
             Feel.thud()
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.9)) { pageAt = new }
+            // С карты за пальцем (P840): сдвиг уходит тем же ходом, что
+            // лента, — вместе одно движение.
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.9)) {
+                pageAt = new
+                mapPull = 0
+            }
         }
     }
 
