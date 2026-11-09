@@ -12,6 +12,7 @@ struct SearchView: View {
     @EnvironmentObject private var store: DayStore
     @EnvironmentObject private var archive: Archive
     @EnvironmentObject private var shell: Shell
+    @EnvironmentObject private var vault: Vault
 
     /// Строка поиска лежит в оболочке: её очищает и меню поиска.
     private var query: String { shell.query }
@@ -338,12 +339,6 @@ struct SearchView: View {
         let sample: String? = times.isEmpty ? nil
             : times.contains { $0.contains(where: \.isLetter) } ? "00:00 PM" : "00:00"
         let items = entries(past, future, later: later, slot: !card)
-        // Карточка прямо над местом дня лежит и под листом «Дня» (P838); пока
-        // тянут из дня, эта, в ленте, спрятана — видна та, под листом. Условия
-        // — те же, при которых та нарисована (`BehindTabs.before`).
-        let hideBeside = !card && !Search.deep && shell.pulling && shell.fileFrom > 0
-            && shell.find == .all && query.trimmingCharacters(in: .whitespaces).isEmpty
-        let beside = hideBeside ? past.last?.id : nil
         let firstLater = later.first?.id
         let ribbon = shell.ribbon
         return ScrollViewReader { proxy in ScrollView {
@@ -354,7 +349,6 @@ struct SearchView: View {
                     piece(entry, sample: sample)
                         .padding(.top, entry.over ? -Search.overlap : 0)
                         .modifier(Distance(side: entry.depth, height: height))
-                        .opacity(entry.id == beside ? 0 : 1)
                         .id(entry.id)
                 }
             }
@@ -576,9 +570,61 @@ struct SearchView: View {
             openCard(day.date, tab: shell.scope == .plan || day.date > DayStore.today()
                      || (day.text.isEmpty && !day.tasks.isEmpty) ? .plan : .diary)
         } label: {
-            CardFace(day: day)
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: Search.lineGap) {
+                    // Дата — на корешке карточки (P695): год, месяц, число —
+                    // в этом порядке, при поиске по архиву сначала выбирают
+                    // время, а не день недели (P282).
+                    if !day.title.isEmpty {
+                        Text(Geo.stripped(day.title))
+                            .font(Look.serif(15, weight: .semibold))
+                            .foregroundStyle(Look.ink)
+                            .lineLimit(1)
+                    }
+                    if day.title.isEmpty && day.preview.isEmpty {
+                        // День без записи — его дела.
+                        Text(day.tasks.prefix(4).map { $0.text }.joined(separator: "\n"))
+                            .font(Look.serif(13.5))
+                            .foregroundStyle(Look.inkFaint)
+                            .lineLimit(4)
+                            .multilineTextAlignment(.leading)
+                    }
+                    if !day.text.isEmpty {
+                        Text(day.preview)
+                            .font(Look.serif(13.5))
+                            .foregroundStyle(Look.inkSoft)
+                            .lineLimit(day.title.isEmpty ? 5 : 4)
+                            .multilineTextAlignment(.leading)
+                    }
+                }
+                // Ровно пять строк: низ пятой строки — на одной линии с низом
+                // снимка (P696).
+                .frame(height: Search.body, alignment: .top)
+                Spacer(minLength: 0)
+                if let cover = day.cover { preview(cover, of: day) }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 18)
         }
         .buttonStyle(.plain)
+    }
+
+    /// Превью справа от находки: снимок, кадр видео, голос или документ
+    /// (P215).
+    @ViewBuilder private func preview(_ link: String, of day: Archive.Day) -> some View {
+        let url = vault.mediaURL(link, for: day.date)
+        Group {
+            switch Diary.kind(of: link) {
+            case .photo: PhotoThumb(url: url)
+            case .video: PhotoThumb(url: url, video: true)
+            case .audio: FileTile(icon: "waveform", label: T("голос", "voice"))
+            case .file:  FileTile(icon: "doc.text",
+                                  label: (link as NSString).pathExtension.lowercased())
+            }
+        }
+        // Превью — той же высоты, что блок из пяти строк (P282, P696): низы
+        // совпадают.
+        .frame(width: Search.body, height: Search.body)
     }
 
     private func message(_ head: String, _ tail: String) -> some View {
@@ -649,7 +695,7 @@ enum Search {
 /// рельеф, P696) с заранее нарисованной тенью вправо-вниз (лампа слева сверху,
 /// P670, P675). Снизу пустое место: следующая карточка заходит на него и
 /// скрывает нижний край этой.
-struct SearchCard<Content: View>: View {
+private struct SearchCard<Content: View>: View {
     @Environment(\.colorScheme) private var scheme
     let stamp: String
     /// Прошедший день — края затёрты, как у его страницы (P722).
@@ -895,68 +941,3 @@ enum Afar {
         return place - top
     }
 }
-
-/// Лицо карточки прошедшего дня (P837): заголовок, строки записи, превью
-/// справа. Одно и то же в картотеке и под листом «Дня» — там вчерашняя
-/// карточка лежит, пока её не вытянут, и совпадает с той, что в ленте.
-struct CardFace: View {
-    let day: Archive.Day
-    @EnvironmentObject private var vault: Vault
-
-    var body: some View {
-            HStack(alignment: .top, spacing: 12) {
-                VStack(alignment: .leading, spacing: Search.lineGap) {
-                    // Дата — на корешке карточки (P695): год, месяц, число —
-                    // в этом порядке, при поиске по архиву сначала выбирают
-                    // время, а не день недели (P282).
-                    if !day.title.isEmpty {
-                        Text(Geo.stripped(day.title))
-                            .font(Look.serif(15, weight: .semibold))
-                            .foregroundStyle(Look.ink)
-                            .lineLimit(1)
-                    }
-                    if day.title.isEmpty && day.preview.isEmpty {
-                        // День без записи — его дела.
-                        Text(day.tasks.prefix(4).map { $0.text }.joined(separator: "\n"))
-                            .font(Look.serif(13.5))
-                            .foregroundStyle(Look.inkFaint)
-                            .lineLimit(4)
-                            .multilineTextAlignment(.leading)
-                    }
-                    if !day.text.isEmpty {
-                        Text(day.preview)
-                            .font(Look.serif(13.5))
-                            .foregroundStyle(Look.inkSoft)
-                            .lineLimit(day.title.isEmpty ? 5 : 4)
-                            .multilineTextAlignment(.leading)
-                    }
-                }
-                // Ровно пять строк: низ пятой строки — на одной линии с низом
-                // снимка (P696).
-                .frame(height: Search.body, alignment: .top)
-                Spacer(minLength: 0)
-                if let cover = day.cover { preview(cover, of: day) }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 18)
-    }
-
-    /// Превью справа от находки: снимок, кадр видео, голос или документ
-    /// (P215).
-    @ViewBuilder private func preview(_ link: String, of day: Archive.Day) -> some View {
-        let url = vault.mediaURL(link, for: day.date)
-        Group {
-            switch Diary.kind(of: link) {
-            case .photo: PhotoThumb(url: url)
-            case .video: PhotoThumb(url: url, video: true)
-            case .audio: FileTile(icon: "waveform", label: T("голос", "voice"))
-            case .file:  FileTile(icon: "doc.text",
-                                  label: (link as NSString).pathExtension.lowercased())
-            }
-        }
-        // Превью — той же высоты, что блок из пяти строк (P282, P696): низы
-        // совпадают.
-        .frame(width: Search.body, height: Search.body)
-    }
-}
-
