@@ -161,7 +161,7 @@ struct SettingsSticker: View {
         NoteRow(title: T("Язык приложения", "App language"),
                 info: T("Язык приложения выбирается в Настройках iPhone: Приложения → Graphomanus → Язык.",
                           "The app’s language is chosen in iPhone Settings: Apps → Graphomanus → Language.")) {
-            NoteButton(title: T("Настройки iPhone ›", "iPhone Settings ›")) {
+            NoteButton(title: T("Открыть ›", "iPhone Settings ›")) {
                 if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
             }
         }
@@ -175,7 +175,7 @@ struct SettingsSticker: View {
         safety
         // Жмут — и весь архив переезжает, а не только то, что будет
         // написано дальше (P325).
-        NoteRow(title: T("Перенести архив в другое место", "Move the archive elsewhere")) {
+        NoteRow(title: T("Перенести архив", "Move the archive elsewhere")) {
             NoteButton(title: T("Выбрать ›", "Choose ›")) { choosingPlace = true }
         }
         // «Вернуться к прежней папке» больше нет (P468): перенос забирает
@@ -248,7 +248,7 @@ struct SettingsSticker: View {
         }
         // Чужая клавиатура с «полным доступом» видит всё набранное (P633, по
         // docs/50): выключатель, как у банковских приложений.
-        NoteRow(title: T("Без сторонних клавиатур", "No third-party keyboards"),
+        NoteRow(title: T("Без чужих клавиатур", "No third-party keyboards"),
                 info: T("Клавиатуры из App Store (например, Gboard или SwiftKey) могут видеть всё, что вы набираете, если у них включён «полный доступ». Когда выключатель включён, в Graphomanus работает только обычная клавиатура iPhone. Может понадобиться перезапуск приложения.",
                           "Keyboards from the App Store (such as Gboard or SwiftKey) can see everything you type if they have “Full Access”. When this is on, only the standard iPhone keyboard works in Graphomanus. You may need to restart the app.")) {
             Lever(isOn: $ownKeyboardOnly)
@@ -275,7 +275,7 @@ struct SettingsSticker: View {
         // Напоминание о дневнике (P444) — в любой час с шести утра до
         // одиннадцати вечера (P602), а не только 20, 21 или 22: списком,
         // как «Новый день начинается в».
-        NoteRow(title: T("Напоминание о дневнике", "Diary reminder"),
+        NoteRow(title: T("Напоминание", "Diary reminder"),
                 info: T("Короткая мысль в этот час — если в дневнике сегодня пусто.",
                         "A short thought at this hour — if today’s diary is empty.")) {
             Menu {
@@ -333,8 +333,9 @@ struct SettingsSticker: View {
         // «Здоровье» в шапке дневника (P378): включили — iPhone спросит.
         // Не вышло спросить — подсказка прямо под выключателем (P503).
         if HealthDay.available {
-            NoteRow(title: T("Здоровье: шаги, сон, тренировки", "Health: steps, sleep, workouts"),
-                    detail: healthDetail, pinned: true, info: healthHint) {
+            NoteRow(title: T("Здоровье", "Health: steps, sleep, workouts"),
+                    detail: healthDetail, pinned: true,
+                    info: healthHint + (health ? healthToday.map { "\n\n" + $0 } ?? "" : "")) {
                 Lever(isOn: Binding(get: { health }, set: { on in
                     health = on
                     if on { HealthDay.ask { healthIssue = !$0 } } else { healthIssue = false; HealthDay.changed() }
@@ -344,8 +345,9 @@ struct SettingsSticker: View {
             .task(id: health) { healthToday = health ? await HealthDay.todayCheck() : nil }
         }
         // События Календаря iPhone в плане (P376).
-        NoteRow(title: T("События Календаря iPhone", "iPhone Calendar events"),
-                detail: eventsDetail, detailColor: eventsDenied ? .orange : Look.inkSoft, pinned: true,
+        // Одной строкой (P852): нет доступа — строка «Доступ к Календарю»
+        // ниже, второй строки здесь не надо.
+        NoteRow(title: T("Календарь iPhone", "iPhone Calendar events"),
                 info: T("События из приложения «Календарь» на iPhone показываются над делами дня, по времени. Какие календари и как показывать, настраивается в самом «Календаре»; о событиях напоминает тоже он. Нужен доступ к Календарю — iPhone спросит один раз.",
                         "Events from the Calendar app on your iPhone appear above the day’s tasks, by time. Which calendars exist and how they look is set in Calendar itself, and Calendar sends the reminders. It needs Calendar access; iPhone asks once.")) {
             Lever(isOn: Binding(get: { calendarEvents }, set: { on in
@@ -372,15 +374,6 @@ struct SettingsSticker: View {
 
     private var eventsDenied: Bool {
         DayEvents.status == .denied || DayEvents.status == .restricted || DayEvents.status == .writeOnly
-    }
-
-    private var eventsDetail: String? {
-        guard calendarEvents else { return nil }
-        if eventsDenied {
-            return T("Нет доступа к Календарю — разрешите в Настройках iPhone.",
-                     "No access to Calendar — allow it in iPhone Settings.")
-        }
-        return nil
     }
 
     @ViewBuilder private var lookPart: some View {
@@ -489,8 +482,9 @@ struct SettingsSticker: View {
             return T("У этой сборки нет права на «Здоровье» — iPhone не может спросить разрешение.",
                      "This build has no Health permission, so iPhone cannot ask for access.")
         }
-        // Итог проверки — на виду; путь, как включить шаги, — в окошке «i» (P687).
-        return healthToday
+        // Итог проверки — в окошке «i» вместе с путём (P852, прежде на виду,
+        // P687): строка — одна; на виду только беда с правом.
+        return nil
     }
 
     /// Путь, который помог автору (24.10): шагов не было с весны — iPhone
