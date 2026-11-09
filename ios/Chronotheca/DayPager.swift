@@ -1968,29 +1968,11 @@ private struct BehindSpread: View {
         // Тянут из дня — стоит, пока не откроется; лента едет к дню —
         // вместе с ней; тянут вверх или покой — на месте под листом.
         let top: CGFloat = fromDay ? max(rest - pulled, -above) : (pulled > 0 ? -above : rest)
-        return UnderCard(day: day)
-            .equatable()
-            .frame(width: max(0, w - 2 * side))
-            .offset(x: side, y: top)
-    }
-}
-
-/// Сама вчерашняя карточка под листом (P838). Перерисовывается, только когда
-/// поменялся её день или его запись (P839): лист «Дня» перестраивается часто
-/// — смена раздела, тяга, опись архива, — а карточка с бумагой, строками и
-/// снимком при этом та же.
-private struct UnderCard: View, Equatable {
-    let day: Archive.Day
-
-    static func == (a: UnderCard, b: UnderCard) -> Bool {
-        a.day.stamp == b.day.stamp && a.day.title == b.day.title && a.day.text == b.day.text
-            && a.day.cover == b.day.cover && a.day.tasks.count == b.day.tasks.count
-    }
-
-    var body: some View {
-        SearchCard(stamp: Search.stamp(day.date), past: Ru.isPast(day.date),
-                   seed: PageTexture.seed(day.date)) {
+        return SearchCard(stamp: Search.stamp(day.date), past: Ru.isPast(day.date),
+                          seed: PageTexture.seed(day.date)) {
             CardFace(day: day)
         }
+        .frame(width: max(0, w - 2 * side))
+        .offset(x: side, y: top)
     }
 }
