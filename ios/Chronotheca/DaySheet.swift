@@ -156,8 +156,7 @@ struct DaySheet<Plan: View, Diary: View>: View {
                     // (снимок автора). Низ страницы с затёртым краем — под
                     // клавиатурой. Мерка листа без этого места (`SheetBox`)
                     // снята выше и не меняется.
-                    .background(Ru.tint(date).overlay(PageTexture(tab: .diary, space: Self.space, aged: Ru.isPast(date), edgeBottom: true,
-                                                                     seed: PageTexture.seed(date))))
+                    .background(Ru.tint(date).overlay(PageTexture(tab: .diary, space: Self.space, aged: Ru.isPast(date))))
                     // Клетка и волокно отсчитываются от самого листа, а не
                     // от экрана: тянешь план — клетка едет с текстом (P412).
                     .coordinateSpace(name: Self.space)

@@ -668,6 +668,42 @@ struct PageSides: View {
     /// Низ листа — по контуру, со скруглёнными углами (P854): виден, когда
     /// лист подняли; в покое он под нижней строкой.
     private var bottom: some View {
+        ZStack {
+            // Затёртый низ — та же полоса, что была у низа страницы, теперь
+            // по низу самого листа и в его контуре (P857).
+            if let foot = PageTexture.footEdge {
+                VStack(spacing: 0) {
+                    Spacer(minLength: 0)
+                    let length = foot.size.width
+                    let shift = CGFloat(abs(seed &* 263) % max(1, Int(length)))
+                    GeometryReader { geo in
+                        Image(uiImage: foot).resizable(resizingMode: .tile)
+                            .frame(width: geo.size.width + length, height: PageTexture.footDepth)
+                            .offset(x: -shift)
+                    }
+                    .frame(height: PageTexture.footDepth)
+                    .clipped()
+                    .scaleEffect(x: (seed >> 2) & 1 == 1 ? -1 : 1, y: 1)
+                    // Только у самого края (P744): к 15 точкам — ноль.
+                    .mask(LinearGradient(stops: PageSides.fade(full: 3, gone: 15, depth: PageTexture.footDepth),
+                                         startPoint: .bottom, endPoint: .top))
+                }
+            }
+            // Следы рук (P680): нижний внешний угол, нижний левый, правый край.
+            GeometryReader { geo in
+                PageTexture.thumbSmudge(radius: 95, opacity: 0.20)
+                    .position(x: geo.size.width, y: geo.size.height - DayPage.under)
+                PageTexture.thumbSmudge(radius: 70, opacity: 0.11)
+                    .position(x: 0, y: geo.size.height - DayPage.under - 6)
+                PageTexture.thumbSmudge(radius: 60, opacity: 0.09)
+                    .position(x: geo.size.width + 4, y: geo.size.height * 0.62)
+            }
+            bottomWear
+        }
+        .clipShape(DayPage.folder)
+    }
+
+    private var bottomWear: some View {
         EdgeWear(shape: DayPage.folder, depth: 12)
             .mask {
                 VStack(spacing: 0) {
@@ -751,13 +787,8 @@ struct PageTexture: View {
     var space: String = PageTexture.space
     /// Прошедший день: поверх обычной фактуры — старая бумага (P676).
     var aged = false
-    /// У прошедшего дня края темнеют янтарём (P676): низ — у нижнего
-    /// куска страницы, бока — у всех. Верх не затёрт (P726: верх плана —
-    /// середина экрана под шапкой, затемнение ложилось на слово «План»).
-    var edgeBottom = false
-    /// Номер дня (P736): низ страницы у каждого дня свой — кусок края с
-    /// другого места, иногда отражённый.
-    var seed = 0
+    // Затёртый низ и следы рук — не у страницы, а у самого листа
+    // (`PageSides`, P857): низ страницы стоял выше низа листа.
     @Environment(\.colorScheme) private var scheme
     /// Старая бумага выключена в настройках (P730).
     @AppStorage(Prefs.plainPast) private var plainPast = false
@@ -776,7 +807,6 @@ struct PageTexture: View {
                 ZStack {
                     // Бумага почти гладкая, как у образца (P727): рельеф слабее.
                     tiled(PageTexture.paper).opacity(0.4)
-                    if !dark { edges }
                 }
                 .opacity(dark ? 0.45 : 1)
             }
@@ -854,50 +884,9 @@ struct PageTexture: View {
         }
     }()
 
-    /// Янтарные края (P676): темнеют к бокам и к низу, неровно — глубина
-    /// гуляет вдоль края. Картинки нарисованы заранее; правый край и верх —
-    /// те же картинки, отражённые.
-    private var edges: some View {
-        ZStack {
-            // Бока — не здесь, а один раз на всю страницу дня (`PageSides`,
-            // P735): у каждого куска свои бока давали шов под шапкой.
-            VStack(spacing: 0) {
-                Spacer(minLength: 0)
-                if edgeBottom, let foot = PageTexture.footEdge {
-                    let length = foot.size.width
-                    let shift = CGFloat(abs(seed &* 263) % max(1, Int(length)))
-                    GeometryReader { geo in
-                        Image(uiImage: foot).resizable(resizingMode: .tile)
-                            .frame(width: geo.size.width + length, height: PageTexture.footDepth)
-                            .offset(x: -shift)
-                    }
-                    .frame(height: PageTexture.footDepth)
-                    .clipped()
-                    .scaleEffect(x: (seed >> 2) & 1 == 1 ? -1 : 1, y: 1)
-                    // Низ — только у самого края (P744: «затемнение закрывает
-                    // шаги, их невозможно прочитать»): к 22 точкам от края —
-                    // ноль, погода и шаги на чистой бумаге.
-                    .mask(LinearGradient(stops: PageSides.fade(full: 3, gone: 15, depth: PageTexture.footDepth),
-                                         startPoint: .bottom, endPoint: .top))
-                }
-            }
-            // Следы рук (P680): страницу берут за нижний внешний угол и
-            // придерживают за правый край, когда листают, — там бумага
-            // сереет и буреет мягкими пятнами. Нижний правый — сильнее всех.
-            if edgeBottom {
-                GeometryReader { geo in
-                    thumbSmudge(radius: 95, opacity: 0.20)
-                        .position(x: geo.size.width, y: geo.size.height)
-                    thumbSmudge(radius: 70, opacity: 0.11)
-                        .position(x: 0, y: geo.size.height - 6)
-                    thumbSmudge(radius: 60, opacity: 0.09)
-                        .position(x: geo.size.width + 4, y: geo.size.height * 0.62)
-                }
-            }
-        }
-    }
-
-    private func thumbSmudge(radius: CGFloat, opacity: Double) -> some View {
+    /// След руки (P680): мягкое бурое пятно. Рисует его низ листа
+    /// (`PageSides`, P857).
+    static func thumbSmudge(radius: CGFloat, opacity: Double) -> some View {
         let tint: Color = PageTexture.grey ? PageTexture.greySmudge : PageTexture.warmSmudge
         let strength: Double = opacity * Double(PageTexture.wearStrength)
         return RadialGradient(colors: [tint.opacity(strength), .clear],

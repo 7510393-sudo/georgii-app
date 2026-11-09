@@ -372,6 +372,17 @@ struct SearchView: View {
             LazyVStack(spacing: 0) {
                 ForEach(items) { entry in
                     piece(entry, sample: sample)
+                        // Рост первой карточки под днём — чтобы, когда день
+                        // закроется в карточку, лента встала точно (P857).
+                        .background {
+                            if entry.id == firstLater {
+                                GeometryReader { g in
+                                    Color.clear
+                                        .onAppear { ribbon.laterHeight = g.size.height }
+                                        .onChange(of: g.size.height) { _, h in ribbon.laterHeight = h }
+                                }
+                            }
+                        }
                         .padding(.top, entry.over ? -Search.overlap : 0)
                         .modifier(Distance(side: entry.depth, height: height))
                         .id(entry.id)
@@ -436,14 +447,17 @@ struct SearchView: View {
         // — лента встаёт так, чтобы на экране ничто не сдвинулось.
         .onChange(of: shell.pastCard) { _, now in
             guard now, shell.fileFrom < 0, let firstLater else { return }
-            // Верх первой карточки был на высоту наползания выше экрана: место
-            // дня заходило на неё. Встать туда же (P845), а не верхом к краю —
-            // иначе лента в конце хода прыгала на эти 32 точки. Точка привязки
-            // — доля, при которой верх карточки ложится на −32 от края.
-            let card: CGFloat = Search.tabHeight + 8 + Search.body + Search.overlap + 6
+            // Карточка остаётся там, где была на экране (P857, вместо догадки
+            // P845 — лента в конце хода прыгала): верх её виден под низом
+            // места дня. С наползанием рамка карточки на 32 точки ниже её
+            // верха, а рост — на 32 меньше. Рост — замеренный, не придуманный.
+            let full: CGFloat = ribbon.laterHeight > 0 ? ribbon.laterHeight
+                : Search.tabHeight + 8 + Search.body + Search.overlap + 6
+            let frameHeight: CGFloat = full - Search.overlap
+            let top: CGFloat = ribbon.y + height + Search.overlap
             // Окно ленты выше экрана на запас снизу (P791).
             let view: CGFloat = height + Afar.reserve(height)
-            let a: CGFloat = view > card ? -Search.overlap / (view - card) : 0
+            let a: CGFloat = view > frameHeight ? top / (view - frameHeight) : 0
             var still = Transaction()
             still.disablesAnimations = true
             withTransaction(still) { proxy.scrollTo(firstLater, anchor: UnitPoint(x: 0.5, y: a)) }

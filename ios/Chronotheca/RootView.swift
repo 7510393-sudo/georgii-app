@@ -22,8 +22,9 @@ struct RootView: View {
     /// Какая страница ленты разделов стоит на экране (P799).
     @State private var pageAt: Shell.Screen? = .today
     /// Насколько ленту разделов увели полоской у края карты (P819): лента
-    /// едет за пальцем, «Дневник» выезжает справа.
-    @State private var mapPull: CGFloat = 0
+    /// едет за пальцем, «Дневник» выезжает справа. Своим предметом (P857):
+    /// сдвиг на каждом кадре перерисовывал весь экран — кадры терялись.
+    @StateObject private var mapPull = SidePull()
 
     /// Клавиатура: над ней встаёт полоска вложений (P253).
     @StateObject private var keyboard = KeyboardWatch()
@@ -647,7 +648,7 @@ struct RootView: View {
                         .id(Shell.Screen.calendar)
                 }
                 .scrollTargetLayout()
-                .offset(x: mapPull)
+                .modifier(PullShift(pull: mapPull))
             }
             .scrollTargetBehavior(.paging)
             .scrollPosition(id: $pageAt)
@@ -715,17 +716,20 @@ struct RootView: View {
                 // Мерить в окне: полоска едет вместе с лентой.
                 .gesture(DragGesture(minimumDistance: 8, coordinateSpace: .global)
                     .onChanged { drag in
-                        if mapPull == 0 { Feel.warm() }
-                        mapPull = min(0, drag.translation.width)
+                        if mapPull.x == 0 { Feel.warm() }
+                        mapPull.x = min(0, drag.translation.width)
                     }
                     .onEnded { drag in
                         let go = drag.translation.width < -width / 4
                             || drag.predictedEndTranslation.width < -width / 2
                         let glide = Animation.spring(response: 0.35, dampingFraction: 0.9)
                         guard go else {
-                            withAnimation(glide) { mapPull = 0 }
+                            withAnimation(glide) { mapPull.x = 0 }
                             return
                         }
+                        // Скорость и ширина — для хода одним движением (P857, `follow`).
+                        mapPull.speed = drag.velocity.width
+                        mapPull.width = width
                         // Сперва раздел (P840): на карте лента разделов
                         // заперта — палец двигает карту, — и ход ленты,
                         // заказанный до смены раздела, не шёл (P829: карта
@@ -1017,6 +1021,26 @@ struct RootView: View {
             closeRibbonNow()
         }
         guard pageAt != new else { return }
+        // С карты за пальцем — одним движением (P857): лента сразу встаёт на
+        // «Дневник», а сдвиг пересчитывается так, что на экране ничто не
+        // двинулось, — и уходит в ноль одной пружиной со скоростью пальца.
+        // Прежде ход ленты и возврат сдвига шли двумя разными ходами, и в
+        // миг отпускания экран дёргался (видео автора к 258).
+        if old == .map, new == .today, !instant, mapPull.x < 0, mapPull.width > 0 {
+            Feel.thud()
+            var still = Transaction()
+            still.disablesAnimations = true
+            withTransaction(still) {
+                mapPull.x += mapPull.width
+                pageAt = new
+            }
+            let start = mapPull.x
+            let speed = start > 1 ? min(20, max(0, -mapPull.speed / start)) : 0
+            withAnimation(.interpolatingSpring(duration: 0.35, bounce: 0, initialVelocity: speed)) {
+                mapPull.x = 0
+            }
+            return
+        }
         if instant {
             var still = Transaction()
             still.disablesAnimations = true
@@ -1028,7 +1052,7 @@ struct RootView: View {
             // лента, — вместе одно движение.
             withAnimation(.spring(response: 0.35, dampingFraction: 0.9)) {
                 pageAt = new
-                mapPull = 0
+                mapPull.x = 0
             }
         }
     }
@@ -1381,5 +1405,21 @@ private struct PageSeam: View {
         .offset(x: -9)
         .allowsHitTesting(false)
         .accessibilityHidden(true)
+    }
+}
+
+/// Сдвиг ленты разделов за пальцем у края карты (P857).
+final class SidePull: ObservableObject {
+    @Published var x: CGFloat = 0
+    /// Скорость пальца и ширина страницы в миг отпускания.
+    var speed: CGFloat = 0
+    var width: CGFloat = 0
+}
+
+/// Сдвиг читается только здесь — экран целиком не перерисовывается.
+private struct PullShift: ViewModifier {
+    @ObservedObject var pull: SidePull
+    func body(content: Content) -> some View {
+        content.offset(x: pull.x)
     }
 }
