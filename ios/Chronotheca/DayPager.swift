@@ -1895,35 +1895,67 @@ private struct BehindSpread: View {
                 Desk()
                     .frame(width: max(0, w - start), height: base + 2)
                     .offset(x: start)
+                // Дальние четыре — расходятся и уходят вверх за край (P832).
                 ZStack(alignment: .topLeading) {
-                    // Дальняя — первой, ближняя — поверх неё.
-                    ForEach((0..<5).reversed(), id: \.self) { i in
+                    ForEach((1..<5).reversed(), id: \.self) { i in
                         let rest: CGFloat = 6 + CGFloat(4 - i) * 7
-                        // Ближняя поднимается медленно, дальние — всё
-                        // быстрее: расстояние между ними растёт.
-                        let speed: CGFloat = i == 0 ? 0.35 : 0.6 + CGFloat(i) * 0.5
+                        let speed: CGFloat = 0.6 + CGFloat(i) * 0.5
                         let rise: CGFloat = pulled * speed
-                        let fade: Double = i == 0 ? Double(max(0, min(1, (pulled - 50) / 110))) : 0
                         let height: CGFloat = base - rest + Search.tabHeight + 24
-                        // Износ у каждой из пяти свой, но один и тот же на всех
-                        // днях: заготовка рисуется один раз, листание не ждёт.
+                        // Износ у каждой свой, но один и тот же на всех днях:
+                        // заготовка рисуется один раз, листание не ждёт.
                         CardPaper(seed: 9_100 + i, past: true)
                             .frame(width: w - 4 - CGFloat(i) * 4, height: height)
                             .offset(y: rest - rise - Search.tabHeight)
-                            .opacity(1 - fade)
                     }
                 }
-                // Видно справа от корешка листа и над листом — и выше него,
-                // пока день стянут вниз: туда плечи и уходят.
                 .mask(alignment: .topLeading) {
                     Rectangle()
                         .frame(width: max(0, w - start), height: base + 2 + pulled)
                         .offset(x: start, y: -pulled)
                 }
+                front(w: w, start: start, base: base, pulled: pulled)
             }
         }
         .frame(height: DayPage.folder.tabHeight + 2)
         .allowsHitTesting(false)
         .accessibilityHidden(true)
+    }
+
+    /// Ближнее плечо (P837): в покое — плечо позади листа; тянут вниз — это
+    /// уже вчерашняя карточка во всю свою величину, она выходит из-за листа и
+    /// к `Ribbon.reveal` точкам тяги ложится ровно на место настоящей, которая
+    /// до тех пор спрятана (`BesideReveal`) и тогда появляется поверх.
+    private func front(w: CGFloat, start: CGFloat, base: CGFloat, pulled: CGFloat) -> some View {
+        let rest: CGFloat = 6 + 4 * 7
+        let measured = ribbon.aboveGap > 0
+        let gap: CGFloat = measured ? ribbon.aboveGap : 150
+        let p: CGFloat = min(1, pulled / Ribbon.reveal)
+        let restTop: CGFloat = rest - Search.tabHeight
+        let top: CGFloat = restTop + p * (-gap - restTop)
+        // Ширина и место — как у настоящей карточки ленты (поля ленты 10 и
+        // карточки 14 с боков); в покое правый край плеча — под шестерёнкой.
+        // Размер постоянный: бумага не перерисовывается на ходу.
+        let side: CGFloat = 10 + Search.cardInset
+        let x: CGFloat = side
+        let width: CGFloat = w - 2 * side
+        let height: CGFloat = gap + Search.overlap
+        return CardPaper(seed: 9_100, past: true)
+            .frame(width: width, height: height)
+            .offset(x: x, y: top)
+            // Над листом — во всю ширину; в шапке листа — только справа от
+            // его корешка.
+            .mask(alignment: .topLeading) {
+                ZStack(alignment: .topLeading) {
+                    Rectangle()
+                        .frame(width: w, height: pulled)
+                        .offset(y: -pulled)
+                    Rectangle()
+                        .frame(width: max(0, w - start), height: base + 2)
+                        .offset(x: start)
+                }
+            }
+            // Настоящая карточка встала поверх — плечо под ней не нужно.
+            .opacity(p >= 1 ? 0 : 1)
     }
 }
