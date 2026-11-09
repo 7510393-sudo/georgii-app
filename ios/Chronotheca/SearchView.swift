@@ -28,6 +28,23 @@ struct SearchView: View {
 
     var body: some View {
         ribbonList
+            // Листы старой бумаги для карточек прошлого — все сразу, заранее
+            // (P847): лист рисуется, когда карточка показалась впервые, и пока
+            // его нет, карточка ровная — в картотеке одни карточки были с
+            // затёртыми краями, другие без (снимок автора, «Без цвета»). Через
+            // несколько секунд после запуска, в стороне; готовые лежат на
+            // диске (P809), второй раз не рисуются. Своя гамма — свой набор.
+            .task(id: PageTexture.grey) {
+                try? await Task.sleep(for: .seconds(8))
+                guard !UserDefaults.standard.bool(forKey: Prefs.plainPast) else { return }
+                let w = UIScreen.main.bounds.width - 2 * (10 + Search.cardInset)
+                let h = Search.tabHeight + 8 + Search.body + Search.overlap + 6
+                for v in 0..<24 {
+                    let order = PageTexture.agedOrder(size: CGSize(width: w, height: h), band: 12,
+                                                      seed: v, openBottom: true, light: false)
+                    _ = await PageTexture.aged(order)
+                }
+            }
             .keyboardHeight($keyboard)
             // Своя высота — экран раздела; запас ленты ниже экрана (P791)
             // выходит за неё вниз, а не сдвигает ленту.
