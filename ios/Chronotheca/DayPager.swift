@@ -293,7 +293,8 @@ struct DayPage: View {
 
     /// Контур листа «Дня» (P797): корешок во всю высоту шапки, шире, чем у
     /// карточек, — в нём имя дня и дата.
-    static let folder = FolderShape(tabHeight: headLine + 14, tabShare: 0.56, roundBottom: true, soft: true)
+    // Плечо справа от корешка — на 8 точек выше (P853: щель была широка).
+    static let folder = FolderShape(tabHeight: headLine + 6, tabShare: 0.56, roundBottom: true, soft: true)
     /// Насколько лист продолжается ниже страницы — под нижнюю строку (P850).
     static let under: CGFloat = 20
 
