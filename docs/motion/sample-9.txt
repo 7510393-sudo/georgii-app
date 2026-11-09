@@ -1,0 +1,68 @@
+    650 Thread_73368   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 650 start  (in dyld) + 6992  [0x104d944e4]
+    +   650 start_sim  (in dyld_sim) + 20  [0x104ed70e4]
+    +     650 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x106b91d14]  ChronothecaApp.swift:0
+    +       650 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x106b91c68]  /<compiler-generated>:0
+    +         650 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           650 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             650 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               650 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 650 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   650 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     650 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       649 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    +                       ! 649 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    +                       !   649 mach_msg  (in libsystem_kernel.dylib) + 20  [0x104c00ef0]
+    +                       !     649 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x104c08c44]
+    +                       !       649 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x104c11e84]
+    +                       !         649 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x104c00b70]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 1884  [0x180421c6c]
+    +                         1 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__  (in CoreFoundation) + 12  [0x180422a94]
+    +                           1 _dispatch_main_queue_callback_4CF  (in libdispatch.dylib) + 40  [0x180195890]
+    +                             1 _dispatch_main_queue_drain  (in libdispatch.dylib) + 644  [0x180195b24]
+    +                               1 _dispatch_source_invoke  (in libdispatch.dylib) + 2848  [0x18019e35c]
+    +                                 1 _dispatch_dispose  (in libdispatch.dylib) + 152  [0x180186efc]
+    +                                   1 _xzm_free  (in libsystem_malloc.dylib) + 1340  [0x1801ea94c]
+    +                                     1 <deduplicated_symbol>  (in libsystem_malloc.dylib) + 12  [0x1801d9ea4]
+    +                                       1 madvise  (in libsystem_kernel.dylib) + 8  [0x104c03554]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        5236
+        mach_msg2_trap  (in libsystem_kernel.dylib)        1299
+        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        659
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        463
+        fsync  (in libsystem_kernel.dylib)        57
+        getattrlistbulk  (in libsystem_kernel.dylib)        46
+        static PageTexture.smooth(_:_:_:_:_:)  (in Chronotheca.debug.dylib)        34
+        _swift_isClassOrObjCExistentialType  (in libswiftCore.dylib)        31
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib)        24
+        generationCountFromListOfSources  (in CoreFoundation)        22
+        min<A>(_:_:)  (in libswiftCore.dylib)        21
+        static PageTexture.makeAged(size:band:seed:openBottom:light:)  (in Chronotheca.debug.dylib)        17
+        objc_msgSend  (in libobjc.A.dylib)        16
+        fstatat  (in libsystem_kernel.dylib)        14
+        getSuperclassForMaybeIncompleteMetadata(swift::TargetMetadata<swift::InProcess> const*, std::optional<swift::MetadataState>, bool)  (in libswiftCore.dylib)        14
+        Array.subscript.getter  (in libswiftCore.dylib)        13
+        getContextDescriptor(swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        11
+        swift::metadataimpl::ValueWitnesses<swift::metadataimpl::NativeBox<unsigned int, 4ul, 4ul, 4ul>>::initializeWithCopy(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        11
+        -[__NSDictionaryM objectForKey:]  (in CoreFoundation)        10
+        ???  (in libswiftCore.dylib)  load address 0x198171000 + 0x1c7ef0  [0x198338ef0]        10
+        _CFStringGetCStringPtrInternal  (in CoreFoundation)        10
+        pthread_getspecific  (in libsystem_pthread.dylib)        10
+        Array._checkSubscript(_:wasNativeTypeChecked:)  (in libswiftCore.dylib)        9
+        DYLD-STUB$$Array.subscript.getter  (in Chronotheca.debug.dylib)        8
+        __CF_IS_OBJC  (in CoreFoundation)        8
+        max<A>(_:_:)  (in libswiftCore.dylib)        8
+        os_unfair_lock_lock  (in libsystem_platform.dylib)        8
+        os_unfair_lock_unlock  (in libsystem_platform.dylib)        8
+        protocol witness for Collection.formIndex(after:) in conformance <> Range<A>  (in libswiftCore.dylib)        8
+        -[__NSCFString isEqual:]  (in CoreFoundation)        7
+        _platform_memmove  (in libsystem_platform.dylib)        7
+        _swift_class_getSuperclass  (in libswiftCore.dylib)        7
+        expf  (in libsystem_m.dylib)        7
+        normalizeQuintuplet  (in CoreFoundation)        7
+        static PageTexture.grey.getter  (in Chronotheca.debug.dylib)        7
+        swift_beginAccess  (in libswiftCore.dylib)        7
+        ???  (in libswiftCore.dylib)  load address 0x198171000 + 0x1c7eec  [0x198338eec]        6
+        __CFStringHash  (in CoreFoundation)        6
+        os_log_type_enabled  (in libsystem_trace.dylib)        6
