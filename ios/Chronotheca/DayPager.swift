@@ -99,8 +99,6 @@ struct DayPage: View {
         // Лист «Дня» — карточка с корешком (P797): бумага по контуру карточки
         // картотеки, с чёткой обводкой; справа от корешка — стол.
         .background(background.clipShape(DayPage.folder))
-        // Позади листа — плечи карточек картотеки (P816).
-        .background(alignment: .top) { BehindTabs() }
         // Край листа — чёткой линией (P802): у сегодняшнего фактуры нет, и
         // без линии глаз не видел, где кончается лист.
         .overlay(DayPage.folder.stroke(DayPage.edge, lineWidth: 1).allowsHitTesting(false))
@@ -164,8 +162,8 @@ struct DayPage: View {
             // любой странице (P113).
             // Корешок — тот же контур листа, что у карточек картотеки (P797):
             // имя дня и дата в нём, слева. Стрелок ‹ › больше нет (P802):
-            // день меняют тягой за край; справа от корешка — пустой стол,
-            // при тяге вниз он тает и проступает картотека (`BehindTabs`).
+            // день меняют тягой за край; справа от корешка ничего своего —
+            // видно то, что под листом (P849).
             HStack(spacing: 0) {
                 titleMenu
                     .padding(.leading, 14)
@@ -1869,22 +1867,3 @@ struct DayCloud: View {
     }
 }
 
-/// Место справа от корешка листа (P842): пустой стол. Не тает (P845):
-/// сквозь него проступало только пустое нижнее поле вчерашней карточки, и
-/// место на глазах белело. Начинается раньше корешка, под волной, которой
-/// корешок переходит в плечо, — иначе у волны виднелся незакрашенный
-/// треугольник. Касаний не ловит.
-struct BehindTabs: View {
-    var body: some View {
-        GeometryReader { geo in
-            let w = geo.size.width
-            let start = w * DayPage.folder.tabShare - FolderShape.wave - 4
-            Desk()
-                .frame(width: max(0, w - start), height: DayPage.folder.tabHeight + 2)
-                .offset(x: start)
-        }
-        .frame(height: DayPage.folder.tabHeight + 2)
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
-    }
-}
