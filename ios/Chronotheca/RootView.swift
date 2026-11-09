@@ -690,6 +690,12 @@ struct RootView: View {
                 .opacity(shell.pastCard ? 0 : 1)
                 .allowsHitTesting(shell.screen == .today)
         }
+        // Где ты в картотеке (P845): линия от середины левого края.
+        .overlay(alignment: .leading) {
+            if shell.ribbonLive && !shell.pastCard {
+                TimeLine(ribbon: shell.ribbon, height: size.height)
+            }
+        }
         .background(Desk())
     }
 

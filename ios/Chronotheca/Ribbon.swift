@@ -379,3 +379,31 @@ struct FollowRibbon: ViewModifier {
         height > 0 && y < -0.75 * height
     }
 }
+
+/// Где ты в картотеке (P845, замысел автора; вместо полей с месяцами и
+/// числами P844): от середины левого края — вверх линия будущего, вниз
+/// линия прошлого. Длина — насколько далеко ушёл от дня: чем дальше, тем
+/// длиннее, у дня — ноль. Ни точки «сегодня», ни бегунка: середина — просто
+/// рубеж, от которого растёт одна из двух линий. Мера — сдвиг ленты от места
+/// дня; длина растёт всё медленнее и не доходит до краёв экрана.
+struct TimeLine: View {
+    @ObservedObject var ribbon: Ribbon
+    let height: CGFloat
+
+    var body: some View {
+        let away: CGFloat = ribbon.y
+        let most: CGFloat = height * 0.4
+        let length: CGFloat = most * (1 - exp(-abs(away) / max(1, height * 2)))
+        let past = away > 0
+        let ink: Color = past ? Look.inkSoft.opacity(0.7) : Look.dateBlue.opacity(0.8)
+        Capsule()
+            .fill(ink)
+            .frame(width: 3, height: max(0, length))
+            // Прошлое — вниз от середины, будущее — вверх.
+            .offset(y: past ? length / 2 : -length / 2)
+            .frame(width: 24, height: height)
+            .opacity(length < 1 ? 0 : 1)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+    }
+}

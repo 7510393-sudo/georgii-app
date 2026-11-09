@@ -211,25 +211,6 @@ struct SearchView: View {
         var over = false
         /// Карточка под днём (P791): у дня из прошлого там прошлое после него.
         var below = false
-        /// Первая карточка своего месяца — на поле его название (P844).
-        var newMonth = false
-        /// Первая карточка будущего, когда дня между прошлым и будущим нет
-        /// (P844): на полях — граница.
-        var border = false
-
-        /// Карточка будущего.
-        var isFuture: Bool {
-            if case .future = kind { return true }
-            return false
-        }
-
-        /// День карточки.
-        var day: Archive.Day? {
-            switch kind {
-            case .past(let d), .future(let d): return d
-            default: return nil
-            }
-        }
 
         /// Куда уходит даль (P782): 1 — прошлое, вдаль вверх; -1 — будущее,
         /// вдаль вниз; 0 — не карточка (место дня, поля).
@@ -300,22 +281,6 @@ struct SearchView: View {
         // Под последней — место под строку поиска внизу (P797).
         let tail = max(Search.fieldHeight + 8, height - CGFloat(future.count + later.count) * 60)
         out.append(Entry(id: "tail", kind: .pad(tail)))
-        // Метки полей (P844): первая карточка месяца; граница прошлого и
-        // будущего, когда дня между ними нет. По строке даты — без календаря.
-        var month = ""
-        var sawPast = false
-        var bordered = false
-        for i in out.indices {
-            guard let day = out[i].day else { continue }
-            let m = String(day.stamp.prefix(7))
-            if m != month { out[i].newMonth = true; month = m }
-            if case .future = out[i].kind {
-                if !slot, sawPast, !bordered { out[i].border = true }
-                bordered = true
-            } else {
-                sawPast = true
-            }
-        }
         return out
     }
 
@@ -382,12 +347,6 @@ struct SearchView: View {
             LazyVStack(spacing: 0) {
                 ForEach(items) { entry in
                     piece(entry, sample: sample)
-                        .overlay {
-                            if let day = entry.day {
-                                Margins(future: entry.isFuture, newMonth: entry.newMonth,
-                                        border: entry.border, day: day)
-                            }
-                        }
                         .padding(.top, entry.over ? -Search.overlap : 0)
                         .modifier(Distance(side: entry.depth, height: height))
                         .id(entry.id)
@@ -452,9 +411,17 @@ struct SearchView: View {
         // — лента встаёт так, чтобы на экране ничто не сдвинулось.
         .onChange(of: shell.pastCard) { _, now in
             guard now, shell.fileFrom < 0, let firstLater else { return }
+            // Верх первой карточки был на высоту наползания выше экрана: место
+            // дня заходило на неё. Встать туда же (P845), а не верхом к краю —
+            // иначе лента в конце хода прыгала на эти 32 точки. Точка привязки
+            // — доля, при которой верх карточки ложится на −32 от края.
+            let card: CGFloat = Search.tabHeight + 8 + Search.body + Search.overlap + 6
+            // Окно ленты выше экрана на запас снизу (P791).
+            let view: CGFloat = height + Afar.reserve(height)
+            let a: CGFloat = view > card ? -Search.overlap / (view - card) : 0
             var still = Transaction()
             still.disablesAnimations = true
-            withTransaction(still) { proxy.scrollTo(firstLater, anchor: .top) }
+            withTransaction(still) { proxy.scrollTo(firstLater, anchor: UnitPoint(x: 0.5, y: a)) }
         }
         }
         .animation(.easeOut(duration: 0.25), value: keyboard)
@@ -740,21 +707,6 @@ enum Search {
     private static var weekdayCode = ""
     private static var weekdayNames: [String] = []
 
-    /// Месяц тремя буквами для полей картотеки (P844): НОЯ, ДЕК…
-    static func monthShort(_ month: Int) -> String {
-        if monthCode != Lang.code {
-            var cal = Calendar(identifier: .gregorian)
-            cal.locale = Lang.locale
-            monthNames = cal.shortStandaloneMonthSymbols.map {
-                String($0.replacingOccurrences(of: ".", with: "").prefix(3)).uppercased()
-            }
-            monthCode = Lang.code
-        }
-        return monthNames.indices.contains(month - 1) ? monthNames[month - 1] : ""
-    }
-    private static var monthCode = ""
-    private static var monthNames: [String] = []
-
     static func stamp(_ date: Date) -> String {
         let c = Calendar.current.dateComponents([.day, .month, .year], from: date)
         // Промежутки — в один пробел, вдвое уже прежних (P282).
@@ -923,6 +875,10 @@ private struct CardPaper: View {
 
 /// Контур карточки с корешком на левой трети: корешок и лист — одна фигура.
 struct FolderShape: Shape {
+    /// Половина ширины волны, которой корешок листа «Дня» переходит в плечо
+    /// (P845).
+    static let wave: CGFloat = 28
+
     let tabHeight: CGFloat
     /// Доля ширины под корешок: у карточек треть, у листа «Дня» шире —
     /// там имя дня и дата (P797).
@@ -930,8 +886,13 @@ struct FolderShape: Shape {
     /// Скруглённый низ — у листа «Дня» (P830): у карточек картотеки низ
     /// уходит под следующую и остаётся прямым (P725).
     var roundBottom = false
+    /// Мягкие обводы — у листа «Дня» (P845, автор: «слишком геометрично
+    /// вырезан, нужно более ламповый»): углы круглее, а корешок переходит в
+    /// плечо плавной волной, без дуги и прямого уступа.
+    var soft = false
 
     func path(in r: CGRect) -> Path {
+        if soft { return softPath(in: r) }
         let tabWidth = r.width * tabShare
         let tabR: CGFloat = 10, bodyR: CGFloat = 12
         // Вырез у корешка — по большему радиусу (P830; прежде 6 — «очень
@@ -967,6 +928,35 @@ struct FolderShape: Shape {
         p.closeSubpath()
         return p
     }
+
+    /// Мягкий контур листа «Дня» (P845): углы радиусом 18 и 16, корешок
+    /// переходит в плечо S-образной волной — касательные на обоих концах
+    /// горизонтальны, излома нет.
+    private func softPath(in r: CGRect) -> Path {
+        let tabWidth = r.width * tabShare
+        let tabR: CGFloat = 18, bodyR: CGFloat = 16
+        let s = min(Self.wave, tabHeight * 0.6)
+        let shoulder = r.minY + tabHeight
+        var p = Path()
+        p.move(to: CGPoint(x: r.minX, y: r.minY + tabR))
+        p.addArc(tangent1End: CGPoint(x: r.minX, y: r.minY),
+                 tangent2End: CGPoint(x: r.minX + tabR, y: r.minY), radius: tabR)
+        p.addLine(to: CGPoint(x: r.minX + tabWidth - s, y: r.minY))
+        p.addCurve(to: CGPoint(x: r.minX + tabWidth + s, y: shoulder),
+                   control1: CGPoint(x: r.minX + tabWidth + s * 0.1, y: r.minY),
+                   control2: CGPoint(x: r.minX + tabWidth - s * 0.1, y: shoulder))
+        p.addLine(to: CGPoint(x: r.maxX - bodyR, y: shoulder))
+        p.addArc(tangent1End: CGPoint(x: r.maxX, y: shoulder),
+                 tangent2End: CGPoint(x: r.maxX, y: shoulder + bodyR), radius: bodyR)
+        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY - bodyR))
+        p.addArc(tangent1End: CGPoint(x: r.maxX, y: r.maxY),
+                 tangent2End: CGPoint(x: r.maxX - bodyR, y: r.maxY), radius: bodyR)
+        p.addLine(to: CGPoint(x: r.minX + bodyR, y: r.maxY))
+        p.addArc(tangent1End: CGPoint(x: r.minX, y: r.maxY),
+                 tangent2End: CGPoint(x: r.minX, y: r.maxY - bodyR), radius: bodyR)
+        p.closeSubpath()
+        return p
+    }
 }
 
 /// Карточки наползают друг на друга по всему экрану (P791, вместо «только в
@@ -984,8 +974,17 @@ private struct Distance: ViewModifier {
             content
         } else {
             content.visualEffect { [side, height] view, geo in
-                let top = geo.frame(in: .scrollView).minY
-                return view.offset(y: Afar.shift(top, side: side, height: height))
+                let frame = geo.frame(in: .scrollView)
+                var shift = Afar.shift(frame.minY, side: side, height: height)
+                // Прошлое уходит за верхний край (P845): лента убирает
+                // карточку, когда та ушла за край, — а сдвиг наползания держал
+                // её ещё на экране, и верхняя карточка пропадала на глазах. У
+                // самого края сдвиг сходит на нет: карточка уходит вверх
+                // целиком и тогда же исчезает из ленты.
+                if side > 0, frame.maxY < 140 {
+                    shift *= max(0, frame.maxY / 140)
+                }
+                return view.offset(y: shift)
             }
         }
     }
@@ -1025,79 +1024,6 @@ enum Afar {
         }
         let place = side > 0 ? f : h - f
         return place - top
-    }
-}
-
-/// Поля картотеки по бокам карточек (P844): где ты в картотеке. Слева —
-/// тонкая линия во всю ленту: в прошлом цвета бумаги, в будущем синяя, — где
-/// она меняет цвет, там граница; у первой карточки месяца — его название (и
-/// год, если не нынешний); у будущих выходных — красная точка. Справа —
-/// сколько дней до сегодня: «−3», «+12» (до ста; дальше хватает месяцев).
-/// Рисуется с карточкой и едет с ней — отдельного счёта нет.
-private struct Margins: View {
-    let future: Bool
-    let newMonth: Bool
-    let border: Bool
-    let day: Archive.Day
-
-    var body: some View {
-        let away = Calendar.current.dateComponents([.day], from: DayStore.today(),
-                                                   to: Calendar.current.startOfDay(for: day.date)).day ?? 0
-        let line: Color = future ? Look.dateBlue.opacity(0.35) : Look.inkFaint.opacity(0.35)
-        let weekend = future && Calendar.current.isDateInWeekend(day.date)
-        HStack(spacing: 0) {
-            // Левое поле: поля ленты 10 и карточки 14 — 24 точки.
-            ZStack(alignment: .top) {
-                Rectangle().fill(line).frame(width: 1.5)
-                if border {
-                    Capsule().fill(Look.accent).frame(width: 14, height: 3)
-                }
-                if weekend {
-                    Circle().fill(Ru.weekendColour).frame(width: 5, height: 5)
-                        .offset(y: Search.tabHeight / 2 - 2.5)
-                }
-                if newMonth {
-                    monthLabel
-                        .offset(y: Search.tabHeight + 4)
-                }
-            }
-            .frame(width: 24)
-            .offset(x: -10)
-            Spacer(minLength: 0)
-            // Правое поле — дни до сегодня.
-            ZStack(alignment: .top) {
-                if border {
-                    Capsule().fill(Look.accent).frame(width: 14, height: 3)
-                }
-                if away != 0, abs(away) < 100 {
-                    Text(away > 0 ? "+\(away)" : "−\(-away)")
-                        .font(Look.mono(8))
-                        .foregroundStyle(Look.inkFaint)
-                        .lineLimit(1)
-                        .fixedSize()
-                        .offset(y: Search.tabHeight / 2 - 5)
-                }
-            }
-            .frame(width: 24)
-            .offset(x: 10)
-        }
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
-    }
-
-    private var monthLabel: some View {
-        let parts = day.stamp.split(separator: "-")
-        let year = parts.first.flatMap { Int($0) } ?? 0
-        let month = parts.count > 1 ? Int(parts[1]) ?? 1 : 1
-        let thisYear = Calendar.current.component(.year, from: DayStore.today())
-        return VStack(spacing: 0) {
-            Text(Search.monthShort(month))
-            if year != thisYear { Text("’" + String(String(year).suffix(2))) }
-        }
-        .font(Look.mono(7.5, weight: .medium))
-        .foregroundStyle(Look.inkSoft)
-        .padding(.vertical, 2)
-        .background(Desk().clipShape(RoundedRectangle(cornerRadius: 3)))
     }
 }
 

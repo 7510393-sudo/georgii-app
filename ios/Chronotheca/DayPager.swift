@@ -273,7 +273,7 @@ struct DayPage: View {
 
     /// Контур листа «Дня» (P797): корешок во всю высоту шапки, шире, чем у
     /// карточек, — в нём имя дня и дата.
-    static let folder = FolderShape(tabHeight: headLine + 14, tabShare: 0.56, roundBottom: true)
+    static let folder = FolderShape(tabHeight: headLine + 14, tabShare: 0.56, roundBottom: true, soft: true)
 
     /// Линия края листа и корешков позади (P802).
     static let edge = Color(light: 0xB8A67C, dark: 0x5A4E33)
@@ -1861,38 +1861,21 @@ struct DayCloud: View {
     }
 }
 
-/// Место справа от корешка листа (P842, вариант автора 1; вместо плеч
-/// карточек P816, P817, P832): в покое — пустой стол. Тянут «День» вниз —
-/// стол здесь тает, и сквозь него проступает настоящая вчерашняя карточка
-/// картотеки: она и так лежит здесь, под листом, своим нижним краем. Ничего
-/// не рисуется заново — меняется только прозрачность одного места. Касаний
-/// не ловит.
+/// Место справа от корешка листа (P842): пустой стол. Не тает (P845):
+/// сквозь него проступало только пустое нижнее поле вчерашней карточки, и
+/// место на глазах белело. Начинается раньше корешка, под волной, которой
+/// корешок переходит в плечо, — иначе у волны виднелся незакрашенный
+/// треугольник. Касаний не ловит.
 struct BehindTabs: View {
-    @EnvironmentObject private var shell: Shell
-
     var body: some View {
-        NotchDesk(ribbon: shell.ribbon, live: shell.ribbonLive)
-    }
-}
-
-private struct NotchDesk: View {
-    @ObservedObject var ribbon: Ribbon
-    let live: Bool
-
-    var body: some View {
-        // Насколько день стянут вниз; вверх (будущее) место не тает.
-        let pulled: CGFloat = live ? max(0, ribbon.y) : 0
-        // Тает за первые 90 точек тяги.
-        let fade: Double = Double(max(0, min(1, pulled / 90)))
         GeometryReader { geo in
             let w = geo.size.width
-            let start = w * DayPage.folder.tabShare
+            let start = w * DayPage.folder.tabShare - FolderShape.wave - 4
             Desk()
                 .frame(width: max(0, w - start), height: DayPage.folder.tabHeight + 2)
                 .offset(x: start)
         }
         .frame(height: DayPage.folder.tabHeight + 2)
-        .opacity(1 - fade)
         .allowsHitTesting(false)
         .accessibilityHidden(true)
     }
