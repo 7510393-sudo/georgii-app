@@ -395,10 +395,14 @@ struct TimeLine: View {
         let most: CGFloat = height * 0.4
         let length: CGFloat = most * (1 - exp(-abs(away) / max(1, height * 2)))
         let past = away > 0
-        let ink: Color = past ? Look.inkSoft.opacity(0.7) : Look.dateBlue.opacity(0.8)
+        // Цвет — как у карточек картотеки, по гамме (P846): та же бумага цвета
+        // прошлого и та же кромка; прошлое — с кромкой темнее (его края
+        // затёрты сильнее), будущее — светлее.
+        let rim: Color = Scheme.current.kraftEdge.opacity(past ? 0.9 : 0.45)
         Capsule()
-            .fill(ink)
-            .frame(width: 3, height: max(0, length))
+            .fill(Scheme.current.past)
+            .overlay(Capsule().strokeBorder(rim, lineWidth: 1))
+            .frame(width: 5, height: max(0, length))
             // Прошлое — вниз от середины, будущее — вверх.
             .offset(y: past ? length / 2 : -length / 2)
             .frame(width: 24, height: height)
