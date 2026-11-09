@@ -83,8 +83,14 @@ jobs:
       - name: Номер сборки и проект Xcode
         working-directory: ios
         run: |
-          # Номер сборки должен расти с каждой отправкой — берём номер запуска.
-          sed -i '' "s/CURRENT_PROJECT_VERSION: \".*\"/CURRENT_PROJECT_VERSION: \"${GITHUB_RUN_NUMBER}\"/" project.yml
+          # Номер сборки — тот, что записан в release-trigger (P843): прежде
+          # брался номер запуска доставки, и в TestFlight номер был на 2 больше
+          # нашего. Номер должен расти с каждой отправкой; нет числа в файле —
+          # номер запуска, как прежде.
+          BUILD_NO=$(tr -dc '0-9' < ../.github/release-trigger)
+          if [ -z "$BUILD_NO" ]; then BUILD_NO="${GITHUB_RUN_NUMBER}"; fi
+          echo "Номер сборки: $BUILD_NO"
+          sed -i '' "s/CURRENT_PROJECT_VERSION: \".*\"/CURRENT_PROJECT_VERSION: \"${BUILD_NO}\"/" project.yml
           grep CURRENT_PROJECT_VERSION project.yml
           xcodegen generate
 
