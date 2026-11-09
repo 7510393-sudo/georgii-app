@@ -836,7 +836,7 @@ private struct CardPaper: View {
                     // и не повторяла дугу выреза).
                     EdgeWear(shape: FolderShape(tabHeight: Search.tabHeight), depth: 9)
                         .mask(alignment: .topLeading) {
-                            EdgeWear.notch(width: geo.size.width, tab: geo.size.width / 3,
+                            WearNotch.region(width: geo.size.width, tab: geo.size.width / 3,
                                            tabHeight: Search.tabHeight, depth: 9)
                         }
                         .opacity((scheme == .dark ? 0.35 : 1) * (past ? 1 : 0.4))
@@ -895,10 +895,13 @@ struct EdgeWear<S: Shape>: View {
         .allowsHitTesting(false)
         .accessibilityHidden(true)
     }
+}
 
+/// Где виден затёртый край выреза корешка (P854).
+enum WearNotch {
     /// Где виден затёртый вырез корешка: бок корешка, дуга, плечо; к правому
     /// краю тает — там свой затёртый край.
-    static func notch(width: CGFloat, tab: CGFloat, tabHeight: CGFloat, depth: CGFloat) -> some View {
+    static func region(width: CGFloat, tab: CGFloat, tabHeight: CGFloat, depth: CGFloat) -> some View {
         let from = max(0, tab - depth * 2.5)
         return LinearGradient(stops: [.init(color: .black, location: 0),
                                       .init(color: .black, location: 0.85),

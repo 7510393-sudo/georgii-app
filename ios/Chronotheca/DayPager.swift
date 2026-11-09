@@ -657,7 +657,7 @@ struct PageSides: View {
                     band(foot, width: tab, from: seed &* 151)
                     EdgeWear(shape: folder, depth: 12)
                         .mask(alignment: .topLeading) {
-                            EdgeWear.notch(width: geo.size.width, tab: tab,
+                            WearNotch.region(width: geo.size.width, tab: tab,
                                            tabHeight: folder.tabHeight, depth: 12)
                         }
                 }
