@@ -627,10 +627,22 @@ struct PageSides: View {
                         .scaleEffect(x: -1)
                 }
             }
+            // Бока сходят на нет к низу листа (P854): прямые полосы не
+            // повторяли нижние скругления, и у поднятого листа по углам
+            // торчали их кусочки. Низ затёрт по контуру — `bottom`.
+            .mask {
+                VStack(spacing: 0) {
+                    Rectangle()
+                    LinearGradient(colors: [.black, .clear], startPoint: .top, endPoint: .bottom)
+                        .frame(height: 44)
+                }
+            }
             // Верх листа (P850): прежде у прошедшего дня он оставался
             // чистым — износ шёл только по бокам и низу. Та же полоса, что
-            // внизу, перевёрнутая: по верху корешка и по плечу справа от него.
+            // внизу, перевёрнутая, — по верху корешка; вырез корешка и
+            // плечо — по контуру (P854).
             .overlay(alignment: .topLeading) { top }
+            .overlay { bottom }
             .allowsHitTesting(false)
             .accessibilityHidden(true)
         }
@@ -643,11 +655,27 @@ struct PageSides: View {
                 let tab: CGFloat = geo.size.width * folder.tabShare
                 ZStack(alignment: .topLeading) {
                     band(foot, width: tab, from: seed &* 151)
-                    band(foot, width: max(0, geo.size.width - tab), from: seed &* 307 &+ 97)
-                        .offset(x: tab, y: folder.tabHeight)
+                    EdgeWear(shape: folder, depth: 12)
+                        .mask(alignment: .topLeading) {
+                            EdgeWear.notch(width: geo.size.width, tab: tab,
+                                           tabHeight: folder.tabHeight, depth: 12)
+                        }
                 }
             }
         }
+    }
+
+    /// Низ листа — по контуру, со скруглёнными углами (P854): виден, когда
+    /// лист подняли; в покое он под нижней строкой.
+    private var bottom: some View {
+        EdgeWear(shape: DayPage.folder, depth: 12)
+            .mask {
+                VStack(spacing: 0) {
+                    Spacer(minLength: 0)
+                    LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom)
+                        .frame(height: 48)
+                }
+            }
     }
 
     /// Полоса износа вдоль верхнего края: картинка низа, отражённая.
@@ -895,6 +923,9 @@ struct PageTexture: View {
     private static let warmBurnt: Tone = (r: 0.431, g: 0.227, b: 0.086)
     private static let greyBurnt: Tone = (r: 0.470, g: 0.460, b: 0.440)
     private static var burnt: Tone { grey ? greyBurnt : warmBurnt }
+    /// Те же охра и подпалина — для края по контуру (`EdgeWear`, P854).
+    static var wearAmber: Color { Color(red: Double(amber.r), green: Double(amber.g), blue: Double(amber.b)) }
+    static var wearBurnt: Color { Color(red: Double(burnt.r), green: Double(burnt.g), blue: Double(burnt.b)) }
     private static let warmTorn: (Float, Float, Float) = (0.24, 0.15, 0.08)
     private static let greyTorn: (Float, Float, Float) = (0.36, 0.35, 0.34)
     private static let warmSmudge = Color(red: 0.42, green: 0.30, blue: 0.16)

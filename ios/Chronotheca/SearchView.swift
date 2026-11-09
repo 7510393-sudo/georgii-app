@@ -829,30 +829,24 @@ private struct CardPaper: View {
                         .opacity(scheme == .dark ? 0.35 : 1)
                         .clipShape(FolderShape(tabHeight: Search.tabHeight))
                 }
-                if let ready {
-                    // Плечо карточки (P738) — справа от корешка, где лист
-                    // ступенькой ниже корешка, — затёрто той же полосой, что
-                    // верх корешка: та же картинка, опущенная на высоту
-                    // корешка, видна только вдоль плеча и сходит на нет.
-                    Image(uiImage: ready.frame)
-                        .resizable()
-                        .frame(width: geo.size.width, height: geo.size.height)
-                        .offset(y: Search.tabHeight)
-                        .mask(alignment: .topLeading) { shoulder(geo.size) }
-                        // В полную силу, как верх корешка (P823; прежде 0,6).
-                        .opacity(scheme == .dark ? 0.35 : 1)
-                    // Правый бок корешка (P823): тот же правый край листа,
-                    // сдвинутый к корешку, — видна только полоса вдоль бока.
-                    Image(uiImage: ready.frame)
-                        .resizable()
-                        .frame(width: geo.size.width, height: geo.size.height)
-                        .offset(x: geo.size.width / 3 - geo.size.width)
-                        .mask(alignment: .topLeading) { tabSide(geo.size) }
-                        .clipShape(FolderShape(tabHeight: Search.tabHeight))
-                        .opacity(scheme == .dark ? 0.35 : 1)
+                if ready != nil {
+                    // Вырез корешка — бок корешка, дуга и плечо — затёрт по
+                    // самому контуру (P854, вместо картинки края, сдвинутой
+                    // к плечу и к боку, P738/P823: она шла прямоугольником
+                    // и не повторяла дугу выреза).
+                    EdgeWear(shape: FolderShape(tabHeight: Search.tabHeight), depth: 9)
+                        .mask(alignment: .topLeading) {
+                            EdgeWear.notch(width: geo.size.width, tab: geo.size.width / 3,
+                                           tabHeight: Search.tabHeight, depth: 9)
+                        }
+                        .opacity((scheme == .dark ? 0.35 : 1) * (past ? 1 : 0.4))
+                } else {
+                    // Тонкая линия края — только у ровной бумаги (P854): у
+                    // затёртой край виден и так, а линия шла вторым краем
+                    // над затёртым.
+                    FolderShape(tabHeight: Search.tabHeight)
+                        .stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
                 }
-                FolderShape(tabHeight: Search.tabHeight)
-                    .stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
             }
             .frame(width: geo.size.width, height: geo.size.height)
             .mask {
@@ -866,25 +860,6 @@ private struct CardPaper: View {
         .allowsHitTesting(false)
     }
 
-    /// Полоса вдоль плеча: от корешка до правого края, книзу и к правому
-    /// краю тает (правый край затёрт и так).
-    private func shoulder(_ size: CGSize) -> some View {
-        let from = size.width / 3 + 6
-        return LinearGradient(colors: [.black, .black, .clear], startPoint: .top, endPoint: .bottom)
-            .frame(width: max(0, size.width - from - 10), height: 30)
-            // С обоих концов тает (P742): на снимке автора начало и конец
-            // полосы читались чёрточками.
-            .mask(LinearGradient(colors: [.clear, .black, .black, .clear],
-                                 startPoint: .leading, endPoint: .trailing))
-            .offset(x: from, y: Search.tabHeight)
-    }
-
-    /// Полоса вдоль правого бока корешка: от верха до плеча, книзу тает.
-    private func tabSide(_ size: CGSize) -> some View {
-        LinearGradient(colors: [.black, .black, .clear], startPoint: .top, endPoint: .bottom)
-            .frame(width: 16, height: Search.tabHeight + 6)
-            .offset(x: size.width / 3 - 16)
-    }
 
     /// Старая бумага: цвет прошлого и рельеф плиткой — непрозрачная, иначе
     /// корешок соседа просвечивал бы.
@@ -895,6 +870,42 @@ private struct CardPaper: View {
                 .resizable(resizingMode: .tile)
                 .opacity(scheme == .dark ? 0.2 : 0.3)
         }
+    }
+}
+
+/// Затёртый край по самому контуру (P854): охра, к краю гуще, и неровная
+/// тёмная кромка. Повторяет форму как есть — дугу выреза корешка, плечо,
+/// скруглённые углы, — где картинки края, нарисованные прямоугольником, не
+/// повторяли. Видна только внутренняя половина — снаружи листа ничего.
+struct EdgeWear<S: Shape>: View {
+    let shape: S
+    var depth: CGFloat = 10
+
+    var body: some View {
+        ZStack {
+            shape.stroke(PageTexture.wearAmber.opacity(0.5), lineWidth: depth * 2)
+                .blur(radius: depth * 0.45)
+            shape.stroke(PageTexture.wearAmber.opacity(0.45), lineWidth: depth * 0.8)
+                .blur(radius: depth * 0.2)
+            shape.stroke(PageTexture.wearBurnt.opacity(0.7),
+                         style: StrokeStyle(lineWidth: 3.5, lineCap: .round, dash: [9, 2, 4, 3, 13, 2, 6, 4]))
+                .blur(radius: 0.7)
+        }
+        .clipShape(shape)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    /// Где виден затёртый вырез корешка: бок корешка, дуга, плечо; к правому
+    /// краю тает — там свой затёртый край.
+    static func notch(width: CGFloat, tab: CGFloat, tabHeight: CGFloat, depth: CGFloat) -> some View {
+        let from = max(0, tab - depth * 2.5)
+        return LinearGradient(stops: [.init(color: .black, location: 0),
+                                      .init(color: .black, location: 0.85),
+                                      .init(color: .clear, location: 1)],
+                              startPoint: .leading, endPoint: .trailing)
+            .frame(width: max(0, width - from), height: tabHeight + depth * 2.5)
+            .offset(x: from)
     }
 }
 
