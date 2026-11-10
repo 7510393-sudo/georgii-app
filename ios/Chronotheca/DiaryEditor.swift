@@ -1685,11 +1685,18 @@ struct DiaryEditor: UIViewRepresentable {
         private var provisionalText = ""
         /// Своя правка текста идёт — вести о курсоре от неё не в счёт.
         private var placing = false
+        /// Здесь человек стёр отметку времени (P864): пока курсор тут, она не
+        /// ставится снова — ни сама, ни с первой буквой. Прежде стёртая по
+        /// цифре отметка, едва строка становилась чистой, вставала обратно
+        /// (видео автора к 260).
+        private var declinedAt: Int?
 
         func settleStamp(_ view: UITextView, leaving: Bool) {
             guard !placing else { return }
             let ns = view.textStorage.string as NSString
             let sel = view.selectedRange
+            // Курсор ушёл с места, где отметку стёрли, — отказ кончился.
+            if let d = declinedAt, leaving || sel.length > 0 || sel.location != d { declinedAt = nil }
             if let p = provisional {
                 provisional = nil
                 guard NSMaxRange(p) <= ns.length, ns.substring(with: p) == provisionalText else { return }
@@ -1741,7 +1748,7 @@ struct DiaryEditor: UIViewRepresentable {
             let ns = view.textStorage.string as NSString
             let sel = view.selectedRange
             guard view.isFirstResponder, parent.editable, view.markedTextRange == nil,
-                  sel.length == 0, sel.location <= ns.length,
+                  sel.length == 0, sel.location <= ns.length, declinedAt != sel.location,
                   Self.atEnd(view.textStorage, from: sel.location),
                   sel.location == 0 || ns.character(at: sel.location - 1) == 10,
                   let stamp = parent.peekStamp?()
@@ -1935,6 +1942,21 @@ struct DiaryEditor: UIViewRepresentable {
             // сбивали ей место — слова ложились вокруг других слов, а первая
             // буква оставалась строчной. Букву поднимет `raiseFirst` потом.
             if Self.dictating(view) { return true }
+            // Стирают поставленную отметку (P864) — она уходит целиком, одним
+            // касанием, и снова сама не встаёт, пока курсор здесь.
+            if text.isEmpty, range.length > 0, let p = provisional,
+               NSMaxRange(p) <= view.textStorage.length,
+               (view.textStorage.string as NSString).substring(with: p) == provisionalText,
+               NSIntersectionRange(range, p).length > 0 || NSMaxRange(range) == NSMaxRange(p) {
+                provisional = nil
+                placing = true
+                view.textStorage.replaceCharacters(in: p, with: "")
+                view.selectedRange = NSRange(location: p.location, length: 0)
+                placing = false
+                declinedAt = p.location
+                textViewDidChange(view)
+                return false
+            }
             if let decided = keepObjectsApart(view, range, text) { return decided }
             // Первая буква в новой строке под записью — и только тогда
             // перед ней встаёт время (P403). Буква — заглавная.
@@ -1947,6 +1969,7 @@ struct DiaryEditor: UIViewRepresentable {
                let first = text.first, !first.isWhitespace, !text.contains("\u{FFFC}"),
                range.location == 0
                 || (view.textStorage.string as NSString).character(at: range.location - 1) == 10,
+               declinedAt != range.location,
                let stamp = parent.takeStamp?() {
                 let piece = stamp + String(first).uppercased() + String(text.dropFirst())
                 view.textStorage.replaceCharacters(
