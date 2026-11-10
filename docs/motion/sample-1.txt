@@ -1,0 +1,122 @@
+    222 Thread_46368   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 222 start  (in dyld) + 6992  [0x104b0c4e4]
+    +   222 start_sim  (in dyld_sim) + 20  [0x1049ff0e4]
+    +     222 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x1068cae48]  ChronothecaApp.swift:0
+    +       222 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1068cad9c]  /<compiler-generated>:0
+    +         222 static App.main()  (in SwiftUI) + 132  [0x1d2c5f084]
+    +           222 protocol witness for App.init() in conformance ChronothecaApp  (in Chronotheca.debug.dylib) + 12  [0x1068cae34]  /<compiler-generated>:0
+    +             222 ChronothecaApp.init()  (in Chronotheca.debug.dylib) + 604  [0x1068c73cc]  ChronothecaApp.swift:30
+    +               222 Vault.__allocating_init()  (in Chronotheca.debug.dylib) + 44  [0x106e8d6cc]  Vault.swift:0
+    +                 222 Vault.init()  (in Chronotheca.debug.dylib) + 2036  [0x106e8decc]  Vault.swift:227
+    +                   222 Vault.usePreviewFolder()  (in Chronotheca.debug.dylib) + 904  [0x106e8e9b0]  Vault.swift:259
+    +                     192 Vault.seedPreview()  (in Chronotheca.debug.dylib) + 1028  [0x106e91840]  Vault.swift:284
+    +                     ! 192 Vault.write(_:to:for:)  (in Chronotheca.debug.dylib) + 316  [0x106e92e38]  Vault.swift:1266
+    +                     !   192 static Vault.write(_:to:)  (in Chronotheca.debug.dylib) + 116  [0x106e97688]  Vault.swift:1274
+    +                     !     192 static Vault.write(data:to:)  (in Chronotheca.debug.dylib) + 796  [0x106e97288]  Vault.swift:1290
+    +                     !       192 -[NSFileCoordinator coordinateWritingItemAtURL:options:error:byAccessor:]  (in Foundation) + 84  [0x1811c78b4]
+    +                     !         190 -[NSFileCoordinator(NSPrivate) _coordinateWritingItemAtURL:options:error:byAccessor:]  (in Foundation) + 540  [0x1811c9c3c]
+    +                     !         : 190 -[NSFileCoordinator(NSPrivate) _blockOnAccessClaim:withAccessArbiter:]  (in Foundation) + 320  [0x1811c8c0c]
+    +                     !         :   190 interposed_dispatch_semaphore_wait  (in libRPAC.dylib) + 124  [0x104e20458]
+    +                     !         :     190 _dispatch_semaphore_wait_slow  (in libdispatch.dylib) + 128  [0x1801883c0]
+    +                     !         :       190 _dispatch_sema4_wait  (in libdispatch.dylib) + 24  [0x180187d60]
+    +                     !         :         190 semaphore_wait_trap  (in libsystem_kernel.dylib) + 8  [0x1048b4aec]
+    +                     !         2 -[NSFileCoordinator(NSPrivate) _coordinateWritingItemAtURL:options:error:byAccessor:]  (in Foundation) + 620  [0x1811c9c8c]
+    +                     !           2 -[NSFileCoordinator(NSPrivate) _withAccessArbiter:invokeAccessor:orDont:andRelinquishAccessClaim:]  (in Foundation) + 492  [0x1811c9264]
+    +                     !             1 __85-[NSFileCoordinator(NSPrivate) _coordinateWritingItemAtURL:options:error:byAccessor:]_block_invoke.194  (in Foundation) + 128  [0x1811c9e38]
+    +                     !             | 1 -[NSFileCoordinator(NSPrivate) _willStartWriteWithIntents:async:]  (in Foundation) + 124  [0x1811c8d80]
+    +                     !             |   1 -[__NSSingleObjectArrayI enumerateObjectsWithOptions:usingBlock:]  (in CoreFoundation) + 88  [0x18050a670]
+    +                     !             |     1 __NSARRAY_IS_CALLING_OUT_TO_A_BLOCK__  (in CoreFoundation) + 16  [0x1804268b8]
+    +                     !             |       1 __65-[NSFileCoordinator(NSPrivate) _willStartWriteWithIntents:async:]_block_invoke  (in Foundation) + 124  [0x1811c8e30]
+    +                     !             |         1 +[NSMetadataQuery(NSMetadataStitching) willBeginPossibleCreationOfItemAtURL:]  (in Foundation) + 20  [0x1810e04cc]
+    +                     !             |           1 +[NSMetadataQuery(NSMetadataStitching) _stitchingClass]  (in Foundation) + 56  [0x1810e0420]
+    +                     !             |             1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +                     !             |               1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                     !             |                 1 __55+[NSMetadataQuery(NSMetadataStitching) _stitchingClass]_block_invoke  (in Foundation) + 44  [0x1810e0454]
+    +                     !             |                   1 _objc_msgSend_uncached  (in libobjc.A.dylib) + 64  [0x18003af00]
+    +                     !             |                     1 lookUpImpOrForward  (in libobjc.A.dylib) + 208  [0x1800533a4]
+    +                     !             |                       1 initializeAndMaybeRelock(objc_class*, objc_object*, locker_mixin<lockdebug::lock_mixin<objc_lock_base_t>>&, bool)  (in libobjc.A.dylib) + 216  [0x1800410e0]
+    +                     !             |                         1 initializeNonMetaClass  (in libobjc.A.dylib) + 532  [0x18003fe70]
+    +                     !             |                           1 CALLING_SOME_+initialize_METHOD  (in libobjc.A.dylib) + 20  [0x18003f1ec]
+    +                     !             |                             1 +[BRQuery initialize]  (in CloudDocs) + 0  [0x18783eb1c]
+    +                     !             1 __85-[NSFileCoordinator(NSPrivate) _coordinateWritingItemAtURL:options:error:byAccessor:]_block_invoke.194  (in Foundation) + 208  [0x1811c9e88]
+    +                     !               1 __73-[NSFileCoordinator coordinateWritingItemAtURL:options:error:byAccessor:]_block_invoke  (in Foundation) + 96  [0x1811c793c]
+    +                     !                 1 -[NSFileCoordinator _invokeAccessor:thenCompletionHandler:]  (in Foundation) + 84  [0x1811c76ec]
+    +                     !                   1 thunk for @escaping @callee_guaranteed (@in_guaranteed URL) -> ()  (in Chronotheca.debug.dylib) + 152  [0x10680f0bc]  /<compiler-generated>:0
+    +                     !                     1 thunk for @callee_guaranteed (@in_guaranteed URL) -> ()  (in Chronotheca.debug.dylib) + 20  [0x10680f018]  /<compiler-generated>:0
+    +                     !                       1 closure #1 in static Vault.write(data:to:)  (in Chronotheca.debug.dylib) + 116  [0x106eab3b8]  Vault.swift:1291
+    +                     !                         1 Data.write(to:options:)  (in Foundation) + 2372  [0x180aa5a28]
+    +                     !                           1 closure #1 in writeToFileAux(path:buffer:options:attributes:reportProgress:)  (in Foundation) + 2908  [0x180ac4738]
+    +                     !                             1 closure #3 in closure #1 in writeToFileAux(path:buffer:options:attributes:reportProgress:)  (in Foundation) + 608  [0x180ac69e8]
+    +                     !                               1 closure #1 in closure #3 in closure #1 in writeToFileAux(path:buffer:options:attributes:reportProgress:)  (in Foundation) + 112  [0x180ac7d84]
+    +                     !                                 1 rename  (in libsystem_kernel.dylib) + 12  [0x1048b8324]
+    +                     !                                   1 __rename  (in libsystem_kernel.dylib) + 8  [0x1048b8348]
+    +                     30 Vault.seedPreview()  (in Chronotheca.debug.dylib) + 1188  [0x106e918e0]  Vault.swift:311
+    +                       30 static Photo.sample()  (in Chronotheca.debug.dylib) + 92  [0x106b6f080]  Photo.swift:138
+    +                         30 UIGraphicsImageRenderer.__allocating_init(size:)  (in Chronotheca.debug.dylib) + 52  [0x1068cfe34]  UIGraphicsImageRenderer.h:0
+    +                           30 @nonobjc UIGraphicsImageRenderer.init(size:)  (in Chronotheca.debug.dylib) + 36  [0x1068d03d8]  /<compiler-generated>:0
+    +                             30 -[UIGraphicsImageRenderer initWithSize:]  (in UIKitCore) + 40  [0x185f8f2c0]
+    +                               30 +[UIGraphicsImageRendererFormat defaultFormat]  (in UIKitCore) + 44  [0x185f8e4a8]
+    +                                 30 +[UIGraphicsRendererFormat defaultFormat]  (in UIKitCore) + 12  [0x185f95af8]
+    +                                   30 -[UIGraphicsImageRendererFormat init]  (in UIKitCore) + 76  [0x185f8e744]
+    +                                     30 _UIScreenForcedMainScreenScale  (in UIKitCore) + 40  [0x185fe7a50]
+    +                                       30 _objc_msgSend_uncached  (in libobjc.A.dylib) + 64  [0x18003af00]
+    +                                         30 lookUpImpOrForward  (in libobjc.A.dylib) + 208  [0x1800533a4]
+    +                                           30 initializeAndMaybeRelock(objc_class*, objc_object*, locker_mixin<lockdebug::lock_mixin<objc_lock_base_t>>&, bool)  (in libobjc.A.dylib) + 216  [0x1800410e0]
+    +                                             30 initializeNonMetaClass  (in libobjc.A.dylib) + 532  [0x18003fe70]
+    +                                               30 CALLING_SOME_+initialize_METHOD  (in libobjc.A.dylib) + 20  [0x18003f1ec]
+    +                                                 28 +[UIScreen initialize]  (in UIKitCore) + 140  [0x185fe19ac]
+    +                                                 : 27 -[_UIScreenInitialDisplayConfigurationLoader initialDisplayContext]  (in UIKitCore) + 140  [0x185fe16f0]
+    +                                                 : | 27 -[_UIApplicationConfigurationLoader applicationInitializationContext]  (in UIKitCore) + 20  [0x186002c94]
+    +                                                 : |   27 -[_UIApplicationConfigurationLoader _loadInitializationContext]  (in UIKitCore) + 128  [0x186002a3c]
+    +                                                 : |     27 _dispatch_once_wait  (in libdispatch.dylib) + 60  [0x1801880e4]
+    +                                                 : |       27 _dispatch_once_wait.cold.1  (in libdispatch.dylib) + 144  [0x1801bbaa8]
+    +                                                 : |         27 _dlock_wait  (in libdispatch.dylib) + 52  [0x180188190]
+    +                                                 : |           27 __ulock_wait  (in libsystem_kernel.dylib) + 8  [0x1048b6788]
+    +                                                 : 1 -[_UIScreenInitialDisplayConfigurationLoader initialDisplayContext]  (in UIKitCore) + 104  [0x185fe16cc]
+    +                                                 :   1 +[CADisplay displays]  (in QuartzCore) + 32  [0x18cdeb9a0]
+    +                                                 :     1 ensure_displays()  (in QuartzCore) + 68  [0x18cdebad0]
+    +                                                 :       1 query_displays()  (in QuartzCore) + 136  [0x18cdebd68]
+    +                                                 :         1 _CASGetDisplays  (in QuartzCore) + 172  [0x18d07bcbc]
+    +                                                 :           1 mach_msg  (in libsystem_kernel.dylib) + 20  [0x1048b4ef0]
+    +                                                 :             1 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x1048bcc44]
+    +                                                 :               1 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x1048c5e84]
+    +                                                 :                 1 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x1048b4b70]
+    +                                                 1 +[UIScreen initialize]  (in UIKitCore) + 216  [0x185fe19f8]
+    +                                                 : 1 +[UIScreen _FBSDisplayConfigurationConnected:forInitialDisplayContext:andNotify:forceMain:]  (in UIKitCore) + 188  [0x185fe3344]
+    +                                                 :   1 -[UIScreen initWithDisplayConfiguration:forceMainScreen:]  (in UIKitCore) + 132  [0x185fe3a7c]
+    +                                                 :     1 _UIScreenWriteDisplayConfiguration  (in UIKitCore) + 240  [0x185fe4040]
+    +                                                 :       1 BSDispatchMain  (in BaseBoard) + 56  [0x18407b7b4]
+    +                                                 :         1 ___UIScreenWriteDisplayConfiguration_block_invoke  (in UIKitCore) + 36  [0x185fed9b0]
+    +                                                 :           1 -[UIScreen _evaluateCapturedStateForReason:]  (in UIKitCore) + 540  [0x185fe456c]
+    +                                                 :             1 __UILogGetCategoryImpl  (in UIKitCore) + 812  [0x18690a508]
+    +                                                 :               1 _UIKitUserDefaults  (in UIKitCore) + 76  [0x18691c4bc]
+    +                                                 :                 1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +                                                 :                   1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                                                 :                     1 ___UIKitUserDefaults_block_invoke  (in UIKitCore) + 56  [0x18691c4f8]
+    +                                                 :                       1 _os_feature_enabled_SLOWPATH  (in libsystem_featureflags.dylib) + 1088  [0x1cc2c1ed8]
+    +                                                 :                         1 _os_feature_enabled_load  (in libsystem_featureflags.dylib) + 248  [0x1cc2c2380]
+    +                                                 :                           1 pread  (in libsystem_kernel.dylib) + 8  [0x1048b634c]
+    +                                                 1 +[UIScreen initialize]  (in UIKitCore) + 340  [0x185fe1a74]
+    +                                                   1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +                                                     1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                                                       1 ___UIScreenIsFrontBoard_block_invoke  (in UIKitCore) + 28  [0x185fed270]
+    +                                                         1 _objc_msgSend_uncached  (in libobjc.A.dylib) + 64  [0x18003af00]
+    +                                                           1 lookUpImpOrForward  (in libobjc.A.dylib) + 208  [0x1800533a4]
+    +                                                             1 initializeAndMaybeRelock(objc_class*, objc_object*, locker_mixin<lockdebug::lock_mixin<objc_lock_base_t>>&, bool)  (in libobjc.A.dylib) + 216  [0x1800410e0]
+    +                                                               1 initializeNonMetaClass  (in libobjc.A.dylib) + 532  [0x18003fe70]
+    +                                                                 1 CALLING_SOME_+initialize_METHOD  (in libobjc.A.dylib) + 20  [0x18003f1ec]
+    +                                                                   1 +[BSAuditToken initialize]  (in BaseBoard) + 28  [0x1840cd5e0]
+    +                                                                     1 _objc_msgSend_uncached  (in libobjc.A.dylib) + 64  [0x18003af00]
+    +                                                                       1 lookUpImpOrForward  (in libobjc.A.dylib) + 312  [0x18005340c]
+    +                                                                         1 getMethodFromRelativeList(relative_list_list_t<method_list_t>*, objc_selector*)  (in libobjc.A.dylib) + 192  [0x1800474a0]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        222
+        semaphore_wait_trap  (in libsystem_kernel.dylib)        190
+        __ulock_wait  (in libsystem_kernel.dylib)        27
+        __ulock_wait2  (in libsystem_kernel.dylib)        23
+        mach_msg2_trap  (in dyld)        14
+        <deduplicated_symbol>  (in dyld)        8
+
+Binary images description not available
+
