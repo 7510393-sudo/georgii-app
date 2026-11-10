@@ -1,66 +1,203 @@
-    1194 Thread_51984   DispatchQueue_1: com.apple.main-thread  (serial)
-    + 1194 start  (in dyld) + 6992  [0x104bdc4e4]
-    +   1194 start_sim  (in dyld_sim) + 20  [0x104d1f0e4]
-    +     1194 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x106a32e48]  ChronothecaApp.swift:0
-    +       1194 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x106a32d9c]  /<compiler-generated>:0
-    +         1194 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
-    +           1194 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
-    +             1194 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
-    +               1194 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
-    +                 1194 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
-    +                   1194 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
-    +                     1194 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
-    +                       1193 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
-    +                       ! 1193 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
-    +                       !   1193 mach_msg  (in libsystem_kernel.dylib) + 20  [0x104a3cef0]
-    +                       !     1193 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x104a44c44]
-    +                       !       1193 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x104a4de84]
-    +                       !         1193 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x104a3cb70]
-    +                       1 __CFRunLoopRun  (in CoreFoundation) + 1884  [0x180421c6c]
-    +                         1 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__  (in CoreFoundation) + 12  [0x180422a94]
-    +                           1 _dispatch_main_queue_callback_4CF  (in libdispatch.dylib) + 40  [0x180195890]
-    +                             1 _dispatch_main_queue_drain  (in libdispatch.dylib) + 644  [0x180195b24]
-    +                               1 _dispatch_source_invoke  (in libdispatch.dylib) + 2848  [0x18019e35c]
-    +                                 1 _dispatch_dispose  (in libdispatch.dylib) + 152  [0x180186efc]
-    +                                   1 _free  (in libsystem_malloc.dylib) + 12  [0x1801f9db4]
+Analysis of sampling Chronotheca (pid 21353) every 1 millisecond
+Process:         Chronotheca [21353]
+Path:            /Users/USER/Library/Developer/CoreSimulator/Devices/FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC/data/Containers/Bundle/Application/E95CE40C-9DA1-44C9-877D-73A99A188C72/Chronotheca.app/Chronotheca
+Load Address:    0x104360000
+Identifier:      Chronotheca
+Version:         ???
+Code Type:       ARM64
+Platform:        iOS Simulator
+Parent Process:  launchd_sim [1452]
+Target Type:     live task
+
+Date/Time:       2026-11-10 19:03:25.896 +0000
+Launch Time:     2026-11-10 19:03:23.100 +0000
+OS Version:      macOS 26.7.2 (25G332)
+Report Version:  7
+Analysis Tool:   /usr/bin/sample
+
+Physical footprint:         21.7M
+Physical footprint (peak):  21.7M
+Idle exit:                  untracked
+----
+
+Call graph:
+    213 Thread_63901   DispatchQueue_1: com.apple.main-thread  (serial)
+      165 start  (in dyld) + 6904  [0x10448c48c]
+      + 165 dyld4::start(dyld4::KernelArgs*, void*, void*, unsigned long long)::$_1::operator()() const  (in dyld) + 320  [0x10448cb30]
+      +   165 dyld4::prepare(dyld4::APIs&, mach_o::UnsafeHeader const*)  (in dyld) + 340  [0x10448cca0]
+      +     165 dyld4::prepareSim(dyld4::RuntimeState&, char const*)  (in dyld) + 1300  [0x10448e840]
+      +       165 _dyld_sim_prepare  (in dyld_sim) + 856  [0x10437b058]
+      +         165 dyld4::prepare(dyld4::APIs&, mach_o::UnsafeHeader const*)  (in dyld_sim) + 2308  [0x10437ba98]
+      +           165 dyld4::APIs::runAllInitializersForMain()  (in dyld_sim) + 280  [0x1043772b0]
+      +             165 dyld4::Loader::runInitializersBottomUpPlusUpwardLinks(dyld4::RuntimeState&) const  (in dyld_sim) + 124  [0x104390640]
+      +               165 dyld4::Loader::runInitializersBottomUp(dyld4::RuntimeState&, lsl::Vector<dyld4::Loader const*>&, lsl::Vector<dyld4::Loader const*>&) const  (in dyld_sim) + 344  [0x1043905a8]
+      +                 165 dyld4::JustInTimeLoader::runInitializers(dyld4::RuntimeState&) const  (in dyld_sim) + 32  [0x10438abb8]
+      +                   165 dyld4::Loader::findAndRunAllInitializers(dyld4::RuntimeState&) const  (in dyld_sim) + 208  [0x104390328]
+      +                     165 dyld3::MachOAnalyzer::forEachInitializer(Diagnostics&, dyld3::MachOAnalyzer::VMAddrConverter const&, void (unsigned int) block_pointer, void const*) const  (in dyld_sim) + 376  [0x104399a88]
+      +                       165 mach_o::UnsafeHeader::forEachSection(void (mach_o::UnsafeHeader::SectionInfo const&, bool&) block_pointer) const  (in dyld_sim) + 96  [0x1043b005c]
+      +                         165 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x1043aea1c]
+      +                           165 invocation function for block in mach_o::UnsafeHeader::forEachSection(void (mach_o::UnsafeHeader::SectionInfo const&, bool&) block_pointer) const  (in dyld_sim) + 304  [0x1043b1830]
+      +                             165 invocation function for block in dyld3::MachOAnalyzer::forEachInitializer(Diagnostics&, dyld3::MachOAnalyzer::VMAddrConverter const&, void (unsigned int) block_pointer, void const*) const  (in dyld_sim) + 308  [0x104399f24]
+      +                               165 invocation function for block in dyld4::Loader::findAndRunAllInitializers(dyld4::RuntimeState&) const::$_0::operator()() const  (in dyld_sim) + 160  [0x104393dc8]
+      +                                 155 __library_initializer  (in libMainThreadChecker.dylib) + 1908  [0x104695700]
+      +                                 ! 62 SwizzleClasses  (in libMainThreadChecker.dylib) + 392  [0x104695b6c]
+      +                                 ! : 62 dyld4::APIs::dyld_image_header_containing_address(void const*)  (in dyld_sim) + 60  [0x104373104]
+      +                                 ! :   62 dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 528  [0x104372ec0]
+      +                                 ! :     62 dyld4::RuntimeLocks::withLoadersReadLock(void () block_pointer)  (in dyld_sim) + 60  [0x10438139c]
+      +                                 ! :       54 invocation function for block in dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 108  [0x104373004]
+      +                                 ! :       | 35 dyld4::JustInTimeLoader::contains(dyld4::RuntimeState&, void const*, void const**, unsigned long long*, unsigned char*) const  (in dyld_sim) + 208  [0x1043890ac]
+      +                                 ! :       | + 34 mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 96  [0x1043b1460]
+      +                                 ! :       | + ! 22 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 168,156,...  [0x1043ae9fc,0x1043ae9f0,...]
+      +                                 ! :       | + ! 10 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x1043aea1c]
+      +                                 ! :       | + ! : 7 invocation function for block in mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 76  [0x1043b1630]
+      +                                 ! :       | + ! : | 7 <deduplicated_symbol>  (in dyld_sim) + 20,12  [0x1043a6e28,0x1043a6e20]
+      +                                 ! :       | + ! : 3 invocation function for block in mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 48,12  [0x1043b1614,0x1043b15f0]
+      +                                 ! :       | + ! 2 invocation function for block in mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 272  [0x1043b16f4]
+      +                                 ! :       | + 1 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 404  [0x1043aeae8]
+      +                                 ! :       | 13 dyld4::JustInTimeLoader::contains(dyld4::RuntimeState&, void const*, void const**, unsigned long long*, unsigned char*) const  (in dyld_sim) + 136  [0x104389064]
+      +                                 ! :       | + 13 mach_o::UnsafeHeader::preferredLoadAddress() const  (in dyld_sim) + 96  [0x1043b0a04]
+      +                                 ! :       | +   11 mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 96  [0x1043b1460]
+      +                                 ! :       | +   ! 7 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x1043aea1c]
+      +                                 ! :       | +   ! : 4 invocation function for block in mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 216,112,...  [0x1043b16bc,0x1043b1654,...]
+      +                                 ! :       | +   ! : 2 invocation function for block in mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 240  [0x1043b16d4]
+      +                                 ! :       | +   ! : | 2 invocation function for block in mach_o::UnsafeHeader::preferredLoadAddress() const  (in dyld_sim) + 0,12  [0x1043b1480,0x1043b148c]
+      +                                 ! :       | +   ! : 1 invocation function for block in mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 76  [0x1043b1630]
+      +                                 ! :       | +   ! :   1 <deduplicated_symbol>  (in dyld_sim) + 20  [0x1043a6e28]
+      +                                 ! :       | +   ! 4 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 88,128  [0x1043ae9ac,0x1043ae9d4]
+      +                                 ! :       | +   1 mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 104  [0x1043b1468]
+      +                                 ! :       | +   ! 1 mach_o::Error::~Error()  (in dyld_sim) + 16  [0x1043a9eb0]
+      +                                 ! :       | +   1 mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 116  [0x1043b1474]
+      +                                 ! :       | 3 dyld4::JustInTimeLoader::contains(dyld4::RuntimeState&, void const*, void const**, unsigned long long*, unsigned char*) const  (in dyld_sim) + 24,36,...  [0x104388ff4,0x104389000,...]
+      +                                 ! :       | 3 dyld4::Loader::contains(dyld4::RuntimeState&, void const*, void const**, unsigned long long*, unsigned char*) const  (in dyld_sim) + 0,20  [0x10438c99c,0x10438c9b0]
+      +                                 ! :       8 invocation function for block in dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 72,52,...  [0x104372fe0,0x104372fcc,...]
+      +                                 ! 56 SwizzleClasses  (in libMainThreadChecker.dylib) + 180  [0x104695a98]
+      +                                 ! : 56 dyld4::APIs::dyld_image_header_containing_address(void const*)  (in dyld_sim) + 60  [0x104373104]
+      +                                 ! :   56 dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 528  [0x104372ec0]
+      +                                 ! :     56 dyld4::RuntimeLocks::withLoadersReadLock(void () block_pointer)  (in dyld_sim) + 60  [0x10438139c]
+      +                                 ! :       55 invocation function for block in dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 108  [0x104373004]
+      +                                 ! :       | 37 dyld4::JustInTimeLoader::contains(dyld4::RuntimeState&, void const*, void const**, unsigned long long*, unsigned char*) const  (in dyld_sim) + 208  [0x1043890ac]
+      +                                 ! :       | + 34 mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 96  [0x1043b1460]
+      +                                 ! :       | + ! 16 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 168,148,...  [0x1043ae9fc,0x1043ae9e8,...]
+      +                                 ! :       | + ! 12 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x1043aea1c]
+      +                                 ! :       | + ! : 7 invocation function for block in mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 36,48,...  [0x1043b1608,0x1043b1614,...]
+      +                                 ! :       | + ! : 3 invocation function for block in mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 76  [0x1043b1630]
+      +                                 ! :       | + ! : | 3 <deduplicated_symbol>  (in dyld_sim) + 20,12  [0x1043a6e28,0x1043a6e20]
+      +                                 ! :       | + ! : 2 invocation function for block in mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 240  [0x1043b16d4]
+      +                                 ! :       | + ! :   2 invocation function for block in dyld4::JustInTimeLoader::contains(dyld4::RuntimeState&, void const*, void const**, unsigned long long*, unsigned char*) const  (in dyld_sim) + 0,20  [0x1043890dc,0x1043890f0]
+      +                                 ! :       | + ! 6 invocation function for block in mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 272,264  [0x1043b16f4,0x1043b16ec]
+      +                                 ! :       | + 2 mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 80  [0x1043b1450]
+      +                                 ! :       | + 1 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 400  [0x1043aeae4]
+      +                                 ! :       | 15 dyld4::JustInTimeLoader::contains(dyld4::RuntimeState&, void const*, void const**, unsigned long long*, unsigned char*) const  (in dyld_sim) + 136  [0x104389064]
+      +                                 ! :       | + 14 mach_o::UnsafeHeader::preferredLoadAddress() const  (in dyld_sim) + 96  [0x1043b0a04]
+      +                                 ! :       | + ! 14 mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 96  [0x1043b1460]
+      +                                 ! :       | + !   6 invocation function for block in mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 272  [0x1043b16f4]
+      +                                 ! :       | + !   6 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 88  [0x1043ae9ac]
+      +                                 ! :       | + !   2 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x1043aea1c]
+      +                                 ! :       | + !     1 invocation function for block in mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 240  [0x1043b16d4]
+      +                                 ! :       | + !     | 1 invocation function for block in mach_o::UnsafeHeader::preferredLoadAddress() const  (in dyld_sim) + 72  [0x1043b14c8]
+      +                                 ! :       | + !     1 invocation function for block in mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 116  [0x1043b1658]
+      +                                 ! :       | + 1 mach_o::UnsafeHeader::preferredLoadAddress() const  (in dyld_sim) + 84  [0x1043b09f8]
+      +                                 ! :       | 3 dyld4::JustInTimeLoader::contains(dyld4::RuntimeState&, void const*, void const**, unsigned long long*, unsigned char*) const  (in dyld_sim) + 36,104  [0x104389000,0x104389044]
+      +                                 ! :       1 invocation function for block in dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 112  [0x104373008]
+      +                                 ! 19 SwizzleClasses  (in libMainThreadChecker.dylib) + 308  [0x104695b18]
+      +                                 ! : 19 dyld4::APIs::dyld_image_header_containing_address(void const*)  (in dyld_sim) + 60  [0x104373104]
+      +                                 ! :   19 dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 528  [0x104372ec0]
+      +                                 ! :     18 dyld4::RuntimeLocks::withLoadersReadLock(void () block_pointer)  (in dyld_sim) + 60  [0x10438139c]
+      +                                 ! :     | 17 invocation function for block in dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 108  [0x104373004]
+      +                                 ! :     | + 12 dyld4::JustInTimeLoader::contains(dyld4::RuntimeState&, void const*, void const**, unsigned long long*, unsigned char*) const  (in dyld_sim) + 208  [0x1043890ac]
+      +                                 ! :     | + ! 11 mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 96  [0x1043b1460]
+      +                                 ! :     | + ! : 9 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 168,156,...  [0x1043ae9fc,0x1043ae9f0,...]
+      +                                 ! :     | + ! : 1 invocation function for block in mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 272  [0x1043b16f4]
+      +                                 ! :     | + ! : 1 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x1043aea1c]
+      +                                 ! :     | + ! :   1 invocation function for block in mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 76  [0x1043b1630]
+      +                                 ! :     | + ! :     1 <deduplicated_symbol>  (in dyld_sim) + 20  [0x1043a6e28]
+      +                                 ! :     | + ! 1 mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 56  [0x1043b1438]
+      +                                 ! :     | + 3 dyld4::JustInTimeLoader::contains(dyld4::RuntimeState&, void const*, void const**, unsigned long long*, unsigned char*) const  (in dyld_sim) + 44,208,...  [0x104389008,0x1043890ac,...]
+      +                                 ! :     | + 2 dyld4::JustInTimeLoader::contains(dyld4::RuntimeState&, void const*, void const**, unsigned long long*, unsigned char*) const  (in dyld_sim) + 136  [0x104389064]
+      +                                 ! :     | +   2 mach_o::UnsafeHeader::preferredLoadAddress() const  (in dyld_sim) + 96  [0x1043b0a04]
+      +                                 ! :     | +     2 mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 96  [0x1043b1460]
+      +                                 ! :     | +       1 invocation function for block in mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 272  [0x1043b16f4]
+      +                                 ! :     | +       1 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 88  [0x1043ae9ac]
+      +                                 ! :     | 1 invocation function for block in dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 72  [0x104372fe0]
+      +                                 ! :     1 dyld4::RuntimeLocks::withLoadersReadLock(void () block_pointer)  (in dyld_sim) + 60  [0x10438139c]
+      +                                 ! 14 SwizzleClasses  (in libMainThreadChecker.dylib) + 364,404  [0x104695b50,0x104695b78]
+      +                                 ! 4 SwizzleClasses  (in libMainThreadChecker.dylib) + 300  [0x104695b10]
+      +                                 !   4 look_up_class  (in libobjc.A.dylib) + 100  [0x180049030]
+      +                                 !     3 realizeClassMaybeSwiftMaybeRelock(objc_class*, locker_mixin<lockdebug::lock_mixin<objc_lock_base_t>>&, bool)  (in libobjc.A.dylib) + 56  [0x180040f00]
+      +                                 !     | 1 realizeClassWithoutSwift(objc_class*, objc_class*)  (in libobjc.A.dylib) + 364  [0x180041e5c]
+      +                                 !     | + 1 realizeClassWithoutSwift(objc_class*, objc_class*)  (in libobjc.A.dylib) + 1828  [0x180042414]
+      +                                 !     | +   1 prepareMethodLists(objc_class*, method_list_t**, int, bool, bool, char const*)  (in libobjc.A.dylib) + 108  [0x180043358]
+      +                                 !     | 1 realizeClassWithoutSwift(objc_class*, objc_class*)  (in libobjc.A.dylib) + 1448  [0x180042298]
+      +                                 !     | + 1 prepareMethodLists(objc_class*, method_list_t**, int, bool, bool, char const*)  (in libobjc.A.dylib) + 76  [0x180043338]
+      +                                 !     | 1 realizeClassWithoutSwift(objc_class*, objc_class*)  (in libobjc.A.dylib) + 1828  [0x180042414]
+      +                                 !     |   1 prepareMethodLists(objc_class*, method_list_t**, int, bool, bool, char const*)  (in libobjc.A.dylib) + 76  [0x180043338]
+      +                                 !     1 realizeClassMaybeSwiftMaybeRelock(objc_class*, locker_mixin<lockdebug::lock_mixin<objc_lock_base_t>>&, bool)  (in libobjc.A.dylib) + 132  [0x180040f4c]
+      +                                 !       1 ???  (in UIKitCore)  load address 0x185289000 + 0x421764  [0x1856aa764]
+      +                                 !         1 swift_getSingletonMetadata  (in libswiftCore.dylib) + 796  [0x198199218]
+      +                                 !           1 swift::MetadataCacheEntryBase<(anonymous namespace)::SingletonMetadataCacheEntry, int>::doInitialization(swift::MetadataWaitQueue::Worker&, swift::MetadataRequest)  (in libswiftCore.dylib) + 272  [0x1981ad074]
+      +                                 !             1 ???  (in UIKitCore)  load address 0x185289000 + 0x4217a4  [0x1856aa7a4]
+      +                                 !               1 ???  (in DesignLibrary)  load address 0x1db01d000 + 0x10547c  [0x1db12247c]
+      +                                 9 __library_initializer  (in libMainThreadChecker.dylib) + 2060  [0x104695798]
+      +                                 ! 7 SwizzleClasses  (in libMainThreadChecker.dylib) + 180  [0x104695a98]
+      +                                 ! : 7 dyld4::APIs::dyld_image_header_containing_address(void const*)  (in dyld_sim) + 60  [0x104373104]
+      +                                 ! :   7 dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 528  [0x104372ec0]
+      +                                 ! :     7 dyld4::RuntimeLocks::withLoadersReadLock(void () block_pointer)  (in dyld_sim) + 60  [0x10438139c]
+      +                                 ! :       7 invocation function for block in dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 108  [0x104373004]
+      +                                 ! :         4 dyld4::JustInTimeLoader::contains(dyld4::RuntimeState&, void const*, void const**, unsigned long long*, unsigned char*) const  (in dyld_sim) + 208  [0x1043890ac]
+      +                                 ! :         | 4 mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 96  [0x1043b1460]
+      +                                 ! :         |   2 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 168,216  [0x1043ae9fc,0x1043aea2c]
+      +                                 ! :         |   1 invocation function for block in mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 272  [0x1043b16f4]
+      +                                 ! :         |   1 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x1043aea1c]
+      +                                 ! :         |     1 invocation function for block in mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 240  [0x1043b16d4]
+      +                                 ! :         |       1 invocation function for block in dyld4::JustInTimeLoader::contains(dyld4::RuntimeState&, void const*, void const**, unsigned long long*, unsigned char*) const  (in dyld_sim) + 80  [0x10438912c]
+      +                                 ! :         3 dyld4::JustInTimeLoader::contains(dyld4::RuntimeState&, void const*, void const**, unsigned long long*, unsigned char*) const  (in dyld_sim) + 136  [0x104389064]
+      +                                 ! :           2 mach_o::UnsafeHeader::preferredLoadAddress() const  (in dyld_sim) + 96  [0x1043b0a04]
+      +                                 ! :           + 2 mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 96  [0x1043b1460]
+      +                                 ! :           +   1 invocation function for block in mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 272  [0x1043b16f4]
+      +                                 ! :           +   1 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 184  [0x1043aea0c]
+      +                                 ! :           1 mach_o::UnsafeHeader::preferredLoadAddress() const  (in dyld_sim) + 56  [0x1043b09dc]
+      +                                 ! 1 SwizzleClasses  (in libMainThreadChecker.dylib) + 156  [0x104695a80]
+      +                                 ! : 1 objc_class::demangledName(bool)  (in libobjc.A.dylib) + 100  [0x18004eab8]
+      +                                 ! :   1 copySwiftV1DemangledName(char const*, bool)  (in libobjc.A.dylib) + 64  [0x180042e60]
+      +                                 ! :     1 _platform_strncmp$VARIANT$Base  (in libsystem_platform.dylib) + 176  [0x1044347c0]
+      +                                 ! 1 SwizzleClasses  (in libMainThreadChecker.dylib) + 392  [0x104695b6c]
+      +                                 !   1 dyld4::APIs::dyld_image_header_containing_address(void const*)  (in dyld_sim) + 60  [0x104373104]
+      +                                 !     1 dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 528  [0x104372ec0]
+      +                                 !       1 dyld4::RuntimeLocks::withLoadersReadLock(void () block_pointer)  (in dyld_sim) + 60  [0x10438139c]
+      +                                 !         1 invocation function for block in dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 108  [0x104373004]
+      +                                 !           1 dyld4::JustInTimeLoader::contains(dyld4::RuntimeState&, void const*, void const**, unsigned long long*, unsigned char*) const  (in dyld_sim) + 212  [0x1043890b0]
+      +                                 1 __library_initializer  (in libMainThreadChecker.dylib) + 1752  [0x104695664]
+      +                                   1 look_up_class  (in libobjc.A.dylib) + 100  [0x180049030]
+      +                                     1 realizeClassMaybeSwiftMaybeRelock(objc_class*, locker_mixin<lockdebug::lock_mixin<objc_lock_base_t>>&, bool)  (in libobjc.A.dylib) + 56  [0x180040f00]
+      +                                       1 realizeClassWithoutSwift(objc_class*, objc_class*)  (in libobjc.A.dylib) + 1828  [0x180042414]
+      +                                         1 prepareMethodLists(objc_class*, method_list_t**, int, bool, bool, char const*)  (in libobjc.A.dylib) + 76  [0x180043338]
+      48 start  (in dyld) + 6992  [0x10448c4e4]
+        48 start_sim  (in dyld_sim) + 20  [0x10437b0e4]
+          48 __debug_blank_executor_main  (in Chronotheca) + 784  [0x104360b20]
+            48 dyld4::APIs::dlsym(void*, char const*)  (in dyld_sim) + 632  [0x1043743b0]
+              48 dyld4::RuntimeLocks::withLoadersReadLock(void () block_pointer)  (in dyld_sim) + 60  [0x10438139c]
+                48 invocation function for block in dyld4::APIs::dlsym(void*, char const*)  (in dyld_sim) + 132  [0x104374974]
+                  48 dyld4::Loader::hasExportedSymbol(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::ExportedSymbolMode, dyld4::Loader::ResolverMode, dyld4::Loader::ResolvedSymbol*, dyld3::Array<dyld4::Loader const*>*) const  (in dyld_sim) + 376  [0x10439185c]
+                    48 dyld3::MachOFile::trieWalk(Diagnostics&, unsigned char const*, unsigned char const*, char const*)  (in dyld_sim) + 120  [0x10439e020]
+
+Total number in stack (recursive counted multiple, when >=5):
+        11       invocation function for block in mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 0  [0x1043b15e4]
+        10       mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 0  [0x1043ae954]
+        8       mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 96  [0x1043b1460]
+        7       mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x1043aea1c]
+        6       dyld4::RuntimeLocks::withLoadersReadLock(void () block_pointer)  (in dyld_sim) + 60  [0x10438139c]
+        5       dyld4::APIs::dyld_image_header_containing_address(void const*)  (in dyld_sim) + 60  [0x104373104]
+        5       dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 528  [0x104372ec0]
+        5       invocation function for block in dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 108  [0x104373004]
 
 Sort by top of stack, same collapsed (when >= 5):
-        __workq_kernreturn  (in libsystem_kernel.dylib)        13360
-        mach_msg2_trap  (in libsystem_kernel.dylib)        2387
-        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        519
-        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib)        44
-        getattrlistbulk  (in libsystem_kernel.dylib)        18
-        getContextDescriptor(swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        15
-        _swift_class_getSuperclass  (in libswiftCore.dylib)        11
-        getSuperclassForMaybeIncompleteMetadata(swift::TargetMetadata<swift::InProcess> const*, std::optional<swift::MetadataState>, bool)  (in libswiftCore.dylib)        10
-        swift::equalContexts(swift::TargetContextDescriptor<swift::InProcess> const*, swift::TargetContextDescriptor<swift::InProcess> const*)  (in libswiftCore.dylib)        8
+        mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim)        63
+        dyld3::MachOFile::trieWalk(Diagnostics&, unsigned char const*, unsigned char const*, char const*)  (in dyld_sim)        48
+        invocation function for block in mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim)        33
+        SwizzleClasses  (in libMainThreadChecker.dylib)        14
+        <deduplicated_symbol>  (in dyld_sim)        12
+        dyld4::JustInTimeLoader::contains(dyld4::RuntimeState&, void const*, void const**, unsigned long long*, unsigned char*) const  (in dyld_sim)        10
+        invocation function for block in dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim)        10
 
-Binary Images:
-       0x104a28000 -        0x104a2b507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC/data/Containers/Bundle/Application/ED55DE94-BECA-4050-B73C-4F3AD6DDB1B4/Chronotheca.app/Chronotheca
-       0x104a3c000 -        0x104a76ee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
-       0x104abc000 -        0x104ac43d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
-       0x104b64000 -        0x104b7010b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
-       0x104bbc000 -        0x104c6f523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
-       0x104d14000 -        0x104d62e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
-       0x104dd0000 -        0x104e1365f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
-       0x104f24000 -        0x104fbd2af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
-       0x1056c8000 -        0x1056ceb7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
-       0x1056e8000 -        0x1056f003f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
-       0x1057fc000 -        0x1057fcb99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
-       0x10580c000 -        0x10581739f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
-       0x105830000 -        0x105832dff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
-       0x105850000 -        0x10585949f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
-       0x105874000 -        0x105877e5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
-       0x105894000 -        0x1058ad27f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
-       0x1058e4000 -        0x1058eb2df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
-       0x105d88000 -        0x105d8d407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
-       0x105da4000 -        0x105da86ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
-       0x105dbc000 -        0x105dbf1ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
-       0x105e44000 -        0x10609fbbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
-       0x1067f4000 -        0x106816cff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
-       0x10688c000 -        0x1068b2f5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
-       0x106964000 -        0x107112ee7 +Chronotheca.debug.dylib (0) <0DD8078C-0DAB-3714-9A0A-8F3208DB8988> /Users/*/Library/Developer/CoreSimulator/Devices/FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC/data/Containers/Bundle/Application/ED55DE94-BECA-4050-B73C-4F3AD6DDB1B4/Chronotheca.app/Chronotheca.debug.dylib
-       0x107e00000 -        0x107e537bf  com.apple.dt.XCTAutomationSupport (26.5 - 24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
-       0x107eb4000 -        0x107f23cbf  com.apple.UIUnderstanding (1.0 - 1) <576E64EB-8AA4-3B1E-A89D-365C4DE0C7C8> /Volumes/*/UIUnderstanding.framework/UIUnderstanding
-       0x107f78000 -        0x107fa627f  com.apple.gpusw.MetalSerializer (1.0 - 1) <19460939-4BCE-3E8D-8868-5388DD78ACE3> /Volumes/*/MetalSerializer.framework/MetalSerializer
-       0x10add0000 -        0x10ae0a15f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
+Binary images description not available
+
