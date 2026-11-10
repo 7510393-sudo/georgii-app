@@ -1,12 +1,10 @@
 import SwiftUI
 import UIKit
 
-/// Обложка нижней строки, строки над клавиатурой и «＋» (P751): при старой
+/// Обложка нижней строки и строки над клавиатурой (P751; «＋» — стеклянный кружок, P860): при старой
 /// бумаге — кожаный переплёт (P745), без неё — крафт-картон (P297) с ровным
 /// верхним краем вместо рваного.
 struct BarCover: View {
-    /// Кромка по верху — у строк; у «＋» её нет.
-    var edged = true
     @AppStorage(Prefs.plainPast) private var plainPast = false
     /// Гамма меняется — картон перекрашивается (P498).
     // periphery:ignore - не читается, но перерисовывает вид при смене гаммы
@@ -16,14 +14,12 @@ struct BarCover: View {
         if plainPast {
             ZStack(alignment: .top) {
                 KraftPaper()
-                if edged {
-                    Rectangle().fill(Look.kraftEdge.opacity(0.7)).frame(height: 1)
-                }
+                Rectangle().fill(Look.kraftEdge.opacity(0.7)).frame(height: 1)
             }
             .allowsHitTesting(false)
             .accessibilityHidden(true)
         } else {
-            LeatherCover(stitched: edged)
+            LeatherCover()
         }
     }
 }
@@ -35,7 +31,6 @@ enum BarInk {
     static func lit(_ plain: Bool) -> Color { plain ? Look.accent : Leather.lit }
     static func pad(_ plain: Bool) -> Color { plain ? Look.tabLit : Leather.pad }
     static func frame(_ plain: Bool) -> Color { plain ? Look.accent.opacity(0.75) : Leather.lit.opacity(0.6) }
-    static func rim(_ plain: Bool) -> Color { plain ? Look.kraftEdge.opacity(0.55) : Leather.rim }
 }
 
 /// Тиснение на коже (P759: «значки и надписи в виде тиснения»): значок
@@ -107,17 +102,14 @@ struct KraftPaper: View {
 /// тёмными чернилами. Рваные края остаются только у страниц: строка не лист,
 /// а то, на чём листы лежат.
 struct LeatherCover: View {
-    /// Строчка вдоль верхнего края — у нижней строки и у строки над
-    /// клавиатурой; у кнопки «＋» её нет.
-    var stitched = true
-
+    // Строчка вдоль верхнего края — у нижней строки и у строки над клавиатурой.
     var body: some View {
         ZStack(alignment: .top) {
             LinearGradient(colors: [Leather.top, Leather.base, Leather.deep],
                            startPoint: .top, endPoint: .bottom)
             Image(uiImage: Leather.grain)
                 .resizable(resizingMode: .tile)
-            if stitched {
+            Group {
                 VStack(spacing: 0) {
                     // Скруглённая кромка: тёмная черта по краю и светлый
                     // блик под ней, как у подвёрнутой кожи.

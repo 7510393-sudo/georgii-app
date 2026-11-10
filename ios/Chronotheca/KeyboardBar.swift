@@ -121,7 +121,6 @@ struct KeyboardBarView: View {
 /// у пяти кнопок строки вложений (`KeyboardBar.ask`), — и со страницы, и
 /// над клавиатурой. Новое ложится под последним текстом записи.
 struct PlusMenu: View {
-    @AppStorage(Prefs.plainPast) private var plainPast = false
     var id: String
 
     var body: some View {
@@ -134,14 +133,16 @@ struct PlusMenu: View {
                 Label(T("Где я сейчас", "Where I am"), systemImage: "location")
             }
         } label: {
+            // Стеклянный кружок, как лупа картотеки (P860, автор по 259:
+            // «плюс уезжает от нижней кожаной строки» — кожа ему больше не
+            // родня; прежде — тиснение на коже, как у строки).
             Image(systemName: "plus")
                 .font(.system(size: 22, weight: .semibold))
-                .foregroundStyle(BarInk.ink(plainPast))
-                .modifier(Embossed(on: !plainPast))
+                .foregroundStyle(Look.inkSoft)
                 .frame(width: 44, height: 44)
-                .background(BarCover(edged: false).clipShape(Circle()).opacity(plainPast ? 0.78 : 1))
-                .overlay(Circle().strokeBorder(BarInk.rim(plainPast), lineWidth: 1))
-                .shadow(color: .black.opacity(0.18), radius: 3, x: 1.5, y: 1.5)
+                .background(.ultraThinMaterial, in: Circle())
+                .overlay(Circle().strokeBorder(Look.inkFaint.opacity(0.5), lineWidth: 1))
+                .shadow(color: .black.opacity(0.15), radius: 3, x: 1.5, y: 1.5)
         }
         .accessibilityLabel(T("Приложить", "Attach"))
         .accessibilityIdentifier(id)

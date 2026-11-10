@@ -704,6 +704,15 @@ struct RootView: View {
                 TimeLine(ribbon: shell.ribbon, height: size.height)
             }
         }
+        // Лист «Сегодня» с экрана не уходит (P860): касание по корешку внизу
+        // или по полоске низа листа вверху — назад в день. Прошедший день
+        // закрыт в карточку (P834) — внизу корешок «Сегодня» сам по себе.
+        .overlay(alignment: .topLeading) {
+            if shell.ribbonLive {
+                TodayPeek(ribbon: shell.ribbon, open: shell.screen == .search && shell.ribbonOpen,
+                          card: shell.pastCard, size: size) { tapSection(.today) }
+            }
+        }
         .background(Desk())
     }
 
@@ -1442,5 +1451,95 @@ private struct RibbonFade: ViewModifier {
     func body(content: Content) -> some View {
         let shown: Double = !live ? 0 : card ? 1 : Double(min(1, abs(ribbon.y) / 90))
         content.opacity(shown)
+    }
+}
+
+/// Где взяться за лист «Сегодня», когда открыта картотека (P860): корешок
+/// внизу или полоска низа листа вверху. Касание или тяга к середине экрана
+/// — назад в день. Пока прошедший день закрыт в карточку (P834), листа нет —
+/// внизу лежит корешок «Сегодня» сам по себе.
+private struct TodayPeek: View {
+    @ObservedObject var ribbon: Ribbon
+    /// Лента открыта и стоит — за лист можно взяться.
+    let open: Bool
+    /// Прошедший день закрыт в карточку.
+    let card: Bool
+    let size: CGSize
+    let go: () -> Void
+
+    var body: some View {
+        let shown = FollowRibbon.shown(ribbon.y, height: size.height)
+        let low = size.height - FollowRibbon.peekBottom
+        let atBottom = card || (ribbon.y > 0 && shown >= low - 0.5)
+        let atTop = !card && ribbon.y < 0 && shown <= FollowRibbon.topClamp(size.height) + 0.5
+        ZStack(alignment: .topLeading) {
+            TodayTab()
+                .frame(width: size.width)
+                .offset(y: low)
+                .animation(.easeOut(duration: 0.35)) { $0.opacity(card ? 1 : 0) }
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+            if open && atBottom {
+                grip(up: true)
+                    .frame(width: size.width * DayPage.folder.tabShare, height: FollowRibbon.peekBottom)
+                    .offset(y: low)
+            } else if open && atTop {
+                grip(up: false)
+                    .frame(width: size.width, height: FollowRibbon.peekTop)
+            }
+        }
+        .frame(width: size.width, height: size.height, alignment: .topLeading)
+    }
+
+    /// Касание — в день; тяга от края к середине — тоже.
+    private func grip(up: Bool) -> some View {
+        Color.clear
+            .contentShape(Rectangle())
+            .onTapGesture { go() }
+            .gesture(DragGesture(minimumDistance: 10).onEnded { drag in
+                let pulled = up ? -drag.translation.height : drag.translation.height
+                if pulled > 30 { go() }
+            })
+            .accessibilityElement()
+            .accessibilityLabel(T("Вернуться в день", "Back to the day"))
+            .accessibilityAddTraits(.isButton)
+    }
+}
+
+/// Корешок «Сегодня» сам по себе (P860) — когда листа нет: прошедший день
+/// закрыт в карточку. Тот же контур, цвет, имя и дата, что у шапки листа.
+private struct TodayTab: View {
+    var body: some View {
+        let today = DayStore.today()
+        ZStack(alignment: .topLeading) {
+            Ru.tint(today)
+            HStack(spacing: 0) {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(DayPage.title(for: today))
+                        .font(.system(size: 21, weight: .semibold))
+                        .tracking(-0.2)
+                        .foregroundStyle(Look.ink)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                    (Text(Ru.headDate(today))
+                        .foregroundColor(Look.inkSoft)
+                     + Text(",  " + Ru.weekday(today))
+                        .foregroundColor(Ru.dayColor(today))
+                        .tracking(0.4))
+                        .font(Look.sans(12.5))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+                }
+                .padding(.leading, 14)
+                .padding(.top, 4)
+                .frame(height: DayPage.headLine + 8)
+                Spacer(minLength: 6)
+            }
+            .padding(.leading, 8)
+            .padding(.top, 2)
+        }
+        .frame(height: FollowRibbon.peekBottom + DayPage.under)
+        .clipShape(DayPage.folder)
+        .overlay { DayPage.folder.stroke(DayPage.edge, lineWidth: 1) }
     }
 }

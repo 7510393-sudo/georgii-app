@@ -110,7 +110,10 @@ final class Ribbon: ObservableObject {
     func restY(_ dir: Int) -> CGFloat {
         // Будущее (P797): завтрашняя — у самого верха, день — над ним, за
         // верхним краем; строка поиска теперь внизу.
-        dir > 0 ? height : -height
+        // Лист с экрана не уходит (P860): в прошлом вчерашняя карточка встаёт
+        // над корешком «Сегодня» и уходит под него, как под следующую
+        // карточку; в будущем завтрашняя — под полоской низа листа.
+        dir > 0 ? height - FollowRibbon.peekBottom + Search.overlap : -height + FollowRibbon.peekTop
     }
 
     /// Ленту сейчас ведёт программа.
@@ -399,6 +402,9 @@ final class Ribbon: ObservableObject {
 
 /// День едет за своим местом в ленте (P777). Смотрит только на ленту:
 /// при её прокрутке пересчитывается один сдвиг, а не весь экран.
+/// Лист «Сегодня» с экрана не уходит (P860, автор по 259): внизу остаётся
+/// корешок с именем дня и датой, вверху — полоска низа листа поверх
+/// картотеки будущего. Касание или тяга за них — назад в день.
 struct FollowRibbon: ViewModifier {
     @ObservedObject var ribbon: Ribbon
     let live: Bool
@@ -407,27 +413,33 @@ struct FollowRibbon: ViewModifier {
         let y = live ? ribbon.y : 0
         content
             .offset(y: FollowRibbon.shown(y, height: ribbon.height))
-            // За верхней четвертью лист уходит под картотеку (P831).
-            .zIndex(FollowRibbon.under(y, height: ribbon.height) ? -1 : 1)
+            // Лист всегда поверх картотеки (P860, вместо ухода под неё за
+            // верхней четвертью P831): карточки будущего выходят из-под его
+            // низа, а он остаётся у верха.
+            .zIndex(1)
     }
 
-    /// Где лист «Дня», когда его место в ленте на `y` (P831). Вниз (прошлое)
-    /// — вместе с местом. Вверх (будущее): до верхней четверти экрана лист
-    /// поверх картотеки и чуть обгоняет место — завтрашняя карточка выходит
-    /// из-под него, и на верхней четверти нижний край листа сравнивается с
-    /// её верхним краем. Дальше лист отстаёт вдвое и уходит под картотеку:
-    /// завтрашняя карточка наползает на него, и в покое лист выглядывает над
-    /// ней, как карточка позади.
+    /// Сколько листа видно внизу: корешок с именем дня и датой (P860).
+    static var peekBottom: CGFloat { DayPage.folder.tabHeight + 4 }
+    /// Сколько низа листа видно вверху (P860).
+    static let peekTop: CGFloat = 44
+
+    /// Верх листа, когда он стоит у верха экрана (P860): видна полоска его низа.
+    static func topClamp(_ height: CGFloat) -> CGFloat {
+        peekTop - height - DayPage.under
+    }
+
+    /// Где лист «Дня», когда его место в ленте на `y`. Вниз (прошлое) —
+    /// вместе с местом, пока над нижним краем не останется один корешок
+    /// (P860). Вверх (будущее): лист чуть обгоняет место — завтрашняя
+    /// карточка выходит из-под него (P831), — пока у верха не останется
+    /// полоска его низа.
     static func shown(_ y: CGFloat, height: CGFloat) -> CGFloat {
-        guard y < 0, height > 0 else { return y }
+        guard height > 0 else { return y }
+        if y >= 0 { return min(y, height - peekBottom) }
         let swap = -0.75 * height
-        if y >= swap { return y - Search.overlap * (y / swap) }
-        return swap - Search.overlap + (y - swap) * 0.5
-    }
-
-    /// Лист под картотекой — за верхней четвертью (P831).
-    static func under(_ y: CGFloat, height: CGFloat) -> Bool {
-        height > 0 && y < -0.75 * height
+        let ahead = y >= swap ? y - Search.overlap * (y / swap) : y - Search.overlap
+        return max(ahead, topClamp(height))
     }
 }
 
