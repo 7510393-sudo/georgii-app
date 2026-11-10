@@ -246,6 +246,7 @@ final class Ribbon: ObservableObject {
     }
 
     private func follow(_ offset: CGFloat) {
+        guard !frozen else { return }
         let now = slotTop - offset
         let t = CACurrentMediaTime()
         let dt = t - lastTime
@@ -258,6 +259,12 @@ final class Ribbon: ObservableObject {
         lastTime = t
         if abs(now - y) > 0.25 { y = now }
     }
+
+    /// Лист прошедшего дня закрыт в карточку (P859): лист стоит, где был, и
+    /// тает — место дня из ленты ушло, и замеры его больше не двигают.
+    /// Прежде лист в этот миг пропадал разом (автор по 259: «низ листа,
+    /// торчащий сверху экрана, рывком пропадает»).
+    var frozen = false
 
     /// Место дня ушло из ленты далеко за край (её стопка его разобрала).
     func lost() {
@@ -427,9 +434,10 @@ struct FollowRibbon: ViewModifier {
 /// Где ты в картотеке (P845, замысел автора; вместо полей с месяцами и
 /// числами P844): от середины левого края — вверх линия будущего, вниз
 /// линия прошлого. Длина — насколько далеко ушёл от дня: чем дальше, тем
-/// длиннее, у дня — ноль. Ни точки «сегодня», ни бегунка: середина — просто
+/// длиннее, у дня — ноль. Бегунка нет: середина — просто
 /// рубеж, от которого растёт одна из двух линий. Мера — сдвиг ленты от места
-/// дня; длина растёт всё медленнее и не доходит до краёв экрана.
+/// дня; длина растёт всё медленнее и не доходит до краёв экрана. Ноль —
+/// короткая черта поперёк середины (P859).
 struct TimeLine: View {
     @ObservedObject var ribbon: Ribbon
     let height: CGFloat
@@ -446,15 +454,24 @@ struct TimeLine: View {
         // прошлого и та же кромка; прошлое — с кромкой темнее (его края
         // затёрты сильнее), будущее — светлее.
         let rim: Color = Scheme.current.kraftEdge.opacity(past ? 0.9 : 0.45)
-        Capsule()
-            .fill(Scheme.current.past)
-            .overlay(Capsule().strokeBorder(rim, lineWidth: 1))
-            .frame(width: 5, height: max(0, length))
-            // Прошлое — вверх от середины, будущее — вниз.
-            .offset(y: past ? -length / 2 : length / 2)
-            .frame(width: 24, height: height)
-            .opacity(length < 1 ? 0 : 1)
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
+        ZStack {
+            // Ноль — короткая черта поперёк середины (P859, автор по 259): от
+            // неё линия уходит вверх или вниз. Не доходит ни до края экрана, ни
+            // до карточек: полоса линии — 24 точки, черта — 12 посередине.
+            Capsule()
+                .fill(Scheme.current.kraftEdge.opacity(0.7))
+                .frame(width: 12, height: 1.5)
+                .frame(width: 24, height: height)
+            Capsule()
+                .fill(Scheme.current.past)
+                .overlay(Capsule().strokeBorder(rim, lineWidth: 1))
+                .frame(width: 5, height: max(0, length))
+                // Прошлое — вверх от середины, будущее — вниз.
+                .offset(y: past ? -length / 2 : length / 2)
+                .frame(width: 24, height: height)
+                .opacity(length < 1 ? 0 : 1)
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }

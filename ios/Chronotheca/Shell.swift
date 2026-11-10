@@ -294,7 +294,9 @@ final class Shell: ObservableObject {
     /// Прошедший день отодвинули в картотеку, и она встала (P834): в ленте
     /// на его месте — его маленькая карточка, а не открытый лист. Открыть
     /// снова — касанием по карточке.
-    @Published var pastCard = false
+    @Published var pastCard = false {
+        didSet { if !pastCard { ribbon.frozen = false } }
+    }
     /// Лента на экране: тянут или открыта.
     var ribbonLive: Bool { pulling || ribbonOpen }
 

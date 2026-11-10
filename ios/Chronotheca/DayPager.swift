@@ -397,7 +397,10 @@ struct DayPage: View {
                              // Прошедший день закрывается в свою карточку
                              // (P834): лист ушёл за край — на его месте в ленте
                              // маленькая карточка, листом он больше не вернётся.
-                             if store.date < DayStore.today() { shell.pastCard = true }
+                             if store.date < DayStore.today() {
+                                 ribbon.frozen = true
+                                 shell.pastCard = true
+                             }
                              store.prune()
                              // Опись перечитывается, когда лента закроется
                              // (P797): перечитанная сразу после открытия, она
@@ -1344,10 +1347,14 @@ struct PageTexture: View {
     /// до 20), лист тянется на свой размер — разница незаметна.
     struct AgedOrder: Hashable {
         let key: String, w: CGFloat, h: CGFloat, band: CGFloat, variant: Int, openBottom: Bool, light: Bool
+        /// Карточка с корешком (P859): высота корешка и его доля ширины; 0 — без корешка.
+        var tab: CGFloat = 0
+        var share: CGFloat = 1.0 / 3
     }
 
     static func agedOrder(size: CGSize, band: CGFloat, seed number: Int, openBottom: Bool = false,
-                          light: Bool = false, kinds: Int? = nil) -> AgedOrder {
+                          light: Bool = false, kinds: Int? = nil,
+                          tab: CGFloat = 0, share: CGFloat = 1.0 / 3) -> AgedOrder {
         let small = min(size.width, size.height) < 60
         let step: CGFloat = small ? 4 : 20
         let w = max(4, size.width.rounded())
@@ -1357,7 +1364,9 @@ struct PageTexture: View {
         // заказывается заново.
         var key = "\(Int(w))x\(Int(h))b\(Int(band * 10))v\(variant)\(openBottom ? "o" : "")\(light ? "l" : "")"
         if grey { key += "g" }
-        return AgedOrder(key: key, w: w, h: h, band: band, variant: variant, openBottom: openBottom, light: light)
+        if tab > 0 { key += "t\(Int(tab))s\(Int((share * 100).rounded()))" }
+        return AgedOrder(key: key, w: w, h: h, band: band, variant: variant, openBottom: openBottom, light: light,
+                         tab: tab, share: share)
     }
 
     /// Готовый лист, если он уже в памяти, — сразу.
@@ -1368,7 +1377,12 @@ struct PageTexture: View {
     /// Лист — когда будет готов (в стороне от экрана).
     static func aged(_ order: AgedOrder) async -> AgedArt {
         await PaperShop.shared.art(order.key, small: min(order.w, order.h) < 60) {
-            makeAged(size: CGSize(width: order.w, height: order.h), band: order.band, seed: order.variant + 1,
+            if order.tab > 0 {
+                return makeAgedFolder(size: CGSize(width: order.w, height: order.h), band: order.band,
+                                      seed: order.variant + 1, tab: order.tab, share: order.share,
+                                      light: order.light)
+            }
+            return makeAged(size: CGSize(width: order.w, height: order.h), band: order.band, seed: order.variant + 1,
                      openBottom: order.openBottom, light: order.light)
         }
     }
@@ -1458,6 +1472,146 @@ struct PageTexture: View {
             }
         }
         return AgedArt(frame: frame, cut: picture(cutBytes, width: W, height: H, scale: CGFloat(px)))
+    }
+
+    /// Карточка картотеки с корешком (P859, автор по 259: «сверху один тип
+    /// износа, с боков другой», «вверху слишком локально перетемнены, у букв
+    /// дня недели затемнение резко кончается»). Прежде верх рвался и темнел
+    /// по прямой верхней кромке картинки — то есть только у корешка, — а
+    /// вырез корешка и плечо затирались отдельно, другим способом
+    /// (`EdgeWear`, P854), и полоса выреза начиналась резко. Теперь край
+    /// один — сам контур карточки: корешок, его скругления, вырез, плечо и
+    /// бока рвутся и темнеют одинаково, по расстоянию до ближайшего края.
+    /// Углы не темнеют вдвое: берётся ближайший край, а не сумма двух. Низ
+    /// уходит под следующую карточку — чистый.
+    fileprivate static func makeAgedFolder(size: CGSize, band: CGFloat, seed number: Int, tab: CGFloat,
+                                           share: CGFloat, light: Bool) -> AgedArt {
+        let w = size.width, h = size.height
+        var seed = UInt64(bitPattern: Int64(number)) &* 0x9E37_79B9_7F4A_7C15 &+ 0xA6ED0 &+ UInt64(band * 10)
+        func next() -> Float {
+            seed = seed &* 6364136223846793005 &+ 1442695040888963407
+            return Float(seed >> 40) / Float(1 << 24)
+        }
+        let W = Int(w) * px, H = Int(h) * px
+        let wear = min(band, min(w, h) * 0.18)
+        let cw = Int(w), ch = Int(h)
+        let reachField = smoothField(width: cw, height: ch, cell: 30, wrapX: false, wrapY: false, next: next)
+        let tone = smoothField(width: cw, height: ch, cell: 60, wrapX: false, wrapY: false, next: next)
+        let mottle = mottling(width: cw, height: ch, wrapX: false, wrapY: false, next: next)
+        let deep: Float = 1.6 * (light ? 0.45 : 1)
+        // Верх по контуру рвётся мельче боков (P848).
+        let topTear = tornLine(length: W, scale: Float(px), deep: deep * 0.7, next: next)
+        let leftTear = tornLine(length: H, scale: Float(px), deep: deep, next: next)
+        let rightTear = tornLine(length: H, scale: Float(px), deep: deep, next: next)
+        let roof = folderRoof(width: W, height: H, size: size, tab: tab, share: share)
+        var inside = [Bool](repeating: false, count: W * H)
+        for y in 0..<H {
+            let fy = Float(y)
+            for x in 0..<W {
+                inside[y * W + x] = fy >= roof[x] + topTear[x]
+                    && Float(x) >= leftTear[y] && Float(W - 1 - x) >= rightTear[y]
+            }
+        }
+        let dist = edgeDistance(inside, width: W, height: H)
+        var power: Float = 0.75 + next() * 0.3
+        if light { power *= 0.3 }
+        let fall = Float(wear) * Float(px) / 1.6                             // в пикселях
+        let peak: Float = 0.45
+        var frameBytes = [UInt8](repeating: 0, count: W * H * 4)
+        var cutBytes = [UInt8](repeating: 0, count: W * H * 4)
+        for y in 0..<H {
+            for x in 0..<W {
+                let i = y * W + x
+                guard inside[i] else { continue }
+                // У самого края расстояние — один пиксель: край мягкий, в полпикселя.
+                let d = dist[i] - 1
+                cutBytes[i * 4 + 3] = UInt8(max(0, min(1, d + 0.5)) * 255)
+                guard d < fall * 2 * 8 else { continue }
+                let fx = Float(x) / Float(px), fy = Float(y) / Float(px)
+                let reach = fall * max(0.5, min(2, 1 + 0.35 * smooth(reachField, cw, ch, fx, fy)))
+                let strength = max(0.4, 1 + 0.3 * smooth(tone, cw, ch, fx, fy))
+                let worn = min(peak * power * strength * exp(-max(0, d) / reach), 0.75)
+                paintAged(&frameBytes, i * 4, worn: worn, distance: max(0, d) / Float(px),
+                          mottle: smooth(mottle, cw, ch, fx, fy))
+            }
+        }
+        var frame = picture(frameBytes, width: W, height: H, scale: CGFloat(px))
+        if min(w, h) > 60 && !light {
+            let format = UIGraphicsImageRendererFormat(); format.scale = CGFloat(px)
+            let plain = frame
+            let amount = Float(h) / 480
+            frame = UIGraphicsImageRenderer(size: CGSize(width: w, height: h), format: format).image { ctx in
+                plain.draw(at: .zero)
+                scatterFlaws(ctx.cgContext, in: CGRect(x: 3, y: tab + 8, width: 10, height: max(1, h - tab - 18)),
+                             amount: amount, inward: 0, next: next)
+                scatterFlaws(ctx.cgContext, in: CGRect(x: w - 13, y: tab + 8, width: 10, height: max(1, h - tab - 18)),
+                             amount: amount, inward: .pi, next: next)
+            }
+        }
+        return AgedArt(frame: frame, cut: picture(cutBytes, width: W, height: H, scale: CGFloat(px)))
+    }
+
+    /// Верх карточки по столбцам, в пикселях (P859): где начинается сама
+    /// фигура — корешок со скруглениями, вырез, плечо.
+    private static func folderRoof(width W: Int, height H: Int, size: CGSize, tab: CGFloat,
+                                   share: CGFloat) -> [Float] {
+        var roof = [Float](repeating: 0, count: W)
+        guard let ctx = CGContext(data: nil, width: W, height: H, bitsPerComponent: 8, bytesPerRow: 0,
+                                  space: CGColorSpaceCreateDeviceGray(),
+                                  bitmapInfo: CGImageAlphaInfo.none.rawValue) else { return roof }
+        ctx.setFillColor(gray: 0, alpha: 1)
+        ctx.fill(CGRect(x: 0, y: 0, width: W, height: H))
+        // Сверху вниз, в точках — как рисует SwiftUI.
+        ctx.translateBy(x: 0, y: CGFloat(H))
+        ctx.scaleBy(x: CGFloat(px), y: -CGFloat(px))
+        let shape = FolderShape(tabHeight: tab, tabShare: share)
+        ctx.addPath(shape.path(in: CGRect(origin: .zero, size: size)).cgPath)
+        ctx.setFillColor(gray: 1, alpha: 1)
+        ctx.fillPath()
+        guard let data = ctx.data else { return roof }
+        let row = ctx.bytesPerRow
+        let bytes = data.bindMemory(to: UInt8.self, capacity: row * H)
+        for x in 0..<W {
+            var y = 0
+            while y < H && bytes[y * row + x] < 128 { y += 1 }
+            roof[x] = Float(y)
+        }
+        return roof
+    }
+
+    /// Расстояние от каждой точки бумаги до ближайшего края, в пикселях
+    /// (P859): два прохода — сверху слева и снизу справа. За картинкой сверху
+    /// и с боков — край; снизу — нет: низ карточки уходит под следующую.
+    private static func edgeDistance(_ inside: [Bool], width W: Int, height H: Int) -> [Float] {
+        let far: Float = 1e6
+        let diag: Float = 1.4142
+        var d = inside.map { $0 ? far : 0 }
+        func at(_ x: Int, _ y: Int) -> Float {
+            if x < 0 || x >= W || y < 0 { return 0 }
+            if y >= H { return far }
+            return d[y * W + x]
+        }
+        for y in 0..<H {
+            for x in 0..<W where d[y * W + x] > 0 {
+                var v = d[y * W + x]
+                v = min(v, at(x - 1, y) + 1)
+                v = min(v, at(x - 1, y - 1) + diag)
+                v = min(v, at(x, y - 1) + 1)
+                v = min(v, at(x + 1, y - 1) + diag)
+                d[y * W + x] = v
+            }
+        }
+        for y in stride(from: H - 1, through: 0, by: -1) {
+            for x in stride(from: W - 1, through: 0, by: -1) where d[y * W + x] > 0 {
+                var v = d[y * W + x]
+                v = min(v, at(x + 1, y) + 1)
+                v = min(v, at(x + 1, y + 1) + diag)
+                v = min(v, at(x, y + 1) + 1)
+                v = min(v, at(x - 1, y + 1) + diag)
+                d[y * W + x] = v
+            }
+        }
+        return d
     }
 
     /// Рельеф шершавой бумаги (P676, отменяет пятна и волоски): впадинки и

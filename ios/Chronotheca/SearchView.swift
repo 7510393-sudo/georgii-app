@@ -41,7 +41,8 @@ struct SearchView: View {
                 let h = Search.tabHeight + 8 + Search.body + Search.overlap + 6
                 for v in 0..<24 {
                     let order = PageTexture.agedOrder(size: CGSize(width: w, height: h), band: 12,
-                                                      seed: v, openBottom: true, light: false)
+                                                      seed: v, openBottom: true, light: false,
+                                                      tab: Search.tabHeight, share: Search.tabShare)
                     _ = await PageTexture.aged(order)
                 }
             }
@@ -360,6 +361,7 @@ struct SearchView: View {
         var measure = Ribbon.Plan()
         if case .pad(let h) = items.first?.kind { measure.lead = h }
         if case .pad(let h) = items.last?.kind { measure.tail = h }
+        measure.tail += Afar.lift
         measure.before = past.count + later.count
         measure.total = past.count + later.count + future.count
         measure.slot = !card
@@ -392,6 +394,8 @@ struct SearchView: View {
             // Прокрутка без оттяжки (P445): лента и день едут вместе, а
             // оттяжка разлучила бы их.
             .background(NoBounce(box: ribbon.box))
+            // Добавка к запасу ниже экрана (P859).
+            .padding(.bottom, Afar.lift)
             // Место под клавиатуру (P174).
             .padding(.bottom, keyboard > 0 ? keyboard + 4 : 0)
         }
@@ -486,7 +490,7 @@ struct SearchView: View {
             // Карточки уже дня (P780): по бокам виден стол, день — во всю
             // ширину, и его не спутать с карточкой.
             SearchCard(stamp: Search.stamp(day.date), weekday: Search.weekday(day.date),
-                       past: Ru.isPast(day.date),
+                       past: Ru.isPast(day.date), fresh: day.date > DayStore.today(),
                        seed: PageTexture.seed(day.date) &+ (Search.deep ? (Int(entry.id.dropFirst()) ?? 0) * 7 : 0)) {
                 row(day)
             }
@@ -495,7 +499,7 @@ struct SearchView: View {
             daySlot
         case .future(let day):
             SearchCard(stamp: Search.stamp(day.date), weekday: Search.weekday(day.date),
-                       weekend: Calendar.current.isDateInWeekend(day.date), past: false,
+                       weekend: Calendar.current.isDateInWeekend(day.date), past: false, fresh: true,
                        seed: PageTexture.seed(day.date), tight: true) {
                 futureRow(day, sample: sample)
             }
@@ -692,6 +696,10 @@ struct SearchView: View {
 enum Search {
     /// Высота корешка карточки (P695).
     static let tabHeight: CGFloat = 22
+    /// Доля ширины карточки под корешок (P859; прежде треть): дата крупнее —
+    /// «2026 сентябрь 22 ПН» шрифтом 13 входит целиком, а в трети ужималась
+    /// почти до 9.
+    static let tabShare: CGFloat = 0.45
     /// На сколько карточка заходит на предыдущую: корешок и ещё немного
     /// листа, чтобы нижний край предыдущей скрылся под ней (P696).
     static let overlap: CGFloat = tabHeight + 10
@@ -770,6 +778,8 @@ private struct SearchCard<Content: View>: View {
     var weekend = false
     /// Прошедший день — края затёрты, как у его страницы (P722).
     var past = true
+    /// Будущий день — новая карточка, без износа (P859).
+    var fresh = false
     /// Номер дня — у каждой карточки свой износ (P723).
     var seed = 0
     /// Будущая карточка — плотнее (P774): меньше воздуха над и под строками,
@@ -787,16 +797,17 @@ private struct SearchCard<Content: View>: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 0) {
+            // Дата крупнее (P859, автор по 259; прежде 11,5 в трети ширины —
+            // ужималась почти до 9): корешок шире, шрифт 13.
+            GeometryReader { tab in
                 tabText
-                    .font(Look.mono(11.5, weight: .medium))
-                    .tracking(0.3)
+                    .font(Look.mono(13, weight: .medium))
+                    .tracking(0.2)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .padding(.horizontal, 8)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                Color.clear.frame(maxWidth: .infinity)
-                Color.clear.frame(maxWidth: .infinity)
+                    .minimumScaleFactor(0.75)
+                    .padding(.horizontal, 7)
+                    .frame(width: tab.size.width * Search.tabShare, height: tab.size.height,
+                           alignment: .leading)
             }
             .frame(height: Search.tabHeight)
             content()
@@ -814,7 +825,7 @@ private struct SearchCard<Content: View>: View {
                 // Бумага карточки, затёртые края и рваный край — одним листом
                 // из пачки заготовок (P732, как у клеток месяца: прежде края
                 // и маска были двумя отдельными листами, и края не доходили).
-                CardPaper(seed: seed, past: past)
+                CardPaper(seed: seed, past: past, fresh: fresh)
             }
         }
     }
@@ -823,43 +834,37 @@ private struct SearchCard<Content: View>: View {
 /// Лист карточки поиска (P732): старая бумага, затёртые края и рваный край —
 /// один лист из пачки заготовок; пока его нет — ровная бумага. Сегодняшний
 /// день слегка тронут (P728), без «Старой бумаги» (P730) — ровная бумага.
+/// Будущий день — новая карточка, без износа (P859, автор по 259: «состарены
+/// должны быть в прошлом»). Износ идёт по всему контуру одним способом —
+/// корешок, вырез, плечо и бока (P859, вместо отдельного затёртого выреза
+/// `EdgeWear` P854 на картинке, затёртой только по прямоугольнику).
 private struct CardPaper: View {
     let seed: Int
     let past: Bool
+    var fresh = false
     @Environment(\.colorScheme) private var scheme
     @AppStorage(Prefs.plainPast) private var plainPast = false
     @State private var art: PageTexture.AgedArt?
 
+    private var folder: FolderShape { FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare) }
+
     var body: some View {
         GeometryReader { geo in
             let order = PageTexture.agedOrder(size: geo.size, band: 12, seed: seed, openBottom: true,
-                                              light: !past)
-            let ready = plainPast ? nil : (art ?? PageTexture.agedReady(order))
+                                              light: !past, tab: Search.tabHeight, share: Search.tabShare)
+            let ready = plainPast || fresh ? nil : (art ?? PageTexture.agedReady(order))
             ZStack {
-                paper.clipShape(FolderShape(tabHeight: Search.tabHeight))
+                paper.clipShape(folder)
                 if let ready {
                     Image(uiImage: ready.frame)
                         .resizable()
                         .opacity(scheme == .dark ? 0.35 : 1)
-                        .clipShape(FolderShape(tabHeight: Search.tabHeight))
-                }
-                if ready != nil {
-                    // Вырез корешка — бок корешка, дуга и плечо — затёрт по
-                    // самому контуру (P854, вместо картинки края, сдвинутой
-                    // к плечу и к боку, P738/P823: она шла прямоугольником
-                    // и не повторяла дугу выреза).
-                    EdgeWear(shape: FolderShape(tabHeight: Search.tabHeight), depth: 9)
-                        .mask(alignment: .topLeading) {
-                            WearNotch.region(width: geo.size.width, tab: geo.size.width / 3,
-                                           tabHeight: Search.tabHeight, depth: 9)
-                        }
-                        .opacity((scheme == .dark ? 0.35 : 1) * (past ? 1 : 0.4))
+                        .clipShape(folder)
                 } else {
                     // Тонкая линия края — только у ровной бумаги (P854): у
                     // затёртой край виден и так, а линия шла вторым краем
                     // над затёртым.
-                    FolderShape(tabHeight: Search.tabHeight)
-                        .stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
+                    folder.stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
                 }
             }
             .frame(width: geo.size.width, height: geo.size.height)
@@ -867,13 +872,12 @@ private struct CardPaper: View {
                 if let ready { Image(uiImage: ready.cut).resizable() } else { Rectangle() }
             }
             .task(id: order) {
-                guard !plainPast else { return }
+                guard !plainPast, !fresh else { return }
                 art = await PageTexture.aged(order)
             }
         }
         .allowsHitTesting(false)
     }
-
 
     /// Старая бумага: цвет прошлого и рельеф плиткой — непрозрачная, иначе
     /// корешок соседа просвечивал бы.
@@ -1035,7 +1039,14 @@ private struct Distance: ViewModifier {
                 // Прошлое у верхнего края (P850, вместо сжатия сдвига P845 —
                 // с ним карточки на ходу подскакивали вверх): верхняя карточка
                 // тает, пока лента не убрала её, и не пропадает на глазах.
-                let fade: Double = side > 0 ? Double(min(1, max(0, (frame.maxY + shift) / 60))) : 1
+                // Тает и по своему месту в ленте (P859): ленивая стопка
+                // убирает карточку, когда её место ушло за верх, а нарисована
+                // она с наползанием ниже — и пропадала на глазах (автор по
+                // 259: «мелькает, пропадает резко карточка, которая стоит за
+                // ней»). Теперь к этому мигу она уже растаяла.
+                let drawn = (frame.maxY + shift) / 60
+                let placed = frame.maxY / 80
+                let fade: Double = side > 0 ? Double(min(1, max(0, min(drawn, placed)))) : 1
                 return view.offset(y: shift).opacity(fade)
             }
         }
@@ -1050,7 +1061,14 @@ enum Afar {
     /// Сколько ленты собрано ниже экрана (P791): карточки, что подтягиваются
     /// к дальнему нижнему краю из-за экрана, уже нарисованы и выходят плавно,
     /// а не появляются на глазах. С запасом к наибольшему сдвигу у края.
-    static func reserve(_ height: CGFloat) -> CGFloat { height * (1 - tightest) / 2 + 40 }
+    /// Плюс `lift` (P859).
+    static func reserve(_ height: CGFloat) -> CGFloat { height * (1 - tightest) / 2 + 40 + lift }
+
+    /// Добавка к запасу (P859): рамка карточки на 32 точки ниже её корешка,
+    /// и без добавки будущая карточка у нижнего края пропадала на последних
+    /// 3 мм, а не уходила под нижнюю строку. Столько же пустого места внизу
+    /// ленты — чтобы последняя карточка вставала там же, где прежде.
+    static let lift: CGFloat = Search.overlap + 40
 
     /// `top` — верх карточки на экране ленты, `height` — высота экрана.
     /// Возвращает сдвиг по вертикали: шаг между карточками — прежний у
