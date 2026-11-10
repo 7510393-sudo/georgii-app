@@ -688,6 +688,8 @@ struct RootView: View {
             DayPages()
                 .frame(width: size.width, height: size.height)
                 .modifier(FollowRibbon(ribbon: shell.ribbon, live: shell.ribbonLive))
+                // У края остаётся только лист сегодняшнего дня (P863).
+                .onChange(of: store.isToday, initial: true) { _, today in shell.ribbon.stick = today }
                 // День закрыт в карточку (P834) — листа нет: место дня из
                 // ленты ушло, и лист повисал бы где придётся (снимок проверки:
                 // полэкрана листа, под ним пустой стол).

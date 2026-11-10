@@ -33,6 +33,11 @@ final class Ribbon: ObservableObject {
     /// Как собрана лента: поля сверху и снизу, карточек до будущего и
     /// всего, есть ли место дня. Ставит картотека при каждой сборке.
     var plan = Plan()
+    /// На листе сегодняшний день (P863): только его лист остаётся у края
+    /// экрана. Прошедший уходит за край целиком — он закроется в карточку,
+    /// и полоска его листа рядом со своей же карточкой мелькала (видео
+    /// автора к 260).
+    var stick = true
     /// Запас ленты над экраном (P861): верхнее поле `plan.lead` больше на него.
     var above: CGFloat = 0
     struct Plan {
@@ -116,7 +121,8 @@ final class Ribbon: ObservableObject {
         // Лист с экрана не уходит (P860): в прошлом вчерашняя карточка встаёт
         // над корешком «Сегодня» и уходит под него, как под следующую
         // карточку; в будущем завтрашняя — под полоской низа листа.
-        dir > 0 ? height - FollowRibbon.peekBottom + Search.overlap : -height + FollowRibbon.peekTop
+        guard stick else { return dir > 0 ? height : -height }
+        return dir > 0 ? height - FollowRibbon.peekBottom + Search.overlap : -height + FollowRibbon.peekTop
     }
 
     /// Ленту сейчас ведёт программа.
@@ -415,7 +421,7 @@ struct FollowRibbon: ViewModifier {
     func body(content: Content) -> some View {
         let y = live ? ribbon.y : 0
         content
-            .offset(y: FollowRibbon.shown(y, height: ribbon.height))
+            .offset(y: FollowRibbon.shown(y, height: ribbon.height, stick: ribbon.stick))
             // Лист всегда поверх картотеки (P860, вместо ухода под неё за
             // верхней четвертью P831): карточки будущего выходят из-под его
             // низа, а он остаётся у верха.
@@ -437,12 +443,13 @@ struct FollowRibbon: ViewModifier {
     /// (P860). Вверх (будущее): лист чуть обгоняет место — завтрашняя
     /// карточка выходит из-под него (P831), — пока у верха не останется
     /// полоска его низа.
-    static func shown(_ y: CGFloat, height: CGFloat) -> CGFloat {
+    /// Не сегодняшний лист (`stick` — нет) у края не останавливается (P863).
+    static func shown(_ y: CGFloat, height: CGFloat, stick: Bool = true) -> CGFloat {
         guard height > 0 else { return y }
-        if y >= 0 { return min(y, height - peekBottom) }
+        if y >= 0 { return stick ? min(y, height - peekBottom) : y }
         let swap = -0.75 * height
         let ahead = y >= swap ? y - Search.overlap * (y / swap) : y - Search.overlap
-        return max(ahead, topClamp(height))
+        return stick ? max(ahead, topClamp(height)) : ahead
     }
 }
 
