@@ -707,11 +707,12 @@ struct RootView: View {
         // Лист «Сегодня» с экрана не уходит (P860): касание по корешку внизу
         // или по полоске низа листа вверху — назад в день. Прошедший день
         // закрыт в карточку (P834) — внизу корешок «Сегодня» сам по себе.
+        // Открыт не сегодняшний день — корешок «Сегодня» торчит внизу поверх
+        // него всегда (P862).
         .overlay(alignment: .topLeading) {
-            if shell.ribbonLive {
-                TodayPeek(ribbon: shell.ribbon, open: shell.screen == .search && shell.ribbonOpen,
-                          card: shell.pastCard, size: size) { tapSection(.today) }
-            }
+            TodayPeek(ribbon: shell.ribbon, live: shell.ribbonLive,
+                      open: shell.screen == .search && shell.ribbonOpen,
+                      card: shell.pastCard, todaySheet: store.isToday, size: size) { tapSection(.today) }
         }
         .background(Desk())
     }
@@ -1454,45 +1455,58 @@ private struct RibbonFade: ViewModifier {
     }
 }
 
-/// Где взяться за лист «Сегодня», когда открыта картотека (P860): корешок
-/// внизу или полоска низа листа вверху. Касание или тяга к середине экрана
-/// — назад в день. Пока прошедший день закрыт в карточку (P834), листа нет —
-/// внизу лежит корешок «Сегодня» сам по себе.
+/// Где взяться за лист «Сегодня» (P860): корешок внизу или полоска низа
+/// листа вверху, когда открыта картотека. Касание или тяга к середине
+/// экрана — назад в день. Открыт не сегодняшний день — или прошедший день
+/// закрыт в карточку (P834) — внизу поверх него лежит корешок «Сегодня» сам
+/// по себе, всегда, и в покое тоже (P862).
 private struct TodayPeek: View {
     @ObservedObject var ribbon: Ribbon
+    /// Картотеку тянут или она открыта.
+    let live: Bool
     /// Лента открыта и стоит — за лист можно взяться.
     let open: Bool
     /// Прошедший день закрыт в карточку.
     let card: Bool
+    /// На листе — сегодняшний день.
+    let todaySheet: Bool
     let size: CGSize
     let go: () -> Void
 
     var body: some View {
-        let shown = FollowRibbon.shown(ribbon.y, height: size.height)
         let low = size.height - FollowRibbon.peekBottom
-        let atBottom = card || (ribbon.y > 0 && shown >= low - 0.5)
-        let atTop = !card && ribbon.y < 0 && shown <= FollowRibbon.topClamp(size.height) + 0.5
+        // Корешок сам по себе — когда лист не сегодняшний или его нет.
+        let alone = card || !todaySheet
+        let shown = FollowRibbon.shown(live ? ribbon.y : 0, height: size.height)
+        let sheetLow = todaySheet && !card && live && ribbon.y > 0 && shown >= low - 0.5
+        let sheetHigh = todaySheet && !card && live && ribbon.y < 0
+            && shown <= FollowRibbon.topClamp(size.height) + 0.5
         ZStack(alignment: .topLeading) {
             TodayTab()
                 .frame(width: size.width)
                 .offset(y: low)
-                .animation(.easeOut(duration: 0.35)) { $0.opacity(card ? 1 : 0) }
+                .animation(.easeOut(duration: 0.35)) { $0.opacity(alone ? 1 : 0) }
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
-            if open && atBottom {
-                grip(up: true)
+            if (alone && (open || !live)) || (open && sheetLow) {
+                TodayGrip(up: true, go: go)
                     .frame(width: size.width * DayPage.folder.tabShare, height: FollowRibbon.peekBottom)
                     .offset(y: low)
-            } else if open && atTop {
-                grip(up: false)
+            } else if open && sheetHigh {
+                TodayGrip(up: false, go: go)
                     .frame(width: size.width, height: FollowRibbon.peekTop)
             }
         }
         .frame(width: size.width, height: size.height, alignment: .topLeading)
     }
+}
 
-    /// Касание — в день; тяга от края к середине — тоже.
-    private func grip(up: Bool) -> some View {
+/// За что взяться (P860): касание — в день; тяга от края к середине — тоже.
+private struct TodayGrip: View {
+    let up: Bool
+    let go: () -> Void
+
+    var body: some View {
         Color.clear
             .contentShape(Rectangle())
             .onTapGesture { go() }

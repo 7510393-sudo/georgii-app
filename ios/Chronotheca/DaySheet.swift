@@ -64,6 +64,13 @@ struct DaySheet<Plan: View, Diary: View>: View {
     /// строки.
     static var stripRoom: CGFloat { 46 }
 
+    /// Не сегодняшний день — внизу поверх листа торчит корешок «Сегодня»
+    /// (P862): конец записи — погода, шаги — поднят над ним. Лист не короче:
+    /// его низ по-прежнему под нижней строкой.
+    private var tabRoom: CGFloat {
+        Calendar.current.isDate(date, inSameDayAs: DayStore.today()) ? 0 : FollowRibbon.peekBottom
+    }
+
     var body: some View {
         GeometryReader { outer in
             ScrollView {
@@ -114,7 +121,7 @@ struct DaySheet<Plan: View, Diary: View>: View {
                     // и возвращалось скачком, когда она уходила, — низ
                     // страницы прыгал на эти 36 точек (около 6 мм) вниз и
                     // обратно (видео автора).
-                    .padding(.bottom, Self.stripRoom)
+                    .padding(.bottom, Self.stripRoom + tabRoom)
                     .frame(minHeight: outer.size.height, alignment: .top)
                     // Страница не оттягивается пальцем за край (P445):
                     // клавиатуру смахивали вниз — короткая страница ехала за
