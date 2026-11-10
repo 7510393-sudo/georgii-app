@@ -40,38 +40,6 @@ final class Ribbon: ObservableObject {
     var stick = true
     /// Запас ленты над экраном (P861): верхнее поле `plan.lead` больше на него.
     var above: CGFloat = 0
-
-    // MARK: - Край к «Сегодня» (P871)
-
-    /// С какого края ленты — сегодняшний день, когда на листе другой день:
-    /// 1 — снизу (открыт прошедший), −1 — сверху (открыт будущий), 0 — нет
-    /// (открыт сегодняшний). Между прошлым и будущим всегда стоит сегодня:
-    /// лента не проскакивает из одного в другое (автор 10.11, видео).
-    var todayEnd = 0
-    /// Лента дошла до края к сегодня — открыть «Сегодня».
-    var toToday: (() -> Void)?
-    /// Уже позвали — второй раз не звать, пока лента не отошла от края.
-    private var todayAsked = false
-    private var lastOffset: CGFloat = 0
-
-    /// Лента дошла до края к сегодняшнему дню, двигаясь к нему, — сегодня
-    /// раскрывается. Только по ходу пальца или его разгона и не в первые
-    /// полторы секунды, пока лента встаёт в покой.
-    private func reachToday(_ scroll: UIScrollView, pushing: Bool = false) {
-        let offset = scroll.contentOffset.y
-        defer { if !pushing { lastOffset = offset } }
-        guard todayEnd != 0, toToday != nil else { return }
-        let most = max(0, scroll.contentSize.height - scroll.bounds.height)
-        let away = todayEnd > 0 ? most - offset : offset
-        if away > 40 { todayAsked = false }
-        guard !todayAsked, !driving, link == nil, !fresh, !frozen,
-              scroll.isTracking || scroll.isDecelerating, most > 0, away <= 1 else { return }
-        let toward = todayEnd > 0 ? offset > lastOffset : offset < lastOffset
-        guard toward || pushing else { return }
-        todayAsked = true
-        Trace.note("лента: дошли до сегодня — открыть")
-        DispatchQueue.main.async { [weak self] in self?.toToday?() }
-    }
     struct Plan {
         var lead: CGFloat = 0
         var tail: CGFloat = 0
@@ -212,7 +180,6 @@ final class Ribbon: ObservableObject {
     private func scrolled(_ scroll: UIScrollView) {
         measureReach(scroll)
         guard !fixing else { return }
-        reachToday(scroll)
         guard walls(), !driving, link == nil, known, height > 0 else {
             if scroll.isTracking {
                 Trace.note("лента: стены нет — открыта \(walls()) ведёт \(driving) ход \(link != nil) "
@@ -271,14 +238,6 @@ final class Ribbon: ObservableObject {
     }
 
     @objc private func panned(_ pan: UIPanGestureRecognizer) {
-        // Лента уже у края к сегодня и сдвинуться не может — палец тянет
-        // дальше к сегодня (P871): тоже «дошли».
-        if pan.state == .changed, let scroll = box.view {
-            let v = pan.velocity(in: scroll).y
-            // Сегодня снизу — палец идёт вверх; сверху — вниз.
-            if todayEnd != 0, (todayEnd > 0 ? v < -80 : v > 80) { reachToday(scroll, pushing: true) }
-            return
-        }
         guard pan.state == .ended || pan.state == .cancelled || pan.state == .failed else { return }
         let go = armed && pan.state == .ended
         Trace.note("лента: отпустили — \(go ? "в день" : "к стене") (состояние \(pan.state.rawValue))")

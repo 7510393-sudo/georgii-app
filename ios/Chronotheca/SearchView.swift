@@ -263,28 +263,22 @@ struct SearchView: View {
     /// сверху, внизу прошлого вчера, ниже место сегодняшнего дня, под ним
     /// завтра и дальше. Сегодняшней карточки нет: на её месте сам день.
     private func entries(_ past: [Archive.Day], _ future: [Archive.Day],
-                         later: [Archive.Day], slot: Bool = true,
-                         between: [Archive.Day] = []) -> [Entry] {
+                         later: [Archive.Day], slot: Bool = true) -> [Entry] {
         var out: [Entry] = []
         // Над самой старой — место под строку поиска; в коротком архиве —
         // стол до верха экрана, чтобы лента могла встать вчерашним днём
         // над нижней строкой.
-        let lead = max(8, height - CGFloat(past.count + between.count) * 60)
+        let lead = max(8, height - CGFloat(past.count) * 60)
         out.append(Entry(id: "lead", kind: .pad(lead)))
-        if !query.trimmingCharacters(in: .whitespaces).isEmpty && past.isEmpty && future.isEmpty && later.isEmpty && between.isEmpty {
+        if !query.trimmingCharacters(in: .whitespaces).isEmpty && past.isEmpty && future.isEmpty && later.isEmpty {
             out.append(Entry(id: "note", kind: .note))
         }
         for (i, day) in past.enumerated() {
             out.append(Entry(id: Search.deep ? "p\(i)" : day.id, kind: .past(day), over: i > 0))
         }
-        // Открыт будущий день (P871): над ним — дни от завтра до него,
-        // карточками будущего; выше края — сегодня.
-        for (i, day) in between.enumerated() {
-            out.append(Entry(id: day.id, kind: .future(day), over: i > 0))
-        }
         // Место дня заходит на нижний край вчерашней карточки, как
         // следующая карточка; завтрашняя лежит под днём своим корешком.
-        if slot { out.append(Entry(id: Ribbon.slotID, kind: .slot, over: !past.isEmpty || !between.isEmpty)) }
+        if slot { out.append(Entry(id: Ribbon.slotID, kind: .slot, over: !past.isEmpty)) }
         // День закрыт в карточку (P840): сперва дни после него до сегодня,
         // потом будущее — по порядку дат.
         if !slot {
@@ -338,34 +332,31 @@ struct SearchView: View {
         // Прошедший день, закрытый в карточку (P834): он сам — карточка среди
         // прошлых, места дня нет.
         let card = shell.pastCard && anchor < todayStamp
-        // Между прошлым и будущим всегда стоит сегодня (P871, автор 10.11;
-        // отменяет P840 — лента из закрытой карточки шла через сегодня в
-        // будущее). Открыт другой день — со стороны сегодня в ленте только
-        // дни между ним и сегодня, а дошли до края — раскрывается «Сегодня».
-        let toFuture = anchor > todayStamp
         // Опись читается один раз за перерисовку (P771): старые сверху.
         let all = Array(found.reversed())
-        var past = toFuture ? [] : all.filter { card ? $0.stamp <= anchor : $0.stamp < anchor }
-        let between = toFuture
-            ? ahead(all.filter { $0.stamp > todayStamp && $0.stamp < anchor }, from: DayStore.today())
-                .filter { $0.stamp < anchor }
-            : []
+        var past = all.filter { card ? $0.stamp <= anchor : $0.stamp < anchor }
         // На снимке CI «лента поиска» находки повторены, чтобы было что
         // листать (P717).
         if Search.deep { past = Array(repeating: past, count: 12).flatMap { $0 } }
-        // У прошедшего дня будущего в ленте нет (P871): под ним дни до
-        // сегодня, у нижнего края — сегодня, листом, а не карточкой.
+        // День закрыт в карточку (P840) — лента идёт дальше, до сегодня и в
+        // будущее, как из «Сегодня»: прежде она обрывалась на последнем
+        // записанном дне, и дальше было пусто, не пройти.
         let future = anchor >= todayStamp
-            ? ahead(all.filter { $0.stamp > anchor }, from: store.date) : []
-        let later = anchor < todayStamp
-            ? all.filter { $0.stamp > anchor && $0.stamp < todayStamp && Self.written($0) } : []
-        shell.ribbon.todayEnd = anchor < todayStamp ? 1 : toFuture ? -1 : 0
+            ? ahead(all.filter { $0.stamp > anchor }, from: store.date)
+            : card ? ahead(all.filter { $0.stamp > todayStamp }, from: DayStore.today()) : []
+        var later = anchor < todayStamp
+            ? all.filter { $0.stamp > anchor && $0.stamp <= todayStamp && Self.written($0) } : []
+        // И сегодняшняя карточка — даже пустая: в сегодня с неё и входят.
+        if card, later.last?.stamp != todayStamp {
+            later.append(all.first { $0.stamp == todayStamp }
+                         ?? Archive.Day(stamp: todayStamp, date: DayStore.today()))
+        }
         // Столбец времени у будущих карточек один на всю стопку, как в
         // «Списке» календаря (P756): по самому длинному виду времени.
         let times = future.flatMap { plan($0).compactMap(\.time) }
         let sample: String? = times.isEmpty ? nil
             : times.contains { $0.contains(where: \.isLetter) } ? "00:00 PM" : "00:00"
-        let items = entries(past, future, later: later, slot: !card, between: between)
+        let items = entries(past, future, later: later, slot: !card)
         // Мера для линии слева (P850).
         var measure = Ribbon.Plan()
         if case .pad(let h) = items.first?.kind { measure.lead = h }
@@ -375,8 +366,8 @@ struct SearchView: View {
         shell.ribbon.above = above
         if case .pad(let h) = items.last?.kind { measure.tail = h }
         measure.tail += Afar.lift
-        measure.before = past.count + later.count + between.count
-        measure.total = past.count + later.count + future.count + between.count
+        measure.before = past.count + later.count
+        measure.total = past.count + later.count + future.count
         measure.slot = !card
         shell.ribbon.plan = measure
         let firstLater = later.first?.id

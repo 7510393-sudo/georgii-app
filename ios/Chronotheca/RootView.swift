@@ -865,12 +865,6 @@ struct RootView: View {
         // меняется, когда встала, — как и при открытии картотеки. Прежде
         // раздел менялся в миг отпускания, экран перестраивался, и ход
         // догонял прыжком.
-        // Лента дошла до края к сегодня — «Сегодня» (P871), как касание
-        // его корешка.
-        shell.ribbon.toToday = { [shell] in
-            guard shell.screen == .search else { return }
-            tapSection(.today)
-        }
         shell.ribbon.wantDay = { [shell] in
             guard shell.screen == .search else { return }
             backToDay {
