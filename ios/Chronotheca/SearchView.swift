@@ -511,6 +511,9 @@ struct SearchView: View {
                        seed: PageTexture.seed(day.date) &+ (Search.deep ? (Int(entry.id.dropFirst()) ?? 0) * 7 : 0)) {
                 row(day)
             }
+            // Касание по всей карточке, а не только по буквам (P866).
+            .contentShape(FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare))
+            .onTapGesture { openPast(day) }
             .padding(.horizontal, Search.cardInset)
         case .slot:
             daySlot
@@ -520,6 +523,10 @@ struct SearchView: View {
                        seed: PageTexture.seed(day.date), tight: true) {
                 futureRow(day, sample: sample)
             }
+            // Касание по всей карточке, а не только по буквам (P866, автор:
+            // «будущие открываются, только когда нажимаешь на текст»).
+            .contentShape(FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare))
+            .onTapGesture { openCard(day.date, tab: .plan) }
             .padding(.horizontal, Search.cardInset)
         }
     }
@@ -635,11 +642,15 @@ struct SearchView: View {
         archive.reloadSoon()
     }
 
+    /// Искали в плане — туда и открываем: там нашлось искомое.
+    private func openPast(_ day: Archive.Day) {
+        openCard(day.date, tab: shell.scope == .plan || day.date > DayStore.today()
+                 || (day.text.isEmpty && !day.tasks.isEmpty) ? .plan : .diary)
+    }
+
     private func row(_ day: Archive.Day) -> some View {
         Button {
-            // Искали в плане — туда и открываем: там нашлось искомое.
-            openCard(day.date, tab: shell.scope == .plan || day.date > DayStore.today()
-                     || (day.text.isEmpty && !day.tasks.isEmpty) ? .plan : .diary)
+            openPast(day)
         } label: {
             HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: Search.lineGap) {
