@@ -685,8 +685,11 @@ struct RootView: View {
             // Своего стола у дня нет (P842): стол — под всей страницей; справа
             // от корешка листа ничего не закрашено (P849) — видно то, что под
             // листом: в покое стол, при тяге — картотека.
+            // Будущий день — под полоской «Сегодня» у верха (P865): лист
+            // начинается ниже на её высоту, низ — на прежнем месте.
             DayPages()
-                .frame(width: size.width, height: size.height)
+                .frame(width: size.width, height: size.height - (store.isFuture ? FollowRibbon.peekTop : 0))
+                .frame(width: size.width, height: size.height, alignment: .bottom)
                 .modifier(FollowRibbon(ribbon: shell.ribbon, live: shell.ribbonLive))
                 // У края остаётся только лист сегодняшнего дня (P863).
                 .onChange(of: store.isToday, initial: true) { _, today in shell.ribbon.stick = today }
@@ -714,7 +717,8 @@ struct RootView: View {
         .overlay(alignment: .topLeading) {
             TodayPeek(ribbon: shell.ribbon, live: shell.ribbonLive,
                       open: shell.screen == .search && shell.ribbonOpen,
-                      card: shell.pastCard, todaySheet: store.isToday, size: size) { tapSection(.today) }
+                      card: shell.pastCard, todaySheet: store.isToday, future: store.isFuture,
+                      size: size) { tapSection(.today) }
         }
         .background(Desk())
     }
@@ -1472,13 +1476,17 @@ private struct TodayPeek: View {
     let card: Bool
     /// На листе — сегодняшний день.
     let todaySheet: Bool
+    /// На листе — будущий день: «Сегодня» — над ним, у верха (P865).
+    let future: Bool
     let size: CGSize
     let go: () -> Void
 
     var body: some View {
         let low = size.height - FollowRibbon.peekBottom
-        // Корешок сам по себе — когда лист не сегодняшний или его нет.
-        let alone = card || !todaySheet
+        // Корешок сам по себе — когда лист прошедшего дня или его нет. У
+        // будущего дня «Сегодня» — сверху, полоской низа листа (P865).
+        let alone = card || (!todaySheet && !future)
+        let above = future && !card
         let shown = FollowRibbon.shown(live ? ribbon.y : 0, height: size.height)
         let sheetLow = todaySheet && !card && live && ribbon.y > 0 && shown >= low - 0.5
         let sheetHigh = todaySheet && !card && live && ribbon.y < 0
@@ -1490,7 +1498,15 @@ private struct TodayPeek: View {
                 .animation(.easeOut(duration: 0.35)) { $0.opacity(alone ? 1 : 0) }
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
-            if (alone && (open || !live)) || (open && sheetLow) {
+            TodayTop()
+                .frame(width: size.width, height: FollowRibbon.peekTop)
+                .opacity(above ? 1 : 0)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+            if above && (open || !live) {
+                TodayGrip(up: false, go: go)
+                    .frame(width: max(0, size.width - 70), height: FollowRibbon.peekTop)
+            } else if (alone && (open || !live)) || (open && sheetLow) {
                 TodayGrip(up: true, go: go)
                     .frame(width: size.width * DayPage.folder.tabShare, height: FollowRibbon.peekBottom)
                     .offset(y: low)
@@ -1519,6 +1535,27 @@ private struct TodayGrip: View {
             .accessibilityElement()
             .accessibilityLabel(T("Вернуться в день", "Back to the day"))
             .accessibilityAddTraits(.isButton)
+    }
+}
+
+/// Низ листа «Сегодня» у верха экрана (P865) — над будущим днём: сегодня
+/// раньше, значит выше. Тот же цвет и обвод листа, скруглённый низ, имя и
+/// дата мелко посередине.
+private struct TodayTop: View {
+    var body: some View {
+        let today = DayStore.today()
+        let shape = UnevenRoundedRectangle(bottomLeadingRadius: 16, bottomTrailingRadius: 16)
+        ZStack {
+            Ru.tint(today)
+            (Text(DayPage.title(for: today)).foregroundColor(Look.ink)
+             + Text(",  " + Ru.headDate(today)).foregroundColor(Look.inkSoft))
+                .font(Look.sans(12.5))
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .padding(.top, 6)
+        }
+        .clipShape(shape)
+        .overlay { shape.stroke(DayPage.edge, lineWidth: 1) }
     }
 }
 
