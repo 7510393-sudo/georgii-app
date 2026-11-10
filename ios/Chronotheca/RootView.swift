@@ -685,10 +685,20 @@ struct RootView: View {
             // Своего стола у дня нет (P842): стол — под всей страницей; справа
             // от корешка листа ничего не закрашено (P849) — видно то, что под
             // листом: в покое стол, при тяге — картотека.
-            // Будущий день — под полоской «Сегодня» у верха (P865): лист
-            // начинается ниже на её высоту, низ — на прежнем месте.
+            // Будущий день — под полоской «Сегодня» у верха (P865): полоска
+            // лежит позади листа, лист заходит на неё на 8 точек (P867,
+            // автор: «нижний лист должен хотя бы на 1–2 мм накладываться на
+            // верхний, чтобы было понятно, какой лист где»).
+            if store.isFuture {
+                TodayTop()
+                    .frame(width: size.width, height: FollowRibbon.peekTop)
+                    .frame(width: size.width, height: size.height, alignment: .top)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+                    .zIndex(0.5)
+            }
             DayPages()
-                .frame(width: size.width, height: size.height - (store.isFuture ? FollowRibbon.peekTop : 0))
+                .frame(width: size.width, height: size.height - (store.isFuture ? FollowRibbon.futureTop : 0))
                 .frame(width: size.width, height: size.height, alignment: .bottom)
                 .modifier(FollowRibbon(ribbon: shell.ribbon, live: shell.ribbonLive))
                 // У края остаётся только лист сегодняшнего дня (P863).
@@ -1498,14 +1508,10 @@ private struct TodayPeek: View {
                 .animation(.easeOut(duration: 0.35)) { $0.opacity(alone ? 1 : 0) }
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
-            TodayTop()
-                .frame(width: size.width, height: FollowRibbon.peekTop)
-                .opacity(above ? 1 : 0)
-                .allowsHitTesting(false)
-                .accessibilityHidden(true)
+            // Сама полоска — позади листа (P867); здесь — где за неё взяться.
             if above && (open || !live) {
                 TodayGrip(up: false, go: go)
-                    .frame(width: max(0, size.width - 70), height: FollowRibbon.peekTop)
+                    .frame(width: max(0, size.width - 70), height: FollowRibbon.futureTop)
             } else if (alone && (open || !live)) || (open && sheetLow) {
                 TodayGrip(up: true, go: go)
                     .frame(width: size.width * DayPage.folder.tabShare, height: FollowRibbon.peekBottom)

@@ -432,6 +432,9 @@ struct FollowRibbon: ViewModifier {
     static var peekBottom: CGFloat { DayPage.folder.tabHeight + 4 }
     /// Сколько низа листа видно вверху (P860).
     static let peekTop: CGFloat = 44
+    /// Где начинается лист будущего дня (P867): на 8 точек заходит на
+    /// полоску «Сегодня» у верха.
+    static let futureTop: CGFloat = peekTop - 8
 
     /// Верх листа, когда он стоит у верха экрана (P860): видна полоска его низа.
     static func topClamp(_ height: CGFloat) -> CGFloat {
