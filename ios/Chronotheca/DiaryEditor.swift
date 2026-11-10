@@ -272,7 +272,26 @@ struct DiaryEditor: UIViewRepresentable {
             .font: font,
             .foregroundColor: UIColor(Look.ink),
             .paragraphStyle: paragraph,
+            paintKey: paint(font),
         ]
+    }
+
+    /// Чем окрашен кусок текста — своей меткой рядом со шрифтом (P868).
+    /// Знак, которого нет в шрифте записи (смайлик, ♥, редкая буква),
+    /// iPhone сам рисует другим шрифтом и переписывает шрифт у этого куска.
+    /// Сличение по шрифту видело в такой строке «не тот шрифт» и после
+    /// каждой буквы красило её заново — курсор терял место, и буква
+    /// оказывалась справа от него. Метку iPhone не трогает.
+    static let paintKey = NSAttributedString.Key("chronotheca.paint")
+
+    static func paint(_ font: UIFont) -> String {
+        "\(font.fontName)|\(font.pointSize)"
+    }
+
+    /// Вид отметки времени: моноширинный и бледный.
+    static func stampLook(_ size: CGFloat) -> [NSAttributedString.Key: Any] {
+        let font = UIFont.monospacedSystemFont(ofSize: size * 0.84, weight: .regular)
+        return [.font: font, .foregroundColor: UIColor(Look.inkFaint), paintKey: paint(font)]
     }
 
     /// Знак-заместитель вложения. Система ставит его туда, где в тексте
@@ -300,10 +319,7 @@ struct DiaryEditor: UIViewRepresentable {
         while start <= ns.length {
             let lineRange = ns.lineRange(for: NSRange(location: start, length: 0))
             if let m = stamp.firstMatch(in: text, range: lineRange), m.numberOfRanges > 1 {
-                out.addAttributes([
-                    .font: UIFont.monospacedSystemFont(ofSize: size * 0.84, weight: .regular),
-                    .foregroundColor: UIColor(Look.inkFaint),
-                ], range: m.range(at: 1))
+                out.addAttributes(stampLook(size), range: m.range(at: 1))
             }
             if let place = placeRange(in: ns, line: lineRange) {
                 out.addAttributes(placeLook(size), range: place)
@@ -327,8 +343,8 @@ struct DiaryEditor: UIViewRepresentable {
     }
 
     static func placeLook(_ size: CGFloat) -> [NSAttributedString.Key: Any] {
-        [.font: UIFont.monospacedSystemFont(ofSize: size * 0.8, weight: .regular),
-         .foregroundColor: UIColor(Look.accent)]
+        let font = UIFont.monospacedSystemFont(ofSize: size * 0.8, weight: .regular)
+        return [.font: font, .foregroundColor: UIColor(Look.accent), paintKey: paint(font)]
     }
 
     // MARK: - Снимки в тексте
@@ -616,8 +632,72 @@ struct DiaryEditor: UIViewRepresentable {
             DispatchQueue.main.async { [weak self] in
                 guard let self, let view = self.view else { return }
                 self.restyle(view)
+                self.stampDictated(view)
                 self.raiseFirst(view)
             }
+        }
+
+        /// Диктовка начала новую строку в конце записи, когда пора ставить
+        /// время (P869): где эта строка и какое время ей поставить. Время
+        /// берётся в миг первых слов.
+        private var dictatedLine: (at: Int, stamp: String)?
+
+        /// Идёт диктовка — запомнить строку, куда она пишет, если это чистая
+        /// строка в конце записи без отметки и время ставить пора.
+        func noteDictation(_ view: UITextView, at location: Int, end: Int) {
+            guard dictatedLine == nil, parent.stamped, parent.editable else { return }
+            let storage = view.textStorage
+            let ns = storage.string as NSString
+            guard location <= ns.length, end <= ns.length,
+                  Self.atEnd(storage, from: end) else { return }
+            let line = ns.lineRange(for: NSRange(location: location, length: 0))
+            // Строка уже с отметкой — время на месте.
+            if DiaryEditor.stamp.firstMatch(in: storage.string, range: line) != nil { return }
+            // До места диктовки в строке — только пробелы.
+            let before = ns.substring(with: NSRange(location: line.location,
+                                                    length: location - line.location))
+            guard before.allSatisfy({ $0 == " " || $0 == "\t" || $0 == "\u{00A0}" }),
+                  let stamp = parent.peekStamp?() else { return }
+            dictatedLine = (line.location, stamp)
+        }
+
+        /// Диктовка отпустила поле (P869): строка, которую она начала в
+        /// конце записи, — с отметкой времени в начале. Прежние способы
+        /// (P711, P766) ставят время до первых слов; на телефоне автора
+        /// надиктованные строки всё равно оставались без времени. Это —
+        /// запасное правило: что бы ни сняло отметку, она встаёт потом.
+        /// `true` — отметка поставлена (и поле уже обновлено).
+        @discardableResult
+        func stampDictated(_ view: UITextView) -> Bool {
+            guard let d = dictatedLine, !Self.dictating(view) else { return false }
+            dictatedLine = nil
+            let storage = view.textStorage
+            let ns = storage.string as NSString
+            guard parent.stamped, parent.editable, d.at <= ns.length,
+                  d.at == 0 || ns.character(at: d.at - 1) == 10,
+                  Self.lineHasText(ns, from: d.at) else { return false }
+            let line = ns.lineRange(for: NSRange(location: d.at, length: 0))
+            if DiaryEditor.stamp.firstMatch(in: storage.string, range: line) != nil { return false }
+            // Пробелы, которые диктовка оставила в начале строки, — вон.
+            var lead = d.at
+            while lead < ns.length, [32, 9, 0xA0].contains(ns.character(at: lead)) { lead += 1 }
+            let cut = NSRange(location: d.at, length: lead - d.at)
+            let sel = view.selectedRange
+            let added = (d.stamp as NSString).length - cut.length
+            placing = true
+            storage.replaceCharacters(
+                in: cut,
+                with: NSAttributedString(string: d.stamp,
+                                         attributes: DiaryEditor.body(parent.size, serif: parent.serif)))
+            var moved = sel
+            if moved.location >= NSMaxRange(cut) { moved.location += added }
+            else if moved.location > d.at { moved.location = d.at + (d.stamp as NSString).length }
+            view.selectedRange = NSRange(location: min(moved.location, storage.length),
+                                         length: moved.length)
+            placing = false
+            parent.onWrite?()
+            textViewDidChange(view)
+            return true
         }
 
         /// Идёт диктовка: в поле временный текст системы или включён
@@ -668,6 +748,7 @@ struct DiaryEditor: UIViewRepresentable {
             // Ушли из записи, ничего не написав за отметкой, — её нет (P711).
             settleStamp(view, leaving: true)
             scrub()
+            stampDictated(view)
             raiseFirst(view)
             makeRoom(scroll: false)
         }
@@ -1905,6 +1986,20 @@ struct DiaryEditor: UIViewRepresentable {
         }
 
         func textViewDidChange(_ view: UITextView) {
+            // Диктовка пишет — запомнить её строку; отпустила — время в
+            // начало строки, если его там нет (P869).
+            if Self.dictating(view), !placing {
+                let sel = view.selectedRange
+                if let marked = view.markedTextRange {
+                    let from = view.offset(from: view.beginningOfDocument, to: marked.start)
+                    let to = view.offset(from: view.beginningOfDocument, to: marked.end)
+                    noteDictation(view, at: from, end: to)
+                } else {
+                    noteDictation(view, at: sel.location, end: NSMaxRange(sel))
+                }
+            } else if dictatedLine != nil, !placing, stampDictated(view) {
+                return
+            }
             let now = DiaryEditor.plain(view.attributedText)
             parent.text = now
             if typedLetters, view.isFirstResponder,
@@ -1941,7 +2036,10 @@ struct DiaryEditor: UIViewRepresentable {
             // Диктовка пишет сама (P815): правка вместо неё и «нет» в ответ
             // сбивали ей место — слова ложились вокруг других слов, а первая
             // буква оставалась строчной. Букву поднимет `raiseFirst` потом.
-            if Self.dictating(view) { return true }
+            if Self.dictating(view) {
+                noteDictation(view, at: range.location, end: NSMaxRange(range))
+                return true
+            }
             // Стирают поставленную отметку (P864) — она уходит целиком, одним
             // касанием, и снова сама не встаёт, пока курсор здесь.
             if text.isEmpty, range.length > 0, let p = provisional,
@@ -2096,22 +2194,24 @@ struct DiaryEditor: UIViewRepresentable {
         /// выдёргивала у диктовки её временный знак, и в записи оставалось
         /// «OBJ» (решение P197). Заодно курсор и выделение не трогаются.
         /// Какой шрифт где должен быть: текст, отметка времени, место (P856).
+        /// Сличается метка краски, а не сам шрифт (P868): шрифт у знаков,
+        /// которых в нём нет, iPhone подменяет сам.
         struct Paint {
-            let body: UIFont?
-            let stamp: UIFont
-            let place: UIFont?
+            let body: String?
+            let stamp: String
+            let place: String?
 
             /// Строка уже окрашена как надо — трогать её незачем.
             func fits(_ storage: NSTextStorage, line: NSRange, stamp: NSRange?, place: NSRange?) -> Bool {
                 guard NSMaxRange(line) <= storage.length else { return false }
                 let ns = storage.string as NSString
                 var right = true
-                storage.enumerateAttribute(.font, in: line, options: []) { value, range, stop in
+                storage.enumerateAttribute(DiaryEditor.paintKey, in: line, options: []) { value, range, stop in
                     // Вложения и перевод строки — не в счёт.
                     let piece = ns.substring(with: range)
                     if piece.allSatisfy({ $0 == "\u{FFFC}" || $0.isNewline }) { return }
-                    let font = value as? UIFont
-                    let want: UIFont?
+                    let have = value as? String
+                    let want: String?
                     if let place, NSIntersectionRange(range, place).length > 0 {
                         want = NSEqualRanges(NSUnionRange(range, place), place) ? self.place : nil
                     } else if let stamp, NSIntersectionRange(range, stamp).length > 0 {
@@ -2119,14 +2219,9 @@ struct DiaryEditor: UIViewRepresentable {
                     } else {
                         want = body
                     }
-                    if !Self.same(font, want) { right = false; stop.pointee = true }
+                    if have == nil || have != want { right = false; stop.pointee = true }
                 }
                 return right
-            }
-
-            private static func same(_ a: UIFont?, _ b: UIFont?) -> Bool {
-                guard let a, let b else { return false }
-                return a.fontName == b.fontName && abs(a.pointSize - b.pointSize) < 0.01
             }
         }
 
@@ -2143,9 +2238,10 @@ struct DiaryEditor: UIViewRepresentable {
             styledKey = now
             let ns = text as NSString
             let body = DiaryEditor.body(parent.size, serif: parent.serif)
-            let look = Paint(body: body[.font] as? UIFont,
-                            stamp: UIFont.monospacedSystemFont(ofSize: parent.size * 0.84, weight: .regular),
-                            place: DiaryEditor.placeLook(parent.size)[.font] as? UIFont)
+            let stampLook = DiaryEditor.stampLook(parent.size)
+            let look = Paint(body: body[DiaryEditor.paintKey] as? String,
+                            stamp: stampLook[DiaryEditor.paintKey] as? String ?? "",
+                            place: DiaryEditor.placeLook(parent.size)[DiaryEditor.paintKey] as? String)
             let storage = view.textStorage
             // Краска кладётся только на строки, где она не та (P856). Прежде
             // каждая буква перекрашивала всё поле разом, и iPhone на миг
@@ -2177,10 +2273,7 @@ struct DiaryEditor: UIViewRepresentable {
                         storage.addAttributes(DiaryEditor.placeLook(parent.size), range: place)
                     }
                     if let stamp = item.stamp {
-                        storage.addAttributes([
-                            .font: look.stamp,
-                            .foregroundColor: UIColor(Look.inkFaint),
-                        ], range: stamp)
+                        storage.addAttributes(stampLook, range: stamp)
                     }
                 }
                 storage.endEditing()

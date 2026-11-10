@@ -1122,29 +1122,58 @@ struct NativeMap: UIViewRepresentable {
         var parent: NativeMap
         var focused: MapFocus?
         var shown = false
-        /// Что сейчас стоит на карте — чтобы не переставлять метки зря.
-        private var drawn = ""
+        /// Что сейчас стоит на карте — по метке на каждую: чтобы не
+        /// переставлять метки зря.
+        private var drawn: [String: MKAnnotation] = [:]
 
         init(_ parent: NativeMap) { self.parent = parent }
 
+        /// Метки сличаются по тому, что на них видно, и переставляются только
+        /// изменившиеся (P870). Прежде в сличение шёл внутренний номер места,
+        /// а он новый при каждом чтении папки — карта открывалась или уезжала
+        /// вбок, места перечитывались, и все метки снимались и ставились
+        /// заново: названия моргали.
         func sync(_ map: MKMapView) {
             let draft = parent.selected.flatMap { $0.file == nil ? $0 : nil }
-            var key = parent.places.map { "\($0.id)\($0.name)\($0.mark)\($0.latitude)\($0.longitude)" }
-                .joined(separator: "|")
-            key += parent.days.map { "\($0.stamp)\($0.today)" }.joined(separator: "|")
-            key += "#" + parent.entries.map { "\($0.stamp)\($0.at.latitude)\($0.at.longitude)\($0.cover?.path ?? "")" }
-                .joined(separator: "|")
-            key += draft.map { "\($0.name)\($0.latitude)\($0.longitude)" } ?? "-"
-            // Выбранное место рисуется иначе (P428) — сменился выбор, метки
-            // ставятся заново.
-            key += "|" + (parent.selected?.file ?? "")
-            guard key != drawn else { return }
-            drawn = key
-            map.removeAnnotations(map.annotations.filter { !($0 is MKUserLocation) })
-            map.addAnnotations(parent.days.map { DayMark($0) })
-            map.addAnnotations(parent.places.map { PlaceMark($0) })
-            map.addAnnotations(parent.entries.map { EntryMark($0) })
-            if let draft { map.addAnnotation(DraftMark(draft)) }
+            var wanted: [(key: String, make: () -> MKAnnotation)] = []
+            var used: [String: Int] = [:]
+            func want(_ key: String, _ make: @escaping () -> MKAnnotation) {
+                // Две одинаковые метки — обе на месте.
+                let n = used[key, default: 0]
+                used[key] = n + 1
+                wanted.append((n == 0 ? key : key + "#\(n)", make))
+            }
+            for day in parent.days {
+                want("d|\(day.stamp)|\(day.today)") { DayMark(day) }
+            }
+            for place in parent.places {
+                // Выбранное место рисуется иначе (P428).
+                let chosen = place.file != nil && parent.selected?.file == place.file
+                want("p|\(place.file ?? "")|\(place.name)|\(place.mark)|\(place.latitude)|\(place.longitude)|\(chosen)|\(place.text.hashValue)") {
+                    PlaceMark(place)
+                }
+            }
+            for entry in parent.entries {
+                want("e|\(entry.stamp)|\(entry.at.latitude)|\(entry.at.longitude)|\(entry.cover?.path ?? "")") {
+                    EntryMark(entry)
+                }
+            }
+            if let draft {
+                want("x|\(draft.name)|\(draft.latitude)|\(draft.longitude)") { DraftMark(draft) }
+            }
+            let keys = Set(wanted.map(\.key))
+            let gone = drawn.filter { !keys.contains($0.key) }
+            if !gone.isEmpty {
+                map.removeAnnotations(Array(gone.values))
+                for key in gone.keys { drawn[key] = nil }
+            }
+            var added: [MKAnnotation] = []
+            for item in wanted where drawn[item.key] == nil {
+                let mark = item.make()
+                drawn[item.key] = mark
+                added.append(mark)
+            }
+            if !added.isEmpty { map.addAnnotations(added) }
         }
 
         @objc func tapped(_ g: UITapGestureRecognizer) {
