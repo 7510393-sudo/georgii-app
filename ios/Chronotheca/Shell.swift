@@ -53,13 +53,11 @@ final class Shell: ObservableObject {
     static let appStoreShots = Vault.isPreview
         && ProcessInfo.processInfo.environment["CHRONOTHECA_APPSTORE"] == "1"
 
-    /// Дело, которому крутят время, и что именно крутят.
+    /// Дело, которому выбирают время, напоминание и повтор (P872).
     @Published var roller: Roller?
 
     struct Roller: Identifiable {
-        enum Kind { case time, bell }
         let id: UUID
-        let kind: Kind
     }
 
     /// Снимок, открытый во весь экран: с какой вкладки и который по счёту.

@@ -714,108 +714,131 @@ enum Build {
 
 // MARK: - Ролик времени
 
-/// Время дела и время напоминания крутятся одним и тем же роликом.
-/// Выход «Без времени» — это отказ, а не пустое значение: дело останется
-/// без часа, и это нормальное состояние дела.
+/// Время дела, напоминание и повтор — одним окном (P872, автор: «чтобы не
+/// крутить две рулетки, а в два движения выбрать время, периодичность и
+/// напоминание»; вместо двух окон — времени и колокольчика, P152, P194).
+/// Ролик — время дела; под ним «Напомнить» готовыми ответами, считая от
+/// этого времени; второй ролик — только для «другое». В файле напоминание
+/// по-прежнему точным временем «(напомнить ЧЧ:ММ)».
 struct RollerSheet: View {
-
-    private static var aboutBell: String {
-        T("Напоминания ещё не приходят — время записывается в файл, "
-          + "но телефон о нём пока не сообщает.",
-          "Reminders do not arrive yet — the time is written to the file, "
-          + "but the phone does not announce it yet.")
-    }
 
     let roller: Shell.Roller
 
     @EnvironmentObject private var store: DayStore
     @EnvironmentObject private var shell: Shell
+    /// Время дела.
     @State private var picked = Date()
-    /// Готовый ответ, нажатый последним.
-    @State private var chosen: String?
-    /// Повтор дела (P359): нет, каждую неделю, месяц, год.
+    /// Время напоминания, когда выбрано «другое».
+    @State private var bellPicked = Date()
+    @State private var bell: Bell = .off
+    /// Повтор дела (P359): нет, каждый день, неделю, месяц, год.
     @State private var every: Repeat.Every?
 
-    private var isBell: Bool { roller.kind == .bell }
+    /// Когда напомнить.
+    enum Bell {
+        case off, atTime, before10, before60, morning, other
+
+        var title: String {
+            switch self {
+            case .off: return T("нет", "no")
+            case .atTime: return T("в это время", "at the time")
+            case .before10: return T("за 10 мин", "10 min before")
+            case .before60: return T("за 1 час", "1 hour before")
+            case .morning: return T("в 9 утра", "at 9 am")
+            case .other: return T("другое", "other")
+            }
+        }
+    }
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 12) {
                 TimeWheel(time: $picked)
-                if !isBell { repeatRow }
-                if isBell {
-                    presets
-                    Text(Self.aboutBell)
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 28)
+                chipRow(T("Напомнить", "Remind"),
+                        first: [Bell.off, .atTime, .before10],
+                        second: [Bell.before60, .morning, .other],
+                        chip: { kind in chip(kind.title, on: bell == kind) { bell = kind } })
+                if bell == .other {
+                    TimeWheel(time: $bellPicked)
+                        .frame(height: 120)
+                        .clipped()
                 }
+                chipRow(T("Повторять", "Repeat"),
+                        first: [nil, .day] as [Repeat.Every?],
+                        second: [.week, .month, .year] as [Repeat.Every?],
+                        chip: { kind in
+                            chip(kind?.title ?? T("нет", "no"), on: every == kind) { every = kind }
+                        })
                 Spacer(minLength: 0)
             }
             .padding(.top, 6)
-            .navigationTitle(isBell ? T("Напоминание", "Reminder") : T("Время дела", "Task time"))
+            .navigationTitle(T("Время", "Time"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                // «Отмена» не просто закрывает, а снимает назначенное: дело
-                // остаётся без часа, напоминание — снятым. Иначе отказаться
-                // от времени было бы нечем (решения P49, P150).
+                // Отказ от времени — словом, а не «Отменой» (P49, P150):
+                // дело остаётся без часа; напоминание «в 9 утра» и «другое»
+                // остаются, от времени дела — снимаются.
                 ToolbarItem(placement: .topBarLeading) {
-                    Button(T("Отмена", "Cancel")) { apply(nil) }
+                    Button(T("Без времени", "No time")) { apply(time: nil) }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(T("Готово", "Done")) { apply(Clock.text(picked)) }
+                    Button(T("Готово", "Done")) { apply(time: picked) }
                         .fontWeight(.semibold)
                 }
             }
             .onAppear {
                 guard let i = store.index(of: roller.id) else { return }
                 let row = store.planRows[i]
-                let current = isBell ? row.bell : row.time
-                set(Clock.date(current) ?? start(row))
+                let time = Clock.date(row.time)
+                // Нет времени — ролик с 9 утра: самое частое начало дня (P330).
+                picked = Clock.snap(time ?? Clock.at(9))
+                bell = Self.bell(row.bell, time: row.time)
+                bellPicked = Clock.snap(Clock.date(row.bell) ?? picked.addingTimeInterval(-3600))
                 every = row.repeats?.every
             }
         }
-        .presentationDetents([.height(isBell ? 392 : 370)])
+        .presentationDetents([.height(bell == .other ? 520 : 420)])
     }
 
-    /// Повторять ли дело (P359). Выбор — до «Готово»: ничего не пишется,
-    /// пока ролик не закрыт.
-    private var repeatRow: some View {
+    /// Какой готовый ответ у записанного напоминания.
+    static func bell(_ bell: String?, time: String?) -> Bell {
+        guard let bell else { return .off }
+        if let t = Clock.date(time) {
+            if Clock.text(t) == bell { return .atTime }
+            if Clock.text(t.addingTimeInterval(-600)) == bell { return .before10 }
+            if Clock.text(t.addingTimeInterval(-3600)) == bell { return .before60 }
+        }
+        if Clock.text(Clock.at(9)) == bell { return .morning }
+        return .other
+    }
+
+    /// Ряд готовых ответов с подписью: в одну строку, а на узком телефоне —
+    /// в две.
+    private func chipRow<Item: Hashable, Chip: View>(
+        _ title: String, first: [Item], second: [Item],
+        chip: @escaping (Item) -> Chip) -> some View {
         VStack(spacing: 8) {
-            Text(T("Повторять", "Repeat"))
+            Text(title)
                 .font(Look.sans(12, weight: .semibold))
                 .foregroundStyle(Look.inkSoft)
-            // Пять кнопок в ряд на узком телефоне не помещаются — тогда
-            // в два ряда (P378: добавилось «каждый день»).
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: 6) {
-                    repeatChip(nil, T("нет", "no"))
-                    ForEach(Repeat.Every.allCases, id: \.self) { kind in
-                        repeatChip(kind, kind.title)
-                    }
+                    ForEach(first + second, id: \.self) { chip($0) }
                 }
                 VStack(spacing: 6) {
-                    HStack(spacing: 6) {
-                        repeatChip(nil, T("нет", "no"))
-                        repeatChip(.day, Repeat.Every.day.title)
-                    }
-                    HStack(spacing: 6) {
-                        ForEach([Repeat.Every.week, .month, .year], id: \.self) { kind in
-                            repeatChip(kind, kind.title)
-                        }
-                    }
+                    HStack(spacing: 6) { ForEach(first, id: \.self) { chip($0) } }
+                    HStack(spacing: 6) { ForEach(second, id: \.self) { chip($0) } }
                 }
             }
         }
         .padding(.horizontal, 12)
     }
 
-    private func repeatChip(_ kind: Repeat.Every?, _ title: String) -> some View {
-        let on = every == kind
-        return Button {
+    private func chip(_ title: String, on: Bool, _ pick: @escaping () -> Void) -> some View {
+        Button {
+            // Щелчок, как у будильника (P267).
             Feel.tick()
-            every = kind
+            pick()
         } label: {
             Text(title)
                 .font(Look.sans(12.5))
@@ -830,93 +853,28 @@ struct RollerSheet: View {
         .buttonStyle(.plain)
     }
 
-    /// Поставить ролик. Всегда через подгонку к шагу: ролик с шагом в пять
-    /// минут всё равно округлит, и лучше, чтобы приложение и ролик считали
-    /// одинаково, чем расходились молча.
-    private func set(_ date: Date) { picked = Clock.snap(date) }
-
-    /// Время дела, если оно назначено: от него считаются напоминания.
-    private var eventTime: Date? {
-        guard let i = store.index(of: roller.id) else { return nil }
-        return Clock.date(store.planRows[i].time)
-    }
-
-    /// Готовые ответы для напоминания.
-    ///
-    /// Почти все напоминания ставят на одно из трёх: незадолго до дела,
-    /// за час до дела или с утра. Крутить ради этого барабан — лишняя
-    /// работа на каждом деле (решение P152).
-    ///
-    /// Готовый ответ не закрывает ролик, а ставит на нужное место барабан:
-    /// человек видит, что выбралось, и может поправить. Одно касание мимо
-    /// не должно молча назначать напоминание.
-    private var presets: some View {
-        HStack(spacing: 8) {
-            preset(T("за 10 минут", "10 minutes before"), eventTime?.addingTimeInterval(-600))
-            preset(T("за 1 час", "1 hour before"), eventTime?.addingTimeInterval(-3600))
-            preset(T("в 9 утра", "at 9 am"), Clock.at(9))
+    /// Напоминание по выбранному ответу — от времени дела `time`.
+    private func bellText(_ time: Date?) -> String? {
+        switch bell {
+        case .off: return nil
+        case .atTime: return time.map(Clock.text)
+        case .before10: return time.map { Clock.text($0.addingTimeInterval(-600)) }
+        case .before60: return time.map { Clock.text($0.addingTimeInterval(-3600)) }
+        case .morning: return Clock.text(Clock.at(9))
+        case .other: return Clock.text(bellPicked)
         }
     }
 
-    /// Готовый ответ. Бледный и неотзывчивый, когда считать не от чего:
-    /// у дела ещё нет времени, и «за час до» не от чего отсчитать.
-    ///
-    /// Первое нажатие ставит ролик на это время — можно подкрутить.
-    /// Второе нажатие на тот же ответ, пока ролик стоит на нём, значит
-    /// «вот это и надо»: время записывается, и ролик закрывается сам
-    /// (решение P194).
-    private func preset(_ title: String, _ value: Date?) -> some View {
-        let ready = value != nil
-        return Button {
-            guard let value else { return }
-            // Щелчок, как у будильника (P267). Само колёсико щёлкает
-            // своим, системным.
-            Feel.tick()
-            if chosen == title, picked == Clock.snap(value) {
-                apply(Clock.text(picked))
-                return
-            }
-            chosen = title
-            set(value)
-        } label: {
-            Text(title)
-                .font(Look.sans(13))
-                .foregroundStyle(ready ? Look.accent : Look.inkFaint)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 7)
-                .background(Look.chrome, in: Capsule())
-                .overlay(Capsule().strokeBorder(
-                    ready ? Look.accent.opacity(0.35) : Look.rule))
-        }
-        .buttonStyle(.plain)
-        // Не .disabled: система рисует выключенную кнопку бледнее поверх
-        // заданного цвета, и бледность сложилась бы дважды (P141).
-        .allowsHitTesting(ready)
-    }
-
-    /// Откуда начинает ролик, когда время ещё не назначено.
-    ///
-    /// Для дела — 9 утра: самое частое время начала дня, крутить от него
-    /// в обе стороны короче, чем от текущего часа (P330, решение сменяет
-    /// прежнее — ближайший круглый час, P149).
-    ///
-    /// Для напоминания — за час до дела: напоминают заранее, иначе незачем
-    /// напоминать. А если у дела времени ещё нет, отсчитывать не от чего —
-    /// ролик тоже встаёт на 9 утра (P330, было — полночь, P149).
-    private func start(_ row: PlanRow) -> Date {
-        guard isBell else { return Clock.at(9) }
-        guard let time = Clock.date(row.time) else { return Clock.at(9) }
-        return time.addingTimeInterval(-3600)
-    }
-
-    private func apply(_ value: String?) {
+    private func apply(time: Date?) {
+        let bellValue = bellText(time)
         if let i = store.index(of: roller.id) {
             let before = store.planRows[i].repeats?.every
-            if isBell { store.planRows[i].bell = value } else { store.planRows[i].time = value }
+            store.planRows[i].time = time.map(Clock.text)
+            store.planRows[i].bell = bellValue
             store.save()
             // Повтор поменяли — серия заводится или снимается; иначе, если
             // дело из серии, спросить, только ли здесь новое время (P359).
-            if !isBell, every != before {
+            if every != before {
                 if let every {
                     let n = store.startSeries(roller.id, every: every)
                     shell.say(T("Повтор вписан в дни на год вперёд: \(n)",
@@ -931,7 +889,7 @@ struct RollerSheet: View {
         }
         // Колокольчик поставлен — спросить у iPhone разрешение звонить
         // (P260). Запрещено — сказать, где разрешить.
-        if isBell, value != nil {
+        if bellValue != nil {
             let shell = shell
             Reminders.ask { ok in
                 if !ok {

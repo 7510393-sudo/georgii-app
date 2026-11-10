@@ -694,9 +694,9 @@ struct PlanView: View {
     /// Пустая плашка следующего дела (P406): «плюса» больше нет. Касание
     /// по ней — новое дело и курсор в нём; по времени или колокольчику —
     /// новое дело и сразу ролик.
-    private func add(then kind: Shell.Roller.Kind? = nil) {
+    private func add(roller: Bool = false) {
         guard let id = store.addTask() else { return shell.say(store.closedReason) }
-        if let kind { openRoller(id, kind) } else { typingIn = id }
+        if roller { openRoller(id) } else { typingIn = id }
     }
 
     /// Пустая плашка видна, пока все дела чем-то заполнены: начали писать в
@@ -712,8 +712,8 @@ struct PlanView: View {
             PlanRowLine(number: number,
                         row: .task(PlanRow.ghostTitle),
                         bellColor: Look.accent,
-                        onTime: { add(then: .time) },
-                        onBell: { add(then: .bell) },
+                        onTime: { add(roller: true) },
+                        onBell: { add(roller: true) },
                         ghost: true)
         }
         .contentShape(Rectangle())
@@ -793,8 +793,8 @@ struct PlanView: View {
             text: Binding(get: { row.wrappedValue.fullTitle },
                           set: { row.wrappedValue.setFullTitle($0) }),
             typing: typingIn == id,
-            onTime: { openRoller(id, .time) },
-            onBell: { openRoller(id, .bell) },
+            onTime: { openRoller(id) },
+            onBell: { openRoller(id) },
             onCheck: { toggle(row) },
             // Правку кончила эта самая строка, а не соседняя, которой
             // только что отдали ввод: иначе курсор гас бы сразу после
@@ -1476,13 +1476,13 @@ struct PlanView: View {
 
     /// «Ввод» в названии: ввод переходит к делу ниже.
 
-    private func openRoller(_ id: UUID, _ kind: Shell.Roller.Kind) {
+    private func openRoller(_ id: UUID) {
         guard store.canEditPlan else { return shell.say(store.closedReason) }
         // Ролик встаёт на место клавиатуры, а не поверх неё: два разных
         // способа ввода разом на экране не помещаются, и человеку пришлось
         // бы сперва убирать клавиатуру самому (решение P176).
         hideKeyboard()
-        shell.roller = .init(id: id, kind: kind)
+        shell.roller = .init(id: id)
     }
 
 
