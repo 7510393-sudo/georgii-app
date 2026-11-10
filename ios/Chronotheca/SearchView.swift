@@ -360,6 +360,10 @@ struct SearchView: View {
         // Мера для линии слева (P850).
         var measure = Ribbon.Plan()
         if case .pad(let h) = items.first?.kind { measure.lead = h }
+        // Запас над экраном (P861) — тоже поле сверху.
+        let above = Afar.above(height)
+        measure.lead += above
+        shell.ribbon.above = above
         if case .pad(let h) = items.last?.kind { measure.tail = h }
         measure.tail += Afar.lift
         measure.before = past.count + later.count
@@ -372,6 +376,8 @@ struct SearchView: View {
             // Карточки — вид сверху: нижняя лежит поверх верхней и своим
             // корешком с датой закрывает её низ (P694, P695).
             LazyVStack(spacing: 0) {
+                // Запас над экраном (P861): верхнее поле ленты — за верхним краем.
+                Color.clear.frame(height: above)
                 ForEach(items) { entry in
                     piece(entry, sample: sample)
                         // Рост первой карточки под днём — чтобы, когда день
@@ -403,9 +409,19 @@ struct SearchView: View {
         .scrollDismissesKeyboard(.interactively)
         // Ниже экрана — запас (P791): лента там уже собрана, и карточка,
         // подтянутая наползанием из-за нижнего края, выходит плавно.
-        .frame(height: height + Afar.reserve(height), alignment: .top)
+        // Выше экрана — тоже (P861, вместо таяния верхних карточек P850/P859,
+        // автор по 260: «растворяются, не доходя до края; должны уходить за
+        // край»): карточка прошлого нарисована с наползанием ниже своего
+        // места, и ленивая стопка убирала её, пока она ещё была видна. Теперь
+        // стопка держит её, пока она не ушла за верх; за верхним краем
+        // экрана раздела лента обрезана.
+        .frame(height: above + height + Afar.reserve(height), alignment: .top)
+        .clipShape(TopCut(cut: above))
+        .offset(y: -above)
         .onAppear {
-            ribbon.home = { proxy.scrollTo(Ribbon.slotID, anchor: .top) }
+            // Место дня — на верх экрана, а не на верх окна ленты: окно выше
+            // экрана на запас (P861).
+            ribbon.home = { proxy.scrollTo(Ribbon.slotID, anchor: Afar.screenTop(height)) }
             DispatchQueue.main.async {
                 if shell.ribbonOpen { settle() } else { ribbon.park() }
                 // Ленивая стопка ставит дальнюю карточку со второго раза.
@@ -415,7 +431,7 @@ struct SearchView: View {
                 // Снимок «лента поиска»: список пролистан, как у человека.
                 if Search.deep {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                        proxy.scrollTo("p20", anchor: .top)
+                        proxy.scrollTo("p20", anchor: Afar.screenTop(height))
                     }
                 }
             }
@@ -458,9 +474,10 @@ struct SearchView: View {
             let full: CGFloat = ribbon.laterHeight > 0 ? ribbon.laterHeight
                 : Search.tabHeight + 8 + Search.body + Search.overlap + 6
             let frameHeight: CGFloat = full - Search.overlap
-            let top: CGFloat = ribbon.y + height + Search.overlap
-            // Окно ленты выше экрана на запас снизу (P791).
-            let view: CGFloat = height + Afar.reserve(height)
+            // От верха окна ленты: оно выше экрана на запас (P861).
+            let top: CGFloat = above + ribbon.y + height + Search.overlap
+            // Окно ленты больше экрана на запасы сверху и снизу (P791, P861).
+            let view: CGFloat = above + height + Afar.reserve(height)
             let a: CGFloat = view > frameHeight ? top / (view - frameHeight) : 0
             var still = Transaction()
             still.disablesAnimations = true
@@ -521,8 +538,9 @@ struct SearchView: View {
             }
             .onGeometryChange(for: CGFloat.self) { proxy in
                 proxy.frame(in: .named(Ribbon.space)).minY
-            } action: { y in
-                ribbon.measured(y)
+            } action: { [height] y in
+                // От верха экрана, а не окна ленты (P861).
+                ribbon.measured(y - Afar.above(height))
             }
             .onAppear { ribbon.seen = true }
             .onDisappear { ribbon.lost() }
@@ -1034,20 +1052,11 @@ private struct Distance: ViewModifier {
             content
         } else {
             content.visualEffect { [side, height] view, geo in
-                let frame = geo.frame(in: .scrollView)
-                let shift = Afar.shift(frame.minY, side: side, height: height)
-                // Прошлое у верхнего края (P850, вместо сжатия сдвига P845 —
-                // с ним карточки на ходу подскакивали вверх): верхняя карточка
-                // тает, пока лента не убрала её, и не пропадает на глазах.
-                // Тает и по своему месту в ленте (P859): ленивая стопка
-                // убирает карточку, когда её место ушло за верх, а нарисована
-                // она с наползанием ниже — и пропадала на глазах (автор по
-                // 259: «мелькает, пропадает резко карточка, которая стоит за
-                // ней»). Теперь к этому мигу она уже растаяла.
-                let drawn = (frame.maxY + shift) / 60
-                let placed = frame.maxY / 80
-                let fade: Double = side > 0 ? Double(min(1, max(0, min(drawn, placed)))) : 1
-                return view.offset(y: shift).opacity(fade)
+                // От верха экрана: окно ленты выше на запас (P861). Карточки
+                // не тают — уходят за край (P861, вместо таяния P850, P859).
+                let top = geo.frame(in: .scrollView).minY - Afar.above(height)
+                let shift = Afar.shift(top, side: side, height: height)
+                return view.offset(y: shift)
             }
         }
     }
@@ -1061,6 +1070,19 @@ enum Afar {
     /// Сколько ленты собрано ниже экрана (P791): карточки, что подтягиваются
     /// к дальнему нижнему краю из-за экрана, уже нарисованы и выходят плавно,
     /// а не появляются на глазах. С запасом к наибольшему сдвигу у края.
+    /// Сколько ленты собрано выше экрана (P861): карточка прошлого у верха
+    /// нарисована с наползанием ниже своего места (до десятой доли экрана и
+    /// пятой доли того, на сколько место ушло за край), и стопка должна
+    /// держать её, пока она не ушла за верх целиком.
+    static func above(_ height: CGFloat) -> CGFloat { height * (1 - tightest) * 0.625 + 90 }
+
+    /// Верх экрана в окне ленты — как доля для `scrollTo` (P861): строка с
+    /// таким местом встаёт верхом на верх экрана, а не окна.
+    static func screenTop(_ height: CGFloat) -> UnitPoint {
+        let a = above(height), b = reserve(height)
+        return UnitPoint(x: 0.5, y: a + b > 0 ? a / (a + b) : 0)
+    }
+
     /// Плюс `lift` (P859).
     static func reserve(_ height: CGFloat) -> CGFloat { height * (1 - tightest) / 2 + 40 + lift }
 
@@ -1097,3 +1119,11 @@ enum Afar {
     }
 }
 
+
+/// Окно ленты без запаса сверху (P861): выше экрана раздела карточек не видно.
+private struct TopCut: Shape {
+    let cut: CGFloat
+    func path(in r: CGRect) -> Path {
+        Path(CGRect(x: r.minX, y: r.minY + cut, width: r.width, height: max(0, r.height - cut)))
+    }
+}

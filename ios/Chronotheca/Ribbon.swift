@@ -33,6 +33,8 @@ final class Ribbon: ObservableObject {
     /// Как собрана лента: поля сверху и снизу, карточек до будущего и
     /// всего, есть ли место дня. Ставит картотека при каждой сборке.
     var plan = Plan()
+    /// Запас ленты над экраном (P861): верхнее поле `plan.lead` больше на него.
+    var above: CGFloat = 0
     struct Plan {
         var lead: CGFloat = 0
         var tail: CGFloat = 0
@@ -54,7 +56,8 @@ final class Ribbon: ObservableObject {
         } else {
             let cards = scroll.contentSize.height - plan.lead - plan.tail
             let pitch = plan.total > 0 ? cards / CGFloat(plan.total) : 0
-            line = plan.lead + CGFloat(plan.before) * pitch
+            // Место — от верха экрана: окно ленты выше на запас (P861).
+            line = plan.lead - above + CGFloat(plan.before) * pitch
         }
         let pastRest = line - height
         let futureRest = plan.slot ? slotTop + height : line
