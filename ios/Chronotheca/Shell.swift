@@ -10,32 +10,6 @@ final class Shell: ObservableObject {
     /// Разделы внизу: сегодня, календарь, карта, поиск (P239).
     enum Screen { case today, calendar, map, search }
 
-    // MARK: - Обратно (P880)
-
-    /// Где был человек: день и раздел. Картотека — часть «Дня».
-    struct Spot: Equatable {
-        let date: Date
-        let screen: Screen
-    }
-    /// Прежние места, последнее — в конце (не больше десяти).
-    @Published private(set) var trail: [Spot] = []
-    /// Идёт возврат — новые места не записываются.
-    var returning = false
-    /// Вернуться на прежнее место (ставит `RootView`).
-    var goBack: (() -> Void)?
-
-    /// Запомнить место, откуда ушли.
-    func remember(_ date: Date, _ screen: Screen) {
-        guard !returning else { return }
-        let spot = Spot(date: date, screen: screen == .search ? .today : screen)
-        guard trail.last != spot else { return }
-        trail.append(spot)
-        if trail.count > 10 { trail.removeFirst() }
-    }
-
-    /// Взять последнее место.
-    func popSpot() -> Spot? { trail.popLast() }
-
     enum Tab: String, CaseIterable, Identifiable {
         case plan = "План"
         case diary = "Дневник"
