@@ -197,45 +197,12 @@ struct DayPage: View {
         }
         .padding(.leading, 8)
         .padding(.trailing, Corner.size + 14)
-        // «Обратно» — за датой, сразу справа от корешка (P880): на месте,
-        // одном для всех дней, — не скачет за длиной имени дня. Есть всегда;
-        // бледная, когда возвращаться некуда (P113).
-        .overlay(alignment: .bottomLeading) {
-            GeometryReader { geo in
-                let sheet = geo.size.width + 8 + Corner.size + 14
-                backButton
-                    .offset(x: sheet * DayPage.folder.tabShare - 8 + 4)
-                    .frame(maxHeight: .infinity, alignment: .bottom)
-            }
-        }
         // Верх поднят (P434): над шапкой воздуха меньше.
         .padding(.top, 2)
         .padding(.bottom, 4)
         .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
         .onTapGesture { hideKeyboard() }
-    }
-
-    /// «Обратно» (P880): на прежнее место — день и раздел.
-    private var backButton: some View {
-        let ready = live && !shell.trail.isEmpty
-        return Button {
-            guard ready else { return }
-            shell.goBack?()
-        } label: {
-            Text(T("‹ Обратно", "‹ Back"))
-                .font(Look.sans(12.5, weight: .semibold))
-                .foregroundStyle(Look.accent)
-                .opacity(ready ? 1 : 0.3)
-                .lineLimit(1)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 6)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .padding(.bottom, 4)
-        .accessibilityLabel(T("Обратно", "Back"))
-        .accessibilityHint(T("На прежний день или раздел", "To the previous day or section"))
     }
 
     /// Имя дня и дата. Касание по ним на открытой странице — действия дня
@@ -431,6 +398,7 @@ struct DayPage: View {
                          if !store.isToday {
                              ribbon.frozen = true
                              ribbon.folding = true
+                             Feel.light()
                              shell.dayCard = true
                              shell.ribbonOpen = true
                              shell.screen = .search

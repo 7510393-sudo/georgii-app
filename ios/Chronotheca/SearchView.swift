@@ -543,7 +543,8 @@ struct SearchView: View {
                 withTransaction(still) { proxy.scrollTo(anchorCard, anchor: spot(top)) }
                 // Рамка карточки — замеренная, когда лента встала; не
                 // замерилась — та, куда её ставили.
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.06) {
+                // Лист над схемой успевает растаять (P886).
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                     let inset = 10 + Search.cardInset
                     let w = UIScreen.main.bounds.width
                     ribbon.foldTo = ribbon.anchorFrame

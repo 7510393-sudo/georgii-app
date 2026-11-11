@@ -430,14 +430,7 @@ struct RootView: View {
             windowBottom = UIApplication.shared.connectedScenes
                 .compactMap { ($0 as? UIWindowScene)?.keyWindow }.first?.safeAreaInsets.bottom ?? 0
         }
-        // Откуда ушли — для «Обратно» (P880): другой день или раздел.
-        .onChange(of: store.date) { old, _ in
-            shell.remember(old, shell.screen)
-        }
         .onChange(of: shell.screen) { old, new in
-            let a: Shell.Screen = old == .search ? .today : old
-            let b: Shell.Screen = new == .search ? .today : new
-            if a != b { shell.remember(store.date, old) }
             LagWatch.note(new)
             follow(from: old, to: new)
             // Карта собирается при первом открытии и дальше остаётся
@@ -694,6 +687,10 @@ struct RootView: View {
             // листом: в покое стол, при тяге — картотека.
             // Полоски «Сегодня» над будущим днём нет (P876, кольцо; отменяет
             // P865, P867): «Сегодня» — корешком снизу, как у прошлого.
+            // Схема карточки, в которую складывается закрытый день (P886).
+            FoldGhost(ribbon: shell.ribbon, on: shell.dayCard,
+                      live: shell.ribbonLive, size: size)
+                .zIndex(0.5)
             DayPages()
                 .frame(width: size.width, height: size.height)
                 .modifier(FollowRibbon(ribbon: shell.ribbon, live: shell.ribbonLive))
@@ -704,10 +701,11 @@ struct RootView: View {
                 // полэкрана листа, под ним пустой стол).
                 // Тает, а не пропадает разом (P859): низ поднятого листа,
                 // что торчал у верха экрана, исчезал рывком. Обратно — сразу.
-                // Складывается точно в рамку своей карточки (P883, вместо
-                // уменьшения к краю P877).
-                .modifier(FoldIntoCard(ribbon: shell.ribbon, on: shell.dayCard,
-                                       live: shell.ribbonLive, size: size))
+                // Тает, а складывается в карточку его схема — `FoldGhost`
+                // под ним (P886, вместо сжатия самого листа P883).
+                .animation(shell.dayCard ? .easeOut(duration: 0.2) : nil) {
+                    $0.opacity(shell.dayCard ? 0 : 1)
+                }
                 .allowsHitTesting(shell.screen == .today)
         }
         // Где ты в картотеке (P845): линия от середины левого края.
@@ -862,7 +860,6 @@ struct RootView: View {
         // меняется, когда встала, — как и при открытии картотеки. Прежде
         // раздел менялся в миг отпускания, экран перестраивался, и ход
         // догонял прыжком.
-        shell.goBack = { goBack() }
         // Лента дошла до края к сегодня — «Сегодня» (P871), как касание
         // его корешка.
         shell.ribbon.toToday = { [shell] in
@@ -1172,31 +1169,6 @@ struct RootView: View {
                 withTransaction(still) { shell.screen = .today }
             }
         }
-    }
-
-    /// «Обратно» (P880, автор: «вспоминаешь, что забыл что-то в будущем дне
-    /// написать, — и не вспоминать, в каком дне ты сейчас писал»): на
-    /// прежнее место — день и раздел. Повторное касание — ещё на шаг.
-    private func goBack() {
-        guard let spot = shell.popSpot() else { return }
-        shell.returning = true
-        Feel.light()
-        hideKeyboard()
-        var still = Transaction()
-        still.disablesAnimations = true
-        if shell.screen == .search || shell.ribbonOpen || shell.pulling {
-            closeRibbonNow()
-            withTransaction(still) {
-                shell.instant = true
-                shell.screen = .today
-            }
-        }
-        if !Calendar.current.isDate(spot.date, inSameDayAs: store.date) {
-            store.save()
-            withTransaction(still) { store.go(to: spot.date) }
-        }
-        if spot.screen != shell.screen { shell.screen = spot.screen }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { shell.returning = false }
     }
 
     /// Закрыть ленту без хода — она под другой плашкой, её не видно.
@@ -1594,6 +1566,9 @@ private struct TodayPeek: View {
             TodayTab()
                 .frame(width: size.width)
                 .offset(y: tabY)
+                // В кольце — только когда правда выходит снизу (P886: стоило
+                // тронуть лист «Сегодня», корешок проступал бледной тенью).
+                .opacity(ring && peek < 0.5 ? 0 : 1)
                 .animation(.easeOut(duration: 0.35)) { $0.opacity(alone || ring ? 1 : 0) }
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
@@ -1607,34 +1582,39 @@ private struct TodayPeek: View {
     }
 }
 
-/// Лист, закрытый в карточку, складывается в её рамку (P883, автор: «это
-/// совершенно не похоже на превращение большого листа в маленькую
-/// карточку, и не считывается, что карточка встала на своё место»): из
-/// места, где его отпустили, он сжимается и съезжает точно на свою карточку
-/// в ряду, затем тает — под ним остаётся она. «Сегодня», которое на миг
-/// прячется перед подъёмом (P878), не складывается — просто не видно.
-private struct FoldIntoCard: ViewModifier {
+/// Схема карточки (P886, автор: «не нужно рисовать карточку со всем
+/// текстом — как только смахивают открытую страницу прошлого или будущего,
+/// она после виброотклика плавно превращается в схематичное изображение
+/// карточки, уменьшается и вставляется в нужное место картотеки; это
+/// изображение для всех карточек одинаковое»; вместо сжатия самого листа
+/// P883). Пустой контур карточки цвета бумаги: в миг закрытия он во весь
+/// лист — лист над ним тает, — потом сжимается в рамку карточки в ряду и
+/// тает над ней.
+private struct FoldGhost: View {
     @ObservedObject var ribbon: Ribbon
     let on: Bool
     let live: Bool
     let size: CGSize
 
-    func body(content: Content) -> some View {
-        let target: CGRect? = on && ribbon.folding ? ribbon.foldTo : nil
+    var body: some View {
+        let folding = on && ribbon.folding
         let top = FollowRibbon.shown(live ? ribbon.y : 0, height: size.height, stick: ribbon.stick)
-        let sx: CGFloat = target.map { $0.width / max(1, size.width) } ?? 1
-        let sy: CGFloat = target.map { $0.height / max(1, size.height) } ?? 1
-        let dx: CGFloat = target?.minX ?? 0
-        let dy: CGFloat = target.map { $0.minY - top * sy } ?? 0
-        let hidden = on && !ribbon.folding
-        content
-            .scaleEffect(x: sx, y: sy, anchor: .topLeading)
-            .offset(x: dx, y: dy)
-            .animation(target == nil ? nil : .easeInOut(duration: 0.4), value: target)
-            .opacity(hidden ? 0 : 1)
-            .animation(target == nil ? nil : .easeIn(duration: 0.15).delay(0.38)) {
-                $0.opacity(target == nil ? 1 : 0)
+        let start = CGRect(x: 0, y: top, width: size.width, height: size.height)
+        let r = ribbon.foldTo ?? start
+        let shape = FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare)
+        shape
+            .fill(Scheme.current.past)
+            .overlay(shape.stroke(Scheme.current.kraftEdge.opacity(0.7), lineWidth: 1))
+            .frame(width: r.width, height: r.height)
+            .offset(x: r.minX, y: r.minY)
+            .animation(ribbon.foldTo == nil ? nil : .easeInOut(duration: 0.4), value: ribbon.foldTo)
+            .frame(width: size.width, height: size.height, alignment: .topLeading)
+            .opacity(folding ? 1 : 0)
+            .animation(ribbon.foldTo == nil ? nil : .easeIn(duration: 0.15).delay(0.4)) {
+                $0.opacity(ribbon.foldTo == nil ? 1 : 0)
             }
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
     }
 }
 

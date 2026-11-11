@@ -736,7 +736,7 @@ struct RollerSheet: View {
 
     /// Когда напомнить.
     enum Bell {
-        case off, atTime, before10, before60, morning
+        case off, atTime, before15, before60, morning
         /// Записанное на своё время (в файле или прежним роликом): кнопки не
         /// горят, напоминание остаётся, пока не нажали другую (P873).
         case kept
@@ -745,7 +745,7 @@ struct RollerSheet: View {
             switch self {
             case .off: return T("нет", "no")
             case .atTime: return T("в это время", "at the time")
-            case .before10: return T("за 10 мин", "10 min before")
+            case .before15: return T("за 15 мин", "15 min before")
             case .before60: return T("за 1 час", "1 hour before")
             case .morning: return T("в 9 утра", "at 9 am")
             case .kept: return ""
@@ -772,7 +772,7 @@ struct RollerSheet: View {
                     .frame(width: Clock.twelve ? 176 : 140)
                     .clipped()
                 column(T("Напомнить", "Remind"),
-                       [Bell.off, .atTime, .before10, .before60, .morning],
+                       [Bell.off, .atTime, .before15, .before60, .morning],
                        chip: { kind in chip(kind.title, on: bell == kind) { bell = kind } })
             }
             .padding(.horizontal, 8)
@@ -811,7 +811,7 @@ struct RollerSheet: View {
         guard let bell else { return .off }
         if let t = Clock.date(time) {
             if Clock.text(t) == bell { return .atTime }
-            if Clock.text(t.addingTimeInterval(-600)) == bell { return .before10 }
+            if Clock.text(t.addingTimeInterval(-900)) == bell { return .before15 }
             if Clock.text(t.addingTimeInterval(-3600)) == bell { return .before60 }
         }
         if Clock.text(Clock.at(9)) == bell { return .morning }
@@ -839,16 +839,19 @@ struct RollerSheet: View {
             Feel.tick()
             pick()
         } label: {
+            // Все кнопки одного роста и одним шрифтом (P885, автор): длинная
+            // надпись — в две строки, а не мельче.
             Text(title)
-                .font(Look.sans(12.5))
-                .lineLimit(1)
-                .minimumScaleFactor(0.65)
+                .font(Look.sans(12))
+                .lineLimit(2)
+                .multilineTextAlignment(.center)
+                .minimumScaleFactor(0.9)
                 .foregroundStyle(on ? Look.planBg : Look.accent)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 7)
+                .padding(.horizontal, 6)
                 .frame(maxWidth: .infinity)
-                .background(on ? Look.accent : Look.chrome, in: Capsule())
-                .overlay(Capsule().strokeBorder(Look.accent.opacity(0.35)))
+                .frame(height: 36)
+                .background(on ? Look.accent : Look.chrome, in: RoundedRectangle(cornerRadius: 12))
+                .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Look.accent.opacity(0.35)))
         }
         .buttonStyle(.plain)
     }
@@ -858,7 +861,7 @@ struct RollerSheet: View {
         switch bell {
         case .off: return nil
         case .atTime: return time.map(Clock.text)
-        case .before10: return time.map { Clock.text($0.addingTimeInterval(-600)) }
+        case .before15: return time.map { Clock.text($0.addingTimeInterval(-900)) }
         case .before60: return time.map { Clock.text($0.addingTimeInterval(-3600)) }
         case .morning: return Clock.text(Clock.at(9))
         case .kept: return keptBell
