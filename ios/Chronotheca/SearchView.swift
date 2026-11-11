@@ -507,6 +507,7 @@ struct SearchView: View {
         .onChange(of: shell.dayCard) { _, now in
             if !now {
                 ribbon.foldTo = nil
+                ribbon.foldLanded = false
                 ribbon.folding = false
             }
             // Только когда день правда закрыт в карточку: «Сегодня» на миг
@@ -547,8 +548,18 @@ struct SearchView: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                     let inset = 10 + Search.cardInset
                     let w = UIScreen.main.bounds.width
-                    ribbon.foldTo = ribbon.anchorFrame
+                    let place = ribbon.anchorFrame
                         ?? CGRect(x: inset, y: top, width: w - 2 * inset, height: frameHeight)
+                    // Сжимается над своим местом — выше ровно на корешок, —
+                    // потом опускается в гнездо (P889, автор).
+                    ribbon.foldTo = place.offsetBy(dx: 0, dy: -Search.tabHeight)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        guard ribbon.folding else { return }
+                        ribbon.foldTo = place
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                            if ribbon.folding { ribbon.foldLanded = true }
+                        }
+                    }
                 }
             }
         }

@@ -1613,11 +1613,13 @@ private struct FoldGhost: View {
             .overlay(shape.stroke(Scheme.current.kraftEdge.opacity(0.7), lineWidth: 1))
             .frame(width: r.width, height: r.height)
             .offset(x: r.minX, y: r.minY)
-            .animation(ribbon.foldTo == nil ? nil : .easeInOut(duration: 0.4), value: ribbon.foldTo)
+            // Сжатие над гнездом и опускание в гнездо — по 0,35 с (P889).
+            .animation(ribbon.foldTo == nil ? nil
+                       : ribbon.foldLanded ? nil : .easeInOut(duration: 0.35), value: ribbon.foldTo)
             .frame(width: size.width, height: size.height, alignment: .topLeading)
             .opacity(folding ? 1 : 0)
-            .animation(ribbon.foldTo == nil ? nil : .easeIn(duration: 0.15).delay(0.4)) {
-                $0.opacity(ribbon.foldTo == nil ? 1 : 0)
+            .animation(ribbon.foldLanded ? .easeIn(duration: 0.15) : nil) {
+                $0.opacity(ribbon.foldLanded ? 0 : 1)
             }
             .allowsHitTesting(false)
             .accessibilityHidden(true)

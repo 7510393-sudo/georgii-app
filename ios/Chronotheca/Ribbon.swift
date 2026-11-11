@@ -48,6 +48,8 @@ final class Ribbon: ObservableObject {
     /// Рамка его карточки на экране раздела — куда сложиться. Пока её нет,
     /// лист стоит, где его отпустили.
     @Published var foldTo: CGRect?
+    /// Схема карточки встала в гнездо — тает (P889).
+    @Published var foldLanded = false
     /// Последняя замеренная рамка карточки закрытого дня.
     var anchorFrame: CGRect?
 
@@ -469,6 +471,7 @@ final class Ribbon: ObservableObject {
         frozen = false
         folding = false
         foldTo = nil
+        foldLanded = false
         veiled = false
         done = nil
     }
