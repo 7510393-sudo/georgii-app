@@ -460,6 +460,23 @@ final class Ribbon: ObservableObject {
         link = nil
     }
 
+    /// Лента — в чистое состояние (P888): открыли день с карточки. Прежде
+    /// после складывания лента иногда оставалась «замороженной» или в ходу,
+    /// и открытую карточку было не закрыть ни вверх, ни вниз (видео автора).
+    func reset() {
+        stop()
+        driving = false
+        frozen = false
+        folding = false
+        foldTo = nil
+        veiled = false
+        done = nil
+    }
+
+    /// Лента скрыта, пока пересобирается вокруг другого дня (P888: после
+    /// «Дневника» на глазах мелькали 1994 год и прошлое).
+    @Published var veiled = false
+
     /// Тяга кончилась или ход прерван: замеры снова ведут день.
     func release() {
         guard link == nil else { return }

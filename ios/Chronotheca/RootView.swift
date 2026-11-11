@@ -1148,8 +1148,10 @@ struct RootView: View {
         still.disablesAnimations = true
         if !store.isToday {
             store.save()
-            // Пока лента пересобирается вокруг сегодня, листа не видно: он
+            // Пока лента пересобирается вокруг сегодня, не видно ни листа, ни
+            // ленты (P888): иначе на глазах мелькали дальние карточки. Лист
             // встаёт корешком внизу уже сегодняшним.
+            ribbon.veiled = true
             withTransaction(still) {
                 ribbon.frozen = true
                 shell.dayCard = true
@@ -1164,6 +1166,7 @@ struct RootView: View {
             }
             ribbon.place(ribbon.restY(1))
             ribbon.refresh()
+            ribbon.veiled = false
             backToDay {
                 ribbon.felt = false
                 withTransaction(still) { shell.screen = .today }
@@ -1523,7 +1526,10 @@ private struct RibbonFade: ViewModifier {
 
     func body(content: Content) -> some View {
         let shown: Double = !live ? 0 : card ? 1 : Double(min(1, abs(ribbon.y) / 90))
-        content.opacity(shown)
+        content
+            .opacity(shown)
+            // Пересобирается вокруг другого дня — не видна (P888).
+            .animation(.easeInOut(duration: 0.15)) { $0.opacity(ribbon.veiled ? 0 : 1) }
     }
 }
 

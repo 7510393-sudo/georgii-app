@@ -418,6 +418,14 @@ struct NoBounce: UIViewRepresentable {
                 while let here = node {
                     if let scroll = here as? UIScrollView {
                         scroll.bounces = false
+                        // Движение вверх-вниз лист берёт себе, даже когда
+                        // весь помещается на экране (P888, автор: «смахиваешь
+                        // будущую карточку вверх, палец чуть ушёл вправо — и
+                        // открывается карта»): прежде такому листу нечего
+                        // было прокручивать, он движение не брал, и его
+                        // забирало листание разделов вбок. Оттяжки нет — её
+                        // держит `bounces`.
+                        scroll.alwaysBounceVertical = true
                         self?.box?.view = scroll
                         self?.pull?.attach(to: scroll)
                         return

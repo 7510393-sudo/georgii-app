@@ -698,6 +698,7 @@ struct SearchView: View {
         let ribbon = shell.ribbon
         var still = Transaction()
         still.disablesAnimations = true
+        ribbon.reset()
         withTransaction(still) {
             shell.instant = true
             shell.ribbonOpen = false
@@ -706,7 +707,6 @@ struct SearchView: View {
             shell.tab = tab
             shell.screen = .today
         }
-        ribbon.release()
         ribbon.park()
         archive.reloadSoon()
     }
