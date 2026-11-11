@@ -179,7 +179,17 @@ final class MovementTests: XCTestCase {
                      withVelocity: .slow, thenHoldForDuration: 0.1)
         XCTAssertTrue(wait(4) { openScreen == "search" }, "лента будущего не открылась: \(openScreen)")
         sleep(1)
+        // Кольцо (P876): полоски «Сегодня» у верха нет — корешок снизу.
         save("10-лента-будущее")
+        // Будущее вниз к сегодня через порог — лист «Сегодня» вытягивается
+        // сверху, корешок уходит вниз.
+        let upper = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
+        upper.press(forDuration: 0.05,
+                    thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.8)),
+                    withVelocity: .slow, thenHoldForDuration: 0.1)
+        XCTAssertTrue(wait(4) { openScreen == "today" }, "кольцо: будущее вниз не вернуло в день: \(openScreen)")
+        sleep(1)
+        save("11-кольцо-снова-день")
     }
 
     /// Разделы — лента вбок (P799, без круга; P805 — карта слева): с
