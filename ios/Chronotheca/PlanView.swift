@@ -69,16 +69,19 @@ struct PlanRowLine: View {
     /// каждой стороны.
     static let badgeWidth: CGFloat = PageTexture.cell - 2
     static let timeWidth: CGFloat = 64
-    static let bellWidth: CGFloat = PageTexture.cell * 2
+    /// Место за временем (P874): полторы клетки. В первой — колокольчик,
+    /// если напоминание есть; нет — клетка пустая. Своего квадратика у
+    /// колокольчика больше нет.
+    static let bellWidth: CGFloat = PageTexture.cell * 1.5
     static let gap: CGFloat = 8
-    /// Высота площадки для пальца у номера, времени и колокольчика (P465).
+    /// Высота площадки для пальца у номера и времени (P465).
     static let reach: CGFloat = 44
 
-    /// Голова строки: номер, время, колокольчик.
-    static let headWidth = badgeWidth + gap + timeWidth + gap + bellWidth
+    /// Голова строки: номер, время.
+    static let headWidth = badgeWidth + gap + timeWidth
 
-    /// Отступ первой строки названия: за головой, через просвет.
-    static let indent = headWidth + gap
+    /// Отступ первой строки названия: через полторы клетки за временем (P874).
+    static let indent = headWidth + bellWidth
 
     /// Откуда идут строки ниже первой: из-под времени, правее номера.
     /// Номера остаются столбиком — за них дело берут, — а название
@@ -195,11 +198,12 @@ struct PlanRowLine: View {
     @State private var pressTimer: DispatchWorkItem?
 
     private var head: some View {
-        HStack(alignment: .firstTextBaseline, spacing: Self.gap) {
+        HStack(alignment: .firstTextBaseline, spacing: 0) {
             badge
+                .padding(.trailing, Self.gap)
             // Пустая строка следующего дела — только бледный номер (P797):
-            // время, колокольчик и подсказка появляются, когда по ней
-            // коснулись и дело завелось.
+            // время и подсказка появляются, когда по ней коснулись и дело
+            // завелось.
             time.opacity(ghost ? 0 : 1).allowsHitTesting(!ghost)
             bell.opacity(ghost ? 0 : 1).allowsHitTesting(!ghost)
         }
@@ -295,35 +299,30 @@ struct PlanRowLine: View {
         .allowsHitTesting(onTime != nil)
     }
 
+    /// Колокольчик — в клетке за временем, только если напоминание есть
+    /// (P874); дело из серии — значок повтора там же (P359). Без них клетка
+    /// пустая. Касание — то же окно «Время».
     private var bell: some View {
         Button { onBell?() } label: {
-            Image(systemName: row.bell == nil ? "bell" : "bell.fill")
-                .font(.system(size: 20))
-                .foregroundStyle(row.bell == nil ? Look.inkFaint : bellColor)
-                // Дело из серии — значок повтора у колокольчика (P359).
-                .overlay(alignment: .bottomTrailing) {
-                    if row.repeats != nil {
-                        Image(systemName: "arrow.2.circlepath")
-                            .font(.system(size: 9, weight: .bold))
-                            .foregroundStyle(Look.accent)
-                            .offset(x: 5, y: 3)
-                    }
+            ZStack {
+                if row.bell != nil {
+                    Image(systemName: "bell.fill")
+                        .font(.system(size: 14))
+                        .foregroundStyle(bellColor)
                 }
-                // Колокольчик — на панельке, как номер (P374); площадка
-                // для пальца вокруг неё прежняя.
-                .frame(width: PlanRowLine.bellWidth - 4, height: PlanRowLine.badgeWidth)
-                .modifier(Panel())
-                // Площадка колокольчика — той же высоты, что номер (P465:
-                // прежние 38 не давали строке стать двумя клетками); для
-                // пальца — 44, как у номера и времени.
-                .frame(width: PlanRowLine.bellWidth, height: PlanRowLine.badgeWidth)
-                .contentShape(Rectangle().size(width: PlanRowLine.bellWidth + PlanRowLine.gap / 2,
-                                               height: PlanRowLine.reach)
-                                         .offset(x: -PlanRowLine.gap / 4,
-                                                 y: -(PlanRowLine.reach - PlanRowLine.badgeWidth) / 2))
-                // Середины у колокольчика и номера общие: иначе голова
-                // строки выглядит нестройно.
-                .alignmentGuide(.firstTextBaseline) { $0[.bottom] - PlanTitle.above + 1 }
+                if row.repeats != nil {
+                    Image(systemName: "arrow.2.circlepath")
+                        .font(.system(size: row.bell == nil ? 12 : 8, weight: .bold))
+                        .foregroundStyle(Look.accent)
+                        .offset(x: row.bell == nil ? 0 : 7, y: row.bell == nil ? 0 : 6)
+                }
+            }
+            .frame(width: PageTexture.cell, height: PlanRowLine.badgeWidth)
+            .frame(width: PlanRowLine.bellWidth, height: PlanRowLine.badgeWidth, alignment: .leading)
+            .contentShape(Rectangle().size(width: PageTexture.cell,
+                                           height: PlanRowLine.reach)
+                                     .offset(y: -(PlanRowLine.reach - PlanRowLine.badgeWidth) / 2))
+            .alignmentGuide(.firstTextBaseline) { $0[.bottom] - PlanTitle.above + 1 }
         }
         .buttonStyle(.plain)
         .opacity(dim)

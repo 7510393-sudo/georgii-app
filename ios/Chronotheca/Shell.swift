@@ -384,6 +384,10 @@ final class Shell: ObservableObject {
         case "settings":  showingSettings = true
         case "map":       screen = .map
         case "mappoint":  screen = .map; previewMapPoint += 1
+        // Окно «Время» (P874) — у первого дела с временем, иначе у первого.
+        case "roller":
+            let first = store.tasks.first { $0.time != nil } ?? store.tasks.first
+            if let first, roller?.id != first.id { roller = .init(id: first.id) }
         case "remember":  tab = .diary; previewRemember += 1
         // Дни — от сегодняшнего, а не шагом: повтор не уводит дальше.
         case "past":      if store.date != day(-1) { store.go(to: day(-1)) }

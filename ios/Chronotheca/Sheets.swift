@@ -755,21 +755,23 @@ struct RollerSheet: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 12) {
+            // Ролик посередине, слева столбиком повтор, справа — напоминание
+            // (P874, автор).
+            HStack(alignment: .center, spacing: 6) {
+                column(T("Повторять", "Repeat"),
+                       [nil, .day, .week, .month, .year] as [Repeat.Every?],
+                       chip: { kind in
+                           chip(kind?.title ?? T("нет", "no"), on: every == kind) { every = kind }
+                       })
                 TimeWheel(time: $picked)
-                chipRow(T("Напомнить", "Remind"),
-                        first: [Bell.off, .atTime, .before10],
-                        second: [Bell.before60, .morning],
-                        chip: { kind in chip(kind.title, on: bell == kind) { bell = kind } })
-                chipRow(T("Повторять", "Repeat"),
-                        first: [nil, .day] as [Repeat.Every?],
-                        second: [.week, .month, .year] as [Repeat.Every?],
-                        chip: { kind in
-                            chip(kind?.title ?? T("нет", "no"), on: every == kind) { every = kind }
-                        })
-                Spacer(minLength: 0)
+                    .frame(minWidth: 0, maxWidth: .infinity)
+                column(T("Напомнить", "Remind"),
+                       [Bell.off, .atTime, .before10, .before60, .morning],
+                       chip: { kind in chip(kind.title, on: bell == kind) { bell = kind } })
             }
+            .padding(.horizontal, 8)
             .padding(.top, 6)
+            .frame(maxHeight: .infinity, alignment: .top)
             .navigationTitle(T("Время", "Time"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -795,7 +797,7 @@ struct RollerSheet: View {
                 every = row.repeats?.every
             }
         }
-        .presentationDetents([.height(420)])
+        .presentationDetents([.height(330)])
     }
 
     /// Какой готовый ответ у записанного напоминания.
@@ -810,26 +812,19 @@ struct RollerSheet: View {
         return .kept
     }
 
-    /// Ряд готовых ответов с подписью: в одну строку, а на узком телефоне —
-    /// в две.
-    private func chipRow<Item: Hashable, Chip: View>(
-        _ title: String, first: [Item], second: [Item],
+    /// Столбик готовых ответов с подписью сверху (P874).
+    private func column<Item: Hashable, Chip: View>(
+        _ title: String, _ items: [Item],
         chip: @escaping (Item) -> Chip) -> some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 6) {
             Text(title)
                 .font(Look.sans(12, weight: .semibold))
                 .foregroundStyle(Look.inkSoft)
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: 6) {
-                    ForEach(first + second, id: \.self) { chip($0) }
-                }
-                VStack(spacing: 6) {
-                    HStack(spacing: 6) { ForEach(first, id: \.self) { chip($0) } }
-                    HStack(spacing: 6) { ForEach(second, id: \.self) { chip($0) } }
-                }
-            }
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+            ForEach(items, id: \.self) { chip($0) }
         }
-        .padding(.horizontal, 12)
+        .frame(width: 98)
     }
 
     private func chip(_ title: String, on: Bool, _ pick: @escaping () -> Void) -> some View {
@@ -841,10 +836,11 @@ struct RollerSheet: View {
             Text(title)
                 .font(Look.sans(12.5))
                 .lineLimit(1)
-                .minimumScaleFactor(0.8)
+                .minimumScaleFactor(0.65)
                 .foregroundStyle(on ? Look.planBg : Look.accent)
-                .padding(.horizontal, 10)
+                .padding(.horizontal, 8)
                 .padding(.vertical, 7)
+                .frame(maxWidth: .infinity)
                 .background(on ? Look.accent : Look.chrome, in: Capsule())
                 .overlay(Capsule().strokeBorder(Look.accent.opacity(0.35)))
         }
