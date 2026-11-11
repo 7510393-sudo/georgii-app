@@ -1,41 +1,276 @@
+Analysis of sampling Chronotheca (pid 24729) every 1 millisecond
+Process:         Chronotheca [24729]
+Path:            /Users/USER/Library/Developer/CoreSimulator/Devices/FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC/data/Containers/Bundle/Application/698D4717-57EE-40F6-987B-1836B1856E77/Chronotheca.app/Chronotheca
+Load Address:    0x1022a0000
+Identifier:      Chronotheca
+Version:         ???
+Code Type:       ARM64
+Platform:        iOS Simulator
+Parent Process:  launchd_sim [2030]
+Target Type:     live task
+
+Date/Time:       2026-11-11 13:39:44.230 +0000
+Launch Time:     2026-11-11 13:39:42.808 +0000
+OS Version:      macOS 26.7.2 (25G332)
+Report Version:  7
+Analysis Tool:   /usr/bin/sample
+
+Physical footprint:         18.1M
+Physical footprint (peak):  18.1M
+Idle exit:                  untracked
+----
+
+Call graph:
+    721 Thread_72397: Main Thread   DispatchQueue_<multiple>
+      721 start  (in dyld) + 6904  [0x10257448c]
+        721 dyld4::start(dyld4::KernelArgs*, void*, void*, unsigned long long)::$_1::operator()() const  (in dyld) + 320  [0x102574b30]
+          721 dyld4::prepare(dyld4::APIs&, mach_o::UnsafeHeader const*)  (in dyld) + 340  [0x102574ca0]
+            721 dyld4::prepareSim(dyld4::RuntimeState&, char const*)  (in dyld) + 1300  [0x102576840]
+              721 _dyld_sim_prepare  (in dyld_sim) + 856  [0x1023ff058]
+                525 dyld4::prepare(dyld4::APIs&, mach_o::UnsafeHeader const*)  (in dyld_sim) + 2236  [0x1023ffa50]
+                + 525 dyld4::RuntimeState::notifyDebuggerLoad(std::span<dyld4::Loader const*, 18446744073709551615ul> const&)  (in dyld_sim) + 408  [0x1024097b4]
+                +   525 dyld4::ExternallyViewableState::addImages(lsl::Allocator&, lsl::Allocator&, std::span<dyld4::ExternallyViewableState::ImageInfo, 18446744073709551615ul> const&)  (in dyld_sim) + 496  [0x10240c154]
+                +     525 dyld4::ExternallyViewableState::triggerNotifications(dyld_image_mode, unsigned int, dyld_image_info const*)  (in dyld_sim) + 532  [0x10240bea0]
+                +       525 dyld4::ExternallyViewableState::notifyMonitorOfImageListChangesSim(bool, unsigned int, mach_header const**, char const**)  (in dyld) + 792  [0x10258e36c]
+                +         518 invocation function for block in dyld4::ExternallyViewableState::notifyMonitorOfImageListChangesSim(bool, unsigned int, mach_header const**, char const**)  (in dyld) + 2852  [0x102591ef0]
+                +         ! 518 dyld4::ExternallyViewableState::triggerNotifications(dyld_image_mode, unsigned int, dyld_image_info const*)  (in dyld) + 296  [0x10258f524]
+                +         !   518 dyld4::RemoteNotificationResponder::blockOnSynchronousEvent(unsigned int)  (in dyld) + 48  [0x1025d5c90]
+                +         !     518 dyld4::RemoteNotificationResponder::sendMessage(int, unsigned int, mach_msg_header_t*)  (in dyld) + 244  [0x1025d5904]
+                +         !       518 mach_msg_overwrite  (in dyld) + 244  [0x1025ef18c]
+                +         !         518 mach_msg2_internal  (in dyld) + 76  [0x1025eefe4]
+                +         !           518 mach_msg2_trap  (in dyld) + 8  [0x10255572c]
+                +         6 invocation function for block in dyld4::ExternallyViewableState::notifyMonitorOfImageListChangesSim(bool, unsigned int, mach_header const**, char const**)  (in dyld) + 1148  [0x102591848]
+                +         ! 6 dyld4::Atlas::ProcessSnapshot::serialize()  (in dyld) + 56  [0x1025be4a0]
+                +         !   2 dyld4::Atlas::ProcessSnapshot::Serializer::serialize()  (in dyld) + 520  [0x1025be7a0]
+                +         !   : 1 lsl::OrderedSet<char const*, lsl::ConstCharStarCompare>::insert(char const* const&)  (in dyld) + 72  [0x1025bddb0]
+                +         !   : | 1 lsl::BTree<char const*, lsl::ConstCharStarCompare, false>::const_iterator::const_iterator(lsl::BTree<char const*, lsl::ConstCharStarCompare, false> const*, char const* const&, lsl::ConstCharStarCompare)  (in dyld) + 284  [0x1025c096c]
+                +         !   : 1 lsl::OrderedSet<char const*, lsl::ConstCharStarCompare>::insert(char const* const&)  (in dyld) + 92  [0x1025bddc4]
+                +         !   :   1 lsl::BTree<char const*, lsl::ConstCharStarCompare, false>::insert_internal(lsl::BTree<char const*, lsl::ConstCharStarCompare, false>::const_iterator&&, char const*&&)  (in dyld) + 128  [0x1025c0020]
+                +         !   2 dyld4::Atlas::ProcessSnapshot::Serializer::serialize()  (in dyld) + 2068  [0x1025bedac]
+                +         !   : 2 dyld4::Atlas::ProcessSnapshot::Serializer::emitMappedFileInfo(unsigned long long, lsl::UUID const&, dyld4::FileRecord const&, lsl::Vector<std::byte>&)  (in dyld) + 520  [0x1025bf2d4]
+                +         !   :   2 dyld4::Atlas::ProcessSnapshot::Serializer::emitStringRef(char const*, lsl::Vector<std::byte>&)  (in dyld) + 116  [0x1025bf01c]
+                +         !   :     2 <deduplicated_symbol>  (in dyld) + 48,64  [0x1025bfa38,0x1025bfa48]
+                +         !   1 dyld4::Atlas::ProcessSnapshot::Serializer::serialize()  (in dyld) + 2040  [0x1025bed90]
+                +         !   : 1 dyld4::Atlas::Image::uuid() const  (in dyld) + 88  [0x1025bd96c]
+                +         !   :   1 mach_o::UnsafeHeader::getUuid(unsigned char*) const  (in dyld) + 132  [0x1025ec484]
+                +         !   :     1 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld) + 164  [0x1025ea978]
+                +         !   1 dyld4::Atlas::ProcessSnapshot::Serializer::serialize()  (in dyld) + 1004  [0x1025be984]
+                +         1 invocation function for block in dyld4::ExternallyViewableState::notifyMonitorOfImageListChangesSim(bool, unsigned int, mach_header const**, char const**)  (in dyld) + 2584  [0x102591de4]
+                +           1 AAREncoder::encode(ByteStream&) const  (in dyld) + 256  [0x1025a3c40]
+                +             1 AAREncoder::encodeFile(AAREncoder::File const&, ByteStream&) const  (in dyld) + 628  [0x1025a3558]
+                +               1 <deduplicated_symbol>  (in dyld) + 32  [0x1025a4a88]
+                94 dyld4::prepare(dyld4::APIs&, mach_o::UnsafeHeader const*)  (in dyld_sim) + 1320  [0x1023ff6bc]
+                + 94 dyld4::Loader::applyInterposingToDyldCache(dyld4::RuntimeState&)  (in dyld_sim) + 272  [0x102416c9c]
+                +   94 DyldSharedCache::forEachPatchableExport(unsigned int, void (unsigned int, char const*, PatchKind) block_pointer) const  (in dyld_sim) + 328  [0x10241a8e8]
+                +     94 PatchTableV2::forEachPatchableExport(unsigned int, void (unsigned int, char const*, PatchKind) block_pointer) const  (in dyld_sim) + 156  [0x102418870]
+                +       94 invocation function for block in dyld4::Loader::applyInterposingToDyldCache(dyld4::RuntimeState&)  (in dyld_sim) + 112  [0x102416d74]
+                +         94 DyldSharedCache::forEachPatchableUseOfExport(unsigned int, unsigned int, void (unsigned long long, dyld3::MachOFile::PointerMetaData, unsigned long long, bool) block_pointer) const  (in dyld_sim) + 616  [0x10241a740]
+                +           88 PatchTableV4::forEachPatchableCacheUseOfExport(unsigned int, unsigned int, unsigned long long, unsigned long long (unsigned int) block_pointer, void (unsigned long long, dyld3::MachOFile::PointerMetaData, unsigned long long, bool) block_pointer) const  (in dyld_sim) + 360  [0x102418e48]
+                +           ! 88 invocation function for block in dyld4::Loader::applyInterposingToDyldCache(dyld4::RuntimeState&)  (in dyld_sim) + 84  [0x102416dd4]
+                +           6 PatchTableV4::forEachPatchableCacheUseOfExport(unsigned int, unsigned int, unsigned long long, unsigned long long (unsigned int) block_pointer, void (unsigned long long, dyld3::MachOFile::PointerMetaData, unsigned long long, bool) block_pointer) const  (in dyld_sim) + 212  [0x102418db4]
+                +             6 mach_o::UnsafeHeader::preferredLoadAddress() const  (in dyld_sim) + 96  [0x102434a04]
+                +               6 mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 96  [0x102435460]
+                +                 6 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 44,88  [0x102432980,0x1024329ac]
+                77 dyld4::prepare(dyld4::APIs&, mach_o::UnsafeHeader const*)  (in dyld_sim) + 1232  [0x1023ff664]
+                + 63 dyld4::JustInTimeLoader::applyFixups(Diagnostics&, dyld4::RuntimeState&, dyld4::DyldCacheDataConstLazyScopedWriter&, bool, lsl::Vector<std::pair<dyld4::Loader const*, char const*>>*) const  (in dyld_sim) + 84  [0x10240e384]
+                + ! 62 dyld4::Loader::applyFixupsCheckCachePatching(dyld4::RuntimeState&, dyld4::DyldCacheDataConstLazyScopedWriter&) const  (in dyld_sim) + 92  [0x1024172c0]
+                + ! : 56 dyld4::Loader::applyCachePatchesTo(dyld4::RuntimeState&, dyld4::Loader const*, dyld4::DyldCacheDataConstLazyScopedWriter&) const  (in dyld_sim) + 96  [0x10241733c]
+                + ! : | 56 dyld4::Loader::applyCachePatchesToOverride(dyld4::RuntimeState&, dyld4::Loader const*, unsigned short, dyld4::Loader::DylibPatch const*, dyld4::DyldCacheDataConstLazyScopedWriter&) const  (in dyld_sim) + 264  [0x102416ef8]
+                + ! : |   56 DyldSharedCache::forEachPatchableExport(unsigned int, void (unsigned int, char const*, PatchKind) block_pointer) const  (in dyld_sim) + 328  [0x10241a8e8]
+                + ! : |     55 PatchTableV2::forEachPatchableExport(unsigned int, void (unsigned int, char const*, PatchKind) block_pointer) const  (in dyld_sim) + 156  [0x102418870]
+                + ! : |     + 55 invocation function for block in dyld4::Loader::applyCachePatchesToOverride(dyld4::RuntimeState&, dyld4::Loader const*, unsigned short, dyld4::Loader::DylibPatch const*, dyld4::DyldCacheDataConstLazyScopedWriter&) const  (in dyld_sim) + 248  [0x102417084]
+                + ! : |     +   55 DyldSharedCache::forEachPatchableUseOfExportInImage(unsigned int, unsigned int, unsigned int, void (unsigned int, dyld3::MachOFile::PointerMetaData, unsigned long long, bool) block_pointer) const  (in dyld_sim) + 972  [0x10241ad28]
+                + ! : |     +     49 PatchTableV4::forEachPatchableUseOfExportInImage(unsigned int, unsigned int, unsigned int, void (unsigned int, dyld3::MachOFile::PointerMetaData, unsigned long long, bool) block_pointer) const  (in dyld_sim) + 52  [0x102418a1c]
+                + ! : |     +     ! 49 PatchTableV2::clientsExportsForImageAndClient(unsigned int, unsigned int) const  (in dyld_sim) + 108,96,...  [0x1024191c8,0x1024191bc,...]
+                + ! : |     +     5 PatchTableV4::forEachPatchableUseOfExportInImage(unsigned int, unsigned int, unsigned int, void (unsigned int, dyld3::MachOFile::PointerMetaData, unsigned long long, bool) block_pointer) const  (in dyld_sim) + 200  [0x102418ab0]
+                + ! : |     +     ! 5 invocation function for block in dyld4::Loader::applyCachePatchesToOverride(dyld4::RuntimeState&, dyld4::Loader const*, unsigned short, dyld4::Loader::DylibPatch const*, dyld4::DyldCacheDataConstLazyScopedWriter&) const  (in dyld_sim) + 276,288  [0x1024171b0,0x1024171bc]
+                + ! : |     +     1 PatchTable::forEachPatchableUseOfExportInImage(unsigned int, unsigned int, unsigned int, void (unsigned int, dyld3::MachOFile::PointerMetaData, unsigned long long, bool) block_pointer) const  (in dyld_sim) + 4  [0x102418898]
+                + ! : |     1 invocation function for block in dyld4::Loader::applyCachePatchesToOverride(dyld4::RuntimeState&, dyld4::Loader const*, unsigned short, dyld4::Loader::DylibPatch const*, dyld4::DyldCacheDataConstLazyScopedWriter&) const  (in dyld_sim) + 264  [0x102417094]
+                + ! : 4 dyld4::Loader::applyCachePatchesTo(dyld4::RuntimeState&, dyld4::Loader const*, dyld4::DyldCacheDataConstLazyScopedWriter&) const  (in dyld_sim) + 60  [0x102417318]
+                + ! : | 4 dyld4::Loader::overridesDylibInCache(dyld4::Loader::DylibPatch const*&, unsigned short&) const  (in dyld_sim) + 20,4  [0x102410af4,0x102410ae4]
+                + ! : 2 dyld4::Loader::applyCachePatchesTo(dyld4::RuntimeState&, dyld4::Loader const*, dyld4::DyldCacheDataConstLazyScopedWriter&) const  (in dyld_sim) + 16,32  [0x1024172ec,0x1024172fc]
+                + ! 1 dyld4::Loader::applyCachePatchesTo(dyld4::RuntimeState&, dyld4::Loader const*, dyld4::DyldCacheDataConstLazyScopedWriter&) const  (in dyld_sim) + 200  [0x1024173a4]
+                + 13 dyld4::JustInTimeLoader::applyFixups(Diagnostics&, dyld4::RuntimeState&, dyld4::DyldCacheDataConstLazyScopedWriter&, bool, lsl::Vector<std::pair<dyld4::Loader const*, char const*>>*) const  (in dyld_sim) + 404  [0x10240e4c4]
+                + ! 13 dyld4::Loader::forEachBindTarget(Diagnostics&, dyld4::RuntimeState&, void (unsigned int, unsigned int, dyld4::Loader::ResolvedSymbol const&) block_pointer, bool, void (dyld4::Loader::ResolvedSymbol const&, bool&) block_pointer, void (dyld4::Loader::ResolvedSymbol const&, bool&) block_pointer) const  (in dyld_sim) + 80  [0x102414784]
+                + !   13 dyld3::MachOAnalyzer::withVMLayout(Diagnostics&, void (mach_o::Layout const&) block_pointer) const  (in dyld_sim) + 688  [0x10241b7d8]
+                + !     13 invocation function for block in dyld4::Loader::forEachBindTarget(Diagnostics&, dyld4::RuntimeState&, void (unsigned int, unsigned int, dyld4::Loader::ResolvedSymbol const&) block_pointer, bool, void (dyld4::Loader::ResolvedSymbol const&, bool&) block_pointer, void (dyld4::Loader::ResolvedSymbol const&, bool&) block_pointer) const  (in dyld_sim) + 212  [0x102414864]
+                + !       13 mach_o::Fixups::forEachBindTarget_ChainedFixups(Diagnostics&, void (mach_o::Fixups::BindTargetInfo const&, bool&) block_pointer) const  (in dyld_sim) + 116  [0x1024231b8]
+                + !         13 dyld3::MachOFile::forEachChainedFixupTarget(Diagnostics&, dyld_chained_fixups_header const*, linkedit_data_command const*, void (int, char const*, unsigned long long, bool, bool&) block_pointer)  (in dyld_sim) + 224  [0x102421a84]
+                + !           13 invocation function for block in mach_o::Fixups::forEachBindTarget_ChainedFixups(Diagnostics&, void (mach_o::Fixups::BindTargetInfo const&, bool&) block_pointer) const  (in dyld_sim) + 64  [0x1024233c0]
+                + !             13 invocation function for block in dyld4::Loader::forEachBindTarget(Diagnostics&, dyld4::RuntimeState&, void (unsigned int, unsigned int, dyld4::Loader::ResolvedSymbol const&) block_pointer, bool, void (dyld4::Loader::ResolvedSymbol const&, bool&) block_pointer, void (dyld4::Loader::ResolvedSymbol const&, bool&) block_pointer) const  (in dyld_sim) + 92  [0x1024148ec]
+                + !               13 dyld4::Loader::resolveSymbol(Diagnostics&, dyld4::RuntimeState&, int, char const*, bool, bool, void (unsigned int, unsigned int, dyld4::Loader::ResolvedSymbol const&) block_pointer, bool) const  (in dyld_sim) + 480  [0x102414b30]
+                + !                 10 dyld4::Loader::hasExportedSymbol(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::ExportedSymbolMode, dyld4::Loader::ResolverMode, dyld4::Loader::ResolvedSymbol*, dyld3::Array<dyld4::Loader const*>*) const  (in dyld_sim) + 1236  [0x102415bb8]
+                + !                 : 5 dyld4::Loader::hasExportedSymbol(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::ExportedSymbolMode, dyld4::Loader::ResolverMode, dyld4::Loader::ResolvedSymbol*, dyld3::Array<dyld4::Loader const*>*) const  (in dyld_sim) + 1236  [0x102415bb8]
+                + !                 : | 2 dyld4::Loader::hasExportedSymbol(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::ExportedSymbolMode, dyld4::Loader::ResolverMode, dyld4::Loader::ResolvedSymbol*, dyld3::Array<dyld4::Loader const*>*) const  (in dyld_sim) + 1180  [0x102415b80]
+                + !                 : | + 2 dyld4::JustInTimeLoader::dependent(dyld4::RuntimeState const&, unsigned int, mach_o::LinkedDylibAttributes*) const  (in dyld_sim) + 16,64  [0x10240e044,0x10240e074]
+                + !                 : | 2 dyld4::Loader::hasExportedSymbol(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::ExportedSymbolMode, dyld4::Loader::ResolverMode, dyld4::Loader::ResolvedSymbol*, dyld3::Array<dyld4::Loader const*>*) const  (in dyld_sim) + 1236  [0x102415bb8]
+                + !                 : | + 1 dyld4::Loader::hasExportedSymbol(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::ExportedSymbolMode, dyld4::Loader::ResolverMode, dyld4::Loader::ResolvedSymbol*, dyld3::Array<dyld4::Loader const*>*) const  (in dyld_sim) + 376  [0x10241585c]
+                + !                 : | + ! 1 dyld3::MachOFile::trieWalk(Diagnostics&, unsigned char const*, unsigned char const*, char const*)  (in dyld_sim) + 236  [0x102422094]
+                + !                 : | + 1 dyld4::Loader::hasExportedSymbol(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::ExportedSymbolMode, dyld4::Loader::ResolverMode, dyld4::Loader::ResolvedSymbol*, dyld3::Array<dyld4::Loader const*>*) const  (in dyld_sim) + 1180  [0x102415b80]
+                + !                 : | +   1 dyld4::JustInTimeLoader::dependent(dyld4::RuntimeState const&, unsigned int, mach_o::LinkedDylibAttributes*) const  (in dyld_sim) + 16  [0x10240e044]
+                + !                 : | 1 dyld4::Loader::hasExportedSymbol(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::ExportedSymbolMode, dyld4::Loader::ResolverMode, dyld4::Loader::ResolvedSymbol*, dyld3::Array<dyld4::Loader const*>*) const  (in dyld_sim) + 376  [0x10241585c]
+                + !                 : |   1 dyld3::MachOFile::trieWalk(Diagnostics&, unsigned char const*, unsigned char const*, char const*)  (in dyld_sim) + 252  [0x1024220a4]
+                + !                 : 3 dyld4::Loader::hasExportedSymbol(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::ExportedSymbolMode, dyld4::Loader::ResolverMode, dyld4::Loader::ResolvedSymbol*, dyld3::Array<dyld4::Loader const*>*) const  (in dyld_sim) + 376  [0x10241585c]
+                + !                 : | 2 dyld3::MachOFile::trieWalk(Diagnostics&, unsigned char const*, unsigned char const*, char const*)  (in dyld_sim) + 120  [0x102422020]
+                + !                 : | 1 dyld3::MachOFile::trieWalk(Diagnostics&, unsigned char const*, unsigned char const*, char const*)  (in dyld_sim) + 352  [0x102422108]
+                + !                 : |   1 dyld3::MachOFile::read_uleb128(Diagnostics&, unsigned char const*&, unsigned char const*)  (in dyld_sim) + 52  [0x102421bec]
+                + !                 : 1 dyld4::JustInTimeLoader::dependent(dyld4::RuntimeState const&, unsigned int, mach_o::LinkedDylibAttributes*) const  (in dyld_sim) + 100  [0x10240e098]
+                + !                 : 1 dyld4::Loader::hasExportedSymbol(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::ExportedSymbolMode, dyld4::Loader::ResolverMode, dyld4::Loader::ResolvedSymbol*, dyld3::Array<dyld4::Loader const*>*) const  (in dyld_sim) + 1180  [0x102415b80]
+                + !                 :   1 dyld4::JustInTimeLoader::dependent(dyld4::RuntimeState const&, unsigned int, mach_o::LinkedDylibAttributes*) const  (in dyld_sim) + 32  [0x10240e054]
+                + !                 3 dyld4::Loader::hasExportedSymbol(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::ExportedSymbolMode, dyld4::Loader::ResolverMode, dyld4::Loader::ResolvedSymbol*, dyld3::Array<dyld4::Loader const*>*) const  (in dyld_sim) + 376  [0x10241585c]
+                + !                   3 dyld3::MachOFile::trieWalk(Diagnostics&, unsigned char const*, unsigned char const*, char const*)  (in dyld_sim) + 120,420  [0x102422020,0x10242214c]
+                + 1 dyld4::JustInTimeLoader::applyFixups(Diagnostics&, dyld4::RuntimeState&, dyld4::DyldCacheDataConstLazyScopedWriter&, bool, lsl::Vector<std::pair<dyld4::Loader const*, char const*>>*) const  (in dyld_sim) + 464  [0x10240e500]
+                +   1 dyld4::Loader::applyFixupsGeneric(Diagnostics&, dyld4::RuntimeState&, unsigned long long, dyld3::Array<void const*> const&, dyld3::Array<void const*> const&, bool, dyld3::Array<dyld4::Loader::MissingFlatLazySymbol> const&) const  (in dyld_sim) + 236  [0x1024138b4]
+                +     1 mach_o::Image::withSegments(void (std::span<mach_o::MappedSegment const, 18446744073709551615ul>) block_pointer) const  (in dyld_sim) + 196  [0x10242f444]
+                +       1 invocation function for block in dyld4::Loader::applyFixupsGeneric(Diagnostics&, dyld4::RuntimeState&, unsigned long long, dyld3::Array<void const*> const&, dyld3::Array<void const*> const&, bool, dyld3::Array<dyld4::Loader::MissingFlatLazySymbol> const&) const  (in dyld_sim) + 164  [0x102413ab0]
+                +         1 mach_o::ChainedFixups::forEachFixupChainStartLocation(std::span<mach_o::MappedSegment const, 18446744073709551615ul>, void (void const*, unsigned int, unsigned int, unsigned int, mach_o::ChainedFixups::PointerFormat const&, bool&) block_pointer) const  (in dyld_sim) + 208  [0x10242c12c]
+                +           1 invocation function for block in dyld4::Loader::applyFixupsGeneric(Diagnostics&, dyld4::RuntimeState&, unsigned long long, dyld3::Array<void const*> const&, dyld3::Array<void const*> const&, bool, dyld3::Array<dyld4::Loader::MissingFlatLazySymbol> const&) const  (in dyld_sim) + 0  [0x102413ae4]
+                23 dyld4::prepare(dyld4::APIs&, mach_o::UnsafeHeader const*)  (in dyld_sim) + 712  [0x1023ff45c]
+                + 23 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 244  [0x10240dc58]
+                +   23 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 244  [0x10240dc58]
+                +     20 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 244  [0x10240dc58]
+                +     ! 17 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 244  [0x10240dc58]
+                +     ! : 15 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 244  [0x10240dc58]
+                +     ! : | 11 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 244  [0x10240dc58]
+                +     ! : | + 6 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 136  [0x10240dbec]
+                +     ! : | + ! 6 mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 144  [0x1024343f4]
+                +     ! : | + !   6 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x102432a1c]
+                +     ! : | + !     6 invocation function for block in mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 128  [0x1024346a8]
+                +     ! : | + !       5 invocation function for block in dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 232  [0x10240ddd8]
+                +     ! : | + !       : 4 dyld4::JustInTimeLoader::matchesPath(dyld4::RuntimeState const&, char const*) const  (in dyld_sim) + 68  [0x10240d174]
+                +     ! : | + !       : | 4 strcmp  (in dyld_sim) + 16,4,...  [0x10242afa4,0x10242af98,...]
+                +     ! : | + !       : 1 dyld4::JustInTimeLoader::matchesPath(dyld4::RuntimeState const&, char const*) const  (in dyld_sim) + 40  [0x10240d158]
+                +     ! : | + !       1 invocation function for block in dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 232  [0x10240ddd8]
+                +     ! : | + 5 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 244  [0x10240dc58]
+                +     ! : | +   5 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 244  [0x10240dc58]
+                +     ! : | +     4 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 244  [0x10240dc58]
+                +     ! : | +     : 4 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 244  [0x10240dc58]
+                +     ! : | +     :   4 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 244  [0x10240dc58]
+                +     ! : | +     :     4 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 244  [0x10240dc58]
+                +     ! : | +     :       4 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 244  [0x10240dc58]
+                +     ! : | +     :         4 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 244  [0x10240dc58]
+                +     ! : | +     :           4 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 136  [0x10240dbec]
+                +     ! : | +     :             4 mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 144  [0x1024343f4]
+                +     ! : | +     :               4 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x102432a1c]
+                +     ! : | +     :                 4 invocation function for block in mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 128  [0x1024346a8]
+                +     ! : | +     :                   4 invocation function for block in dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 476  [0x10240decc]
+                +     ! : | +     :                     4 dyld4::Loader::getLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 828  [0x102411a70]
+                +     ! : | +     :                       4 dyld4::Loader::forEachPath(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer)  (in dyld_sim) + 236  [0x102411378]
+                +     ! : | +     :                         3 dyld4::ProcessConfig::PathOverrides::forEachPathVariant(char const*, mach_o::Platform, bool, bool, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer) const  (in dyld_sim) + 356  [0x1024045d0]
+                +     ! : | +     :                         | 3 dyld4::ProcessConfig::PathOverrides::forEachInColonList(char const*, char const*, bool&, void (char const*, bool&) block_pointer)  (in dyld_sim) + 224  [0x102403860]
+                +     ! : | +     :                         |   3 invocation function for block in dyld4::ProcessConfig::PathOverrides::forEachPathVariant(char const*, mach_o::Platform, bool, bool, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer) const  (in dyld_sim) + 164  [0x102404dfc]
+                +     ! : | +     :                         |     3 dyld4::Loader::forEachResolvedAtPathVar(dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, dyld4::ProcessConfig::PathOverrides::Type, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer)  (in dyld_sim) + 468  [0x1024116f4]
+                +     ! : | +     :                         |       3 invocation function for block in dyld4::Loader::getLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 252  [0x102411f00]
+                +     ! : | +     :                         |         3 dyld4::JustInTimeLoader::matchesPath(dyld4::RuntimeState const&, char const*) const  (in dyld_sim) + 56  [0x10240d168]
+                +     ! : | +     :                         |           3 mach_o::UnsafeHeader::installName() const  (in dyld_sim) + 40  [0x102432d70]
+                +     ! : | +     :                         |             3 mach_o::UnsafeHeader::getDylibInstallName(char const**, mach_o::Version32*, mach_o::Version32*) const  (in dyld_sim) + 104  [0x102434170]
+                +     ! : | +     :                         |               3 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 44,168  [0x102432980,0x1024329fc]
+                +     ! : | +     :                         1 dyld4::ProcessConfig::PathOverrides::forEachPathVariant(char const*, mach_o::Platform, bool, bool, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer) const  (in dyld_sim) + 884  [0x1024047e0]
+                +     ! : | +     :                           1 dyld4::Loader::forEachResolvedAtPathVar(dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, dyld4::ProcessConfig::PathOverrides::Type, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer)  (in dyld_sim) + 468  [0x1024116f4]
+                +     ! : | +     :                             1 invocation function for block in dyld4::Loader::getLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 252  [0x102411f00]
+                +     ! : | +     :                               1 dyld4::JustInTimeLoader::matchesPath(dyld4::RuntimeState const&, char const*) const  (in dyld_sim) + 40  [0x10240d158]
+                +     ! : | +     :                                 1 strcmp  (in dyld_sim) + 0  [0x10242af94]
+                +     ! : | +     1 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 136  [0x10240dbec]
+                +     ! : | +       1 mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 144  [0x1024343f4]
+                +     ! : | +         1 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x102432a1c]
+                +     ! : | +           1 invocation function for block in mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 128  [0x1024346a8]
+                +     ! : | +             1 invocation function for block in dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 232  [0x10240ddd8]
+                +     ! : | +               1 dyld4::JustInTimeLoader::matchesPath(dyld4::RuntimeState const&, char const*) const  (in dyld_sim) + 68  [0x10240d174]
+                +     ! : | +                 1 strcmp  (in dyld_sim) + 4  [0x10242af98]
+                +     ! : | 4 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 136  [0x10240dbec]
+                +     ! : |   4 mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 144  [0x1024343f4]
+                +     ! : |     4 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x102432a1c]
+                +     ! : |       4 invocation function for block in mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 128  [0x1024346a8]
+                +     ! : |         4 invocation function for block in dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 232  [0x10240ddd8]
+                +     ! : |           3 dyld4::JustInTimeLoader::matchesPath(dyld4::RuntimeState const&, char const*) const  (in dyld_sim) + 56  [0x10240d168]
+                +     ! : |           ! 3 mach_o::UnsafeHeader::installName() const  (in dyld_sim) + 40  [0x102432d70]
+                +     ! : |           !   3 mach_o::UnsafeHeader::getDylibInstallName(char const**, mach_o::Version32*, mach_o::Version32*) const  (in dyld_sim) + 104  [0x102434170]
+                +     ! : |           !     3 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 88,168,...  [0x1024329ac,0x1024329fc,...]
+                +     ! : |           1 dyld4::JustInTimeLoader::matchesPath(dyld4::RuntimeState const&, char const*) const  (in dyld_sim) + 68  [0x10240d174]
+                +     ! : |             1 strcmp  (in dyld_sim) + 24  [0x10242afac]
+                +     ! : 2 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 136  [0x10240dbec]
+                +     ! :   2 mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 144  [0x1024343f4]
+                +     ! :     2 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x102432a1c]
+                +     ! :       2 invocation function for block in mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 128  [0x1024346a8]
+                +     ! :         2 invocation function for block in dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 232  [0x10240ddd8]
+                +     ! :           2 dyld4::JustInTimeLoader::matchesPath(dyld4::RuntimeState const&, char const*) const  (in dyld_sim) + 56  [0x10240d168]
+                +     ! :             2 mach_o::UnsafeHeader::installName() const  (in dyld_sim) + 40  [0x102432d70]
+                +     ! :               2 mach_o::UnsafeHeader::getDylibInstallName(char const**, mach_o::Version32*, mach_o::Version32*) const  (in dyld_sim) + 104  [0x102434170]
+                +     ! :                 2 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 128,216  [0x1024329d4,0x102432a2c]
+                +     ! 3 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 136  [0x10240dbec]
+                +     !   3 mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 144  [0x1024343f4]
+                +     !     3 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x102432a1c]
+                +     !       3 invocation function for block in mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 128  [0x1024346a8]
+                +     !         2 invocation function for block in dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 232  [0x10240ddd8]
+                +     !         | 1 dyld4::JustInTimeLoader::matchesPath(dyld4::RuntimeState const&, char const*) const  (in dyld_sim) + 56  [0x10240d168]
+                +     !         | + 1 mach_o::UnsafeHeader::installName() const  (in dyld_sim) + 40  [0x102432d70]
+                +     !         | +   1 mach_o::UnsafeHeader::getDylibInstallName(char const**, mach_o::Version32*, mach_o::Version32*) const  (in dyld_sim) + 104  [0x102434170]
+                +     !         | +     1 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 128  [0x1024329d4]
+                +     !         | 1 dyld4::Loader::matchesPath(dyld4::RuntimeState const&, char const*) const  (in dyld_sim) + 4  [0x1024109c4]
+                +     !         1 invocation function for block in dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 476  [0x10240decc]
+                +     !           1 dyld4::Loader::getLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 828  [0x102411a70]
+                +     !             1 dyld4::Loader::forEachPath(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer)  (in dyld_sim) + 236  [0x102411378]
+                +     !               1 dyld4::ProcessConfig::PathOverrides::forEachPathVariant(char const*, mach_o::Platform, bool, bool, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer) const  (in dyld_sim) + 884  [0x1024047e0]
+                +     !                 1 dyld4::Loader::forEachResolvedAtPathVar(dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, dyld4::ProcessConfig::PathOverrides::Type, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer)  (in dyld_sim) + 468  [0x1024116f4]
+                +     !                   1 invocation function for block in dyld4::Loader::getLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 252  [0x102411f00]
+                +     !                     1 dyld4::JustInTimeLoader::matchesPath(dyld4::RuntimeState const&, char const*) const  (in dyld_sim) + 40  [0x10240d158]
+                +     !                       1 strcmp  (in dyld_sim) + 0  [0x10242af94]
+                +     3 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 136  [0x10240dbec]
+                +       3 mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 144  [0x1024343f4]
+                +         3 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x102432a1c]
+                +           3 invocation function for block in mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 128  [0x1024346a8]
+                +             3 invocation function for block in dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 232  [0x10240ddd8]
+                +               2 dyld4::JustInTimeLoader::matchesPath(dyld4::RuntimeState const&, char const*) const  (in dyld_sim) + 56  [0x10240d168]
+                +               : 2 mach_o::UnsafeHeader::installName() const  (in dyld_sim) + 40  [0x102432d70]
+                +               :   2 mach_o::UnsafeHeader::getDylibInstallName(char const**, mach_o::Version32*, mach_o::Version32*) const  (in dyld_sim) + 104  [0x102434170]
+                +               :     2 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 88,180  [0x1024329ac,0x102432a08]
+                +               1 dyld4::JustInTimeLoader::matchesPath(dyld4::RuntimeState const&, char const*) const  (in dyld_sim) + 68  [0x10240d174]
+                +                 1 strcmp  (in dyld_sim) + 4  [0x10242af98]
+                2 dyld4::prepare(dyld4::APIs&, mach_o::UnsafeHeader const*)  (in dyld_sim) + 1116  [0x1023ff5f0]
+                  2 dyld4::RuntimeState::buildInterposingTables()  (in dyld_sim) + 400  [0x102408194]
+                    2 mach_o::UnsafeHeader::forEachInterposingSection(void (mach_o::UnsafeHeader::SectionInfo const&, bool&) block_pointer) const  (in dyld_sim) + 68  [0x1024360cc]
+                      2 mach_o::UnsafeHeader::forEachSection(void (mach_o::UnsafeHeader::SectionInfo const&, bool&) block_pointer) const  (in dyld_sim) + 96  [0x10243405c]
+                        2 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x102432a1c]
+                          2 invocation function for block in mach_o::UnsafeHeader::forEachSection(void (mach_o::UnsafeHeader::SectionInfo const&, bool&) block_pointer) const  (in dyld_sim) + 304  [0x102435830]
+                            2 dyld4::RuntimeState::appendInterposingTuples(dyld4::Loader const*, unsigned char const*, unsigned int)  (in dyld_sim) + 448  [0x102407488]
+                              2 dyld3::MachOAnalyzer::withChainStarts(Diagnostics&, unsigned long long, void (dyld_chained_starts_in_image const*) block_pointer) const  (in dyld_sim) + 140  [0x10241e4d8]
+                                2 invocation function for block in dyld4::RuntimeState::appendInterposingTuples(dyld4::Loader const*, unsigned char const*, unsigned int)  (in dyld_sim) + 244  [0x102407944]
+                                  2 dyld3::MachOAnalyzer::forEachChainedFixupTarget(Diagnostics&, void (int, char const*, unsigned long long, bool, bool&) block_pointer) const  (in dyld_sim) + 356  [0x10241d774]
+                                    2 dyld3::MachOFile::forEachChainedFixupTarget(Diagnostics&, dyld_chained_fixups_header const*, linkedit_data_command const*, void (int, char const*, unsigned long long, bool, bool&) block_pointer)  (in dyld_sim) + 224  [0x102421a84]
+                                      2 invocation function for block in dyld4::RuntimeState::appendInterposingTuples(dyld4::Loader const*, unsigned char const*, unsigned int)  (in dyld_sim) + 96  [0x102407b60]
+                                        1 dyld4::Loader::resolveSymbol(Diagnostics&, dyld4::RuntimeState&, int, char const*, bool, bool, void (unsigned int, unsigned int, dyld4::Loader::ResolvedSymbol const&) block_pointer, bool) const  (in dyld_sim) + 480  [0x102414b30]
+                                        ! 1 dyld4::Loader::hasExportedSymbol(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::ExportedSymbolMode, dyld4::Loader::ResolverMode, dyld4::Loader::ResolvedSymbol*, dyld3::Array<dyld4::Loader const*>*) const  (in dyld_sim) + 1236  [0x102415bb8]
+                                        !   1 dyld4::Loader::hasExportedSymbol(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::ExportedSymbolMode, dyld4::Loader::ResolverMode, dyld4::Loader::ResolvedSymbol*, dyld3::Array<dyld4::Loader const*>*) const  (in dyld_sim) + 376  [0x10241585c]
+                                        !     1 dyld3::MachOFile::trieWalk(Diagnostics&, unsigned char const*, unsigned char const*, char const*)  (in dyld_sim) + 120  [0x102422020]
+                                        1 dyld4::Loader::resolveSymbol(Diagnostics&, dyld4::RuntimeState&, int, char const*, bool, bool, void (unsigned int, unsigned int, dyld4::Loader::ResolvedSymbol const&) block_pointer, bool) const  (in dyld_sim) + 756  [0x102414c44]
+                                          1 invocation function for block in dyld4::Loader::resolveSymbol(Diagnostics&, dyld4::RuntimeState&, int, char const*, bool, bool, void (unsigned int, unsigned int, dyld4::Loader::ResolvedSymbol const&) block_pointer, bool) const  (in dyld_sim) + 632  [0x102416004]
+                                            1 dyld4::Loader::hasExportedSymbol(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::ExportedSymbolMode, dyld4::Loader::ResolverMode, dyld4::Loader::ResolvedSymbol*, dyld3::Array<dyld4::Loader const*>*) const  (in dyld_sim) + 376  [0x10241585c]
+                                              1 dyld3::MachOFile::trieWalk(Diagnostics&, unsigned char const*, unsigned char const*, char const*)  (in dyld_sim) + 120  [0x102422020]
+
+Total number in stack (recursive counted multiple, when >=5):
+        14       dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 244  [0x10240dc58]
+        8       mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x102432a1c]
+        7       dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 136  [0x10240dbec]
+        7       invocation function for block in mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 128  [0x1024346a8]
+        7       mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 144  [0x1024343f4]
+        6       dyld3::MachOFile::trieWalk(Diagnostics&, unsigned char const*, unsigned char const*, char const*)  (in dyld_sim) + 0  [0x102421fa8]
+        6       dyld4::Loader::hasExportedSymbol(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::ExportedSymbolMode, dyld4::Loader::ResolverMode, dyld4::Loader::ResolvedSymbol*, dyld3::Array<dyld4::Loader const*>*) const  (in dyld_sim) + 376  [0x10241585c]
+        6       invocation function for block in dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 232  [0x10240ddd8]
+        6       mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 0  [0x102432954]
+        6       strcmp  (in dyld_sim) + 0  [0x10242af94]
+        5       dyld4::JustInTimeLoader::matchesPath(dyld4::RuntimeState const&, char const*) const  (in dyld_sim) + 56  [0x10240d168]
+        5       mach_o::UnsafeHeader::getDylibInstallName(char const**, mach_o::Version32*, mach_o::Version32*) const  (in dyld_sim) + 104  [0x102434170]
+        5       mach_o::UnsafeHeader::installName() const  (in dyld_sim) + 40  [0x102432d70]
 
 Sort by top of stack, same collapsed (when >= 5):
-        __workq_kernreturn  (in libsystem_kernel.dylib)        2676
-        mach_msg2_trap  (in libsystem_kernel.dylib)        795
-        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        457
-        __semwait_signal  (in libsystem_kernel.dylib)        316
-        semaphore_timedwait_trap  (in libsystem_kernel.dylib)        166
-        semaphore_wait_trap  (in libsystem_kernel.dylib)        158
-        pthread_getspecific  (in libsystem_pthread.dylib)        48
-        at #1 (_:_:) in static PageTexture.edgeDistance(_:width:height:)  (in Chronotheca.debug.dylib)        43
-        static PageTexture.edgeDistance(_:width:height:)  (in Chronotheca.debug.dylib)        30
-        objc_release_x23  (in libobjc.A.dylib)        24
-        _swift_isClassOrObjCExistentialType  (in libswiftCore.dylib)        22
-        writev  (in libsystem_kernel.dylib)        21
-        Array.subscript.getter  (in libswiftCore.dylib)        20
-        objc_msgSend  (in libobjc.A.dylib)        19
-        swift::runtime::AccessSet::insert(swift::runtime::Access*, void*, void*, swift::ExclusivityFlags)  (in libswiftCore.dylib)        13
-        swift_beginAccess  (in libswiftCore.dylib)        12
-        StrideThroughIterator.next()  (in libswiftCore.dylib)        11
-        swift_endAccess  (in libswiftCore.dylib)        11
-        -[__NSDictionaryM objectForKey:]  (in CoreFoundation)        10
-        _platform_memmove  (in libsystem_platform.dylib)        9
-        Array._checkSubscript(_:wasNativeTypeChecked:)  (in libswiftCore.dylib)        8
-        DYLD-STUB$$pthread_getspecific  (in libswiftCore.dylib)        8
-        min<A>(_:_:)  (in libswiftCore.dylib)        8
-        protocol witness for Collection.formIndex(after:) in conformance <> Range<A>  (in libswiftCore.dylib)        8
-        swift_getAssociatedTypeWitness  (in libswiftCore.dylib)        8
-        DYLD-STUB$$Array.subscript.getter  (in Chronotheca.debug.dylib)        7
-        __CF_IS_OBJC  (in CoreFoundation)        7
-        __swift_instantiateConcreteTypeFromMangledNameV2  (in Chronotheca.debug.dylib)        7
-        _xzm_free  (in libsystem_malloc.dylib)        7
-        specialized Array.init(repeating:count:)  (in libswiftCore.dylib)        7
-        swift::metadataimpl::ValueWitnesses<swift::metadataimpl::NativeBox<unsigned int, 4ul, 4ul, 4ul>>::initializeWithCopy(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        7
-        _xzm_xzone_malloc_tiny  (in libsystem_malloc.dylib)        6
-        generationCountFromListOfSources  (in CoreFoundation)        6
-        DYLD-STUB$$swift_endAccess  (in Chronotheca.debug.dylib)        5
-        objc_retain_x8  (in libobjc.A.dylib)        5
-        protocol witness for Strideable.advanced(by:) in conformance Int64  (in libswiftCore.dylib)        5
-        swift::LockingConcurrentMap<(anonymous namespace)::TupleCacheEntry, (anonymous namespace)::TupleCacheStorage>::getOrInsert<(anonymous namespace)::TupleCacheEntry::Key, swift::MetadataRequest&, swift::TargetValueWitnessTable<swift::InProcess> const*&>((anonymous namespace)::TupleCacheEntry::Key, swift::MetadataRequest&, swift::TargetValueWitnessTable<swift::InProcess> const*&)  (in libswiftCore.dylib)        5
-        swift::metadataimpl::ValueWitnesses<swift::metadataimpl::NativeBox<unsigned long long, 8ul, 8ul, 8ul>>::initializeWithTake(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        5
+        mach_msg2_trap  (in dyld)        518
+        invocation function for block in dyld4::Loader::applyInterposingToDyldCache(dyld4::RuntimeState&)  (in dyld_sim)        88
+        PatchTableV2::clientsExportsForImageAndClient(unsigned int, unsigned int) const  (in dyld_sim)        49
+        mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim)        17
+        dyld3::MachOFile::trieWalk(Diagnostics&, unsigned char const*, unsigned char const*, char const*)  (in dyld_sim)        9
+        strcmp  (in dyld_sim)        9
+        invocation function for block in dyld4::Loader::applyCachePatchesToOverride(dyld4::RuntimeState&, dyld4::Loader const*, unsigned short, dyld4::Loader::DylibPatch const*, dyld4::DyldCacheDataConstLazyScopedWriter&) const  (in dyld_sim)        6
+        dyld4::JustInTimeLoader::dependent(dyld4::RuntimeState const&, unsigned int, mach_o::LinkedDylibAttributes*) const  (in dyld_sim)        5
+
+Binary images description not available
 
