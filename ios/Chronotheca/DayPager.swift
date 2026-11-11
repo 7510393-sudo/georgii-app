@@ -389,19 +389,30 @@ struct DayPage: View {
                          // прыжком (видео автора к 251). Запись дня — тоже
                          // после хода: она шла посреди него.
                          ribbon.opened()
+                         // Не сегодняшний день (P834, P875) — сразу в свою
+                         // карточку: лист, где его отпустили, уменьшается к
+                         // краю, куда его тянули, и тает, а лента в ту же
+                         // меру доезжает до его карточки (P877, автор: «чтобы
+                         // карточка не уходила за край и растворялась, а
+                         // уменьшалась и вставала в своё гнездо»).
+                         if !store.isToday {
+                             ribbon.frozen = true
+                             shell.dayCard = true
+                             shell.ribbonOpen = true
+                             shell.screen = .search
+                             shell.pulling = false
+                             ribbon.release()
+                             store.prune()
+                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                                 store.save()
+                             }
+                             return
+                         }
                          ribbon.glide(to: ribbon.restY(dir)) {
                              shell.ribbonOpen = true
                              shell.screen = .search
                              shell.pulling = false
                              ribbon.release()
-                             // Прошедший и будущий день закрывается в свою
-                             // карточку (P834, P875): лист ушёл за край — на его
-                             // месте в ленте маленькая карточка, листом он
-                             // больше не вернётся; второго открытого листа нет.
-                             if !store.isToday {
-                                 ribbon.frozen = true
-                                 shell.dayCard = true
-                             }
                              store.prune()
                              // Опись перечитывается, когда лента закроется
                              // (P797): перечитанная сразу после открытия, она

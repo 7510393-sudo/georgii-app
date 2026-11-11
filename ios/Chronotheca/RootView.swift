@@ -697,8 +697,12 @@ struct RootView: View {
                 // полэкрана листа, под ним пустой стол).
                 // Тает, а не пропадает разом (P859): низ поднятого листа,
                 // что торчал у верха экрана, исчезал рывком. Обратно — сразу.
+                // Уменьшается к краю, куда его тянули, — туда, где встаёт его
+                // карточка (P877).
                 .animation(shell.dayCard ? .easeOut(duration: 0.35) : nil) {
                     $0.opacity(shell.dayCard ? 0 : 1)
+                        .scaleEffect(shell.dayCard ? 0.3 : 1,
+                                     anchor: shell.fileFrom < 0 ? .top : .bottom)
                 }
                 .allowsHitTesting(shell.screen == .today)
         }
