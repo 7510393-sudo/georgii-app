@@ -1134,7 +1134,7 @@ struct RootView: View {
                 shell.ribbonOpen = true
                 shell.screen = .search
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) { liftToday() }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.3) { liftToday() }
             return
         }
         liftToday()

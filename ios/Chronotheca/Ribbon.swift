@@ -48,6 +48,9 @@ final class Ribbon: ObservableObject {
     /// Рамка его карточки на экране раздела — куда сложиться. Пока её нет,
     /// лист стоит, где его отпустили.
     @Published var foldTo: CGRect?
+    /// Какой день закрыли в карточку — по нему мерится её рамка, когда
+    /// лента уже собрана вокруг сегодня (P890).
+    var closedID: String?
     /// Схема карточки встала в гнездо — тает (P889).
     @Published var foldLanded = false
     /// Последняя замеренная рамка карточки закрытого дня.
@@ -263,7 +266,11 @@ final class Ribbon: ObservableObject {
                     armed = false
                     if inside { target = wall }
                 } else {
-                    let shown = EdgePull.resisted(over)
+                    // Лист «Сегодня» склеивает прошлое и будущее (P890,
+                    // автор): дошли до вчерашней или завтрашней карточки и
+                    // тянут дальше — лист идёт за ними вровень с пальцем,
+                    // без тугого хода (прежде — `EdgePull.resisted`).
+                    let shown = over
                     target = wallSide > 0 ? wall - shown : wall + shown
                     let on = over >= EdgePull.threshold
                     Trace.note(String(format: "лента: за стеной на %.0f, порог %@", over, on ? "взят" : "нет"))
@@ -472,6 +479,7 @@ final class Ribbon: ObservableObject {
         folding = false
         foldTo = nil
         foldLanded = false
+        closedID = nil
         veiled = false
         done = nil
     }

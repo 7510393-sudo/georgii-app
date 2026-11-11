@@ -416,7 +416,7 @@ struct SearchView: View {
                         .onGeometryChange(for: CGRect.self) { proxy in
                             proxy.frame(in: .named(Ribbon.space))
                         } action: { frame in
-                            if entry.id == anchorCard {
+                            if entry.id == (ribbon.closedID ?? anchorCard) {
                                 ribbon.anchorFrame = frame.offsetBy(dx: 0, dy: -above)
                             }
                         }
@@ -509,12 +509,12 @@ struct SearchView: View {
                 ribbon.foldTo = nil
                 ribbon.foldLanded = false
                 ribbon.folding = false
+                ribbon.closedID = nil
             }
             // Только когда день правда закрыт в карточку: «Сегодня» на миг
             // тоже прячется так (P878), но карточки у него нет.
             guard now, card else { return }
-            // Рост карточки — замеренный, не придуманный (P857). С наползанием
-            // рамка карточки на 32 точки ниже её верха, а рост — на 32 меньше.
+            // Рост карточки — замеренный, не придуманный (P857).
             let full: CGFloat = ribbon.laterHeight > 0 ? ribbon.laterHeight
                 : Search.tabHeight + 8 + Search.body + Search.overlap + 6
             let frameHeight: CGFloat = full - Search.overlap
@@ -523,41 +523,47 @@ struct SearchView: View {
             func spot(_ top: CGFloat) -> UnitPoint {
                 UnitPoint(x: 0.5, y: view > frameHeight ? (above + top) / (view - frameHeight) : 0)
             }
-            if shell.fileFrom < 0, let firstAfter {
-                // Карточка после дня остаётся там, где была: верх её виден
-                // под низом места дня.
-                var still = Transaction()
-                still.disablesAnimations = true
-                withTransaction(still) {
-                    proxy.scrollTo(firstAfter, anchor: spot(ribbon.y + height + Search.overlap))
-                }
-            }
-            guard let anchorCard else { return }
+            let closed = anchor
+            let side = shell.fileFrom
             // Лист ушёл вверх — карточка дня встаёт у верха; вниз — над
-            // корешком «Сегодня». Встаёт сразу, под листом, — и лист
-            // складывается точно в её рамку (P883).
-            let top: CGFloat = shell.fileFrom < 0
-                ? 8 : height - FollowRibbon.peekBottom - frameHeight
-            DispatchQueue.main.async {
+            // корешком «Сегодня».
+            let top: CGFloat = side < 0 ? 8 : height - FollowRibbon.peekBottom - frameHeight
+            // Лист тает (0,2 с) — затем картотека собирается вокруг сегодня
+            // (P890): лист «Сегодня» снова на своём месте между прошлым и
+            // будущим и склеивает их, а на экране — закрытая карточка.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                guard shell.dayCard, ribbon.folding else { return }
                 var still = Transaction()
                 still.disablesAnimations = true
-                withTransaction(still) { proxy.scrollTo(anchorCard, anchor: spot(top)) }
-                // Рамка карточки — замеренная, когда лента встала; не
-                // замерилась — та, куда её ставили.
-                // Лист над схемой успевает растаять (P886).
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                    let inset = 10 + Search.cardInset
-                    let w = UIScreen.main.bounds.width
-                    let place = ribbon.anchorFrame
-                        ?? CGRect(x: inset, y: top, width: w - 2 * inset, height: frameHeight)
-                    // Сжимается над своим местом — выше ровно на корешок, —
-                    // потом опускается в гнездо (P889, автор).
-                    ribbon.foldTo = place.offsetBy(dx: 0, dy: -Search.tabHeight)
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                ribbon.closedID = closed
+                store.save()
+                withTransaction(still) { store.go(to: DayStore.today()) }
+                DispatchQueue.main.async {
+                    withTransaction(still) { proxy.scrollTo(closed, anchor: spot(top)) }
+                    // Рамка карточки — замеренная, когда лента встала.
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
                         guard ribbon.folding else { return }
-                        ribbon.foldTo = place
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                            if ribbon.folding { ribbon.foldLanded = true }
+                        let inset = 10 + Search.cardInset
+                        let w = UIScreen.main.bounds.width
+                        let place = ribbon.anchorFrame
+                            ?? CGRect(x: inset, y: top, width: w - 2 * inset, height: frameHeight)
+                        // Сжимается над своим местом — выше ровно на корешок, —
+                        // потом опускается в гнездо (P889).
+                        ribbon.foldTo = place.offsetBy(dx: 0, dy: -Search.tabHeight)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                            guard ribbon.folding else { return }
+                            ribbon.foldTo = place
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                                guard ribbon.folding else { return }
+                                ribbon.foldLanded = true
+                                // Схема растаяла — лист «Сегодня» снова за
+                                // лентой: корешок внизу, тяга к нему — день.
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                    guard shell.dayCard else { return }
+                                    withTransaction(still) { shell.dayCard = false }
+                                    ribbon.refresh()
+                                }
+                            }
                         }
                     }
                 }
