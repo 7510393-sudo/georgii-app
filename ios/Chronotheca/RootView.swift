@@ -676,7 +676,7 @@ struct RootView: View {
                 // Картотека проступает плавно, по мере того как лист уходит
                 // (P858): прежде появлялась разом с первым движением.
                 .modifier(RibbonFade(ribbon: shell.ribbon, live: shell.ribbonLive,
-                                     card: shell.dayCard))
+                                     card: shell.pastCard))
                 .allowsHitTesting(shell.screen == .search)
                 .accessibilityHidden(!shell.ribbonLive)
                 .zIndex(0)
@@ -689,9 +689,7 @@ struct RootView: View {
             // лежит позади листа, лист заходит на неё на 8 точек (P867,
             // автор: «нижний лист должен хотя бы на 1–2 мм накладываться на
             // верхний, чтобы было понятно, какой лист где»).
-            // Будущий день закрыт в карточку (P875) — полоски нет, «Сегодня»
-            // корешком снизу.
-            if store.isFuture && !shell.dayCard {
+            if store.isFuture {
                 TodayTop()
                     .frame(width: size.width, height: FollowRibbon.peekTop)
                     .frame(width: size.width, height: size.height, alignment: .top)
@@ -710,8 +708,8 @@ struct RootView: View {
                 // полэкрана листа, под ним пустой стол).
                 // Тает, а не пропадает разом (P859): низ поднятого листа,
                 // что торчал у верха экрана, исчезал рывком. Обратно — сразу.
-                .animation(shell.dayCard ? .easeOut(duration: 0.35) : nil) {
-                    $0.opacity(shell.dayCard ? 0 : 1)
+                .animation(shell.pastCard ? .easeOut(duration: 0.35) : nil) {
+                    $0.opacity(shell.pastCard ? 0 : 1)
                 }
                 .allowsHitTesting(shell.screen == .today)
         }
@@ -729,7 +727,7 @@ struct RootView: View {
         .overlay(alignment: .topLeading) {
             TodayPeek(ribbon: shell.ribbon, live: shell.ribbonLive,
                       open: shell.screen == .search && shell.ribbonOpen,
-                      card: shell.dayCard, todaySheet: store.isToday, future: store.isFuture,
+                      card: shell.pastCard, todaySheet: store.isToday, future: store.isFuture,
                       size: size) { tapSection(.today) }
         }
         .background(Desk())
@@ -861,7 +859,7 @@ struct RootView: View {
         shell.ribbon.walls = { [shell] in
             // У прошедшего дня, закрытого в карточку, места дня в ленте нет —
             // нет и стены (P834).
-            shell.screen == .search && shell.ribbonOpen && !shell.pulling && !shell.dayCard
+            shell.screen == .search && shell.ribbonOpen && !shell.pulling && !shell.pastCard
         }
         // В день тягой (P828): сперва лента доезжает до места дня, раздел
         // меняется, когда встала, — как и при открытии картотеки. Прежде

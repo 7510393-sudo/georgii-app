@@ -287,14 +287,13 @@ final class Shell: ObservableObject {
     @Published var pulling = false
     /// Лента открыта — день стоит в ней на своём месте, пока не вернутся.
     @Published var ribbonOpen = false {
-        didSet { if !ribbonOpen && dayCard { dayCard = false } }
+        didSet { if !ribbonOpen && pastCard { pastCard = false } }
     }
-    /// Не сегодняшний день — прошедший (P834) или будущий (P875) —
-    /// отодвинули в картотеку, и она встала: в ленте на его месте — его
-    /// маленькая карточка, а не открытый лист. Открыть снова — касанием по
-    /// карточке; «Сегодня» — только корешком снизу.
-    @Published var dayCard = false {
-        didSet { if !dayCard { ribbon.frozen = false } }
+    /// Прошедший день отодвинули в картотеку, и она встала (P834): в ленте
+    /// на его месте — его маленькая карточка, а не открытый лист. Открыть
+    /// снова — касанием по карточке.
+    @Published var pastCard = false {
+        didSet { if !pastCard { ribbon.frozen = false } }
     }
     /// Лента на экране: тянут или открыта.
     var ribbonLive: Bool { pulling || ribbonOpen }
