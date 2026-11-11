@@ -721,7 +721,7 @@ struct RootView: View {
             TodayPeek(ribbon: shell.ribbon, live: shell.ribbonLive,
                       open: shell.screen == .search && shell.ribbonOpen,
                       card: shell.dayCard, todaySheet: store.isToday,
-                      size: size) { tapSection(.today) }
+                      size: size) { riseToday() }
         }
         .background(Desk())
     }
@@ -862,7 +862,7 @@ struct RootView: View {
         // его корешка.
         shell.ribbon.toToday = { [shell] in
             guard shell.screen == .search else { return }
-            tapSection(.today)
+            riseToday()
         }
         shell.ribbon.wantDay = { [shell] in
             guard shell.screen == .search else { return }
@@ -892,22 +892,8 @@ struct RootView: View {
         // «Дневник» из картотеки, когда открыт прошедший день, — на сегодня
         // (P850): прежде лента доезжала к открытому дню, и кнопка вела в
         // прошлое. Сразу, без хода, как касание карточки (P796).
-        if target == .today && shell.screen == .search && !store.isToday {
-            Feel.thud()
-            store.save()
-            var still = Transaction()
-            still.disablesAnimations = true
-            withTransaction(still) {
-                shell.instant = true
-                shell.ribbonOpen = false
-                shell.pulling = false
-                shell.fileFrom = 0
-                store.go(to: DayStore.today())
-                shell.screen = .today
-            }
-            shell.ribbon.release()
-            shell.ribbon.park()
-            archive.reloadSoon()
+        if target == .today && shell.screen == .search {
+            riseToday()
             return
         }
         // Раздел меняется сразу, а запись дня и перечитывание папки идут
@@ -1110,6 +1096,46 @@ struct RootView: View {
             // краем, с той стороны, где он был), затем доезжает до него.
             ribbon.settle(ribbon.y < 0 ? -1 : 1) {
                 ribbon.glide(to: 0, then: finish)
+            }
+        }
+    }
+
+    /// «Сегодня» из картотеки — касанием корешка, кнопкой «Дневник» или у
+    /// края ленты (P878, автор: «лист всегда должен подниматься снизу, вне
+    /// зависимости от того, куда его смахивали перед этим; плавно и
+    /// равномерно — сейчас он просто вскакивает»). Одним путём, что бы ни
+    /// было открыто до того: лист встаёт корешком внизу, на место корешка
+    /// «Сегодня», и плавно поднимается. Прежде открытый прошедший или будущий
+    /// день сменялся сегодняшним сразу (P850), а после кольца лист
+    /// опускался сверху.
+    private func riseToday() {
+        guard shell.screen == .search, !shell.ribbon.busy else { return }
+        let ribbon = shell.ribbon
+        var still = Transaction()
+        still.disablesAnimations = true
+        Feel.thud()
+        ribbon.felt = true
+        if !store.isToday {
+            store.save()
+            // Пока лента пересобирается вокруг сегодня, листа не видно: он
+            // встаёт корешком внизу уже сегодняшним.
+            withTransaction(still) {
+                ribbon.frozen = true
+                shell.dayCard = true
+                store.go(to: DayStore.today())
+            }
+        }
+        ribbon.opened()
+        ribbon.settle(1) { [shell] in
+            withTransaction(still) {
+                shell.dayCard = false
+                shell.fileFrom = 1
+            }
+            ribbon.place(ribbon.restY(1))
+            ribbon.refresh()
+            backToDay {
+                ribbon.felt = false
+                withTransaction(still) { shell.screen = .today }
             }
         }
     }

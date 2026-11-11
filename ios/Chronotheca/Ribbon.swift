@@ -415,6 +415,12 @@ final class Ribbon: ObservableObject {
         }
     }
 
+    /// День — заново по месту в ленте (P878): после замороженного хода.
+    func refresh() {
+        guard let scroll = box.view else { return }
+        follow(scroll.contentOffset.y)
+    }
+
     /// Место дня — на верх экрана, под день, без хода.
     func park() {
         if seen, !driving { place(0) } else { home?() }
