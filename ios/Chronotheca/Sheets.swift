@@ -717,8 +717,8 @@ enum Build {
 /// Время дела, напоминание и повтор — одним окном (P872, автор: «чтобы не
 /// крутить две рулетки, а в два движения выбрать время, периодичность и
 /// напоминание»; вместо двух окон — времени и колокольчика, P152, P194).
-/// Ролик — время дела; под ним «Напомнить» готовыми ответами, считая от
-/// этого времени; второй ролик — только для «другое». В файле напоминание
+/// Ролик один — время дела; под ним «Напомнить» только кнопками, считая от
+/// этого времени (P873: второго ролика нет). В файле напоминание
 /// по-прежнему точным временем «(напомнить ЧЧ:ММ)».
 struct RollerSheet: View {
 
@@ -728,15 +728,18 @@ struct RollerSheet: View {
     @EnvironmentObject private var shell: Shell
     /// Время дела.
     @State private var picked = Date()
-    /// Время напоминания, когда выбрано «другое».
-    @State private var bellPicked = Date()
+    /// Напоминание, записанное раньше на своё время, не по кнопке.
+    @State private var keptBell: String?
     @State private var bell: Bell = .off
     /// Повтор дела (P359): нет, каждый день, неделю, месяц, год.
     @State private var every: Repeat.Every?
 
     /// Когда напомнить.
     enum Bell {
-        case off, atTime, before10, before60, morning, other
+        case off, atTime, before10, before60, morning
+        /// Записанное на своё время (в файле или прежним роликом): кнопки не
+        /// горят, напоминание остаётся, пока не нажали другую (P873).
+        case kept
 
         var title: String {
             switch self {
@@ -745,7 +748,7 @@ struct RollerSheet: View {
             case .before10: return T("за 10 мин", "10 min before")
             case .before60: return T("за 1 час", "1 hour before")
             case .morning: return T("в 9 утра", "at 9 am")
-            case .other: return T("другое", "other")
+            case .kept: return ""
             }
         }
     }
@@ -756,13 +759,8 @@ struct RollerSheet: View {
                 TimeWheel(time: $picked)
                 chipRow(T("Напомнить", "Remind"),
                         first: [Bell.off, .atTime, .before10],
-                        second: [Bell.before60, .morning, .other],
+                        second: [Bell.before60, .morning],
                         chip: { kind in chip(kind.title, on: bell == kind) { bell = kind } })
-                if bell == .other {
-                    TimeWheel(time: $bellPicked)
-                        .frame(height: 120)
-                        .clipped()
-                }
                 chipRow(T("Повторять", "Repeat"),
                         first: [nil, .day] as [Repeat.Every?],
                         second: [.week, .month, .year] as [Repeat.Every?],
@@ -776,8 +774,8 @@ struct RollerSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 // Отказ от времени — словом, а не «Отменой» (P49, P150):
-                // дело остаётся без часа; напоминание «в 9 утра» и «другое»
-                // остаются, от времени дела — снимаются.
+                // дело остаётся без часа; напоминание «в 9 утра» и своё
+                // остаётся, от времени дела — снимается.
                 ToolbarItem(placement: .topBarLeading) {
                     Button(T("Без времени", "No time")) { apply(time: nil) }
                 }
@@ -793,11 +791,11 @@ struct RollerSheet: View {
                 // Нет времени — ролик с 9 утра: самое частое начало дня (P330).
                 picked = Clock.snap(time ?? Clock.at(9))
                 bell = Self.bell(row.bell, time: row.time)
-                bellPicked = Clock.snap(Clock.date(row.bell) ?? picked.addingTimeInterval(-3600))
+                keptBell = row.bell
                 every = row.repeats?.every
             }
         }
-        .presentationDetents([.height(bell == .other ? 520 : 420)])
+        .presentationDetents([.height(420)])
     }
 
     /// Какой готовый ответ у записанного напоминания.
@@ -809,7 +807,7 @@ struct RollerSheet: View {
             if Clock.text(t.addingTimeInterval(-3600)) == bell { return .before60 }
         }
         if Clock.text(Clock.at(9)) == bell { return .morning }
-        return .other
+        return .kept
     }
 
     /// Ряд готовых ответов с подписью: в одну строку, а на узком телефоне —
@@ -861,7 +859,7 @@ struct RollerSheet: View {
         case .before10: return time.map { Clock.text($0.addingTimeInterval(-600)) }
         case .before60: return time.map { Clock.text($0.addingTimeInterval(-3600)) }
         case .morning: return Clock.text(Clock.at(9))
-        case .other: return Clock.text(bellPicked)
+        case .kept: return keptBell
         }
     }
 
