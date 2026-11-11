@@ -1,0 +1,34 @@
+    3 Thread_50373   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 3 start  (in dyld) + 6992  [0x10054c4e4]
+    +   3 start_sim  (in dyld_sim) + 20  [0x10068f0e4]
+    +     3 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x1023bee48]  ChronothecaApp.swift:0
+    +       3 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1023bed9c]  /<compiler-generated>:0
+    +         3 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           3 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             3 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               3 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 3 -[UIApplication _run]  (in UIKitCore) + 100  [0x1864a5228]
+    +                   3 -[UIApplication(UIKitApplicationAccessibility) _accessibilityInit]  (in UIKitCore) + 104  [0x18576eee0]
+    +                     3 +[UIApplication(UIKitApplicationAccessibility) _updateAccessibilitySettingsLoader]  (in UIKitCore) + 16  [0x18576ea74]
+    +                       3 +[UIApplication(UIKitApplicationAccessibility) _accessibilitySettingsBundle]  (in UIKitCore) + 80  [0x18576e988]
+    +                         3 -[NSBundle loadAndReturnError:]  (in Foundation) + 164  [0x18103c770]
+    +                           3 -[NSBundle _cfBundle]  (in Foundation) + 72  [0x18103b734]
+    +                             2 _CFBundleCreate  (in CoreFoundation) + 372  [0x1803afd70]
+    +                             ! 2 _CFBundleGetBundleVersionForURL  (in CoreFoundation) + 376  [0x1803b38a0]
+    +                             !   2 _CFIterateDirectory  (in CoreFoundation) + 96  [0x1803def78]
+    +                             !     2 readdir  (in libsystem_c.dylib) + 36  [0x1801303a4]
+    +                             !       2 _readdir_unlocked  (in libsystem_c.dylib) + 220  [0x1801302b0]
+    +                             !         2 __getdirentries64  (in libsystem_kernel.dylib) + 8  [0x1003a2670]
+    +                             1 _CFBundleCreate  (in CoreFoundation) + 652  [0x1803afe88]
+    +                               1 CFBundleGetInfoDictionary  (in CoreFoundation) + 44  [0x180537d8c]
+    +                                 1 _CFBundleRefreshInfoDictionaryAlreadyLocked  (in CoreFoundation) + 148  [0x180537e6c]
+    +                                   1 _CFBundleCopyInfoDictionaryInDirectoryWithVersion  (in CoreFoundation) + 1528  [0x180537220]
+    +                                     1 _CFDataCreateFromURL  (in CoreFoundation) + 80  [0x180491428]
+    +                                       1 _CFReadBytesFromFile  (in CoreFoundation) + 360  [0x1803ddda4]
+    +                                         1 read  (in libsystem_kernel.dylib) + 8  [0x1003a16cc]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        48
+
+Binary images description not available
+
