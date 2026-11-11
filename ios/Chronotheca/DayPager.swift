@@ -415,6 +415,9 @@ struct DayPage: View {
                              shell.screen = .search
                              shell.pulling = false
                              ribbon.release()
+                             // Остаток движения пальца ленту дальше не
+                             // катит (P892): встала на вчера или завтра.
+                             ribbon.quench()
                              store.prune()
                              // Опись перечитывается, когда лента закроется
                              // (P797): перечитанная сразу после открытия, она

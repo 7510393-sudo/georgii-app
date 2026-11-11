@@ -473,6 +473,21 @@ final class Ribbon: ObservableObject {
         link = nil
     }
 
+    /// Погасить разгон пальца (P892, автор: «хорошая функция»): картотека
+    /// открылась, а палец ещё ведёт — прежде лента подхватывала остаток
+    /// движения с разгоном и уезжала на недели вперёд (след проверки: до
+    /// декабря). Текущее касание ленты обрывается, ход по инерции — тоже;
+    /// листать дальше — новым движением.
+    func quench() {
+        guard let scroll = box.view else { return }
+        scroll.setContentOffset(scroll.contentOffset, animated: false)
+        let pan = scroll.panGestureRecognizer
+        if pan.state == .began || pan.state == .changed {
+            pan.isEnabled = false
+            pan.isEnabled = true
+        }
+    }
+
     /// Лента — в чистое состояние (P888): открыли день с карточки. Прежде
     /// после складывания лента иногда оставалась «замороженной» или в ходу,
     /// и открытую карточку было не закрыть ни вверх, ни вниз (видео автора).
