@@ -430,6 +430,7 @@ struct DayPage: View {
                          // уменьшалась и вставала в своё гнездо»).
                          if !store.isToday {
                              ribbon.frozen = true
+                             ribbon.folding = true
                              shell.dayCard = true
                              shell.ribbonOpen = true
                              shell.screen = .search

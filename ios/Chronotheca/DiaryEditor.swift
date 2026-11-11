@@ -629,11 +629,14 @@ struct DiaryEditor: UIViewRepresentable {
         }
 
         @objc private func inputModeChanged(_: Notification) {
-            DispatchQueue.main.async { [weak self] in
-                guard let self, let view = self.view else { return }
-                self.restyle(view)
-                self.stampDictated(view)
-                self.raiseFirst(view)
+            // Сразу и ещё раз, когда пройдёт «хвост» диктовки (P881).
+            for delay in [0.0, Self.dictationTail + 0.1] {
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                    guard let self, let view = self.view else { return }
+                    self.restyle(view)
+                    self.stampDictated(view)
+                    self.raiseFirst(view)
+                }
             }
         }
 
@@ -705,8 +708,19 @@ struct DiaryEditor: UIViewRepresentable {
         /// заглавную букву, ни краску (P815): правка посреди диктовки сбивала
         /// ей место, и слова ложились вокруг других слов.
         static func dictating(_ view: UITextView) -> Bool {
-            view.markedTextRange != nil || view.textInputMode?.primaryLanguage == "dictation"
+            let now = view.markedTextRange != nil || view.textInputMode?.primaryLanguage == "dictation"
+            if now { dictationSeen = Date() }
+            // Между кусками фразы временного текста у диктовки на миг нет —
+            // а правка поля в этот миг выключала диктовку через несколько букв
+            // (P881, автор по 269). Пока с последнего её следа не прошло двух
+            // секунд, она всё ещё идёт.
+            return now || Date().timeIntervalSince(dictationSeen) < dictationTail
         }
+
+        /// Когда последний раз видели диктовку в поле.
+        private static var dictationSeen = Date.distantPast
+        /// Сколько после её последнего следа поле ещё не правит текст.
+        static let dictationTail: TimeInterval = 2
 
         /// Строчная первая буква за отметкой времени в строке под курсором —
         /// заглавной (P815). Диктовка и набор росчерком вставляют слова
@@ -1997,9 +2011,10 @@ struct DiaryEditor: UIViewRepresentable {
                 } else {
                     noteDictation(view, at: sel.location, end: NSMaxRange(sel))
                 }
-            } else if dictatedLine != nil, !placing, stampDictated(view) {
-                return
             }
+            // Время надиктованной строке — только когда диктовку выключили
+            // или ушли из записи (P881): правка поля посреди фразы
+            // выключала диктовку.
             let now = DiaryEditor.plain(view.attributedText)
             parent.text = now
             if typedLetters, view.isFirstResponder,
@@ -2232,7 +2247,7 @@ struct DiaryEditor: UIViewRepresentable {
             let text = view.text ?? ""
             let now = key(view)
             guard now != styledKey else {
-                view.typingAttributes = DiaryEditor.body(parent.size, serif: parent.serif)
+                setTyping(view)
                 return
             }
             styledKey = now
@@ -2278,7 +2293,17 @@ struct DiaryEditor: UIViewRepresentable {
                 }
                 storage.endEditing()
             }
-            view.typingAttributes = body
+            setTyping(view)
+        }
+
+        /// Шрифт набора — только если он не тот (P881). Прежде он ставился
+        /// заново после каждой буквы, и клавиатура иногда теряла заглавную
+        /// после точки: смена шрифта набора сбрасывает ей подсказку регистра.
+        func setTyping(_ view: UITextView) {
+            let body = DiaryEditor.body(parent.size, serif: parent.serif)
+            if view.typingAttributes[DiaryEditor.paintKey] as? String != body[DiaryEditor.paintKey] as? String {
+                view.typingAttributes = body
+            }
         }
     }
 }
