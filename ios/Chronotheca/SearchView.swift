@@ -303,7 +303,12 @@ struct SearchView: View {
             out.append(Entry(id: day.id, kind: .past(day), over: i > 0, below: true))
         }
         // Под последней — место под строку поиска внизу (P797).
-        let tail = max(Search.fieldHeight + 8, height - CGFloat(future.count + later.count) * 60)
+        // День закрыт в карточку (P875) — поле маленькое: последняя карточка
+        // встаёт над корешком «Сегодня», а не над пустым столом высотой с
+        // экран (автор: «большое пустое поле над сегодняшним днём»).
+        let tail = slot
+            ? max(Search.fieldHeight + 8, height - CGFloat(future.count + later.count) * 60)
+            : max(Search.fieldHeight + 8, FollowRibbon.peekBottom + 8)
         out.append(Entry(id: "tail", kind: .pad(tail)))
         return out
     }
@@ -335,9 +340,9 @@ struct SearchView: View {
         // прошлого — записанные дни после него.
         let todayStamp = Vault.stamp(DayStore.today())
         let anchor = Vault.stamp(store.date)
-        // Прошедший день, закрытый в карточку (P834): он сам — карточка среди
-        // прошлых, места дня нет.
-        let card = shell.pastCard && anchor < todayStamp
+        // Не сегодняшний день, закрытый в карточку (P834, P875): он сам —
+        // карточка в своём ряду, места дня нет.
+        let card = shell.dayCard && anchor != todayStamp
         // Между прошлым и будущим всегда стоит сегодня (P871, автор 10.11;
         // отменяет P840 — лента из закрытой карточки шла через сегодня в
         // будущее). Открыт другой день — со стороны сегодня в ленте только
@@ -346,7 +351,7 @@ struct SearchView: View {
         // Опись читается один раз за перерисовку (P771): старые сверху.
         let all = Array(found.reversed())
         var past = toFuture ? [] : all.filter { card ? $0.stamp <= anchor : $0.stamp < anchor }
-        let between = toFuture
+        let between = toFuture && !card
             ? ahead(all.filter { $0.stamp > todayStamp && $0.stamp < anchor }, from: DayStore.today())
                 .filter { $0.stamp < anchor }
             : []
@@ -355,7 +360,11 @@ struct SearchView: View {
         if Search.deep { past = Array(repeating: past, count: 12).flatMap { $0 } }
         // У прошедшего дня будущего в ленте нет (P871): под ним дни до
         // сегодня, у нижнего края — сегодня, листом, а не карточкой.
-        let future = anchor >= todayStamp
+        // Будущий день закрыт в карточку (P875) — весь ряд будущего от завтра,
+        // с ним самим на своём месте.
+        let future = card && toFuture
+            ? ahead(all.filter { $0.stamp > todayStamp }, from: DayStore.today())
+            : anchor >= todayStamp
             ? ahead(all.filter { $0.stamp > anchor }, from: store.date) : []
         let later = anchor < todayStamp
             ? all.filter { $0.stamp > anchor && $0.stamp < todayStamp && Self.written($0) } : []
@@ -380,6 +389,12 @@ struct SearchView: View {
         measure.slot = !card
         shell.ribbon.plan = measure
         let firstLater = later.first?.id
+        // Карточка закрытого дня и первая после неё (P875).
+        let anchorCard = card
+            ? (toFuture ? future.first(where: { $0.stamp == anchor })?.id
+                        : past.last(where: { $0.stamp == anchor })?.id)
+            : nil
+        let firstAfter = toFuture ? future.first(where: { $0.stamp > anchor })?.id : firstLater
         let ribbon = shell.ribbon
         return ScrollViewReader { proxy in ScrollView {
             // Карточки — вид сверху: нижняя лежит поверх верхней и своим
@@ -392,7 +407,7 @@ struct SearchView: View {
                         // Рост первой карточки под днём — чтобы, когда день
                         // закроется в карточку, лента встала точно (P857).
                         .background {
-                            if entry.id == firstLater {
+                            if entry.id == firstAfter {
                                 GeometryReader { g in
                                     Color.clear
                                         .onAppear { ribbon.laterHeight = g.size.height }
@@ -471,26 +486,41 @@ struct SearchView: View {
         .onChange(of: query) { _, _ in
             DispatchQueue.main.async { settle() }
         }
-        // День закрылся в карточку (P834). Будущее (день был выше ленты):
-        // место дня над экраном сменилось карточкой, и всё ниже поднялось бы
-        // — лента встаёт так, чтобы на экране ничто не сдвинулось.
-        .onChange(of: shell.pastCard) { _, now in
-            guard now, shell.fileFrom < 0, let firstLater else { return }
-            // Карточка остаётся там, где была на экране (P857, вместо догадки
-            // P845 — лента в конце хода прыгала): верх её виден под низом
-            // места дня. С наползанием рамка карточки на 32 точки ниже её
-            // верха, а рост — на 32 меньше. Рост — замеренный, не придуманный.
+        // День закрылся в карточку (P834, P875). Сперва — чтобы на экране
+        // ничто не прыгнуло: место дня над экраном сменилось карточкой, и всё
+        // ниже поднялось бы. Затем лента мягко доезжает, пока карточка дня не
+        // встанет на виду — картотека открыта там, куда она вернулась.
+        .onChange(of: shell.dayCard) { _, now in
+            guard now else { return }
+            // Рост карточки — замеренный, не придуманный (P857). С наползанием
+            // рамка карточки на 32 точки ниже её верха, а рост — на 32 меньше.
             let full: CGFloat = ribbon.laterHeight > 0 ? ribbon.laterHeight
                 : Search.tabHeight + 8 + Search.body + Search.overlap + 6
             let frameHeight: CGFloat = full - Search.overlap
-            // От верха окна ленты: оно выше экрана на запас (P861).
-            let top: CGFloat = above + ribbon.y + height + Search.overlap
             // Окно ленты больше экрана на запасы сверху и снизу (P791, P861).
             let view: CGFloat = above + height + Afar.reserve(height)
-            let a: CGFloat = view > frameHeight ? top / (view - frameHeight) : 0
-            var still = Transaction()
-            still.disablesAnimations = true
-            withTransaction(still) { proxy.scrollTo(firstLater, anchor: UnitPoint(x: 0.5, y: a)) }
+            func spot(_ top: CGFloat) -> UnitPoint {
+                UnitPoint(x: 0.5, y: view > frameHeight ? (above + top) / (view - frameHeight) : 0)
+            }
+            if shell.fileFrom < 0, let firstAfter {
+                // Карточка после дня остаётся там, где была: верх её виден
+                // под низом места дня.
+                var still = Transaction()
+                still.disablesAnimations = true
+                withTransaction(still) {
+                    proxy.scrollTo(firstAfter, anchor: spot(ribbon.y + height + Search.overlap))
+                }
+            }
+            guard let anchorCard else { return }
+            // Лист ушёл вверх — карточка дня встаёт у верха; вниз — над
+            // корешком «Сегодня».
+            let top: CGFloat = shell.fileFrom < 0
+                ? 8 : height - FollowRibbon.peekBottom - frameHeight
+            DispatchQueue.main.async {
+                withAnimation(.easeOut(duration: 0.35)) {
+                    proxy.scrollTo(anchorCard, anchor: spot(top))
+                }
+            }
         }
         }
         .animation(.easeOut(duration: 0.25), value: keyboard)
@@ -498,7 +528,7 @@ struct SearchView: View {
 
     /// Лента в покое: вчера над нижней строкой или завтра под строкой поиска.
     private func settle() {
-        guard shell.ribbonOpen, !shell.pulling, !shell.ribbon.busy, !shell.pastCard else { return }
+        guard shell.ribbonOpen, !shell.pulling, !shell.ribbon.busy, !shell.dayCard else { return }
         shell.ribbon.opened()
         shell.ribbon.settle(shell.fileFrom < 0 ? -1 : 1)
     }
