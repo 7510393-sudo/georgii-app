@@ -254,7 +254,12 @@ final class Ribbon: ObservableObject {
             // Где палец, а не сколько прошла тяга прокрутки: прокрутка сама
             // обнуляет свой ход по шагам, и порог не набирался (P783).
             let t = scroll.panGestureRecognizer.location(in: scroll.window ?? scroll).y
-            if inside, anchor == nil { anchor = t }
+            if inside, anchor == nil {
+                anchor = t
+                // Дошли до листа «Сегодня» — лёгкий щелчок (P891); на пороге —
+                // толчок, как прежде.
+                Feel.tick()
+            }
             if let a = anchor {
                 // Прошлое: день снизу, палец идёт вверх; будущее — вниз.
                 let over = wallSide > 0 ? a - t : t - a
@@ -266,11 +271,10 @@ final class Ribbon: ObservableObject {
                     armed = false
                     if inside { target = wall }
                 } else {
-                    // Лист «Сегодня» склеивает прошлое и будущее (P890,
-                    // автор): дошли до вчерашней или завтрашней карточки и
-                    // тянут дальше — лист идёт за ними вровень с пальцем,
-                    // без тугого хода (прежде — `EdgePull.resisted`).
-                    let shown = over
+                    // За стеной — тугой ход, как у листа (P891, автор:
+                    // «стандартное сопротивление»; отменяет ход вровень с
+                    // пальцем P890).
+                    let shown = EdgePull.resisted(over)
                     target = wallSide > 0 ? wall - shown : wall + shown
                     let on = over >= EdgePull.threshold
                     Trace.note(String(format: "лента: за стеной на %.0f, порог %@", over, on ? "взят" : "нет"))
