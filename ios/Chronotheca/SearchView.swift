@@ -269,12 +269,7 @@ struct SearchView: View {
         // Над самой старой — место под строку поиска; в коротком архиве —
         // стол до верха экрана, чтобы лента могла встать вчерашним днём
         // над нижней строкой.
-        // Будущий день закрыт в карточку (P883): ряд будущего начинается у
-        // самого верха — над завтра только край к «Сегодня», пустого поля
-        // нет (автор: «карточки будущего, когда смахиваешь вниз, оставляют
-        // вверху свободное место»).
-        let lead = !slot && past.isEmpty && between.isEmpty && later.isEmpty
-            ? 8 : max(8, height - CGFloat(past.count + between.count) * 60)
+        let lead = max(8, height - CGFloat(past.count + between.count) * 60)
         out.append(Entry(id: "lead", kind: .pad(lead)))
         if !query.trimmingCharacters(in: .whitespaces).isEmpty && past.isEmpty && future.isEmpty && later.isEmpty && between.isEmpty {
             out.append(Entry(id: "note", kind: .note))
@@ -411,15 +406,6 @@ struct SearchView: View {
                     piece(entry, sample: sample)
                         // Рост первой карточки под днём — чтобы, когда день
                         // закроется в карточку, лента встала точно (P857).
-                        // Где карточка закрытого дня на экране — в неё
-                        // складывается лист (P883).
-                        .onGeometryChange(for: CGRect.self) { proxy in
-                            proxy.frame(in: .named(Ribbon.space))
-                        } action: { frame in
-                            if entry.id == anchorCard {
-                                ribbon.anchorFrame = frame.offsetBy(dx: 0, dy: -above)
-                            }
-                        }
                         .background {
                             if entry.id == firstAfter {
                                 GeometryReader { g in
@@ -505,10 +491,6 @@ struct SearchView: View {
         // ниже поднялось бы. Затем лента мягко доезжает, пока карточка дня не
         // встанет на виду — картотека открыта там, куда она вернулась.
         .onChange(of: shell.dayCard) { _, now in
-            if !now {
-                ribbon.foldTo = nil
-                ribbon.folding = false
-            }
             // Только когда день правда закрыт в карточку: «Сегодня» на миг
             // тоже прячется так (P878), но карточки у него нет.
             guard now, card else { return }
@@ -533,21 +515,12 @@ struct SearchView: View {
             }
             guard let anchorCard else { return }
             // Лист ушёл вверх — карточка дня встаёт у верха; вниз — над
-            // корешком «Сегодня». Встаёт сразу, под листом, — и лист
-            // складывается точно в её рамку (P883).
+            // корешком «Сегодня».
             let top: CGFloat = shell.fileFrom < 0
                 ? 8 : height - FollowRibbon.peekBottom - frameHeight
             DispatchQueue.main.async {
-                var still = Transaction()
-                still.disablesAnimations = true
-                withTransaction(still) { proxy.scrollTo(anchorCard, anchor: spot(top)) }
-                // Рамка карточки — замеренная, когда лента встала; не
-                // замерилась — та, куда её ставили.
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.06) {
-                    let inset = 10 + Search.cardInset
-                    let w = UIScreen.main.bounds.width
-                    ribbon.foldTo = ribbon.anchorFrame
-                        ?? CGRect(x: inset, y: top, width: w - 2 * inset, height: frameHeight)
+                withAnimation(.easeOut(duration: 0.35)) {
+                    proxy.scrollTo(anchorCard, anchor: spot(top))
                 }
             }
         }

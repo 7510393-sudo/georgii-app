@@ -757,20 +757,14 @@ struct RollerSheet: View {
         NavigationStack {
             // Ролик посередине, слева столбиком повтор, справа — напоминание
             // (P874, автор).
-            // Ролик — узкий, с просветом от кнопок (P882, автор: «окошко
-            // ролика слишком широкое и чувствительное — выставляя повтор, всё
-            // время задеваешь его пальцем»).
-            HStack(alignment: .center, spacing: 8) {
+            HStack(alignment: .center, spacing: 6) {
                 column(T("Повторять", "Repeat"),
                        [nil, .day, .week, .month, .year] as [Repeat.Every?],
                        chip: { kind in
                            chip(kind?.title ?? T("нет", "no"), on: every == kind) { every = kind }
                        })
-                // С AM/PM ролику нужно шире — иначе часы 10–12 обрезаны
-                // (снимок CI к P882).
                 TimeWheel(time: $picked)
-                    .frame(width: Clock.twelve ? 176 : 140)
-                    .clipped()
+                    .frame(minWidth: 0, maxWidth: .infinity)
                 column(T("Напомнить", "Remind"),
                        [Bell.off, .atTime, .before10, .before60, .morning],
                        chip: { kind in chip(kind.title, on: bell == kind) { bell = kind } })
@@ -830,7 +824,7 @@ struct RollerSheet: View {
                 .minimumScaleFactor(0.7)
             ForEach(items, id: \.self) { chip($0) }
         }
-        .frame(width: 86)
+        .frame(width: 98)
     }
 
     private func chip(_ title: String, on: Bool, _ pick: @escaping () -> Void) -> some View {

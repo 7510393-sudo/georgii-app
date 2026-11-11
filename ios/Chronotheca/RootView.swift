@@ -704,10 +704,13 @@ struct RootView: View {
                 // полэкрана листа, под ним пустой стол).
                 // Тает, а не пропадает разом (P859): низ поднятого листа,
                 // что торчал у верха экрана, исчезал рывком. Обратно — сразу.
-                // Складывается точно в рамку своей карточки (P883, вместо
-                // уменьшения к краю P877).
-                .modifier(FoldIntoCard(ribbon: shell.ribbon, on: shell.dayCard,
-                                       live: shell.ribbonLive, size: size))
+                // Уменьшается к краю, куда его тянули, — туда, где встаёт его
+                // карточка (P877).
+                .animation(shell.dayCard ? .easeOut(duration: 0.35) : nil) {
+                    $0.opacity(shell.dayCard ? 0 : 1)
+                        .scaleEffect(shell.dayCard ? 0.3 : 1,
+                                     anchor: shell.fileFrom < 0 ? .top : .bottom)
+                }
                 .allowsHitTesting(shell.screen == .today)
         }
         // Где ты в картотеке (P845): линия от середины левого края.
@@ -1132,12 +1135,11 @@ struct RootView: View {
                 shell.fileFrom = 1
                 ribbon.frozen = true
                 ribbon.opened()
-                ribbon.folding = true
                 shell.dayCard = true
                 shell.ribbonOpen = true
                 shell.screen = .search
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) { liftToday() }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { liftToday() }
             return
         }
         liftToday()
@@ -1580,16 +1582,11 @@ private struct TodayPeek: View {
         let alone = card || !todaySheet
         let shown = FollowRibbon.shown(live ? ribbon.y : 0, height: size.height)
         let sheetLow = todaySheet && !card && live && ribbon.y > 0 && shown >= low - 0.5
-        // Кольцо (P884, автор: «когда низ листа доходит до верхнего края на
-        // такое же расстояние, на какое выглядывает снизу корешок, — только
-        // тогда лист начинает появляться снизу, в той же динамике, в
-        // которой уходит нижний край сверху»): видно сверху и снизу вместе —
-        // не больше корешка. Низ листа над верхним краем на `bottom` —
-        // корешка снизу видно на столько, сколько ему не хватает до корешка.
+        // Кольцо: лист «Сегодня» над экраном — корешок снизу, на столько выше
+        // нижнего края, на сколько лист ушёл вверх.
         let ring = todaySheet && !card && live && ribbon.y < 0
-        let bottom = shown + size.height
-        let peek = min(FollowRibbon.peekBottom, max(0, FollowRibbon.peekBottom - bottom))
-        let tabY = ring ? size.height - peek : low
+        let part = size.height > 0 ? min(1, max(0, -ribbon.y / size.height)) : 0
+        let tabY = ring ? size.height - (size.height - low) * part : low
         ZStack(alignment: .topLeading) {
             TodayTab()
                 .frame(width: size.width)
@@ -1604,37 +1601,6 @@ private struct TodayPeek: View {
             }
         }
         .frame(width: size.width, height: size.height, alignment: .topLeading)
-    }
-}
-
-/// Лист, закрытый в карточку, складывается в её рамку (P883, автор: «это
-/// совершенно не похоже на превращение большого листа в маленькую
-/// карточку, и не считывается, что карточка встала на своё место»): из
-/// места, где его отпустили, он сжимается и съезжает точно на свою карточку
-/// в ряду, затем тает — под ним остаётся она. «Сегодня», которое на миг
-/// прячется перед подъёмом (P878), не складывается — просто не видно.
-private struct FoldIntoCard: ViewModifier {
-    @ObservedObject var ribbon: Ribbon
-    let on: Bool
-    let live: Bool
-    let size: CGSize
-
-    func body(content: Content) -> some View {
-        let target: CGRect? = on && ribbon.folding ? ribbon.foldTo : nil
-        let top = FollowRibbon.shown(live ? ribbon.y : 0, height: size.height, stick: ribbon.stick)
-        let sx: CGFloat = target.map { $0.width / max(1, size.width) } ?? 1
-        let sy: CGFloat = target.map { $0.height / max(1, size.height) } ?? 1
-        let dx: CGFloat = target?.minX ?? 0
-        let dy: CGFloat = target.map { $0.minY - top * sy } ?? 0
-        let hidden = on && !ribbon.folding
-        content
-            .scaleEffect(x: sx, y: sy, anchor: .topLeading)
-            .offset(x: dx, y: dy)
-            .animation(target == nil ? nil : .easeInOut(duration: 0.4), value: target)
-            .opacity(hidden ? 0 : 1)
-            .animation(target == nil ? nil : .easeIn(duration: 0.15).delay(0.38)) {
-                $0.opacity(target == nil ? 1 : 0)
-            }
     }
 }
 
