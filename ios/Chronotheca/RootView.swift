@@ -430,7 +430,14 @@ struct RootView: View {
             windowBottom = UIApplication.shared.connectedScenes
                 .compactMap { ($0 as? UIWindowScene)?.keyWindow }.first?.safeAreaInsets.bottom ?? 0
         }
+        // Откуда ушли — для «Обратно» (P880): другой день или раздел.
+        .onChange(of: store.date) { old, _ in
+            shell.remember(old, shell.screen)
+        }
         .onChange(of: shell.screen) { old, new in
+            let a: Shell.Screen = old == .search ? .today : old
+            let b: Shell.Screen = new == .search ? .today : new
+            if a != b { shell.remember(store.date, old) }
             LagWatch.note(new)
             follow(from: old, to: new)
             // Карта собирается при первом открытии и дальше остаётся
@@ -858,6 +865,7 @@ struct RootView: View {
         // меняется, когда встала, — как и при открытии картотеки. Прежде
         // раздел менялся в миг отпускания, экран перестраивался, и ход
         // догонял прыжком.
+        shell.goBack = { goBack() }
         // Лента дошла до края к сегодня — «Сегодня» (P871), как касание
         // его корешка.
         shell.ribbon.toToday = { [shell] in
@@ -1166,6 +1174,31 @@ struct RootView: View {
                 withTransaction(still) { shell.screen = .today }
             }
         }
+    }
+
+    /// «Обратно» (P880, автор: «вспоминаешь, что забыл что-то в будущем дне
+    /// написать, — и не вспоминать, в каком дне ты сейчас писал»): на
+    /// прежнее место — день и раздел. Повторное касание — ещё на шаг.
+    private func goBack() {
+        guard let spot = shell.popSpot() else { return }
+        shell.returning = true
+        Feel.light()
+        hideKeyboard()
+        var still = Transaction()
+        still.disablesAnimations = true
+        if shell.screen == .search || shell.ribbonOpen || shell.pulling {
+            closeRibbonNow()
+            withTransaction(still) {
+                shell.instant = true
+                shell.screen = .today
+            }
+        }
+        if !Calendar.current.isDate(spot.date, inSameDayAs: store.date) {
+            store.save()
+            withTransaction(still) { store.go(to: spot.date) }
+        }
+        if spot.screen != shell.screen { shell.screen = spot.screen }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { shell.returning = false }
     }
 
     /// Закрыть ленту без хода — она под другой плашкой, её не видно.
