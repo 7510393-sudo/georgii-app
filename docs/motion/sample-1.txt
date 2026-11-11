@@ -1,0 +1,48 @@
+    48 Thread_29820   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 48 start  (in dyld) + 6992  [0x100c304e4]
+    +   48 start_sim  (in dyld_sim) + 20  [0x100b470e4]
+    +     48 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x102bd6e0c]  ChronothecaApp.swift:0
+    +       48 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x102bd6d60]  /<compiler-generated>:0
+    +         48 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           48 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             48 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               48 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 48 -[UIApplication _run]  (in UIKitCore) + 100  [0x1864a5228]
+    +                   48 -[UIApplication(UIKitApplicationAccessibility) _accessibilityInit]  (in UIKitCore) + 112  [0x18576eee8]
+    +                     48 -[UIApplication(UIKitApplicationAccessibility) _updateApplicationAccessibility]  (in UIKitCore) + 76  [0x18576ecc4]
+    +                       48 -[UIApplication(UIKitApplicationAccessibility) _accessibilityBundlePrincipalClass]  (in UIKitCore) + 96  [0x18576eb34]
+    +                         47 -[NSBundle loadAndReturnError:]  (in Foundation) + 164  [0x18103c770]
+    +                         ! 47 -[NSBundle _cfBundle]  (in Foundation) + 72  [0x18103b734]
+    +                         !   47 _CFBundleCreate  (in CoreFoundation) + 652  [0x1803afe88]
+    +                         !     47 CFBundleGetInfoDictionary  (in CoreFoundation) + 44  [0x180537d8c]
+    +                         !       47 _CFBundleRefreshInfoDictionaryAlreadyLocked  (in CoreFoundation) + 148  [0x180537e6c]
+    +                         !         47 _CFBundleCopyInfoDictionaryInDirectoryWithVersion  (in CoreFoundation) + 1528  [0x180537220]
+    +                         !           47 _CFDataCreateFromURL  (in CoreFoundation) + 80  [0x180491428]
+    +                         !             47 _CFReadBytesFromFile  (in CoreFoundation) + 360  [0x1803ddda4]
+    +                         !               47 read  (in libsystem_kernel.dylib) + 8  [0x100d696cc]
+    +                         1 -[NSBundle loadAndReturnError:]  (in Foundation) + 248  [0x18103c7c4]
+    +                           1 _CFBundleLoadExecutableAndReturnError  (in CoreFoundation) + 460  [0x1803b117c]
+    +                             1 _CFBundleDlfcnLoadFramework  (in CoreFoundation) + 152  [0x1803e4180]
+    +                               1 dyld4::APIs::dlopen_from(char const*, int, void*)  (in dyld_sim) + 344  [0x100b3fb1c]
+    +                                 1 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const  (in dyld_sim) + 184  [0x100b44390]
+    +                                   1 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const::'lambda'()::operator()() const  (in dyld_sim) + 1884  [0x100b45204]
+    +                                     1 dyld4::RuntimeState::notifyDebuggerLoad(std::span<dyld4::Loader const*, 18446744073709551615ul> const&)  (in dyld_sim) + 408  [0x100b517b4]
+    +                                       1 dyld4::ExternallyViewableState::addImages(lsl::Allocator&, lsl::Allocator&, std::span<dyld4::ExternallyViewableState::ImageInfo, 18446744073709551615ul> const&)  (in dyld_sim) + 496  [0x100b54154]
+    +                                         1 dyld4::ExternallyViewableState::triggerNotifications(dyld_image_mode, unsigned int, dyld_image_info const*)  (in dyld_sim) + 532  [0x100b53ea0]
+    +                                           1 dyld4::ExternallyViewableState::notifyMonitorOfImageListChangesSim(bool, unsigned int, mach_header const**, char const**)  (in dyld) + 792  [0x100c4a36c]
+    +                                             1 invocation function for block in dyld4::ExternallyViewableState::notifyMonitorOfImageListChangesSim(bool, unsigned int, mach_header const**, char const**)  (in dyld) + 2852  [0x100c4def0]
+    +                                               1 dyld4::ExternallyViewableState::triggerNotifications(dyld_image_mode, unsigned int, dyld_image_info const*)  (in dyld) + 296  [0x100c4b524]
+    +                                                 1 dyld4::RemoteNotificationResponder::blockOnSynchronousEvent(unsigned int)  (in dyld) + 48  [0x100c91c90]
+    +                                                   1 dyld4::RemoteNotificationResponder::sendMessage(int, unsigned int, mach_msg_header_t*)  (in dyld) + 244  [0x100c91904]
+    +                                                     1 mach_msg_overwrite  (in dyld) + 244  [0x100cab18c]
+    +                                                       1 mach_msg2_internal  (in dyld) + 76  [0x100caafe4]
+    +                                                         1 mach_msg2_trap  (in dyld) + 8  [0x100c1172c]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        227
+        mach_msg2_trap  (in libsystem_kernel.dylib)        50
+        read  (in libsystem_kernel.dylib)        47
+        semaphore_wait_trap  (in libsystem_kernel.dylib)        27
+
+Binary images description not available
+
