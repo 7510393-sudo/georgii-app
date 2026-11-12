@@ -179,7 +179,7 @@ final class MovementTests: XCTestCase {
                      withVelocity: .slow, thenHoldForDuration: 0.1)
         XCTAssertTrue(wait(4) { openScreen == "search" }, "лента будущего не открылась: \(openScreen)")
         sleep(1)
-        // Кольцо (P876): полоски «Сегодня» у верха нет — корешок снизу.
+        // «Сегодня» у верха — низом листа с датой (P896, вместо кольца P876).
         save("10-лента-будущее")
         // Будущее вниз к сегодня через порог — лист «Сегодня» вытягивается
         // сверху, корешок уходит вниз. Лента могла уйти далеко в будущее —
@@ -191,9 +191,9 @@ final class MovementTests: XCTestCase {
                         withVelocity: .slow, thenHoldForDuration: 0.1)
             _ = wait(2) { openScreen == "today" }
         }
-        XCTAssertEqual(openScreen, "today", "кольцо: будущее вниз не вернуло в день")
+        XCTAssertEqual(openScreen, "today", "будущее вниз не вернуло в день")
         sleep(1)
-        save("11-кольцо-снова-день")
+        save("11-будущее-снова-день")
     }
 
     /// Разделы — лента вбок (P799, без круга; P805 — карта слева): с

@@ -685,14 +685,16 @@ struct RootView: View {
             // Своего стола у дня нет (P842): стол — под всей страницей; справа
             // от корешка листа ничего не закрашено (P849) — видно то, что под
             // листом: в покое стол, при тяге — картотека.
-            // Полоски «Сегодня» над будущим днём нет (P876, кольцо; отменяет
-            // P865, P867): «Сегодня» — корешком снизу, как у прошлого.
+            // Будущий день — под низом листа «Сегодня» (P896, вместо кольца
+            // P876): лист начинается на 8 точек под полоской и заходит под неё.
             // Схема карточки, в которую складывается закрытый день (P886).
             FoldGhost(ribbon: shell.ribbon, on: shell.dayCard,
                       live: shell.ribbonLive, size: size)
                 .zIndex(0.5)
             DayPages()
-                .frame(width: size.width, height: size.height)
+                .frame(width: size.width,
+                       height: size.height - (store.isFuture && !shell.dayCard ? FollowRibbon.futureTop : 0))
+                .frame(width: size.width, height: size.height, alignment: .bottom)
                 .modifier(FollowRibbon(ribbon: shell.ribbon, live: shell.ribbonLive))
                 // У края остаётся только лист сегодняшнего дня (P863).
                 .onChange(of: store.isToday, initial: true) { _, today in shell.ribbon.stick = today }
@@ -723,7 +725,7 @@ struct RootView: View {
             TodayPeek(ribbon: shell.ribbon, live: shell.ribbonLive,
                       open: shell.screen == .search && shell.ribbonOpen,
                       card: shell.dayCard, todaySheet: store.isToday,
-                      size: size) { riseToday() }
+                      future: store.isFuture, size: size) { riseToday() }
         }
         .background(Desk())
     }
@@ -1105,13 +1107,10 @@ struct RootView: View {
     }
 
     /// «Сегодня» из картотеки — касанием корешка, кнопкой «Дневник» или у
-    /// края ленты (P878, автор: «лист всегда должен подниматься снизу, вне
-    /// зависимости от того, куда его смахивали перед этим; плавно и
-    /// равномерно — сейчас он просто вскакивает»). Одним путём, что бы ни
-    /// было открыто до того: лист встаёт корешком внизу, на место корешка
-    /// «Сегодня», и плавно поднимается. Прежде открытый прошедший или будущий
-    /// день сменялся сегодняшним сразу (P850), а после кольца лист
-    /// опускался сверху.
+    /// края ленты (P878: плавно и равномерно, одним путём). Лист выходит
+    /// оттуда, где он торчит (P896, вместо кольца): со стороны прошлого —
+    /// корешком снизу и поднимается; со стороны будущего — низом листа
+    /// сверху и опускается (прежде, по кольцу, всегда снизу).
     private func riseToday() {
         guard shell.screen == .search || (shell.screen == .today && !store.isToday),
               !shell.ribbon.busy else { return }
@@ -1120,6 +1119,8 @@ struct RootView: View {
         still.disablesAnimations = true
         Feel.thud()
         ribbon.felt = true
+        // Со стороны будущего «Сегодня» сверху (P896).
+        let top = store.isFuture || (store.isToday && shell.screen == .search && ribbon.y < 0)
         // Открыт прошедший или будущий день (P879, автор: «перед тем как
         // сегодняшний лист поднимется, предыдущий должен стандартно
         // сложиться и встать на своё место в картотеке»): сперва он
@@ -1128,7 +1129,7 @@ struct RootView: View {
         if !store.isToday && !shell.dayCard {
             hideKeyboard()
             withTransaction(still) {
-                shell.fileFrom = 1
+                shell.fileFrom = top ? -1 : 1
                 ribbon.frozen = true
                 ribbon.opened()
                 ribbon.folding = true
@@ -1137,16 +1138,17 @@ struct RootView: View {
                 shell.screen = .search
             }
             // Карточка садится дольше прежнего (P895).
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { liftToday() }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { liftToday(top: top) }
             return
         }
-        liftToday()
+        liftToday(top: top)
     }
 
     /// Вторая половина `riseToday`: сегодняшний лист — корешком внизу и
-    /// плавно вверх.
-    private func liftToday() {
+    /// плавно вверх или низом листа сверху и плавно вниз (P896).
+    private func liftToday(top: Bool) {
         let ribbon = shell.ribbon
+        let dir = top ? -1 : 1
         var still = Transaction()
         still.disablesAnimations = true
         if !store.isToday {
@@ -1157,17 +1159,18 @@ struct RootView: View {
             ribbon.veiled = true
             withTransaction(still) {
                 ribbon.frozen = true
+                ribbon.foldSide = dir
                 shell.dayCard = true
                 store.go(to: DayStore.today())
             }
         }
         ribbon.opened()
-        ribbon.settle(1) { [shell] in
+        ribbon.settle(dir) { [shell] in
             withTransaction(still) {
                 shell.dayCard = false
-                shell.fileFrom = 1
+                shell.fileFrom = dir
             }
-            ribbon.place(ribbon.restY(1))
+            ribbon.place(ribbon.restY(dir))
             ribbon.refresh()
             ribbon.veiled = false
             backToDay {
@@ -1536,12 +1539,14 @@ private struct RibbonFade: ViewModifier {
     }
 }
 
-/// Где взяться за лист «Сегодня» (P860): корешок внизу. Открыт не
-/// сегодняшний день — или он закрыт в карточку (P834, P875) — внизу поверх
-/// него лежит корешок «Сегодня» сам по себе, всегда (P862). Кольцо (P876,
-/// автор): лист «Сегодня» уходит вверх — и корешком выходит снизу, будто
-/// прошёл круг внутри телефона; тянут будущее вниз к сегодня — лист
-/// вытягивается сверху, а корешок в ту же меру уходит вниз.
+/// Где «Сегодня» и где за него взяться (P860, P896): лист «Сегодня» с
+/// экрана не уходит. Со стороны прошлого — корешок внизу, со стороны
+/// будущего — низ листа у верха с именем, датой и днём недели; карточки
+/// заходят под него (P896, автор: «надо отказаться от кольцевого положения
+/// сегодняшнего листа»; отменяет кольцо P876 и P884). Открыт не сегодняшний
+/// день — или он закрыт в карточку — «Сегодня» лежит над ним сам по себе:
+/// у прошедшего корешком снизу (P862), у будущего низом листа сверху.
+/// Касание или тяга к середине — в день.
 private struct TodayPeek: View {
     @ObservedObject var ribbon: Ribbon
     /// Картотеку тянут или она открыта.
@@ -1552,45 +1557,88 @@ private struct TodayPeek: View {
     let card: Bool
     /// На листе — сегодняшний день.
     let todaySheet: Bool
+    /// На листе — будущий день.
+    let future: Bool
     let size: CGSize
     let go: () -> Void
 
     var body: some View {
         let low = size.height - FollowRibbon.peekBottom
-        // Корешок сам по себе — когда на листе не сегодня или листа нет.
+        // «Сегодня» сам по себе — когда на листе не сегодня или листа нет.
         let alone = card || !todaySheet
+        // С какой стороны: будущее — сверху, прошлое — снизу.
+        let above = future || (card && ribbon.foldSide < 0)
+        let aloneTop = alone && above
+        let aloneBottom = alone && !above
         let shown = FollowRibbon.shown(live ? ribbon.y : 0, height: size.height)
-        let sheetLow = todaySheet && !card && live && ribbon.y > 0 && shown >= low - 0.5
-        // Кольцо (P884, автор: «когда низ листа доходит до верхнего края на
-        // такое же расстояние, на какое выглядывает снизу корешок, — только
-        // тогда лист начинает появляться снизу, в той же динамике, в
-        // которой уходит нижний край сверху»): видно сверху и снизу вместе —
-        // не больше корешка. Низ листа над верхним краем на `bottom` —
-        // корешка снизу видно на столько, сколько ему не хватает до корешка.
-        let ring = todaySheet && !card && live && ribbon.y < 0
-        let bottom = shown + size.height
-        let peek = min(FollowRibbon.peekBottom, max(0, FollowRibbon.peekBottom - bottom))
-        let tabY = ring ? size.height - peek : low
+        let sheet = todaySheet && !card && live
+        let sheetLow = sheet && ribbon.y > 0 && shown >= low - 0.5
+        // Лист «Сегодня» уходит вверх: надпись едет на его низу и проступает
+        // за первые 80 точек хода — ничего не вспыхивает (P893).
+        let rising = sheet && ribbon.y < 0
+        let sheetHigh = rising && shown <= FollowRibbon.topClamp(size.height) + 0.5
+        let bottomEdge = shown + size.height + DayPage.under
+        let topY = aloneTop ? 0 : bottomEdge - FollowRibbon.peekTop
+        let topShown: Double = aloneTop ? 1 : rising ? Double(min(1, -ribbon.y / 80)) : 0
         ZStack(alignment: .topLeading) {
             TodayTab()
                 .frame(width: size.width)
-                .offset(y: tabY)
-                // В кольце — только когда правда выходит снизу (P886: стоило
-                // тронуть лист «Сегодня», корешок проступал бледной тенью).
-                // Сам по себе — тает и проступает плавно; в кольце — ровно
-                // по тому, как выходит (P893: прежде, когда лист вставал на
-                // место, корешок на полсекунды вспыхивал снизу).
-                .opacity(alone || (ring && peek >= 0.5) ? 1 : 0)
-                .animation(.easeOut(duration: 0.35), value: alone)
+                .offset(y: low)
+                .opacity(aloneBottom ? 1 : 0)
+                .animation(.easeOut(duration: 0.35), value: aloneBottom)
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
-            if (alone && (open || !live)) || (open && (sheetLow || ring)) {
+            TodayTop()
+                .frame(width: size.width, height: FollowRibbon.peekTop)
+                .offset(y: topY)
+                .opacity(topShown)
+                .animation(.easeOut(duration: 0.35), value: aloneTop)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+            if (aloneBottom && (open || !live)) || (open && sheetLow) {
                 TodayGrip(up: true, go: go)
                     .frame(width: size.width * DayPage.folder.tabShare, height: FollowRibbon.peekBottom)
-                    .offset(y: tabY)
+                    .offset(y: low)
+            } else if (aloneTop && (open || !live)) || (open && sheetHigh) {
+                // Справа вверху — шестерёнка настроек: полоска до неё.
+                TodayGrip(up: false, go: go)
+                    .frame(width: max(0, size.width - 70), height: FollowRibbon.peekTop)
             }
         }
         .frame(width: size.width, height: size.height, alignment: .topLeading)
+    }
+}
+
+/// Низ листа «Сегодня» у верха экрана (P896, вместо полоски в 44 точки
+/// P860/P865): тот же цвет и обвод, скруглённый низ; «Сегодня» крупно, под
+/// ним дата и день недели — как в шапке листа.
+private struct TodayTop: View {
+    var body: some View {
+        let today = DayStore.today()
+        let shape = UnevenRoundedRectangle(bottomLeadingRadius: 16, bottomTrailingRadius: 16)
+        ZStack(alignment: .bottomLeading) {
+            Ru.tint(today)
+            VStack(alignment: .leading, spacing: 0) {
+                Text(DayPage.title(for: today))
+                    .font(.system(size: 19, weight: .semibold))
+                    .tracking(-0.2)
+                    .foregroundStyle(Look.ink)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                (Text(Ru.headDate(today))
+                    .foregroundColor(Look.inkSoft)
+                 + Text(",  " + Ru.weekday(today))
+                    .foregroundColor(Ru.dayColor(today))
+                    .tracking(0.4))
+                    .font(Look.sans(12))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+            }
+            .padding(.leading, 22)
+            .padding(.bottom, 7)
+        }
+        .clipShape(shape)
+        .overlay { shape.stroke(DayPage.edge, lineWidth: 1) }
     }
 }
 

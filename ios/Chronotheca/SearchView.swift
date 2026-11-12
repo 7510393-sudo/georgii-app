@@ -269,12 +269,15 @@ struct SearchView: View {
         // Над самой старой — место под строку поиска; в коротком архиве —
         // стол до верха экрана, чтобы лента могла встать вчерашним днём
         // над нижней строкой.
-        // Будущий день закрыт в карточку (P883): ряд будущего начинается у
-        // самого верха — над завтра только край к «Сегодня», пустого поля
-        // нет (автор: «карточки будущего, когда смахиваешь вниз, оставляют
+        // Будущий день закрыт в карточку (P883): ряд будущего начинается
+        // сразу под низом листа «Сегодня» у верха (P896) — пустого поля нет
+        // (автор: «карточки будущего, когда смахиваешь вниз, оставляют
         // вверху свободное место»).
         let lead = !slot && past.isEmpty && between.isEmpty && later.isEmpty
-            ? 8 : max(8, height - CGFloat(past.count + between.count) * 60)
+            ? FollowRibbon.peekTop
+            // Открыт будущий день: над завтра — низ листа «Сегодня» (P896).
+            : max(past.isEmpty && !between.isEmpty ? FollowRibbon.peekTop : 8,
+                  height - CGFloat(past.count + between.count) * 60)
         out.append(Entry(id: "lead", kind: .pad(lead)))
         if !query.trimmingCharacters(in: .whitespaces).isEmpty && past.isEmpty && future.isEmpty && later.isEmpty && between.isEmpty {
             out.append(Entry(id: "note", kind: .note))
@@ -511,6 +514,7 @@ struct SearchView: View {
         .onChange(of: shell.dayCard) { _, now in
             if !now {
                 ribbon.landing.clear()
+                ribbon.foldSide = 0
                 ribbon.foldTo = nil
                 ribbon.foldLanded = false
                 ribbon.folding = false
@@ -537,7 +541,7 @@ struct SearchView: View {
             // Где была его карточка, когда его открыли (P893: «картотека
             // открыта ровно там, где была до того, как открыли карточку»).
             let back = ribbon.openedFrom?.id == closed ? ribbon.openedFrom?.top : nil
-            let edge: CGFloat = swipe < 0 ? 8 : height - FollowRibbon.peekBottom - frameHeight
+            let edge: CGFloat = swipe < 0 ? FollowRibbon.peekTop : height - FollowRibbon.peekBottom - frameHeight
             let top: CGFloat = back ?? edge
             var still = Transaction()
             still.disablesAnimations = true
@@ -552,6 +556,8 @@ struct SearchView: View {
             withTransaction(still) {
                 ribbon.landing.id = closed
                 ribbon.landing.stage = .away
+                // «Сегодня» на своей стороне, пока лента пересобирается (P896).
+                ribbon.foldSide = side
             }
             // Лист растаял — картотека собирается вокруг сегодня (P890).
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {

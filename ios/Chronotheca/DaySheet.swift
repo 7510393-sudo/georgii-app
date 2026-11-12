@@ -64,11 +64,12 @@ struct DaySheet<Plan: View, Diary: View>: View {
     /// строки.
     static var stripRoom: CGFloat { 46 }
 
-    /// Не сегодняшний день — внизу поверх листа торчит корешок «Сегодня»
-    /// (P862; у будущего тоже — P876, кольцо): конец записи — погода, шаги —
-    /// поднят над ним. Лист не короче: его низ по-прежнему под нижней строкой.
+    /// Прошедший день — внизу поверх листа торчит корешок «Сегодня»
+    /// (P862): конец записи — погода, шаги — поднят над ним. Лист не короче:
+    /// его низ по-прежнему под нижней строкой. У будущего «Сегодня» сверху
+    /// (P896) — места внизу не нужно.
     private var tabRoom: CGFloat {
-        Calendar.current.compare(date, to: DayStore.today(), toGranularity: .day) != .orderedSame
+        Calendar.current.compare(date, to: DayStore.today(), toGranularity: .day) == .orderedAscending
             ? FollowRibbon.peekBottom : 0
     }
 

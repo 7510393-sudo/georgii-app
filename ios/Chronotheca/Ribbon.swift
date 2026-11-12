@@ -14,6 +14,10 @@ import UIKit
 /// листает палец, день следует за замером места.
 final class Ribbon: ObservableObject {
 
+    /// С какой стороны «Сегодня», пока закрывается не сегодняшний день
+    /// (P896): −1 — сверху (закрыт будущий), 1 — снизу (прошедший).
+    @Published var foldSide = 0
+
     /// Ключ места дня в ленте.
     static let slotID = "ribbon-day"
     /// Система мер ленты: от верха её экрана.
@@ -230,10 +234,12 @@ final class Ribbon: ObservableObject {
         // верхним краем; строка поиска теперь внизу.
         // В прошлом лист «Сегодня» стоит корешком внизу (P860): вчерашняя
         // карточка встаёт над ним и уходит под него, как под следующую. В
-        // будущем лист уходит за верх целиком (P876, кольцо): корешок
-        // «Сегодня» — тоже внизу, завтрашняя карточка — у самого верха.
-        guard stick, dir > 0 else { return dir > 0 ? height : -height }
-        return height - FollowRibbon.peekBottom + Search.overlap
+        // будущем у верха остаётся низ листа с именем, датой и днём недели
+        // (P896, вместо кольца P876): завтрашняя карточка — сразу под ним,
+        // дальние уходят под него.
+        guard stick else { return dir > 0 ? height : -height }
+        return dir > 0 ? height - FollowRibbon.peekBottom + Search.overlap
+            : FollowRibbon.peekTop - height
     }
 
     /// Ленту сейчас ведёт программа.
@@ -576,6 +582,7 @@ final class Ribbon: ObservableObject {
         foldTo = nil
         foldLanded = false
         landing.clear()
+        foldSide = 0
         closedID = nil
         veiled = false
         done = nil
@@ -615,8 +622,8 @@ final class Landing: ObservableObject {
 /// День едет за своим местом в ленте (P777). Смотрит только на ленту:
 /// при её прокрутке пересчитывается один сдвиг, а не весь экран.
 /// Лист «Сегодня» с экрана не уходит (P860, автор по 259): внизу остаётся
-/// корешок с именем дня и датой. Вверх он уходит целиком и по кольцу
-/// появляется корешком снизу (P876). Касание или тяга за корешок — в день.
+/// корешок с именем дня и датой, вверху — низ листа с тем же именем, датой
+/// и днём недели (P896, вместо кольца P876). Касание или тяга — в день.
 struct FollowRibbon: ViewModifier {
     @ObservedObject var ribbon: Ribbon
     let live: Bool
@@ -633,19 +640,31 @@ struct FollowRibbon: ViewModifier {
 
     /// Сколько листа видно внизу: корешок с именем дня и датой (P860).
     static var peekBottom: CGFloat { DayPage.folder.tabHeight + 4 }
+    /// Сколько низа листа видно вверху (P896; крупнее прежних 44 точек P860):
+    /// помещаются «Сегодня», дата и день недели.
+    static let peekTop: CGFloat = 56
+    /// Где начинается лист будущего дня (P896): на 8 точек под низом листа
+    /// «Сегодня» — заходит под него, как карточки.
+    static let futureTop: CGFloat = peekTop - 8
+
+    /// Верх листа «Сегодня», когда он стоит у верха экрана: видна полоска
+    /// его низа (P860, P896).
+    static func topClamp(_ height: CGFloat) -> CGFloat {
+        peekTop - height - DayPage.under
+    }
 
     /// Где лист «Дня», когда его место в ленте на `y`. Вниз (прошлое) —
     /// вместе с местом, пока над нижним краем не останется один корешок
     /// (P860). Вверх (будущее): лист чуть обгоняет место — завтрашняя
-    /// карточка выходит из-под него (P831), и уходит за верх целиком (P876:
-    /// полоски у верха нет — «Сегодня» по кольцу внизу).
+    /// карточка выходит из-под него (P831), — пока у верха не останется
+    /// полоска его низа (P896, вместо ухода за верх по кольцу P876).
     /// Не сегодняшний лист (`stick` — нет) у края не останавливается (P863).
     static func shown(_ y: CGFloat, height: CGFloat, stick: Bool = true) -> CGFloat {
         guard height > 0 else { return y }
         if y >= 0 { return stick ? min(y, height - peekBottom) : y }
         let swap = -0.75 * height
         let ahead = y >= swap ? y - Search.overlap * (y / swap) : y - Search.overlap
-        return ahead
+        return stick ? max(ahead, topClamp(height)) : ahead
     }
 }
 
