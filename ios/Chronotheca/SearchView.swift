@@ -566,8 +566,9 @@ struct SearchView: View {
                 store.save()
                 Trace.note(String(format: "лента: закрыт %@, вернуть на %.0f (%@)", closed, top,
                                   back == nil ? "у края" : "где был"))
-                // Прежний замер места дня — от ленты вокруг закрытого дня (P894).
-                ribbon.forget()
+                // Прежний замер места дня — от ленты вокруг закрытого дня (P894);
+                // пока нового нет, «Сегодня» — у своего края (P899).
+                ribbon.forget(far: side)
                 withTransaction(still) { store.go(to: DayStore.today()) }
                 DispatchQueue.main.async {
                     withTransaction(still) { proxy.scrollTo(closed, anchor: spot(top)) }
@@ -613,6 +614,8 @@ struct SearchView: View {
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
                                         guard shell.dayCard else { return }
                                         withTransaction(still) { shell.dayCard = false }
+                                        // Села — опись больше не двигает ленту (P898).
+                                        ribbon.settledHere()
                                         ribbon.refresh()
                                         if let f = ribbon.frames[closed] {
                                             Trace.note(String(format: "лента: %@ встал на %.0f", closed, f.minY))
