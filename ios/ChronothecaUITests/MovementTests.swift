@@ -289,6 +289,8 @@ final class MovementTests: XCTestCase {
     /// Закрытая карточка встаёт туда, где была, и лента потом сама не едет:
     /// замер четыре раза за три секунды.
     private func checkStays(_ label: String, at was: CGFloat, _ name: String) {
+        // Посадка карточки в симуляторе идёт до трёх секунд.
+        sleep(3)
         var seen: [CGFloat] = []
         for _ in 0..<4 {
             sleep(1)
@@ -348,7 +350,7 @@ final class MovementTests: XCTestCase {
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2))
             .press(forDuration: 0.05,
                    thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7)),
-                   withVelocity: .slow, thenHoldForDuration: 0.1)
+                   withVelocity: 900, thenHoldForDuration: 0)
         XCTAssertTrue(wait(4) { openScreen == "search" }, "после пометки свайп не закрыл карточку: \(openScreen)")
         // Посадка карточки посреди хода (P895): полёт и опускание в гнездо.
         usleep(450_000)
@@ -369,7 +371,7 @@ final class MovementTests: XCTestCase {
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.75))
             .press(forDuration: 0.05,
                    thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.25)),
-                   withVelocity: .slow, thenHoldForDuration: 0.1)
+                   withVelocity: 900, thenHoldForDuration: 0)
         XCTAssertTrue(wait(4) { openScreen == "search" }, "свайп вверх не закрыл карточку: \(openScreen)")
         checkStays(picked.label, at: again, "закрыта вверх")
         save("17-карточка-закрыта-вверх")
@@ -414,9 +416,9 @@ final class MovementTests: XCTestCase {
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2))
             .press(forDuration: 0.05,
                    thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7)),
-                   withVelocity: .slow, thenHoldForDuration: 0.1)
+                   withVelocity: 900, thenHoldForDuration: 0)
         XCTAssertTrue(wait(4) { openScreen == "search" }, "будущий лист не закрылся: \(openScreen)")
-        sleep(3)
+        sleep(6)
         save("19-будущий-закрыт")
         let shown = cards()
         note("после закрытия будущего", shown.map { "\($0.label) \(Int($0.top))" }.joined(separator: "; "))
