@@ -131,4 +131,40 @@ final class BackupTests: XCTestCase {
         Backup.later()
         XCTAssertNil(Backup.reminder(size: Backup.gigabyte * 2, now: Date()), "после «Позже» — три дня тихо")
     }
+
+    // MARK: - Копия сама (P902)
+
+    func testКопияСамаДописываетНовоеЧерезНеделю() {
+        put("Diary/2026/2026-10-01.md", "туман")
+        XCTAssertNil(Backup.choose(place))
+        XCTAssertNotNil(run())
+
+        put("Diary/2026/2026-10-02.md", "ясно")
+        XCTAssertNil(Backup.autoRun(archive: archive), "неделя не прошла — копия сама не идёт")
+        XCTAssertNil(copied("Diary/2026/2026-10-02.md"))
+
+        let позже = Date().addingTimeInterval(8 * 86_400)
+        XCTAssertEqual(Backup.autoRun(archive: archive, now: позже)?.copied, 1)
+        XCTAssertEqual(copied("Diary/2026/2026-10-02.md"), "ясно")
+        XCTAssertNil(Backup.autoTrouble)
+    }
+
+    func testБезМестаКопияСамаНеИдёт() {
+        put("Diary/2026/2026-10-01.md", "туман")
+        XCTAssertFalse(Backup.autoDue(), "место не выбрано — копировать некуда")
+        XCTAssertNil(Backup.autoRun(archive: archive))
+    }
+
+    func testМестаНетКопияСамаГоворитПочемуИНеСтучитсяВесьДень() {
+        put("Diary/2026/2026-10-01.md", "туман")
+        XCTAssertNil(Backup.choose(place))
+        // Флешку вынули.
+        try? fm.removeItem(at: place)
+        try? Data("не папка".utf8).write(to: place)
+        let позже = Date().addingTimeInterval(8 * 86_400)
+        XCTAssertNil(Backup.autoRun(archive: archive, now: позже))
+        XCTAssertNotNil(Backup.autoTrouble, "не сказано, почему копия сама не получилась")
+        XCTAssertFalse(Backup.autoDue(now: позже.addingTimeInterval(3600)), "в тот же день — не пробовать снова")
+        XCTAssertTrue(Backup.autoDue(now: позже.addingTimeInterval(90_000)))
+    }
 }

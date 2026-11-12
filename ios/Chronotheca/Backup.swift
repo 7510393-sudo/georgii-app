@@ -5,8 +5,10 @@ import UniformTypeIdentifiers
 /// и видео — в другом месте, которое человек выбрал сам: флешка, Google
 /// Диск, OneDrive, Dropbox.
 ///
-/// Копия делается только кнопкой — приложение само ничего не копирует
-/// (главный принцип: всё под рукой человека). Копируется только новое и
+/// Место копии человек выбирает сам и первую копию делает кнопкой; дальше
+/// приложение раз в неделю само дописывает туда новое и изменённое (P902,
+/// автор 12.11: «делать»; прежде — только кнопкой, и кто нажимал «Позже»,
+/// жил без копии). Копируется только новое и
 /// изменённое; в копии ничего не стирается, даже если в архиве запись
 /// удалили, — так копия спасает и от собственной ошибки. Архив копия не
 /// трогает: его только читают.
@@ -428,6 +430,62 @@ enum Backup {
         d.removeObject(forKey: laterKey)
     }
 
+    // MARK: - Копия сама (P902)
+
+    /// Как часто дописывать копию самому.
+    static let autoEvery: TimeInterval = 7 * 86_400
+    private static let autoTriedKey = "backup.autoTried"
+    private static let autoWhyKey = "backup.autoWhy"
+    /// Копия сейчас идёт сама — кнопка подождёт.
+    private(set) static var autoRunning = false
+    private static let autoLock = NSLock()
+
+    /// Почему копия сама не получилась в последний раз; `nil` — получилась
+    /// или ещё не пробовали.
+    static var autoTrouble: String? { UserDefaults.standard.string(forKey: autoWhyKey) }
+
+    /// Пора ли дописать копию самому: место выбрано, с прошлой копии прошла
+    /// неделя, и сегодня ещё не пробовали (место может быть флешкой, которой
+    /// сейчас нет, — не стучаться в неё при каждом возвращении).
+    static func autoDue(now: Date = Date()) -> Bool {
+        guard UserDefaults.standard.data(forKey: bookmarkKey) != nil else { return false }
+        if let last, now.timeIntervalSince(last) < autoEvery { return false }
+        let tried = UserDefaults.standard.double(forKey: autoTriedKey)
+        return tried == 0 || now.timeIntervalSince1970 - tried >= 86_400
+    }
+
+    /// Дописать копию самому, если пора. Тот же ход, что по кнопке: только
+    /// новое и изменённое, каждый файл сверяется байт в байт, в копии ничего
+    /// не стирается, архив только читается. Из iCloud ничего не скачивается
+    /// насильно: что не на телефоне — останется «неполной копией», и строка
+    /// в настройках скажет об этом. Зовётся в стороне от главного потока.
+    /// Возвращает отчёт, если копия шла.
+    @discardableResult
+    static func autoRun(archive root: URL, now: Date = Date()) -> Report? {
+        autoLock.lock()
+        guard !autoRunning, autoDue(now: now) else {
+            autoLock.unlock()
+            return nil
+        }
+        autoRunning = true
+        autoLock.unlock()
+        defer {
+            autoLock.lock()
+            autoRunning = false
+            autoLock.unlock()
+        }
+        let d = UserDefaults.standard
+        d.set(now.timeIntervalSince1970, forKey: autoTriedKey)
+        switch run(archive: root, size: size(of: root), step: { _, _ in }, device: nil) {
+        case .success(let report):
+            d.removeObject(forKey: autoWhyKey)
+            return report
+        case .failure(let e):
+            d.set(e.text, forKey: autoWhyKey)
+            return nil
+        }
+    }
+
     struct Report {
         var copied = 0
         var same = 0
@@ -439,9 +497,12 @@ enum Backup {
         var complete: Bool { away == 0 && missing.isEmpty }
     }
 
-    /// Все пять ступеней подряд, без ожидания iCloud, — для проверок.
+    /// Все пять ступеней подряд, без ожидания iCloud, — для копии самой
+    /// (P902) и для проверок. `device` — имя устройства для описи в копии;
+    /// `nil` — спросить у телефона.
     static func run(archive root: URL, size: Int64,
-                    step: @escaping (Int, Int) -> Void) -> Result<Report, BackupError> {
+                    step: @escaping (Int, Int) -> Void,
+                    device: String? = "test") -> Result<Report, BackupError> {
         let session: Session
         switch openPlace(archive: root) {
         case .failure(let e): return .failure(e)
@@ -461,7 +522,9 @@ enum Backup {
             step(i + 1, todo.count)
         }
         report.missing = verify(inv, in: session.target)
-        writeNote(inv, missing: report.missing, away: inv.away, in: session.target, device: "test")
+        let name = device ?? (Thread.isMainThread ? UIDevice.current.name
+                                                  : DispatchQueue.main.sync { UIDevice.current.name })
+        writeNote(inv, missing: report.missing, away: inv.away, in: session.target, device: name)
         record(size: size, complete: report.complete, missing: report.missing.count + report.away)
         saveList(inv, root: root)
         return .success(report)
@@ -523,7 +586,8 @@ enum Backup {
 
     /// Забыть всё о копиях — для проверок.
     static func reset() {
-        for key in [bookmarkKey, pathKey, lastKey, sizeKey, sinceKey, laterKey, completeKey, missingKey] {
+        for key in [bookmarkKey, pathKey, lastKey, sizeKey, sinceKey, laterKey, completeKey, missingKey,
+                    autoTriedKey, autoWhyKey] {
             UserDefaults.standard.removeObject(forKey: key)
         }
         if let url = listURL { try? FileManager.default.removeItem(at: url) }
@@ -872,6 +936,12 @@ struct BackupSheet: View {
 
     private func copy() {
         guard let root = vault.root else { return }
+        // Копия как раз дописывается сама (P902) — два хода разом не нужны.
+        if Backup.autoRunning {
+            problem = T("Копия сейчас дописывается сама — загляните через минуту.",
+                        "The backup is updating itself right now — look again in a minute.")
+            return
+        }
         problem = nil
         running = true
         finished = nil
@@ -1017,8 +1087,11 @@ struct BackupSheet: View {
     }
 }
 
-/// Напоминание о копии (P368): при возвращении в приложение, не чаще раза в
-/// три дня после «Позже». Окно с двумя кнопками — само ничего не копирует.
+/// Копия сама и напоминание о ней (P368, P902): при возвращении в
+/// приложение. Место копии выбрано и прошла неделя — приложение дописывает
+/// туда новое само, молча. Напоминание приходит, только когда копии нет
+/// вовсе или сама она не получилась (места копии сейчас нет), не чаще раза
+/// в три дня после «Позже».
 struct BackupReminder: ViewModifier {
     @EnvironmentObject private var vault: Vault
     @Environment(\.scenePhase) private var phase
@@ -1041,8 +1114,8 @@ struct BackupReminder: ViewModifier {
                     message = nil
                 }
             } message: {
-                Text((message ?? "") + T(" Копия ляжет туда, куда вы скажете; приложение само ничего не копирует.",
-                                         " It goes wherever you choose; the app never copies anything by itself."))
+                Text((message ?? "") + T(" Место для копии выбирается один раз — дальше приложение само дописывает туда новое раз в неделю.",
+                                         " You choose the place once — after that the app adds what is new by itself, once a week."))
             }
             .sheet(isPresented: $showing) { BackupSheet().environmentObject(vault) }
     }
@@ -1050,7 +1123,12 @@ struct BackupReminder: ViewModifier {
     private func check() {
         guard !Vault.isPreview, let root = vault.root else { return }
         DispatchQueue.global(qos: .utility).async {
-            let say = Backup.reminder(size: Backup.size(of: root))
+            // Сперва — копия сама (P902); напоминать — только если не вышло.
+            Backup.autoRun(archive: root)
+            var say = Backup.reminder(size: Backup.size(of: root))
+            if say != nil, let why = Backup.autoTrouble {
+                say = T("Копия сама не получилась: ", "The backup could not update itself: ") + why
+            }
             DispatchQueue.main.async { if let say { message = say } }
         }
     }
