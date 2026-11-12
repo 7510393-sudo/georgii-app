@@ -1136,7 +1136,8 @@ struct RootView: View {
                 shell.ribbonOpen = true
                 shell.screen = .search
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.3) { liftToday() }
+            // Карточка садится дольше прежнего (P895).
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { liftToday() }
             return
         }
         liftToday()
@@ -1612,21 +1613,16 @@ private struct FoldGhost: View {
         let top = FollowRibbon.shown(live ? ribbon.y : 0, height: size.height, stick: ribbon.stick)
         let start = CGRect(x: 0, y: top, width: size.width, height: size.height)
         let r = ribbon.foldTo ?? start
-        let shape = FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare)
-        shape
-            .fill(Scheme.current.past)
-            .overlay(shape.stroke(Scheme.current.kraftEdge.opacity(0.7), lineWidth: 1))
+        FoldSchema()
             .frame(width: r.width, height: r.height)
             .offset(x: r.minX, y: r.minY)
-            // Сжатие у края, полёт к гнезду и опускание в него — по 0,3 с,
-            // плавно, без скачков (P893).
+            // Из листа к гнезду — одним плавным движением (P895).
             .animation(ribbon.foldTo == nil ? nil
-                       : ribbon.foldLanded ? nil : .easeInOut(duration: 0.3), value: ribbon.foldTo)
+                       : ribbon.foldLanded ? nil : .easeInOut(duration: SearchView.flight), value: ribbon.foldTo)
             .frame(width: size.width, height: size.height, alignment: .topLeading)
-            .opacity(folding ? 1 : 0)
-            .animation(ribbon.foldLanded ? .easeIn(duration: 0.15) : nil) {
-                $0.opacity(ribbon.foldLanded ? 0 : 1)
-            }
+            // Долетела — дальше садится сама карточка в своём ряду (P895):
+            // схема над лентой уходит в тот же кадр, без таяния поверх.
+            .opacity(folding && !ribbon.foldLanded ? 1 : 0)
             .allowsHitTesting(false)
             .accessibilityHidden(true)
     }

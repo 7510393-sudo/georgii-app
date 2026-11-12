@@ -110,8 +110,10 @@ final class Ribbon: ObservableObject {
     /// Какой день закрыли в карточку — по нему мерится её рамка, когда
     /// лента уже собрана вокруг сегодня (P890).
     var closedID: String?
-    /// Схема карточки встала в гнездо — тает (P889).
+    /// Схема долетела до гнезда — дальше садится сама карточка (P895).
     @Published var foldLanded = false
+    /// Посадка закрытой карточки в своё гнездо (P895).
+    let landing = Landing()
     /// Последняя замеренная рамка карточки закрытого дня.
     var anchorFrame: CGRect?
 
@@ -573,6 +575,7 @@ final class Ribbon: ObservableObject {
         folding = false
         foldTo = nil
         foldLanded = false
+        landing.clear()
         closedID = nil
         veiled = false
         done = nil
@@ -586,6 +589,26 @@ final class Ribbon: ObservableObject {
     func release() {
         guard link == nil else { return }
         driving = false
+    }
+}
+
+/// Посадка закрытой карточки (P895, автор по видео к 278: «совсем не
+/// похоже на физическое действие: карточка дёргается и не вставляется в
+/// своё место, а растворяется, наложенная на настоящую»). Пока схема
+/// летит, гнездо пустует (`away`); над гнездом схема становится самой
+/// карточкой (`hover`), та опускается в ряд под следующую (`down`), и на
+/// ней проступает надпись (`done`).
+final class Landing: ObservableObject {
+    enum Stage { case none, away, hover, down, done }
+    @Published var id: String?
+    @Published var stage: Stage = .none
+    /// Насколько над гнездом карточка ждёт, прежде чем опуститься: выше
+    /// нахлёста — следующая карточка её ещё не закрывает.
+    static let lift: CGFloat = Search.overlap + 4
+
+    func clear() {
+        if id != nil { id = nil }
+        if stage != .none { stage = .none }
     }
 }
 

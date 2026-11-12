@@ -510,6 +510,7 @@ struct SearchView: View {
         // встанет на виду — картотека открыта там, куда она вернулась.
         .onChange(of: shell.dayCard) { _, now in
             if !now {
+                ribbon.landing.clear()
                 ribbon.foldTo = nil
                 ribbon.foldLanded = false
                 ribbon.folding = false
@@ -544,11 +545,13 @@ struct SearchView: View {
             // правильная часть»): лента тает вместе с листом, пока
             // пересобирается, и проступает уже на своём месте.
             ribbon.veiled = true
-            // Схема сперва во весь лист — затем, следующим кадром, сжимается в
-            // маленькую карточку у того края, куда смахнули (P893).
-            DispatchQueue.main.async {
-                guard ribbon.folding else { return }
-                ribbon.foldTo = CGRect(x: inset, y: edge, width: w - 2 * inset, height: frameHeight)
+            // Гнездо карточки пустует, пока она летит (P895). Схема — во весь
+            // лист, пока лента пересобирается; сжатия у края больше нет
+            // (отменяет P893 (1): схема стояла маленькой у края и потом
+            // ехала — рывок, видео автора к 278).
+            withTransaction(still) {
+                ribbon.landing.id = closed
+                ribbon.landing.stage = .away
             }
             // Лист растаял — картотека собирается вокруг сегодня (P890).
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
@@ -579,25 +582,35 @@ struct SearchView: View {
                             return
                         }
                         guard ribbon.folding else { return }
-                        let place = ribbon.anchorFrame
-                            ?? CGRect(x: inset, y: top, width: w - 2 * inset, height: frameHeight)
-                        // Лента проступает на своём месте, схема летит к гнезду
-                        // и встаёт над ним — выше на корешок (P889)…
+                        // Рамка карточки без полей по бокам (схема была шире
+                        // карточки на эти поля).
+                        let place = ribbon.anchorFrame?.insetBy(dx: Search.cardInset, dy: 0)
+                            ?? CGRect(x: inset, y: top, width: w - 2 * inset, height: full)
+                        // Лента проступает на своём месте, схема одним
+                        // движением летит из листа к гнезду и встаёт над ним
+                        // (P889, P895)…
                         ribbon.veiled = false
-                        ribbon.foldTo = place.offsetBy(dx: 0, dy: -Search.tabHeight)
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        ribbon.foldTo = place.offsetBy(dx: 0, dy: -Landing.lift)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + Self.flight) {
                             guard ribbon.folding else { return }
-                            // …и опускается в него.
-                            ribbon.foldTo = place
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) {
-                                guard ribbon.folding else { return }
+                            // …там она уже сама карточка, в своём ряду…
+                            withTransaction(still) {
+                                ribbon.landing.stage = .hover
                                 ribbon.foldLanded = true
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.16) {
-                                    guard shell.dayCard else { return }
-                                    withTransaction(still) { shell.dayCard = false }
-                                    ribbon.refresh()
-                                    if let f = ribbon.frames[closed] {
-                                        Trace.note(String(format: "лента: %@ встал на %.0f", closed, f.minY))
+                            }
+                            DispatchQueue.main.async {
+                                // …опускается в гнездо под следующую карточку…
+                                withAnimation(.easeInOut(duration: 0.3)) { ribbon.landing.stage = .down }
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    // …и на ней проступает надпись.
+                                    ribbon.landing.stage = .done
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                        guard shell.dayCard else { return }
+                                        withTransaction(still) { shell.dayCard = false }
+                                        ribbon.refresh()
+                                        if let f = ribbon.frames[closed] {
+                                            Trace.note(String(format: "лента: %@ встал на %.0f", closed, f.minY))
+                                        }
                                     }
                                 }
                             }
@@ -610,6 +623,9 @@ struct SearchView: View {
         }
         .animation(.easeOut(duration: 0.25), value: keyboard)
     }
+
+    /// Сколько летит схема из листа к гнезду (P895).
+    static let flight: Double = 0.45
 
     /// Лента в покое: вчера над нижней строкой или завтра под строкой поиска.
     private func settle() {
@@ -635,6 +651,7 @@ struct SearchView: View {
                        seed: PageTexture.seed(day.date) &+ (Search.deep ? (Int(entry.id.dropFirst()) ?? 0) * 7 : 0)) {
                 row(day)
             }
+            .modifier(Landed(landing: shell.ribbon.landing, id: entry.id))
             // Касание по всей карточке, а не только по буквам (P866).
             .contentShape(FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare))
             .onTapGesture { openPast(day) }
@@ -647,6 +664,7 @@ struct SearchView: View {
                        seed: PageTexture.seed(day.date), tight: true) {
                 futureRow(day, sample: sample)
             }
+            .modifier(Landed(landing: shell.ribbon.landing, id: entry.id))
             // Касание по всей карточке, а не только по буквам (P866, автор:
             // «будущие открываются, только когда нажимаешь на текст»).
             .contentShape(FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare))
@@ -1091,6 +1109,40 @@ enum WearNotch {
 }
 
 /// Контур карточки с корешком на левой трети: корешок и лист — одна фигура.
+/// Схема карточки — пустой контур цвета бумаги (P886): летит из листа к
+/// гнезду и, сев, уступает место надписи карточки (P895).
+struct FoldSchema: View {
+    var body: some View {
+        let shape = FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare)
+        shape
+            .fill(Scheme.current.past)
+            .overlay(shape.stroke(Scheme.current.kraftEdge.opacity(0.7), lineWidth: 1))
+    }
+}
+
+/// Карточка садится в своё гнездо (P895): пока схема летит, карточки нет —
+/// гнездо пустует; над гнездом она уже в своём ряду, под схемой, и
+/// опускается под следующую карточку; затем схема тает — проступает надпись.
+private struct Landed: ViewModifier {
+    @ObservedObject var landing: Landing
+    let id: String
+
+    func body(content: Content) -> some View {
+        let stage = landing.id == id ? landing.stage : .none
+        content
+            .opacity(stage == .away ? 0 : 1)
+            .overlay {
+                if stage == .hover || stage == .down || stage == .done {
+                    FoldSchema()
+                        .opacity(stage == .done ? 0 : 1)
+                        .animation(.easeOut(duration: 0.25), value: stage)
+                        .allowsHitTesting(false)
+                }
+            }
+            .offset(y: stage == .hover ? -Landing.lift : 0)
+    }
+}
+
 struct FolderShape: Shape {
     /// Радиус углов корешка листа «Дня» (P850).
     static let wave: CGFloat = 14
