@@ -344,13 +344,17 @@ final class MovementTests: XCTestCase {
             note("пометка", "клавиатура не поднялась")
         }
         save("15-карточка-с-пометкой")
-        // К верху листа и тягой вниз — закрыть в карточку.
-        for _ in 0..<4 { app.swipeDown() }
-        sleep(1)
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2))
-            .press(forDuration: 0.05,
-                   thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7)),
-                   withVelocity: 900, thenHoldForDuration: 0)
+        // Движение, убравшее клавиатуру, карточку не закрыло (P897).
+        XCTAssertEqual(openScreen, "today", "движение, убравшее клавиатуру, закрыло карточку")
+        // Тягой вниз — закрыть в карточку: сперва лист докручивается до
+        // верха, потом тянется за край.
+        for _ in 0..<5 where openScreen != "search" {
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2))
+                .press(forDuration: 0.05,
+                       thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7)),
+                       withVelocity: 900, thenHoldForDuration: 0)
+            _ = wait(2) { openScreen == "search" }
+        }
         XCTAssertTrue(wait(4) { openScreen == "search" }, "после пометки свайп не закрыл карточку: \(openScreen)")
         // Посадка карточки посреди хода (P895): полёт и опускание в гнездо.
         usleep(450_000)
@@ -366,12 +370,13 @@ final class MovementTests: XCTestCase {
             .withOffset(CGVector(dx: 120, dy: again + 60)).tap()
         XCTAssertTrue(wait(5) { openScreen == "today" && openDay != "today" }, "карточка не открылась второй раз")
         sleep(2)
-        for _ in 0..<5 { app.swipeUp() }
-        sleep(1)
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.75))
-            .press(forDuration: 0.05,
-                   thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.25)),
-                   withVelocity: 900, thenHoldForDuration: 0)
+        for _ in 0..<6 where openScreen != "search" {
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.75))
+                .press(forDuration: 0.05,
+                       thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.25)),
+                       withVelocity: 900, thenHoldForDuration: 0)
+            _ = wait(2) { openScreen == "search" }
+        }
         XCTAssertTrue(wait(4) { openScreen == "search" }, "свайп вверх не закрыл карточку: \(openScreen)")
         checkStays(picked.label, at: again, "закрыта вверх")
         save("17-карточка-закрыта-вверх")

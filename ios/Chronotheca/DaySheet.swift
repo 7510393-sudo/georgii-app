@@ -485,6 +485,8 @@ final class EdgePull: NSObject, ObservableObject, UIGestureRecognizerDelegate {
     private var armed = false
     /// Отказ уже записан в след за это касание.
     private var blockedNoted = false
+    /// Касание началось, пока на листе писали.
+    private var typingAtStart = false
 
     /// Ждёт ли букв какое-нибудь поле внутри листа.
     private static func typing(in view: UIView) -> Bool {
@@ -517,13 +519,17 @@ final class EdgePull: NSObject, ObservableObject, UIGestureRecognizerDelegate {
         case .began:
             reset()
             blockedNoted = false
+            // Касание началось, пока пишут, — оно убирает клавиатуру, лист
+            // не тянет до конца касания (P897: длинным движением вниз
+            // клавиатура уходила, и то же движение закрывало карточку).
+            typingAtStart = !enabled || Self.typing(in: view)
             last = t.y
         case .changed:
             // Пока пишут, лист за край не тянется. Пишут — это поле на листе
             // правда ждёт букв, а не только запомненная высота клавиатуры
             // (P894, автор по 278: «сделал пометки и не могу закрыть
             // свайпом»; высота могла остаться от ушедшей клавиатуры).
-            guard enabled || !Self.typing(in: view) else {
+            guard !typingAtStart, enabled || !Self.typing(in: view) else {
                 if anchor == nil, !blockedNoted {
                     blockedNoted = true
                     Trace.note("тяга: на листе пишут — лист не тянется")
