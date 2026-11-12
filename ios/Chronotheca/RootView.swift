@@ -946,7 +946,9 @@ struct RootView: View {
 
     private func section(_ icon: String, _ name: String, _ target: Shell.Screen,
                          system: Bool = false) -> some View {
-        let on = shell.screen == target
+        // Картотека — часть «Дневника» (P893): кнопка горит и в ней, а не
+        // вспыхивает, когда лист «Сегодня» встал на место.
+        let on = current == target
         let k = SectionsRow.scale
         let act = { tapSection(target) }
         // Срабатывает в миг касания (P565), а не когда палец отпустили, как
@@ -1574,8 +1576,11 @@ private struct TodayPeek: View {
                 .offset(y: tabY)
                 // В кольце — только когда правда выходит снизу (P886: стоило
                 // тронуть лист «Сегодня», корешок проступал бледной тенью).
-                .opacity(ring && peek < 0.5 ? 0 : 1)
-                .animation(.easeOut(duration: 0.35)) { $0.opacity(alone || ring ? 1 : 0) }
+                // Сам по себе — тает и проступает плавно; в кольце — ровно
+                // по тому, как выходит (P893: прежде, когда лист вставал на
+                // место, корешок на полсекунды вспыхивал снизу).
+                .opacity(alone || (ring && peek >= 0.5) ? 1 : 0)
+                .animation(.easeOut(duration: 0.35), value: alone)
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
             if (alone && (open || !live)) || (open && (sheetLow || ring)) {
@@ -1613,9 +1618,10 @@ private struct FoldGhost: View {
             .overlay(shape.stroke(Scheme.current.kraftEdge.opacity(0.7), lineWidth: 1))
             .frame(width: r.width, height: r.height)
             .offset(x: r.minX, y: r.minY)
-            // Сжатие над гнездом и опускание в гнездо — по 0,35 с (P889).
+            // Сжатие у края, полёт к гнезду и опускание в него — по 0,3 с,
+            // плавно, без скачков (P893).
             .animation(ribbon.foldTo == nil ? nil
-                       : ribbon.foldLanded ? nil : .easeInOut(duration: 0.35), value: ribbon.foldTo)
+                       : ribbon.foldLanded ? nil : .easeInOut(duration: 0.3), value: ribbon.foldTo)
             .frame(width: size.width, height: size.height, alignment: .topLeading)
             .opacity(folding ? 1 : 0)
             .animation(ribbon.foldLanded ? .easeIn(duration: 0.15) : nil) {

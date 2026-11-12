@@ -48,6 +48,26 @@ final class Ribbon: ObservableObject {
     /// Рамка его карточки на экране раздела — куда сложиться. Пока её нет,
     /// лист стоит, где его отпустили.
     @Published var foldTo: CGRect?
+    /// Где на экране карточки ленты (только видимые) — по ним лента
+    /// возвращается туда, где была до открытия дня (P893).
+    var frames: [String: CGRect] = [:]
+    /// С какой карточки открыли день и где она стояла.
+    var openedFrom: (id: String, top: CGFloat)?
+
+    /// Лист «Сегодня» — не выше своего места у края (P893): закрытая
+    /// карточка рядом с сегодня, и лента вставала так, что лист торчал на
+    /// полэкрана. Сдвигает ленту, только если место дня собрано.
+    func keepToday(_ side: Int) {
+        guard let scroll = box.view, seen, height > 0 else { return }
+        let raw = slotTop - scroll.contentOffset.y
+        var offset = scroll.contentOffset.y
+        if side > 0, raw < restY(1) { offset -= restY(1) - raw }
+        if side < 0, raw > restY(-1) { offset += raw - restY(-1) }
+        let most = max(0, scroll.contentSize.height - scroll.bounds.height)
+        offset = min(most, max(0, offset))
+        if abs(offset - scroll.contentOffset.y) > 0.5 { scroll.contentOffset.y = offset }
+    }
+
     /// Какой день закрыли в карточку — по нему мерится её рамка, когда
     /// лента уже собрана вокруг сегодня (P890).
     var closedID: String?

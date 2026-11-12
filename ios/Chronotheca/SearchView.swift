@@ -416,9 +416,13 @@ struct SearchView: View {
                         .onGeometryChange(for: CGRect.self) { proxy in
                             proxy.frame(in: .named(Ribbon.space))
                         } action: { frame in
+                            let onScreen = frame.offsetBy(dx: 0, dy: -above)
                             if entry.id == (ribbon.closedID ?? anchorCard) {
-                                ribbon.anchorFrame = frame.offsetBy(dx: 0, dy: -above)
+                                ribbon.anchorFrame = onScreen
                             }
+                            // Где карточки на экране — чтобы, закрыв открытый с
+                            // неё день, вернуть ленту туда же (P893).
+                            ribbon.frames[entry.id] = onScreen
                         }
                         .background {
                             if entry.id == firstAfter {
@@ -524,41 +528,55 @@ struct SearchView: View {
                 UnitPoint(x: 0.5, y: view > frameHeight ? (above + top) / (view - frameHeight) : 0)
             }
             let closed = anchor
-            let side = shell.fileFrom
-            // Лист ушёл вверх — карточка дня встаёт у верха; вниз — над
-            // корешком «Сегодня».
-            let top: CGFloat = side < 0 ? 8 : height - FollowRibbon.peekBottom - frameHeight
-            // Лист тает (0,2 с) — затем картотека собирается вокруг сегодня
-            // (P890): лист «Сегодня» снова на своём месте между прошлым и
-            // будущим и склеивает их, а на экране — закрытая карточка.
+            let swipe = shell.fileFrom
+            // Сторона «Сегодня» от закрытого дня: прошлое — снизу, будущее — сверху.
+            let side = anchor < todayStamp ? 1 : -1
+            let inset = 10 + Search.cardInset
+            let w = UIScreen.main.bounds.width
+            // Где была его карточка, когда его открыли (P893: «картотека
+            // открыта ровно там, где была до того, как открыли карточку»).
+            let back = ribbon.openedFrom?.id == closed ? ribbon.openedFrom?.top : nil
+            let edge: CGFloat = swipe < 0 ? 8 : height - FollowRibbon.peekBottom - frameHeight
+            let top: CGFloat = back ?? edge
+            var still = Transaction()
+            still.disablesAnimations = true
+            // Без вспышек (P893, автор: «мелькают карточки, потом скачком
+            // правильная часть»): лента тает вместе с листом, пока
+            // пересобирается, и проступает уже на своём месте.
+            ribbon.veiled = true
+            // Схема сперва во весь лист — затем, следующим кадром, сжимается в
+            // маленькую карточку у того края, куда смахнули (P893).
+            DispatchQueue.main.async {
+                guard ribbon.folding else { return }
+                ribbon.foldTo = CGRect(x: inset, y: edge, width: w - 2 * inset, height: frameHeight)
+            }
+            // Лист растаял — картотека собирается вокруг сегодня (P890).
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 guard shell.dayCard, ribbon.folding else { return }
-                var still = Transaction()
-                still.disablesAnimations = true
                 ribbon.closedID = closed
                 store.save()
                 withTransaction(still) { store.go(to: DayStore.today()) }
                 DispatchQueue.main.async {
                     withTransaction(still) { proxy.scrollTo(closed, anchor: spot(top)) }
-                    // Рамка карточки — замеренная, когда лента встала.
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
+                    // Лист «Сегодня» — не выше своего места у края (P893:
+                    // корешок торчал на полэкрана).
+                    DispatchQueue.main.async { ribbon.keepToday(side) }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
                         guard ribbon.folding else { return }
-                        let inset = 10 + Search.cardInset
-                        let w = UIScreen.main.bounds.width
                         let place = ribbon.anchorFrame
                             ?? CGRect(x: inset, y: top, width: w - 2 * inset, height: frameHeight)
-                        // Сжимается над своим местом — выше ровно на корешок, —
-                        // потом опускается в гнездо (P889).
+                        // Лента проступает на своём месте, схема летит к гнезду
+                        // и встаёт над ним — выше на корешок (P889)…
+                        ribbon.veiled = false
                         ribbon.foldTo = place.offsetBy(dx: 0, dy: -Search.tabHeight)
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                             guard ribbon.folding else { return }
+                            // …и опускается в него.
                             ribbon.foldTo = place
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) {
                                 guard ribbon.folding else { return }
                                 ribbon.foldLanded = true
-                                // Схема растаяла — лист «Сегодня» снова за
-                                // лентой: корешок внизу, тяга к нему — день.
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.16) {
                                     guard shell.dayCard else { return }
                                     withTransaction(still) { shell.dayCard = false }
                                     ribbon.refresh()
@@ -715,7 +733,11 @@ struct SearchView: View {
         let ribbon = shell.ribbon
         var still = Transaction()
         still.disablesAnimations = true
+        // Откуда открыли — туда и вернётся лента, когда день закроют (P893).
+        let id = Vault.stamp(date)
+        let from = ribbon.frames[id].map { (id: id, top: $0.minY) }
         ribbon.reset()
+        ribbon.openedFrom = from
         withTransaction(still) {
             shell.instant = true
             shell.ribbonOpen = false
