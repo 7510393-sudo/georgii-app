@@ -1,0 +1,38 @@
+    4 Thread_42902   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 4 start  (in dyld) + 6992  [0x100edc4e4]
+    +   4 start_sim  (in dyld_sim) + 20  [0x100dd70e4]
+    +     4 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x102cbae48]  ChronothecaApp.swift:0
+    +       4 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x102cbad9c]  /<compiler-generated>:0
+    +         4 static App.main()  (in SwiftUI) + 132  [0x1d2c5f084]
+    +           4 protocol witness for App.init() in conformance ChronothecaApp  (in Chronotheca.debug.dylib) + 12  [0x102cbae34]  /<compiler-generated>:0
+    +             4 ChronothecaApp.init()  (in Chronotheca.debug.dylib) + 604  [0x102cb73cc]  ChronothecaApp.swift:30
+    +               4 Vault.__allocating_init()  (in Chronotheca.debug.dylib) + 44  [0x10328b334]  Vault.swift:0
+    +                 4 Vault.init()  (in Chronotheca.debug.dylib) + 2036  [0x10328bb34]  Vault.swift:227
+    +                   4 Vault.usePreviewFolder()  (in Chronotheca.debug.dylib) + 904  [0x10328c618]  Vault.swift:259
+    +                     4 Vault.seedPreview()  (in Chronotheca.debug.dylib) + 1188  [0x10328f548]  Vault.swift:311
+    +                       4 static Photo.sample()  (in Chronotheca.debug.dylib) + 92  [0x102f63558]  Photo.swift:138
+    +                         4 UIGraphicsImageRenderer.__allocating_init(size:)  (in Chronotheca.debug.dylib) + 52  [0x102cbfe34]  UIGraphicsImageRenderer.h:0
+    +                           4 @nonobjc UIGraphicsImageRenderer.init(size:)  (in Chronotheca.debug.dylib) + 36  [0x102cc03d8]  /<compiler-generated>:0
+    +                             4 -[UIGraphicsImageRenderer initWithSize:]  (in UIKitCore) + 40  [0x185f8f2c0]
+    +                               4 +[UIGraphicsImageRendererFormat defaultFormat]  (in UIKitCore) + 44  [0x185f8e4a8]
+    +                                 4 +[UIGraphicsRendererFormat defaultFormat]  (in UIKitCore) + 12  [0x185f95af8]
+    +                                   4 -[UIGraphicsImageRendererFormat init]  (in UIKitCore) + 76  [0x185f8e744]
+    +                                     4 _UIScreenForcedMainScreenScale  (in UIKitCore) + 40  [0x185fe7a50]
+    +                                       4 _objc_msgSend_uncached  (in libobjc.A.dylib) + 64  [0x18003af00]
+    +                                         4 lookUpImpOrForward  (in libobjc.A.dylib) + 208  [0x1800533a4]
+    +                                           4 initializeAndMaybeRelock(objc_class*, objc_object*, locker_mixin<lockdebug::lock_mixin<objc_lock_base_t>>&, bool)  (in libobjc.A.dylib) + 216  [0x1800410e0]
+    +                                             4 initializeNonMetaClass  (in libobjc.A.dylib) + 532  [0x18003fe70]
+    +                                               4 CALLING_SOME_+initialize_METHOD  (in libobjc.A.dylib) + 20  [0x18003f1ec]
+    +                                                 4 +[UIScreen initialize]  (in UIKitCore) + 140  [0x185fe19ac]
+    +                                                   4 -[_UIScreenInitialDisplayConfigurationLoader initialDisplayContext]  (in UIKitCore) + 140  [0x185fe16f0]
+    +                                                     4 -[_UIApplicationConfigurationLoader applicationInitializationContext]  (in UIKitCore) + 20  [0x186002c94]
+    +                                                       4 -[_UIApplicationConfigurationLoader _loadInitializationContext]  (in UIKitCore) + 128  [0x186002a3c]
+    +                                                         4 _dispatch_once_wait  (in libdispatch.dylib) + 60  [0x1801880e4]
+    +                                                           4 _dispatch_once_wait.cold.1  (in libdispatch.dylib) + 144  [0x1801bbaa8]
+    +                                                             4 _dlock_wait  (in libdispatch.dylib) + 52  [0x180188190]
+    +                                                               4 __ulock_wait  (in libsystem_kernel.dylib) + 8  [0x100c8e788]
+
+Sort by top of stack, same collapsed (when >= 5):
+
+Binary images description not available
+
