@@ -350,6 +350,11 @@ final class MovementTests: XCTestCase {
                    thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7)),
                    withVelocity: .slow, thenHoldForDuration: 0.1)
         XCTAssertTrue(wait(4) { openScreen == "search" }, "после пометки свайп не закрыл карточку: \(openScreen)")
+        // Посадка карточки посреди хода (P895): полёт и опускание в гнездо.
+        usleep(450_000)
+        save("16а-посадка-полёт")
+        usleep(450_000)
+        save("16б-посадка-над-гнездом")
         checkStays(picked.label, at: picked.top, "закрыта вниз")
         save("16-карточка-закрыта-вниз")
         // Та же карточка ещё раз — и вверх за низ листа.
