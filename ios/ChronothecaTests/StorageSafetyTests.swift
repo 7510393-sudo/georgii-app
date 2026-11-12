@@ -17,6 +17,8 @@ final class StorageSafetyTests: XCTestCase {
         super.setUp()
         folder = fm.temporaryDirectory.appendingPathComponent("сохранность-\(UUID().uuidString)")
         try? fm.createDirectory(at: folder, withIntermediateDirectories: true)
+        Pending.home = fm.temporaryDirectory.appendingPathComponent("страховка-\(UUID().uuidString)")
+        Vault.brokenWrites = nil
         vault = Vault()
         vault.adopt(folder)
         vault.acceptProposal()
@@ -25,6 +27,9 @@ final class StorageSafetyTests: XCTestCase {
 
     override func tearDown() {
         vault.forget()
+        Vault.brokenWrites = nil
+        if let home = Pending.home { try? fm.removeItem(at: home) }
+        Pending.home = nil
         try? fm.removeItem(at: folder)
         super.tearDown()
     }
@@ -210,5 +215,90 @@ final class StorageSafetyTests: XCTestCase {
         день.scheduleSave()
         день.save()
         XCTAssertTrue(contents(diaryURL())?.contains("Последние слова") == true)
+    }
+
+    // MARK: - Беда 4: запись не дошла до папки (P900)
+
+    func testНезаписанноеВидноИЛежитВСтраховке() {
+        let день = DayStore(vault: vault, date: today)
+        день.diaryText = "Первая строка."
+        день.save()
+        XCTAssertNil(день.unsaved)
+
+        Vault.brokenWrites = "нет места"
+        день.diaryText = "Первая строка.\nВторая, которой некуда лечь."
+        день.save()
+
+        XCTAssertNotNil(день.unsaved, "человеку не сказали, что запись не дошла")
+        XCTAssertFalse(contents(diaryURL())?.contains("Вторая") == true)
+        XCTAssertTrue(Pending.draft(.diary, date: today, root: vault.root!)?.text.contains("Вторая") == true,
+                      "незаписанного нет в страховке")
+        XCTAssertTrue(день.diaryText.contains("Вторая"), "текст пропал с экрана")
+    }
+
+    func testНезаписанноеДоходитКогдаПапкаВернулась() {
+        let день = DayStore(vault: vault, date: today)
+        Vault.brokenWrites = "нет места"
+        день.diaryText = "Писал, пока облако молчало."
+        день.save()
+        XCTAssertNotNil(день.unsaved)
+
+        Vault.brokenWrites = nil
+        день.save()
+
+        XCTAssertNil(день.unsaved, "строка не погасла, хотя запись дошла")
+        XCTAssertTrue(contents(diaryURL())?.contains("облако молчало") == true)
+        XCTAssertNil(Pending.draft(.diary, date: today, root: vault.root!), "страховка не стёрта")
+    }
+
+    func testНезаписанноеПереживаетЗакрытиеПриложения() {
+        let прежде = DayStore(vault: vault, date: today)
+        прежде.diaryText = "Было в файле."
+        прежде.save()
+        Vault.brokenWrites = "нет места"
+        прежде.diaryText = "Было в файле.\nДописано перед тем, как приложение закрыли."
+        прежде.save()
+
+        // Новый запуск: папка снова доступна.
+        Vault.brokenWrites = nil
+        let после = DayStore(vault: vault, date: today)
+        XCTAssertTrue(после.diaryText.contains("Дописано перед"), "день открыт без недописанного")
+        после.save()
+        XCTAssertTrue(contents(diaryURL())?.contains("Дописано перед") == true, "недописанное не дошло до папки")
+        XCTAssertNil(Pending.draft(.diary, date: today, root: vault.root!))
+    }
+
+    func testНезаписанноеДругогоДняДоходитСамо() {
+        let вчера = Calendar.current.date(byAdding: .day, value: -1, to: today)!
+        let день = DayStore(vault: vault, date: вчера)
+        Vault.brokenWrites = "нет места"
+        день.diaryText = "Вчерашняя запись, не дошедшая до папки."
+        день.go(to: today)
+        XCTAssertNotNil(день.unsaved, "ушли со дня — и строка погасла, хотя запись в страховке")
+
+        Vault.brokenWrites = nil
+        день.comeBack(newDay: false)
+        let файл = vault.file(.diary, for: вчера)!
+        XCTAssertTrue(contents(файл)?.contains("Вчерашняя запись") == true)
+        XCTAssertNil(день.unsaved)
+    }
+
+    func testНезаписанноеНеЗатираетЧужуюПравку() {
+        let прежде = DayStore(vault: vault, date: today)
+        прежде.diaryText = "Было в файле."
+        прежде.save()
+        Vault.brokenWrites = "нет места"
+        прежде.diaryText = "Своё, недописанное."
+        прежде.save()
+
+        // Пока папка была недоступна здесь, файл поправили на Mac.
+        Vault.brokenWrites = nil
+        put("Поправлено на Mac.\n", at: diaryURL())
+        let после = DayStore(vault: vault, date: today)
+        после.save()
+
+        XCTAssertEqual(contents(diaryURL()), "Поправлено на Mac.\n", "правка с Mac затёрта")
+        XCTAssertTrue(asides(near: diaryURL()).contains { contents($0)?.contains("Своё, недописанное") == true },
+                      "недописанное не положено рядом")
     }
 }

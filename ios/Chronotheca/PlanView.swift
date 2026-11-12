@@ -534,6 +534,8 @@ struct PlanView: View {
         // едет целиком, план и дневник вместе (P408).
         ScrollViewReader { proxy in
             VStack(alignment: .leading, spacing: 0) {
+                // Запись не дошла до папки (P900) — сказать прямо на странице.
+                if let why = store.unsaved { UnsavedNote(why: why) }
                 if store.away.contains(.planner) {
                     PlanEmpty(inCloud: true)
                 } else {
@@ -1574,6 +1576,38 @@ extension View {
 }
 
 /// Пустой день. Общий для открытой страницы и соседних.
+/// Запись дня не дошла до папки (P900): спокойная строка вверху страницы,
+/// пока запись не пройдёт. Текст цел — он на экране и в страховке.
+struct UnsavedNote: View {
+    let why: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(T("Запись пока не дошла до папки", "This entry has not reached your folder yet"))
+                .font(Look.sans(13, weight: .semibold))
+                .foregroundStyle(Look.ink)
+            Text(T("Текст цел: приложение хранит его у себя и пробует записать снова.",
+                   "Your text is safe: the app is keeping it and trying again."))
+                .font(Look.sans(12))
+                .foregroundStyle(Look.inkSoft)
+            Text(why)
+                .font(Look.sans(11))
+                .foregroundStyle(Look.inkFaint)
+                .lineLimit(2)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Look.chrome.opacity(0.7)))
+        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Look.accent.opacity(0.5), lineWidth: 1))
+        .padding(.horizontal, 14)
+        .padding(.top, 6)
+        .padding(.bottom, 4)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("unsavedNote")
+    }
+}
+
 struct PlanEmpty: View {
     /// Файл плана лежит в iCloud и ещё не скачан. Пустая страница здесь
     /// не значит пустой день — так и надо сказать (решение P182).

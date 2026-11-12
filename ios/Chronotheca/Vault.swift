@@ -1274,9 +1274,14 @@ final class Vault: ObservableObject {
         write(data: Data(text.utf8), to: url)
     }
 
+    /// Для проверок: с этой причиной не проходит любая запись (P900).
+    static var brokenWrites: String?
+
     /// То же для любого файла — фотографии, голоса, документа.
     @discardableResult
     static func write(data: Data, to url: URL) -> String? {
+        // Для проверок: запись не проходит, как при полном диске (P900).
+        if let broken = Vault.brokenWrites { return broken }
         do {
             try FileManager.default.createDirectory(at: url.deletingLastPathComponent(),
                                                     withIntermediateDirectories: true)

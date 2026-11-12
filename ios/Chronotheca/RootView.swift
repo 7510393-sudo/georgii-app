@@ -523,6 +523,11 @@ struct RootView: View {
             shell.say(T("Запись дополнена тем, что было записано на другом устройстве",
                         "The entry now includes what was written on another device"))
         }
+        // Недописанное с прошлого раза дошло до папки (P900) — сказать.
+        .onChange(of: store.settledNotice) { _, _ in
+            shell.say(T("Запись, не дошедшая до папки в прошлый раз, дописана",
+                        "The entry that had not reached your folder is now saved"))
+        }
         .onAppear {
             // Просьбы кнопок над клавиатурой — открытой странице (P279).
             KeyboardBar.ask = { [shell] ask in shell.keyboardAsk = ask }

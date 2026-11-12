@@ -589,6 +589,8 @@ final class DayStore: ObservableObject {
     func go(to newDate: Date) {
         prune()
         save()
+        // Уходим с дня, который не записался: причина — дальше с нами (P900).
+        if let why = failed.values.first { owedElsewhere = why }
         editingTabs = []
         weatherAsked = false
         planBack = []
@@ -1259,13 +1261,36 @@ final class DayStore: ObservableObject {
         if plan == .away { gone.insert(.planner) }
         if diaryFile == .away { gone.insert(.diary) }
         away = gone
+        // Недописанное с прошлого раза (P900): день показывается таким,
+        // каким его писали, и запись в папку пробуется снова.
+        var shown: [Vault.Folder: String] = [.planner: plan.text, .diary: diaryFile.text]
+        var owed: Set<Vault.Folder> = []
+        failed = [:]
+        if Pending.any, let root = vault.root {
+            for folder in [Vault.Folder.planner, .diary] where !gone.contains(folder) {
+                guard let draft = Pending.draft(folder, date: date, root: root) else { continue }
+                let disk = shown[folder] ?? ""
+                if disk == draft.text {
+                    Pending.drop(folder, date: date)
+                } else if disk == draft.base {
+                    shown[folder] = draft.text
+                    owed.insert(folder)
+                } else if let name = vault.writeAside(draft.text, folder: folder, for: date) {
+                    // Файл с тех пор изменили в другом месте — своё рядом (P183).
+                    Pending.drop(folder, date: date)
+                    conflict = name
+                }
+            }
+        }
+        // Другие дни — заодно.
+        settleOthers()
 
         quietPlan = true
-        (planRows, planPhotos) = Plan.splitPhotos(Plan.rows(from: DayFile(text: plan.text).body))
+        (planRows, planPhotos) = Plan.splitPhotos(Plan.rows(from: DayFile(text: shown[.planner] ?? "").body))
         quietPlan = false
         noteSeries()
 
-        let file = DayFile(text: diaryFile.text)
+        let file = DayFile(text: shown[.diary] ?? "")
         // План читается первым, поэтому названия дел уже известны — по ним
         // ответы «Как прошло?» разбираются без догадок (P155).
         let diary = Diary(body: file.body, known: planRows.map(\.text))
@@ -1285,7 +1310,14 @@ final class DayStore: ObservableObject {
 
         seen = [.planner: plan.text, .diary: diaryFile.text]
         mine = [.planner: planFile().text, .diary: diaryFileNow().text]
+        // Недописанное — ещё не на диске: «своим» его не считаем, и запись
+        // пойдёт сразу.
+        if !owed.isEmpty {
+            for folder in owed { mine[folder] = nil }
+            DispatchQueue.main.async { [weak self] in self?.save() }
+        }
         if away.isEmpty { retries = 0 } else { waitForCloud() }
+        retryIfUnsaved()
         if !merge { lookForConflicts() }
         // Следом, не задерживая открытый день.
         ReadyPages.shared.warm(around: date, vault: vault)
@@ -1319,6 +1351,8 @@ final class DayStore: ObservableObject {
     func refresh() {
         guard vault.root != nil else { return }
         save()
+        // Недописанное других дней — до папки, раз мы снова здесь (P900).
+        settleOthers()
         let stale = [Vault.Folder.planner, .diary].contains { folder in
             let now = vault.reading(folder, for: date)
             if now == .away { return false }
@@ -1370,6 +1404,7 @@ final class DayStore: ObservableObject {
         // Заголовок дня — это уже запись, даже если под ним пока нет ни строчки.
         let b = write(diary, to: .diary, keep: !diaryTitle.isEmpty || place != nil || weather != nil)
         if a || b { load() }
+        retryIfUnsaved()
         // Готовая страница этого дня устарела (P679).
         ReadyPages.shared.forget(date)
         savedTick += 1
@@ -1484,8 +1519,15 @@ final class DayStore: ObservableObject {
             // Своя правка кладётся рядом. Не легла — день не перечитываем,
             // иначе она пропадёт: пусть остаётся на экране до следующей попытки.
             guard let name = vault.writeAside(ours, folder: folder, for: date) else {
+                // И рядом не легла — в страховку (P900).
+                failed[folder] = vault.problem ?? T("папка сейчас недоступна", "the folder is unavailable right now")
+                if let root = vault.root {
+                    Pending.keep(ours, base: seen[folder] ?? "", folder: folder, date: date, root: root)
+                }
                 return false
             }
+            failed[folder] = nil
+            Pending.drop(folder, date: date)
             conflict = name
             return true
         }
@@ -1493,11 +1535,65 @@ final class DayStore: ObservableObject {
         let empty = file.body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         if empty && !keep && now.text.isEmpty { return false }
         vault.write(ours, to: folder, for: date)
-        if vault.problem == nil {
+        if let why = vault.problem {
+            // Не записалось (P900): текст — в страховку внутри приложения,
+            // на странице — строка, запись пробуется снова.
+            failed[folder] = why
+            if let root = vault.root {
+                Pending.keep(ours, base: seen[folder] ?? "", folder: folder, date: date, root: root)
+            }
+        } else {
             seen[folder] = ours
             mine[folder] = ours
+            failed[folder] = nil
+            Pending.drop(folder, date: date)
         }
         return false
+    }
+
+    /// Какие файлы дня сейчас не записываются — и почему (P900).
+    private var failed: [Vault.Folder: String] = [:] { didSet { noteUnsaved() } }
+    /// Недописанное есть у других дней — оно лежит в страховке.
+    private var owedElsewhere: String? { didSet { noteUnsaved() } }
+    private func noteUnsaved() {
+        let now = failed.values.first ?? owedElsewhere
+        if now != unsaved { unsaved = now }
+    }
+    /// Запись дня не дошла до папки: причина — для строки на странице.
+    /// Текст на экране цел и лежит в страховке; запись пробуется снова.
+    @Published private(set) var unsaved: String?
+    /// Недописанное с прошлого раза дошло до папки — сказать (P900).
+    @Published var settledNotice = 0
+    private var retrySave: DispatchWorkItem?
+
+    /// Довести до папки недописанное других дней; что осталось — помнить,
+    /// чтобы строка на странице не гасла, пока текст лежит в страховке.
+    private func settleOthers() {
+        guard Pending.any, let root = vault.root else {
+            if owedElsewhere != nil { owedElsewhere = nil }
+            return
+        }
+        if Pending.settle(vault, except: date) > 0 { settledNotice += 1 }
+        let left = Pending.all(root: root).contains { $0.stamp != Vault.stamp(date) }
+        let why = left ? (owedElsewhere ?? vault.problem
+                          ?? T("папка сейчас недоступна", "the folder is unavailable right now")) : nil
+        if why != owedElsewhere { owedElsewhere = why }
+    }
+
+    /// Пока запись не проходит — пробовать каждые пять секунд, не дожидаясь
+    /// следующей буквы.
+    private func retryIfUnsaved() {
+        retrySave?.cancel()
+        retrySave = nil
+        guard unsaved != nil else { return }
+        let day = date
+        let item = DispatchWorkItem { [weak self] in
+            guard let self, self.date == day, self.unsaved != nil else { return }
+            self.settleOthers()
+            self.save()
+        }
+        retrySave = item
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5, execute: item)
     }
 
     /// То, что действительно лежит на диске — а не то, что помнит приложение.
