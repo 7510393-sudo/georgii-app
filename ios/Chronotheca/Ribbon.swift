@@ -58,14 +58,53 @@ final class Ribbon: ObservableObject {
     /// карточка рядом с сегодня, и лента вставала так, что лист торчал на
     /// полэкрана. Сдвигает ленту, только если место дня собрано.
     func keepToday(_ side: Int) {
-        guard let scroll = box.view, seen, height > 0 else { return }
+        guard let scroll = box.view, seen, known, height > 0 else { return }
         let raw = slotTop - scroll.contentOffset.y
         var offset = scroll.contentOffset.y
         if side > 0, raw < restY(1) { offset -= restY(1) - raw }
         if side < 0, raw > restY(-1) { offset += raw - restY(-1) }
         let most = max(0, scroll.contentSize.height - scroll.bounds.height)
         offset = min(most, max(0, offset))
-        if abs(offset - scroll.contentOffset.y) > 0.5 { scroll.contentOffset.y = offset }
+        if abs(offset - scroll.contentOffset.y) > 0.5 {
+            Trace.note(String(format: "лента: «Сегодня» на своё место — сдвиг %.0f", offset - scroll.contentOffset.y))
+            scroll.contentOffset.y = offset
+        }
+    }
+
+    /// Поставить карточку `id` верхом ровно на `top` от верха экрана (P894):
+    /// переход ленты к карточке ставит её приблизительно — ленивая стопка
+    /// знает рост дальних карточек на глаз, — и потом лента дёргалась,
+    /// подстраиваясь (автор по 278). Поправка — по замеру самой карточки,
+    /// пока лента скрыта; несколько раз, пока замер не совпадёт.
+    func align(_ id: String, top: CGFloat, tries: Int = 4, then: @escaping () -> Void) {
+        guard let scroll = box.view, tries > 0, let frame = frames[id] else {
+            then()
+            return
+        }
+        let miss = frame.minY - top
+        guard abs(miss) > 0.5 else {
+            then()
+            return
+        }
+        let most = max(0, scroll.contentSize.height - scroll.bounds.height)
+        let offset = min(most, max(0, scroll.contentOffset.y + miss))
+        Trace.note(String(format: "лента: карточка %@ мимо места на %.0f — поправка", id, miss))
+        fixing = true
+        scroll.contentOffset.y = offset
+        fixing = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.03) { [weak self] in
+            self?.align(id, top: top, tries: tries - 1, then: then)
+        }
+    }
+
+    /// Лента пересобрана вокруг другого дня (P894): прежний замер места дня
+    /// больше не верен. Стена и «Сегодня у края» ждут нового замера —
+    /// прежде по старому замеру лента сама уезжала, когда её трогала
+    /// ленивая стопка (автор по 278: «вся картотека дёргается и переходит к
+    /// последним записям»).
+    func forget() {
+        known = false
+        Trace.note("лента: пересобрана — место дня ждёт замера")
     }
 
     /// Какой день закрыли в карточку — по нему мерится её рамка, когда
@@ -88,6 +127,8 @@ final class Ribbon: ObservableObject {
     /// Уже позвали — второй раз не звать, пока лента не отошла от края.
     private var todayAsked = false
     private var lastOffset: CGFloat = 0
+    /// Последняя прокрутка, которую видели (для следа, P894).
+    private var lastSeen: CGFloat = 0
 
     /// Лента дошла до края к сегодняшнему дню, двигаясь к нему, — сегодня
     /// раскрывается. Только по ходу пальца или его разгона и не в первые
@@ -205,6 +246,11 @@ final class Ribbon: ObservableObject {
         guard !driving else { return }
         slotTop = value + scroll.contentOffset.y
         known = true
+        // Замер пришёл — значит, место собрано (P894): отметку «собрано»
+        // иногда снимал уход прежнего места при пересборке ленты уже после
+        // появления нового, и тяга листа отказывала (автор по 278: «после
+        // пометок не закрыть свайпом»).
+        seen = true
         follow(scroll.contentOffset.y)
     }
 
@@ -248,6 +294,13 @@ final class Ribbon: ObservableObject {
     private func scrolled(_ scroll: UIScrollView) {
         measureReach(scroll)
         guard !fixing else { return }
+        // Для проверок движения: лента сдвинулась сама — без пальца, без
+        // разгона и не своим ходом (P894).
+        let moved = scroll.contentOffset.y - lastSeen
+        lastSeen = scroll.contentOffset.y
+        if abs(moved) > 20, !scroll.isTracking, !scroll.isDecelerating, !driving {
+            Trace.note(String(format: "лента: сама на %.0f (стена %@)", moved, walls() ? "да" : "нет"))
+        }
         reachToday(scroll)
         guard walls(), !driving, link == nil, known, height > 0 else {
             if scroll.isTracking {
@@ -304,6 +357,7 @@ final class Ribbon: ObservableObject {
             }
         } else if inside {
             target = wall
+            Trace.note(String(format: "лента: без пальца к стене — день %.0f стена %.0f", raw, wall))
         }
         if let target {
             fixing = true
@@ -372,6 +426,7 @@ final class Ribbon: ObservableObject {
     /// нет — ставим его и ждём следующего движения пальца.
     func begin() -> Bool {
         guard box.view != nil, seen else {
+            Trace.note("тяга: место дня не собрано — ставим (\(box.view != nil ? "лента есть" : "ленты нет"))")
             home?()
             return false
         }

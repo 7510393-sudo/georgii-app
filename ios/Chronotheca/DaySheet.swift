@@ -482,6 +482,14 @@ final class EdgePull: NSObject, ObservableObject, UIGestureRecognizerDelegate {
     private var anchor: CGFloat?
     private var last: CGFloat = 0
     private var armed = false
+    /// Отказ уже записан в след за это касание.
+    private var blockedNoted = false
+
+    /// Ждёт ли букв какое-нибудь поле внутри листа.
+    private static func typing(in view: UIView) -> Bool {
+        if view.isFirstResponder { return true }
+        return view.subviews.contains { typing(in: $0) }
+    }
 
     func attach(to view: UIScrollView) {
         guard scroll !== view else { return }
@@ -507,9 +515,21 @@ final class EdgePull: NSObject, ObservableObject, UIGestureRecognizerDelegate {
         switch pan.state {
         case .began:
             reset()
+            blockedNoted = false
             last = t.y
         case .changed:
-            guard enabled else { reset(); return }
+            // Пока пишут, лист за край не тянется. Пишут — это поле на листе
+            // правда ждёт букв, а не только запомненная высота клавиатуры
+            // (P894, автор по 278: «сделал пометки и не могу закрыть
+            // свайпом»; высота могла остаться от ушедшей клавиатуры).
+            guard enabled || !Self.typing(in: view) else {
+                if anchor == nil, !blockedNoted {
+                    blockedNoted = true
+                    Trace.note("тяга: на листе пишут — лист не тянется")
+                }
+                reset()
+                return
+            }
             let inset = view.adjustedContentInset
             let top = view.contentOffset.y <= -inset.top + 0.5
             let bottom = view.contentOffset.y >= view.contentSize.height - view.bounds.height + inset.bottom - 0.5
@@ -531,7 +551,7 @@ final class EdgePull: NSObject, ObservableObject, UIGestureRecognizerDelegate {
             if over && !armed { Feel.light() }
             armed = over
         case .ended:
-            let go = armed && enabled ? dir : 0
+            let go = armed ? dir : 0
             if go != 0 {
                 reset(quiet: true)
                 commit?(go)

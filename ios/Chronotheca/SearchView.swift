@@ -555,13 +555,29 @@ struct SearchView: View {
                 guard shell.dayCard, ribbon.folding else { return }
                 ribbon.closedID = closed
                 store.save()
+                Trace.note(String(format: "лента: закрыт %@, вернуть на %.0f (%@)", closed, top,
+                                  back == nil ? "у края" : "где был"))
+                // Прежний замер места дня — от ленты вокруг закрытого дня (P894).
+                ribbon.forget()
                 withTransaction(still) { store.go(to: DayStore.today()) }
                 DispatchQueue.main.async {
                     withTransaction(still) { proxy.scrollTo(closed, anchor: spot(top)) }
-                    // Лист «Сегодня» — не выше своего места у края (P893:
-                    // корешок торчал на полэкрана).
-                    DispatchQueue.main.async { ribbon.keepToday(side) }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                    // Карточка — ровно на своё место, пока лента скрыта
+                    // (P894: прежде вставала приблизительно и потом лента
+                    // дёргалась). Затем лист «Сегодня» — не выше своего места
+                    // у края (P893: корешок торчал на полэкрана).
+                    var aligned = false
+                    DispatchQueue.main.async {
+                        ribbon.align(closed, top: top) {
+                            ribbon.keepToday(side)
+                            aligned = true
+                        }
+                    }
+                    func reveal(_ waited: Int = 0) {
+                        guard aligned || waited >= 8 else {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.03) { reveal(waited + 1) }
+                            return
+                        }
                         guard ribbon.folding else { return }
                         let place = ribbon.anchorFrame
                             ?? CGRect(x: inset, y: top, width: w - 2 * inset, height: frameHeight)
@@ -580,10 +596,14 @@ struct SearchView: View {
                                     guard shell.dayCard else { return }
                                     withTransaction(still) { shell.dayCard = false }
                                     ribbon.refresh()
+                                    if let f = ribbon.frames[closed] {
+                                        Trace.note(String(format: "лента: %@ встал на %.0f", closed, f.minY))
+                                    }
                                 }
                             }
                         }
                     }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.09) { reveal() }
                 }
             }
         }
@@ -737,7 +757,10 @@ struct SearchView: View {
         let id = Vault.stamp(date)
         let from = ribbon.frames[id].map { (id: id, top: $0.minY) }
         ribbon.reset()
+        // Лента пересоберётся вокруг открытого дня (P894).
+        ribbon.forget()
         ribbon.openedFrom = from
+        Trace.note(String(format: "лента: открыт %@ с места %.0f", id, from?.top ?? -1))
         withTransaction(still) {
             shell.instant = true
             shell.ribbonOpen = false

@@ -263,6 +263,162 @@ final class MovementTests: XCTestCase {
         save("14-прошлый-день-картотека-снизу")
     }
 
+    // MARK: - Картотека стоит, где её оставили (P894)
+
+    /// Карточки картотеки на экране: подпись корешка (дата и день недели) и
+    /// где верх корешка.
+    private func cards() -> [(label: String, top: CGFloat)] {
+        let height = app.windows.firstMatch.frame.height
+        return app.staticTexts.matching(NSPredicate(format: "label MATCHES %@", "^[0-9]{4} .*"))
+            .allElementsBoundByIndex
+            .map { (label: $0.label, top: $0.frame.minY) }
+            .filter { $0.top > 0 && $0.top < height - 60 }
+    }
+
+    /// Где сейчас карточка с этой подписью (или −1, если её не видно).
+    private func top(of label: String) -> CGFloat {
+        cards().first { $0.label == label }?.top ?? -1
+    }
+
+    /// Ближайшая к доле высоты экрана карточка.
+    private func card(near share: CGFloat) -> (label: String, top: CGFloat)? {
+        let y = app.windows.firstMatch.frame.height * share
+        return cards().min { abs($0.top - y) < abs($1.top - y) }
+    }
+
+    /// Закрытая карточка встаёт туда, где была, и лента потом сама не едет:
+    /// замер четыре раза за три секунды.
+    private func checkStays(_ label: String, at was: CGFloat, _ name: String) {
+        var seen: [CGFloat] = []
+        for _ in 0..<4 {
+            sleep(1)
+            seen.append(top(of: label))
+        }
+        note(name, "\(label): было \(Int(was)), стало " + seen.map { "\(Int($0))" }.joined(separator: " → "))
+        guard let last = seen.last else { return }
+        XCTAssertLessThan(abs(last - was), 6, "\(name): карточка встала не на своё место")
+        XCTAssertLessThan((seen.max() ?? 0) - (seen.min() ?? 0), 3, "\(name): лента сама сдвинулась")
+    }
+
+    /// Автор по 278: открыл старую запись, вписал пометку — свайпом не
+    /// закрыть; закрыл — карточка встаёт приблизительно, потом вся картотека
+    /// дёргается и уезжает к последним записям.
+    func testPastCardStaysPut() {
+        launch(trace: "след-карточка")
+        XCTAssertEqual(openDay, "today")
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2))
+            .press(forDuration: 0.05,
+                   thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.6)),
+                   withVelocity: .slow, thenHoldForDuration: 0.1)
+        XCTAssertTrue(wait(4) { openScreen == "search" }, "лента прошлого не открылась: \(openScreen)")
+        sleep(2)
+        // Чуть в прошлое — не у самого сегодня.
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.35))
+            .press(forDuration: 0.05,
+                   thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.6)),
+                   withVelocity: .slow, thenHoldForDuration: 0.3)
+        sleep(2)
+        guard let picked = card(near: 0.4) else {
+            XCTFail("в ленте нет карточек: \(app.staticTexts.count) надписей")
+            return
+        }
+        note("карточка прошлого", "\(picked.label) на \(Int(picked.top))")
+        app.coordinate(withNormalizedOffset: .zero)
+            .withOffset(CGVector(dx: 120, dy: picked.top + 60)).tap()
+        XCTAssertTrue(wait(5) { openScreen == "today" && openDay != "today" },
+                      "карточка не открыла прошлый день: \(openScreen) \(openDay)")
+        sleep(2)
+        // Пометка в записи и клавиатура убрана — как у автора.
+        if raiseKeyboard() {
+            app.typeText(" пометка")
+            sleep(1)
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
+                .press(forDuration: 0.05,
+                       thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.98)),
+                       withVelocity: .slow, thenHoldForDuration: 0.1)
+            sleep(2)
+            note("пометка", app.keyboards.firstMatch.exists ? "клавиатура осталась" : "клавиатура ушла")
+        } else {
+            note("пометка", "клавиатура не поднялась")
+        }
+        save("15-карточка-с-пометкой")
+        // К верху листа и тягой вниз — закрыть в карточку.
+        for _ in 0..<4 { app.swipeDown() }
+        sleep(1)
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2))
+            .press(forDuration: 0.05,
+                   thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7)),
+                   withVelocity: .slow, thenHoldForDuration: 0.1)
+        XCTAssertTrue(wait(4) { openScreen == "search" }, "после пометки свайп не закрыл карточку: \(openScreen)")
+        checkStays(picked.label, at: picked.top, "закрыта вниз")
+        save("16-карточка-закрыта-вниз")
+        // Та же карточка ещё раз — и вверх за низ листа.
+        let again = top(of: picked.label)
+        guard again >= 0 else { return }
+        app.coordinate(withNormalizedOffset: .zero)
+            .withOffset(CGVector(dx: 120, dy: again + 60)).tap()
+        XCTAssertTrue(wait(5) { openScreen == "today" && openDay != "today" }, "карточка не открылась второй раз")
+        sleep(2)
+        for _ in 0..<5 { app.swipeUp() }
+        sleep(1)
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.75))
+            .press(forDuration: 0.05,
+                   thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.25)),
+                   withVelocity: .slow, thenHoldForDuration: 0.1)
+        XCTAssertTrue(wait(4) { openScreen == "search" }, "свайп вверх не закрыл карточку: \(openScreen)")
+        checkStays(picked.label, at: again, "закрыта вверх")
+        save("17-карточка-закрыта-вверх")
+    }
+
+    /// Автор по 278: открыл будущий лист, вбок на карту, обратно, убрал
+    /// лист — появилось начало прошлой картотеки, а не будущее.
+    func testFutureCardAfterMap() {
+        launch(trace: "след-будущее")
+        XCTAssertEqual(openDay, "today")
+        for _ in 0..<4 { app.swipeUp() }
+        sleep(1)
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
+            .press(forDuration: 0.05,
+                   thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3)),
+                   withVelocity: .slow, thenHoldForDuration: 0.1)
+        XCTAssertTrue(wait(4) { openScreen == "search" }, "лента будущего не открылась: \(openScreen)")
+        sleep(2)
+        guard let picked = card(near: 0.45) else {
+            XCTFail("в ленте будущего нет карточек")
+            return
+        }
+        note("карточка будущего", "\(picked.label) на \(Int(picked.top))")
+        app.coordinate(withNormalizedOffset: .zero)
+            .withOffset(CGVector(dx: 120, dy: picked.top + 50)).tap()
+        XCTAssertTrue(wait(5) { openScreen == "today" && openDay != "today" },
+                      "карточка не открыла будущий день: \(openScreen) \(openDay)")
+        sleep(2)
+        func swipe(_ from: CGFloat, _ to: CGFloat) {
+            app.coordinate(withNormalizedOffset: CGVector(dx: from, dy: 0.55))
+                .press(forDuration: 0.05,
+                       thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: to, dy: 0.55)),
+                       withVelocity: 1500, thenHoldForDuration: 0)
+        }
+        swipe(0.2, 0.9)
+        XCTAssertTrue(wait(6) { openScreen == "map" }, "свайп вправо не открыл карту: \(openScreen)")
+        sleep(2)
+        swipe(0.985, 0.1)
+        XCTAssertTrue(wait(6) { openScreen == "today" }, "с карты не вернулся «Дневник»: \(openScreen)")
+        sleep(2)
+        save("18-будущий-после-карты")
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2))
+            .press(forDuration: 0.05,
+                   thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7)),
+                   withVelocity: .slow, thenHoldForDuration: 0.1)
+        XCTAssertTrue(wait(4) { openScreen == "search" }, "будущий лист не закрылся: \(openScreen)")
+        sleep(3)
+        save("19-будущий-закрыт")
+        let shown = cards()
+        note("после закрытия будущего", shown.map { "\($0.label) \(Int($0.top))" }.joined(separator: "; "))
+        XCTAssertGreaterThanOrEqual(top(of: picked.label), 0,
+                                    "закрытой будущей карточки не видно — лента ушла: \(shown.first?.label ?? "пусто")")
+    }
+
     /// Календарь стоит, где его оставили (P821): по замечанию к 248 год и
     /// месяц сами уходили на 2020-й. В замеры пишется, что в шапке после
     /// каждого шага.
