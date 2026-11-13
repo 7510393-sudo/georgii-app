@@ -596,12 +596,15 @@ struct SearchView: View {
                         guard ribbon.folding else { return }
                         // Рамка карточки без полей по бокам (схема была шире
                         // карточки на эти поля).
-                        let place = ribbon.anchorFrame?.insetBy(dx: Search.cardInset, dy: 0)
+                        let nest = ribbon.anchorFrame?.insetBy(dx: Search.cardInset, dy: 0)
                             ?? CGRect(x: inset, y: top, width: w - 2 * inset, height: full)
                         // Лента проступает на своём месте, схема одним
                         // движением летит из листа к гнезду и встаёт над ним
                         // (P889, P895)…
                         ribbon.veiled = false
+                        // Схема летит туда, где карточка видна, а не туда, где
+                        // она стоит в раскладке: между ними — сближение (P909).
+                        let place = nest.offsetBy(dx: 0, dy: Afar.shift(nest.minY, side: side, height: height))
                         ribbon.foldTo = place.offsetBy(dx: 0, dy: -Landing.lift)
                         DispatchQueue.main.asyncAfter(deadline: .now() + Self.flight) {
                             guard ribbon.folding else { return }
@@ -1306,28 +1309,28 @@ enum Afar {
     static let lift: CGFloat = Search.overlap + 40
 
     /// `top` — верх карточки на экране ленты, `height` — высота экрана.
-    /// Возвращает сдвиг по вертикали: шаг между карточками — прежний у
-    /// ближнего края и плавно убывает до `tightest` у дальнего, за дальним
-    /// краем — как у края. Карточки только сближаются — щели нет.
+    /// Возвращает сдвиг по вертикали. Карточки стоят плотнее у края, где
+    /// «Сегодня», и свободнее у дальнего (P909, автор: «в прошлом плотнее у
+    /// низа экрана и свободнее у верха, в будущем наоборот»; прежде было
+    /// наоборот — плотнее у дальнего края). Шаг у ближнего края — `tightest`
+    /// от настоящего, к дальнему плавно растёт до настоящего и за дальним
+    /// краем остаётся настоящим. Опора — ближний край: стык с листом
+    /// «Сегодня» не двигается. Карточки только сближаются — щели нет.
     static func shift(_ top: CGFloat, side: Int, height h: CGFloat) -> CGFloat {
-        // Расстояние до дальнего края: у прошлого — от верха экрана,
-        // у будущего — от низа.
-        let t = side > 0 ? top : h - top
+        // Расстояние от ближнего края: у прошлого — от низа экрана, у
+        // будущего — от верха.
+        let d = side > 0 ? h - top : top
         let loss = 1 - tightest
-        // Сколько показанной длины у ленты от `t` до ближнего края: шаг k(u)
-        // = tightest + loss·u/h, сложенный от t до h.
-        func shown(_ u: CGFloat) -> CGFloat {
-            tightest * (h - u) + loss * (h * h - u * u) / (2 * h)
-        }
-        let f: CGFloat
-        if t >= h {
-            f = t
-        } else if t >= 0 {
-            f = h - shown(t)
+        let shown: CGFloat
+        if d < 0 {
+            shown = tightest * d
+        } else if d <= h {
+            // Шаг k(v) = tightest + loss·v/h, сложенный от края до d.
+            shown = tightest * d + loss * d * d / (2 * h)
         } else {
-            f = h - shown(0) + tightest * t
+            shown = tightest * h + loss * h / 2 + (d - h)
         }
-        let place = side > 0 ? f : h - f
+        let place = side > 0 ? h - shown : shown
         return place - top
     }
 }
