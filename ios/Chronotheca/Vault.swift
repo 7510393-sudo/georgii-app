@@ -239,6 +239,13 @@ final class Vault: ObservableObject {
     static var isPreview: Bool {
         ProcessInfo.processInfo.environment["CHRONOTHECA_PREVIEW"] == "1"
     }
+    /// Приложение ведёт себя само (P911): проверка большого архива не
+    /// трогает его роботом — робот, перебирая элементы экрана, сам держал
+    /// главный поток, и замер показывал его, а не приложение.
+    static var isSelfDrive: Bool {
+        isUITest && ProcessInfo.processInfo.environment["CHRONOTHECA_SELFDRIVE"] == "1"
+    }
+
     /// Приложение запустили проверки движения (P552).
     static var isUITest: Bool {
         ProcessInfo.processInfo.environment["CHRONOTHECA_UITEST"] == "1"
@@ -419,7 +426,8 @@ final class Vault: ObservableObject {
     /// «Проверки скорости» на телефоне (P581). Второй раз не пишет.
     static func seedBigArchive(in root: URL, before today: Date) {
         // Вторая метка (P589): прежний пробный архив был только из текста.
-        let ready = root.appendingPathComponent(".big-archive-2")
+        // Третья метка (P911): архив вдвое длиннее и со снимками каждый день.
+        let ready = root.appendingPathComponent(".big-archive-3")
         guard !FileManager.default.fileExists(atPath: ready.path) else { return }
         let cal = Calendar.current
         let words = ["lamp", "river", "train", "garden", "letter", "rain", "market", "violin", "bridge", "kitchen"]
@@ -439,7 +447,11 @@ final class Vault: ObservableObject {
             }
             return "../../" + home.lastPathComponent + "/" + year + "/" + name
         }
-        for k in 2...3650 {
+        // Двадцать лет (P911, автор: «увеличить большой архив»; прежде десять):
+        // около 14 600 дней плана и записи и столько же снимков — порядка
+        // 30 000 файлов и двух гигабайт. Скорость описи и разделов зависит от
+        // числа файлов, а не от их веса, поэтому вес снимков — как прежде.
+        for k in 2...7300 {
             guard let day = cal.date(byAdding: .day, value: -k, to: today) else { continue }
             let w = words[k % words.count]
             let stamp = Vault.stamp(day)
@@ -448,10 +460,11 @@ final class Vault: ObservableObject {
                 .appendingPathComponent(stamp + ".md")
             let diary = Vault.folder(.diary, in: root).appendingPathComponent(year)
                 .appendingPathComponent(stamp + ".md")
-            // Снимки — в два дня из трёх, по одному-два.
+            // Снимки — каждый день, от одного до трёх (P911; прежде в два дня
+            // из трёх по одному-два).
             var shots: [String] = []
-            if k % 3 != 0 {
-                for n in 0..<(1 + k % 2) where !pictures.isEmpty {
+            do {
+                for n in 0..<(1 + k % 3) where !pictures.isEmpty {
                     shots.append(put(pictures[(k + n) % pictures.count], .photos, "\(stamp)_\(n).jpg", year))
                 }
             }

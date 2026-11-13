@@ -531,38 +531,38 @@ final class MovementTests: XCTestCase {
     func testBigArchiveStaysQuick() {
         // Первый запуск складывает архив — его не мерим.
         launch(big: true)
-        // Архив со вложениями пишется в стороне (P589) — ждать его.
-        XCTAssertTrue(app.staticTexts["bigReady"].waitForExistence(timeout: 900), "архив не сложился")
+        // Архив со вложениями пишется в стороне (P589) — ждать его. Двадцать
+        // лет со снимками каждый день (P911) — дольше прежнего.
+        XCTAssertTrue(app.staticTexts["bigReady"].waitForExistence(timeout: 1800), "архив не сложился")
         sleep(3)
         app.terminate()
 
-        let start = Date()
-        app.launch()
-        XCTAssertTrue(app.buttons["bottom.calendar"].firstMatch.waitForExistence(timeout: 60))
-        let opened = Date().timeIntervalSince(start)
-        note("запуск", String(format: "%.2f с", opened))
-        sleep(3)
-
-        // Требования — по часам самого приложения (P810): от нажатия до
-        // открытого раздела и замирания главного потока на разделе. Часы
-        // робота и время запуска только записываются: снимки стека
-        // показали, что на большом архиве робот медлит сам — при запуске
-        // iOS подключает к приложению службы VoiceOver для робота, а пока
-        // он «нажимает» календарь, приложение почти не работает.
-        // Карта собирается при первом открытии (P814) — это её цена, а не
-        // архива: открыть её один раз до замера, считать только после.
-        app.buttons["bottom.map"].firstMatch.tap()
-        XCTAssertTrue(wait(15) { openScreen == "map" }, "карта не открылась")
-        sleep(3)
-        app.buttons["bottom.today"].firstMatch.tap()
-        XCTAssertTrue(wait(10) { openScreen == "today" }, "«Дневник» не вернулся")
-        sleep(2)
+        // Второй запуск приложение ведёт себя само (P911): робот его не
+        // трогает и ни о чём не спрашивает. Прежде робот, перебирая элементы
+        // экрана, сам держал главный поток по 5–20 секунд, и «календарь
+        // стоит» показывало робота, а не приложение (снимки стека, P810).
+        app.launchEnvironment["CHRONOTHECA_SELFDRIVE"] = "1"
         traceFrom = traceText().count
-        _ = sections("", shot: "big")
-        for screen in ["calendar", "map", "today"] {
+        app.launch()
+        Thread.sleep(forTimeInterval: 85)
+        save("06-большой-архив")
+
+        let text = String(traceText().dropFirst(traceFrom))
+        XCTAssertTrue(text.contains("сам: конец"), "приложение не прошло свой замер до конца")
+        // Шаги запуска и открытия разделов — по часам приложения.
+        let steps = text.split(separator: "\n").filter { $0.hasPrefix("шаг ") }
+            .map { String($0.dropFirst(4)) }
+        note("большой архив, шаги", steps.joined(separator: "; "))
+        // Мерим только после строки «сам: замер»: до неё — запуск и первая
+        // сборка карты.
+        if let r = text.range(of: "сам: замер") {
+            traceFrom += text.distance(from: text.startIndex, to: r.lowerBound)
+        }
+        for screen in ["calendar", "map", "today", "search"] {
             if let own = ownTime(screen) {
+                note("открытие " + screen, String(format: "%.2f с", own))
                 XCTAssertLessThan(own, 0.5, "\(screen) открывался в приложении \(own) с")
-            } else {
+            } else if screen != "search" {
                 XCTFail("приложение не записало, как открылся \(screen)")
             }
             let stall = longestStall(screen)
@@ -572,10 +572,9 @@ final class MovementTests: XCTestCase {
             let limit = screen == "map" ? 2.5 : 1.5
             XCTAssertLessThan(stall, limit, "на разделе \(screen) экран стоял \(stall) с")
         }
-        save("06-большой-архив")
+        if let query = ownTime("query") { note("поиск слова", String(format: "%.2f с", query)) }
     }
 
-    /// С какого знака файла замираний считать (P814): раньше — разогрев.
     private var traceFrom = 0
 
     private func traceText() -> String {
@@ -605,40 +604,5 @@ final class MovementTests: XCTestCase {
                 return Double(line[r.upperBound...].split(separator: " ").first ?? "")
             }
             .max() ?? 0
-    }
-
-    /// Открыть по очереди календарь, карту, «Дневник» кнопками внизу и
-    /// записать, на что уходит время (P806): найти кнопку, нажать (робот
-    /// ждёт, пока приложение затихнет), увидеть смену раздела, прочесть
-    /// надпись на уже открытом разделе.
-    private func sections(_ tag: String, shot: String) -> [(String, Double)] {
-        var out: [(String, Double)] = []
-        for (button, screen) in [("bottom.calendar", "calendar"),
-                                 ("bottom.map", "map"), ("bottom.today", "today")] {
-            // Снимок стека ровно на нажатии (P808): CI снимает его по файлу.
-            if let dir = ProcessInfo.processInfo.environment["MOTION_DIR"], !dir.isEmpty {
-                let want = URL(fileURLWithPath: dir).appendingPathComponent("want-\(shot)-\(screen)")
-                try? Data().write(to: want)
-                Thread.sleep(forTimeInterval: 0.8)
-            }
-            let t0 = Date()
-            let target = app.buttons[button].firstMatch
-            _ = target.exists
-            let t1 = Date()
-            target.tap()
-            let t2 = Date()
-            XCTAssertTrue(wait(10) { openScreen == screen }, "\(screen) не открылся")
-            let t3 = Date()
-            sleep(2)
-            let t4 = Date()
-            _ = openScreen
-            let t5 = Date()
-            let took = t3.timeIntervalSince(t0)
-            note(tag + screen, String(format: "%.2f с (найти %.2f, нажать %.2f, увидеть %.2f, прочесть потом %.2f)",
-                                      took, t1.timeIntervalSince(t0), t2.timeIntervalSince(t1),
-                                      t3.timeIntervalSince(t2), t5.timeIntervalSince(t4)))
-            out.append((screen, took))
-        }
-        return out
     }
 }

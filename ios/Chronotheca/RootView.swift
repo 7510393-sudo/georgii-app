@@ -544,6 +544,7 @@ struct RootView: View {
             Places.loadSoon(vault)
             // Свайп между разделами (P778).
             wireRibbon()
+            selfDrive()
             LaunchClock.step(T("первый экран", "first screen"))
             // Открываемся там, где закрыли, если день тот же (P686).
             shell.tab = .plan
@@ -862,6 +863,43 @@ struct RootView: View {
     private var homeLift: CGFloat {
         let bar = max(homeBar, windowBottom)
         return bar > 0 ? bar + 12 : 0
+    }
+
+    /// Замер большого архива без робота (P911): приложение само открывает
+    /// разделы по часам и пишет в след, сколько это заняло и где стоял
+    /// экран. Только по просьбе проверки.
+    private func selfDrive() {
+        guard Vault.isSelfDrive else { return }
+        var at = 12.0
+        func step(_ after: Double, _ name: String, _ act: @escaping () -> Void) {
+            at += after
+            DispatchQueue.main.asyncAfter(deadline: .now() + at) {
+                Trace.note("сам: " + name)
+                act()
+            }
+        }
+        // Карта собирается при первом открытии (P814) — это её цена, а не
+        // архива: один раз до замера.
+        step(0, "карта впервые") { tapSection(.map) }
+        step(7, "дневник") { tapSection(.today) }
+        step(5, "замер") { }
+        step(1, "календарь") { tapSection(.calendar) }
+        step(7, "карта") { tapSection(.map) }
+        step(7, "дневник") { tapSection(.today) }
+        step(6, "картотека прошлого") {
+            let tap = Date()
+            shell.fileFrom = 1
+            shell.screen = .search
+            LaunchClock.opened("search", since: tap)
+        }
+        step(7, "поиск слова") {
+            let tap = Date()
+            shell.query = "garden"
+            LaunchClock.opened("query", since: tap)
+        }
+        step(7, "поиск стёрт") { shell.query = "" }
+        step(4, "сегодня") { tapSection(.today) }
+        step(6, "конец") { }
     }
 
     /// Порог у дня в открытой картотеке (P779) и «несут пальцем» (P799).
