@@ -221,6 +221,11 @@ struct DaySheet<Plan: View, Diary: View>: View {
                 pull.commit = onPull
                 pull.progress = onPullMove
             }
+            // Не сегодняшний день закрывается в карточку в миг порога, вместе
+            // с толчком в руку, а не по отпусканию (P907).
+            .onChange(of: date, initial: true) { _, now in
+                pull.commitAtThreshold = !Calendar.current.isDate(now, inSameDayAs: DayStore.today())
+            }
             .onPreferenceChange(DiaryShare.self) { top in
                 onDiary?(top < (outer.size.height - Self.stripRoom) / 2)
             }
@@ -487,6 +492,11 @@ final class EdgePull: NSObject, ObservableObject, UIGestureRecognizerDelegate {
     private var blockedNoted = false
     /// Касание началось, пока на листе писали.
     private var typingAtStart = false
+    /// Закрывать лист в миг порога, не дожидаясь отпускания (P907): у не
+    /// сегодняшнего дня.
+    var commitAtThreshold = false
+    /// Порог взят и лист уже закрыт — до конца касания больше ничего.
+    private var spent = false
 
     /// Ждёт ли букв какое-нибудь поле внутри листа.
     private static func typing(in view: UIView) -> Bool {
@@ -519,12 +529,15 @@ final class EdgePull: NSObject, ObservableObject, UIGestureRecognizerDelegate {
         case .began:
             reset()
             blockedNoted = false
+            spent = false
             // Касание началось, пока пишут, — оно убирает клавиатуру, лист
             // не тянет до конца касания (P897: длинным движением вниз
             // клавиатура уходила, и то же движение закрывало карточку).
             typingAtStart = !enabled || Self.typing(in: view)
             last = t.y
         case .changed:
+            // Это касание своё уже сделало (P907).
+            if spent { return }
             // Пока пишут, лист за край не тянется. Пишут — это поле на листе
             // правда ждёт букв, а не только запомненная высота клавиатуры
             // (P894, автор по 278: «сделал пометки и не могу закрыть
@@ -555,7 +568,18 @@ final class EdgePull: NSObject, ObservableObject, UIGestureRecognizerDelegate {
             if now <= 0 { reset(); return }
             progress?(Self.resisted(now), dir)
             let over = now >= Self.threshold
-            if over && !armed { Feel.light() }
+            if over && !armed {
+                Feel.light()
+                if commitAtThreshold {
+                    // Толчок и закрытие — одно событие (P907, автор: «совместить
+                    // закрывание с виброоткликом»).
+                    let d = dir
+                    spent = true
+                    reset(quiet: true)
+                    commit?(d)
+                    return
+                }
+            }
             armed = over
         case .ended:
             let go = armed ? dir : 0

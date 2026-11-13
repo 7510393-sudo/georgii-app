@@ -681,7 +681,8 @@ struct RootView: View {
                 // Картотека проступает плавно, по мере того как лист уходит
                 // (P858): прежде появлялась разом с первым движением.
                 .modifier(RibbonFade(ribbon: shell.ribbon, live: shell.ribbonLive,
-                                     card: shell.dayCard))
+                                     card: shell.dayCard,
+                                     quiet: shell.pulling && !store.isToday && !shell.dayCard))
                 .allowsHitTesting(shell.screen == .search)
                 .accessibilityHidden(!shell.ribbonLive)
                 .zIndex(0)
@@ -717,7 +718,8 @@ struct RootView: View {
         }
         // Где ты в картотеке (P845): линия от середины левого края.
         .overlay(alignment: .leading) {
-            if shell.ribbonLive {
+            // Только в открытой картотеке (P907): на открытом листе черты нет.
+            if shell.screen == .search && shell.ribbonOpen {
                 TimeLine(ribbon: shell.ribbon, height: size.height)
             }
         }
@@ -780,6 +782,9 @@ struct RootView: View {
 
     /// Ленту разделов можно листать пальцем: не на карте, не пока тянут
     /// картотеку или несут дело, не под листком и не во время переезда.
+    /// С картотеки ушли на карту или календарь — вернёмся в неё же (P907).
+    @State private var ribbonAway = false
+
     private var pagingFree: Bool {
         !shell.pulling && !shell.holding && !shell.showingSettings && shell.settingsPull == nil
             && shell.movingTask == nil && shell.drawer == nil && shell.screen != .map
@@ -795,7 +800,13 @@ struct RootView: View {
     /// меняется, как по касанию внизу; если её повела кнопка — уже сменился.
     private func landed(on page: Shell.Screen) {
         guard page != current else { return }
-        if shell.ribbonOpen { closeRibbonNow() }
+        // С картотеки на карту или календарь — картотека остаётся как была,
+        // и возвращаемся в неё же (P907, автор: «должен возвращаться туда,
+        // где был»). Прежде картотека закрывалась, и возврат вёл на «Сегодня».
+        if shell.ribbonOpen {
+            if shell.screen == .search && page != .today { ribbonAway = true }
+            else if !(ribbonAway && page == .today) { closeRibbonNow() }
+        }
         store.prune()
         LaunchClock.opened("\(page)", since: Date())
         open(page)
@@ -1024,6 +1035,11 @@ struct RootView: View {
     /// весом — его не бросают, он доезжает сам и гасит скорость о воздух.
     /// Быстрый ход читался бы как смена экрана, а не как движение вещи.
     private func open(_ target: Shell.Screen) {
+        var target = target
+        // «Дневник» с карты или календаря — в картотеку, если ушли из неё (P907).
+        if target == .today, ribbonAway, shell.ribbonOpen, shell.screen != .search, shell.screen != .today {
+            target = .search
+        }
         if target != shell.screen { hideKeyboard() }
         shell.screen = target
     }
@@ -1032,36 +1048,47 @@ struct RootView: View {
     /// ходом, с виджета, из напоминания, после паузы — сразу (P583).
     private func follow(from old: Shell.Screen, to new: Shell.Screen) {
         // Лента картотеки (P777) — не раздел, а продолжение дня.
-        if new == .search {
+        if new == .search, pageAt == .today || !ribbonAway {
             shell.instant = false
             shell.ribbonOpen = true
+            ribbonAway = false
             return
         }
+        // Возврат в картотеку с карты или календаря (P907): страницу
+        // «Дневника» — на место, картотека на ней как была.
+        let back = new == .search
+        if back { ribbonAway = false }
+        let page: Shell.Screen = back ? .today : new
         let instant = shell.instant
         shell.instant = false
-        if shell.ribbonOpen {
+        if shell.ribbonOpen, !back {
+            // С картотеки на карту или календарь — она остаётся (P907).
+            if old == .search && page != .today {
+                ribbonAway = true
+            } else
             // Из ленты в день: лента доезжает до места дня (P777).
-            if old == .search && new == .today && !instant {
+            if old == .search && page == .today && !instant {
                 if !shell.ribbon.felt { Feel.thud() }
                 shell.ribbon.felt = false
                 backToDay()
                 return
+            } else {
+                closeRibbonNow()
             }
-            closeRibbonNow()
         }
-        guard pageAt != new else { return }
+        guard pageAt != page else { return }
         // С карты за пальцем — одним движением (P857): лента сразу встаёт на
         // «Дневник», а сдвиг пересчитывается так, что на экране ничто не
         // двинулось, — и уходит в ноль одной пружиной со скоростью пальца.
         // Прежде ход ленты и возврат сдвига шли двумя разными ходами, и в
         // миг отпускания экран дёргался (видео автора к 258).
-        if old == .map, new == .today, !instant, mapPull.x < 0, mapPull.width > 0 {
+        if old == .map, page == .today, !instant, mapPull.x < 0, mapPull.width > 0 {
             Feel.thud()
             var still = Transaction()
             still.disablesAnimations = true
             withTransaction(still) {
                 mapPull.x += mapPull.width
-                pageAt = new
+                pageAt = page
             }
             let start = mapPull.x
             let speed = start > 1 ? min(20, max(0, -mapPull.speed / start)) : 0
@@ -1073,14 +1100,14 @@ struct RootView: View {
         if instant {
             var still = Transaction()
             still.disablesAnimations = true
-            withTransaction(still) { pageAt = new }
+            withTransaction(still) { pageAt = page }
         } else {
             // Толчок — вместе с нажатием (P268).
             Feel.thud()
             // С карты за пальцем (P840): сдвиг уходит тем же ходом, что
             // лента, — вместе одно движение.
             withAnimation(.spring(response: 0.35, dampingFraction: 0.9)) {
-                pageAt = new
+                pageAt = page
                 mapPull.x = 0
             }
         }
@@ -1195,6 +1222,7 @@ struct RootView: View {
             shell.pulling = false
             shell.fileFrom = 0
         }
+        ribbonAway = false
         shell.ribbon.release()
         shell.ribbon.park()
         archive.reloadSoon()
@@ -1534,9 +1562,14 @@ private struct RibbonFade: ViewModifier {
     @ObservedObject var ribbon: Ribbon
     let live: Bool
     let card: Bool
+    /// Тянут не сегодняшний лист (P907): картотека под ним не проступает и
+    /// не едет следом — лист закроется в карточку, и она откроется уже на
+    /// месте (автор: «за листом зачем-то тянется картотека; убрать лишнее
+    /// движение»).
+    var quiet = false
 
     func body(content: Content) -> some View {
-        let shown: Double = !live ? 0 : card ? 1 : Double(min(1, abs(ribbon.y) / 90))
+        let shown: Double = !live || quiet ? 0 : card ? 1 : Double(min(1, abs(ribbon.y) / 90))
         content
             .opacity(shown)
             // Пересобирается вокруг другого дня — не видна (P888).
@@ -1593,7 +1626,10 @@ private struct TodayPeek: View {
                 .animation(.easeOut(duration: 0.35), value: aloneBottom)
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
-            TodayTop()
+            // На листе, который уходит вверх, — только надпись на его чистом
+            // нижнем поле, без своей бумаги и черты (P907); сама по себе —
+            // полоской низа листа.
+            TodayTop(bare: !aloneTop)
                 .frame(width: size.width, height: FollowRibbon.peekTop)
                 .offset(y: topY)
                 .opacity(topShown)
@@ -1618,11 +1654,14 @@ private struct TodayPeek: View {
 /// P860/P865): тот же цвет и обвод, скруглённый низ; «Сегодня» крупно, под
 /// ним дата и день недели — как в шапке листа.
 private struct TodayTop: View {
+    /// Только надпись — бумага и край под ней свои, у листа.
+    var bare = false
+
     var body: some View {
         let today = DayStore.today()
         let shape = UnevenRoundedRectangle(bottomLeadingRadius: 16, bottomTrailingRadius: 16)
         ZStack(alignment: .bottomLeading) {
-            Ru.tint(today)
+            if bare { Color.clear } else { Ru.tint(today) }
             VStack(alignment: .leading, spacing: 0) {
                 Text(DayPage.title(for: today))
                     .font(.system(size: 19, weight: .semibold))
@@ -1643,7 +1682,7 @@ private struct TodayTop: View {
             .padding(.bottom, 7)
         }
         .clipShape(shape)
-        .overlay { shape.stroke(DayPage.edge, lineWidth: 1) }
+        .overlay { if !bare { shape.stroke(DayPage.edge, lineWidth: 1) } }
     }
 }
 

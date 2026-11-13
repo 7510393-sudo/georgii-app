@@ -100,7 +100,9 @@ final class Purchase: ObservableObject {
         }
         owned = isOwned
         trialStart = started
-        UserDefaults.standard.set(state == .expired, forKey: Self.lockedKey)
+        // Писать нельзя и пока пробный месяц не начат (P908): прежде, не
+        // нажав «Начать бесплатный месяц», можно было писать без срока.
+        UserDefaults.standard.set(state == .expired || state == .notStarted, forKey: Self.lockedKey)
         objectWillChange.send()
     }
 

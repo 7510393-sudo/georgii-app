@@ -296,7 +296,10 @@ struct DayPage: View {
     // Плечо справа от корешка — на 8 точек выше (P853: щель была широка).
     static let folder = FolderShape(tabHeight: headLine + 6, tabShare: 0.56, roundBottom: true, soft: true)
     /// Насколько лист продолжается ниже страницы — под нижнюю строку (P850).
-    static let under: CGFloat = 20
+    /// Ещё на высоту полоски «Сегодня» (P907): когда лист уходит вверх,
+    /// надпись «Сегодня» с датой едет на этом чистом поле под шагами и «＋»,
+    /// а не поверх них.
+    static let under: CGFloat = 20 + FollowRibbon.peekTop
 
     /// Линия края листа и корешков позади (P802).
     static let edge = Color(light: 0xB8A67C, dark: 0x5A4E33)
@@ -398,7 +401,6 @@ struct DayPage: View {
                          if !store.isToday {
                              ribbon.frozen = true
                              ribbon.folding = true
-                             Feel.light()
                              shell.dayCard = true
                              shell.ribbonOpen = true
                              shell.screen = .search

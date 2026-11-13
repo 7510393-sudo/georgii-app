@@ -122,6 +122,7 @@ final class Ribbon: ObservableObject {
         known = false
         farSide = side
         hintSide = side
+        hintUntil = CACurrentMediaTime() + 2.5
         Trace.note("лента: пересобрана — место дня ждёт замера")
     }
     /// Пока место дня не замерено после пересборки — где оно (P899): 1 —
@@ -463,12 +464,17 @@ final class Ribbon: ObservableObject {
         // и тут же уходило; замер оставался, а ленивая стопка, достраивая
         // карточки, сдвигала всё под ним — и лист «Сегодня» вставал посреди
         // картотеки (видео автора 13.11).
-        if farSide == 0 { farSide = hintSide != 0 ? hintSide : (y >= 0 ? 1 : -1) }
+        // Подсказка годится только сразу после закрытия карточки (P907):
+        // прежде она оставалась навсегда, и корешок «Сегодня» в картотеке
+        // прошлого перескакивал наверх, а в будущем — вниз.
+        let hint = CACurrentMediaTime() < hintUntil ? hintSide : 0
+        if farSide == 0 { farSide = hint != 0 ? hint : (y >= 0 ? 1 : -1) }
         if let scroll = box.view { follow(scroll.contentOffset.y) }
     }
     /// С какой стороны «Сегодня» от закрытой карточки — подсказка на случай,
     /// когда место дня уходит из ленты (P906).
     private var hintSide = 0
+    private var hintUntil: CFTimeInterval = 0
 
     /// Начало тяги из дня: место дня должно быть собрано и измерено. Если
     /// нет — ставим его и ждём следующего движения пальца.
