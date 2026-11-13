@@ -886,13 +886,22 @@ struct RootView: View {
         step(1, "календарь") { tapSection(.calendar) }
         step(7, "карта") { tapSection(.map) }
         step(7, "дневник") { tapSection(.today) }
-        step(6, "картотека прошлого") {
+        // Снимок того, чем занят главный поток, — ровно на медленном шаге:
+        // CI снимает его, увидев файл-просьбу рядом со следом (P808, P913).
+        func wantSample(_ name: String) {
+            guard let path = ProcessInfo.processInfo.environment["CHRONOTHECA_TRACE"], !path.isEmpty else { return }
+            let url = URL(fileURLWithPath: path).deletingLastPathComponent().appendingPathComponent("want-" + name)
+            try? Data().write(to: url)
+        }
+        step(5, "просьба снимка картотеки") { wantSample("big-search") }
+        step(1, "картотека прошлого") {
             let tap = Date()
             shell.fileFrom = 1
             shell.screen = .search
             LaunchClock.opened("search", since: tap)
         }
-        step(7, "поиск слова") {
+        step(6, "просьба снимка поиска") { wantSample("big-query") }
+        step(1, "поиск слова") {
             let tap = Date()
             shell.query = "garden"
             LaunchClock.opened("query", since: tap)
