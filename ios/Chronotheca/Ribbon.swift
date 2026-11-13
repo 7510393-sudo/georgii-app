@@ -80,9 +80,21 @@ final class Ribbon: ObservableObject {
     /// знает рост дальних карточек на глаз, — и потом лента дёргалась,
     /// подстраиваясь (автор по 278). Поправка — по замеру самой карточки,
     /// пока лента скрыта; несколько раз, пока замер не совпадёт.
-    func align(_ id: String, top: CGFloat, tries: Int = 4, then: @escaping () -> Void) {
-        guard let scroll = box.view, tries > 0, let frame = frames[id] else {
+    func align(_ id: String, top: CGFloat, tries: Int = 8, again: (() -> Void)? = nil,
+               then: @escaping () -> Void) {
+        guard let scroll = box.view, tries > 0 else {
             then()
+            return
+        }
+        // Карточки на экране нет — переход к ней не удался (ленивая стопка
+        // ставит дальнюю карточку не с первого раза): ещё раз (P906; у
+        // автора после будущего листа лента оставалась в начале прошлого).
+        guard let frame = frames[id] else {
+            Trace.note("лента: карточки \(id) нет на экране — переход ещё раз")
+            again?()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+                self?.align(id, top: top, tries: tries - 1, again: again, then: then)
+            }
             return
         }
         let miss = frame.minY - top
@@ -97,7 +109,7 @@ final class Ribbon: ObservableObject {
         scroll.contentOffset.y = offset
         fixing = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.03) { [weak self] in
-            self?.align(id, top: top, tries: tries - 1, then: then)
+            self?.align(id, top: top, tries: tries - 1, again: again, then: then)
         }
     }
 
@@ -109,6 +121,7 @@ final class Ribbon: ObservableObject {
     func forget(far side: Int = 0) {
         known = false
         farSide = side
+        hintSide = side
         Trace.note("лента: пересобрана — место дня ждёт замера")
     }
     /// Пока место дня не замерено после пересборки — где оно (P899): 1 —
@@ -422,7 +435,7 @@ final class Ribbon: ObservableObject {
         guard !frozen else { return }
         // Место дня не замерено после пересборки — лист у своего края
         // (P899), а не по старому замеру.
-        let now = !known && farSide != 0 ? CGFloat(farSide) * (2 * height + 1) : slotTop - offset
+        let now = (!known || !seen) && farSide != 0 ? CGFloat(farSide) * (2 * height + 1) : slotTop - offset
         let t = CACurrentMediaTime()
         let dt = t - lastTime
         if dt > 0.12 {
@@ -444,7 +457,18 @@ final class Ribbon: ObservableObject {
     /// Место дня ушло из ленты далеко за край (её стопка его разобрала).
     func lost() {
         seen = false
+        // Места дня в ленте сейчас нет — лист у своего края, а не там, где
+        // его место видели в последний раз (P906). Прежде после закрытия
+        // карточки место дня мелькало в пересобираемой ленте, замерялось
+        // и тут же уходило; замер оставался, а ленивая стопка, достраивая
+        // карточки, сдвигала всё под ним — и лист «Сегодня» вставал посреди
+        // картотеки (видео автора 13.11).
+        if farSide == 0 { farSide = hintSide != 0 ? hintSide : (y >= 0 ? 1 : -1) }
+        if let scroll = box.view { follow(scroll.contentOffset.y) }
     }
+    /// С какой стороны «Сегодня» от закрытой карточки — подсказка на случай,
+    /// когда место дня уходит из ленты (P906).
+    private var hintSide = 0
 
     /// Начало тяги из дня: место дня должно быть собрано и измерено. Если
     /// нет — ставим его и ждём следующего движения пальца.
@@ -599,6 +623,7 @@ final class Ribbon: ObservableObject {
         foldLanded = false
         landing.clear()
         foldSide = 0
+        hintSide = 0
         closedID = nil
         veiled = false
         done = nil

@@ -427,6 +427,9 @@ struct SearchView: View {
                             // неё день, вернуть ленту туда же (P893).
                             ribbon.frames[entry.id] = onScreen
                         }
+                        // Карточку разобрала ленивая стопка — её рамки больше
+                        // нет: по ней видно, удался ли переход к карточке (P906).
+                        .onDisappear { ribbon.frames[entry.id] = nil }
                         .background {
                             if entry.id == firstAfter {
                                 GeometryReader { g in
@@ -578,13 +581,15 @@ struct SearchView: View {
                     // у края (P893: корешок торчал на полэкрана).
                     var aligned = false
                     DispatchQueue.main.async {
-                        ribbon.align(closed, top: top) {
+                        ribbon.align(closed, top: top, again: {
+                            withTransaction(still) { proxy.scrollTo(closed, anchor: spot(top)) }
+                        }) {
                             ribbon.keepToday(side)
                             aligned = true
                         }
                     }
                     func reveal(_ waited: Int = 0) {
-                        guard aligned || waited >= 8 else {
+                        guard aligned || waited >= 24 else {
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.03) { reveal(waited + 1) }
                             return
                         }
@@ -1138,13 +1143,18 @@ private struct Landed: ViewModifier {
 
     func body(content: Content) -> some View {
         let stage = landing.id == id ? landing.stage : .none
+        // Схема полупрозрачна уже на подлёте (P906, автор: «впечатление
+        // угловатости; пораньше делать вставляющуюся карточку
+        // полупрозрачной»): сквозь неё проступает сама карточка, и к концу
+        // опускания схемы почти нет — без смены одного на другое разом.
+        let veil: Double = stage == .hover ? 0.6 : stage == .down ? 0.2 : 0
         content
-            .opacity(stage == .away ? 0 : 1)
+            .animation(.easeOut(duration: 0.2)) { $0.opacity(stage == .away ? 0 : 1) }
             .overlay {
                 if stage == .hover || stage == .down || stage == .done {
                     FoldSchema()
-                        .opacity(stage == .done ? 0 : 1)
-                        .animation(.easeOut(duration: 0.25), value: stage)
+                        .opacity(veil)
+                        .animation(.easeOut(duration: 0.3), value: stage)
                         .allowsHitTesting(false)
                 }
             }

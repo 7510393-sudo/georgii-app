@@ -1676,6 +1676,11 @@ private struct FoldGhost: View {
             // Долетела — дальше садится сама карточка в своём ряду (P895):
             // схема над лентой уходит в тот же кадр, без таяния поверх.
             .opacity(folding && !ribbon.foldLanded ? 1 : 0)
+            // В полёте схема светлеет до той же прозрачности, с какой ляжет
+            // на карточку (P906).
+            .animation(ribbon.foldTo == nil ? nil : .easeIn(duration: SearchView.flight)) {
+                $0.opacity(ribbon.foldTo == nil ? 1 : 0.6)
+            }
             .allowsHitTesting(false)
             .accessibilityHidden(true)
     }
