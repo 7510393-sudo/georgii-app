@@ -711,7 +711,14 @@ struct FollowRibbon: ViewModifier {
         if y >= 0 { return stick ? min(y, height - peekBottom) : y }
         let swap = -0.75 * height
         let ahead = y >= swap ? y - Search.overlap * (y / swap) : y - Search.overlap
-        return stick ? max(ahead, topClamp(height)) : ahead
+        guard stick else { return ahead }
+        // Лист длиннее вниз на поле под надпись «Сегодня» (P907) — и на
+        // столько же должен уйти выше, чтобы у верха осталась только эта
+        // полоска (P912; в 285 лист торчал на сто точек, показывал шаги и
+        // закрывал завтрашнюю карточку). Добавка набирается по ходу листа.
+        let rest = peekTop - height
+        let extra = (DayPage.under - 20) * min(1, max(0, y / rest))
+        return max(ahead - extra, topClamp(height))
     }
 }
 
