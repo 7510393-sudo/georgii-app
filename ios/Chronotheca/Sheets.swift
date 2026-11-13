@@ -13,6 +13,8 @@ struct SettingsSticker: View {
     @EnvironmentObject private var shell: Shell
     @State private var askingRename = false
     @State private var askingTrial = false
+    /// Замеры скорости — долгим нажатием на «Версия» (P910).
+    @State private var showingSpeed = false
     /// Где стоит верх листка, когда он на месте (P669): мерится один раз по
     /// неподвижной подложке листка, а не по самому листку, — тот едет.
     @State private var origin: CGFloat?
@@ -618,6 +620,11 @@ struct SettingsSticker: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 9)
         .contentShape(Rectangle())
+        // Замеры скорости (P910): сколько заняли запуск и открытие разделов
+        // на этом телефоне с этим архивом. Для автора и для тех, кто пишет
+        // о медленной работе: снимок этого окна говорит, что именно медлит.
+        .onLongPressGesture { showingSpeed = true }
+        .sheet(isPresented: $showingSpeed) { SpeedSheet(bytes: storageBytes) }
     }
 
     private func close() {
@@ -1202,5 +1209,43 @@ struct WelcomeView: View {
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.bottom, 6)
+    }
+}
+
+/// Замеры скорости (P910): шаги запуска и открытия разделов по часам
+/// самого приложения, размер архива. Проверка на сервере мерит робота, а
+/// не приложение (`docs/68`), — настоящие числа есть только здесь, на
+/// телефоне человека.
+private struct SpeedSheet: View {
+    let bytes: Int64?
+    @Environment(\.dismiss) private var dismiss
+
+    private var text: String {
+        var out = Build.label + "\n"
+        if let bytes {
+            out += T("архив: ", "archive: ") + ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file) + "\n"
+        }
+        out += "\n" + LaunchClock.lines.joined(separator: "\n")
+        return out
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                Text(text)
+                    .font(Look.mono(13))
+                    .foregroundStyle(Look.ink)
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(16)
+            }
+            .navigationTitle(T("Замеры скорости", "Speed measurements"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(T("Готово", "Done")) { dismiss() }
+                }
+            }
+        }
     }
 }
