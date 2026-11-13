@@ -260,24 +260,9 @@ struct SettingsSticker: View {
 
     @ViewBuilder private var dayPart: some View {
         NoteSection(title: T("День", "Day"))
-        NoteRow(title: T("Новый день начинается в", "A new day starts at")) {
-            Menu {
-                ForEach(0..<7, id: \.self) { h in
-                    Button(Clock.hour(h)) {
-                        boundary = h
-                        Prefs.applyBoundary()
-                        store.go(to: DayStore.today())
-                    }
-                }
-            } label: {
-                Text(Clock.hour(boundary) + " ▾")
-                    .font(Look.sans(13.5, weight: .semibold))
-                    .modifier(Tag(look: .chosen))
-            }
-        }
+        // «Новый день начинается в» убрано (P915): день начинается в полночь.
         // Напоминание о дневнике (P444) — в любой час с шести утра до
-        // одиннадцати вечера (P602), а не только 20, 21 или 22: списком,
-        // как «Новый день начинается в».
+        // одиннадцати вечера (P602), а не только 20, 21 или 22: списком.
         NoteRow(title: T("Напоминание", "Diary reminder"),
                 info: T("Короткая мысль в этот час — если в дневнике сегодня пусто.",
                         "A short thought at this hour — if today’s diary is empty.")) {
@@ -464,7 +449,6 @@ struct SettingsSticker: View {
     @AppStorage(Reminders.eveningKey) private var evening = -1
     @AppStorage(Prefs.lock) private var locked = false
     @AppStorage(Prefs.ownKeyboardOnly) private var ownKeyboardOnly = false
-    @AppStorage(Prefs.boundary) private var boundary = 0
     @AppStorage(Prefs.theme) private var theme = "system"
     @AppStorage(Prefs.font) private var fontKey = "newyork"
     @AppStorage(Prefs.noWeather) private var noWeather = false

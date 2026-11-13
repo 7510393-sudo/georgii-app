@@ -8,7 +8,6 @@ import LocalAuthentication
 enum Prefs {
     static let lock = "prefs.lock"
     static let theme = "prefs.theme"            // "system", "light", "dark"
-    static let boundary = "prefs.boundary"      // час границы суток, 0…6
     static let font = "prefs.font"              // "newyork", "system"
     // P290: погода, «Как прошло?», цвет календаря. Градусы, неделя, часы, сжатие,
     // размер текста, шелест и навигатор — как в iPhone (P633).
@@ -118,12 +117,6 @@ enum Prefs {
         return plain.fontDescriptor.withDesign(.serif).map { UIFont(descriptor: $0, size: size) } ?? plain
     }
 
-    /// Граница суток из настроек — применить к расчёту «сегодня».
-    static func applyBoundary() {
-        // По умолчанию день начинается в полночь (P374; прежде в 4:00).
-        let hour = UserDefaults.standard.object(forKey: boundary) as? Int ?? 0
-        DayStore.boundaryHour = min(max(hour, 0), 6)
-    }
 }
 
 /// Замок: пока он закрыт, страниц не видно (P249). Открывается Face ID,

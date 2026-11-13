@@ -72,9 +72,6 @@ final class DayStore: ObservableObject {
         }
     }
 
-    /// Граница суток: до этого часа день считается вчерашним (решение P17).
-    static var boundaryHour = 0
-
     /// Через столько без правки дневник ставит новую отметку времени.
     static let stampGap: TimeInterval = 60 * 60
 
@@ -275,11 +272,9 @@ final class DayStore: ObservableObject {
     }
 
     static func today(_ now: Date = Date()) -> Date {
-        let cal = Calendar.current
-        let shifted = cal.component(.hour, from: now) < boundaryHour
-            ? cal.date(byAdding: .day, value: -1, to: now) ?? now
-            : now
-        return cal.startOfDay(for: shifted)
+        // День начинается в полночь (P915; прежде граница суток
+        // настраивалась, P17).
+        Calendar.current.startOfDay(for: now)
     }
 
     // MARK: - Дела

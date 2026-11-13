@@ -127,10 +127,7 @@ enum Reminders {
             return nil
         }
         let cal = Calendar.current
-        var base = cal.startOfDay(for: day)
-        if parts[0] < DayStore.boundaryHour {
-            base = cal.date(byAdding: .day, value: 1, to: base) ?? base
-        }
+        let base = cal.startOfDay(for: day)
         return cal.date(bySettingHour: parts[0], minute: parts[1], second: 0, of: base)
     }
 }

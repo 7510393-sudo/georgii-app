@@ -20,8 +20,6 @@ struct ChronothecaApp: App {
     @Environment(\.scenePhase) private var phase
     init() {
         _ = LaunchClock.start
-        // Граница суток из настроек — до того, как откроется «сегодня».
-        Prefs.applyBoundary()
         Prefs.settleFont()
         // Напоминания видны и при открытом приложении (P260).
         if NSClassFromString("XCTestCase") == nil {
