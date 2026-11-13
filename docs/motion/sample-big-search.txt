@@ -1,0 +1,123 @@
+    1901 Thread_47152   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 1901 start  (in dyld) + 6992  [0x1020904e4]
+    +   1901 start_sim  (in dyld_sim) + 20  [0x1023170e4]
+    +     1901 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x1040f466c]  ChronothecaApp.swift:0
+    +       1901 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1040f45c0]  /<compiler-generated>:0
+    +         1901 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           1901 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             1901 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               1901 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 1901 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   1901 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     1901 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       1893 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    +                       ! 1893 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    +                       !   1893 mach_msg  (in libsystem_kernel.dylib) + 20  [0x1021c8ef0]
+    +                       !     1893 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x1021d0c44]
+    +                       !       1893 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x1021d9e84]
+    +                       !         1893 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x1021c8b70]
+    +                       2 __CFRunLoopRun  (in CoreFoundation) + 1528  [0x180421b08]
+    +                       ! 2 __CFRunLoopDoObservers  (in CoreFoundation) + 168  [0x1804212ac]
+    +                       !   1 __bzero  (in libsystem_platform.dylib) + 0  [0x102032d50]
+    +                       !   1 _platform_memset  (in libsystem_platform.dylib) + 252  [0x102032ebc]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 760  [0x180421808]
+    +                       ! 1 __CFRunLoopDoSources0  (in CoreFoundation) + 220  [0x180422634]
+    +                       !   1 __CFRunLoopDoSource0  (in CoreFoundation) + 168  [0x180422ea4]
+    +                       !     1 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__  (in CoreFoundation) + 24  [0x180422f5c]
+    +                       !       1 UC::DriverCore::continueProcessing()  (in UpdateCycle) + 80  [0x2343d22c0]
+    +                       !         1 schedulerStepScheduledMainSectionContinue  (in UIKitCore) + 56  [0x1863b6064]
+    +                       !           1 _UIUpdateSequenceRunNext  (in UIKitCore) + 120  [0x18590339c]
+    +                       !             1 __setupUpdateSequence_block_invoke_2  (in UIKitCore) + 372  [0x1863b5c0c]
+    +                       !               1 _UIApplicationFlushCATransaction  (in UIKitCore) + 48  [0x1864a3b50]
+    +                       !                 1 CA::Transaction::flush_as_runloop_observer(bool)  (in QuartzCore) + 68  [0x18cefa1a4]
+    +                       !                   1 CA::Transaction::commit()  (in QuartzCore) + 632  [0x18cef88f0]
+    +                       !                     1 CA::Context::commit_transaction(CA::Transaction*, double, double*)  (in QuartzCore) + 560  [0x18cecacc8]
+    +                       !                       1 CA::Layer::layout_and_display_if_needed(CA::Transaction*)  (in QuartzCore) + 156  [0x18cfb2978]
+    +                       !                         1 CA::Layer::update_if_needed_(CA::Transaction*, CA::LayerUpdateReason)  (in QuartzCore) + 600  [0x18cfa6d94]
+    +                       !                           1 CA::Layer::perform_update_(CA::Layer*, CALayer*, unsigned int, CA::LayerUpdateReason, CA::Transaction*)  (in QuartzCore) + 456  [0x18cfa7548]
+    +                       !                             1 -[UIView(CALayerDelegate) layoutSublayersOfLayer:]  (in UIKitCore) + 2648  [0x186ab0548]
+    +                       !                               1 ???  (in UIKitCore)  load address 0x185289000 + 0x3c511c  [0x18564e11c]
+    +                       !                                 1 ???  (in UIKitCore)  load address 0x185289000 + 0x3c4d74  [0x18564dd74]
+    +                       !                                   1 @objc _UIHostingView.layoutSubviews()  (in SwiftUI) + 32  [0x1d3474ac0]
+    +                       !                                     1 _UIHostingView.layoutSubviews()  (in SwiftUI) + 80  [0x1d3474a8c]
+    +                       !                                       1 ???  (in UIKitCore)  load address 0x185289000 + 0x14c250  [0x1853d5250]
+    +                       !                                         1 ViewGraphRootValueUpdater.render(interval:updateDisplayList:targetTimestamp:)  (in SwiftUICore) + 460  [0x1d43be2c0]
+    +                       !                                           1 closure #1 in ViewGraphRootValueUpdater.render(interval:updateDisplayList:targetTimestamp:)  (in SwiftUICore) + 712  [0x1d43bfbc0]
+    +                       !                                             1 ViewGraph.updateOutputs(at:)  (in SwiftUICore) + 344  [0x1d43c5b7c]
+    +                       !                                               1 static ViewGraphFeatureBuffer._VTable.needsUpdate(elt:graph:)  (in SwiftUICore) + 80  [0x1d43bc4a4]
+    +                       !                                                 1 <deduplicated_symbol>  (in SwiftUICore) + 0  [0x1d38c765c]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 864  [0x180421870]
+    +                       ! 1 __CFRunLoopDoObservers  (in CoreFoundation) + 556  [0x180421430]
+    +                       !   1 __CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__  (in CoreFoundation) + 32  [0x180421f4c]
+    +                       !     1 @objc closure #1 in static NSRunLoop.addObserver(_:)  (in SwiftUICore) + 0  [0x1d43658f0]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 1756  [0x180421bec]
+    +                       ! 1 __CFRunLoopDoTimers  (in CoreFoundation) + 188  [0x18042297c]
+    +                       !   1 __NSArrayM_new  (in CoreFoundation) + 56  [0x1803a4ce0]
+    +                       !     1 __CFAllocateObject  (in CoreFoundation) + 16  [0x1804da8f8]
+    +                       !       1 class_createInstance  (in libobjc.A.dylib) + 72  [0x180057034]
+    +                       !         1 malloc_type_calloc  (in libsystem_malloc.dylib) + 20  [0x1801da2d4]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 1884  [0x180421c6c]
+    +                       ! 1 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__  (in CoreFoundation) + 12  [0x180422a94]
+    +                       !   1 _dispatch_main_queue_callback_4CF  (in libdispatch.dylib) + 40  [0x180195890]
+    +                       !     1 _dispatch_main_queue_drain  (in libdispatch.dylib) + 1172  [0x180195d34]
+    +                       !       1 <deduplicated_symbol>  (in libdispatch.dylib) + 24  [0x1801bd748]
+    +                       !         1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                       !           1 _dispatch_call_block_and_release  (in libdispatch.dylib) + 24  [0x1801866a0]
+    +                       !             1 thunk for @escaping @callee_guaranteed () -> ()  (in Chronotheca.debug.dylib) + 0  [0x10402ff60]  /<compiler-generated>:0
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 2100  [0x180421d44]
+    +                       ! 1 __CFRunLoopDoSource1  (in CoreFoundation) + 476  [0x180422c78]
+    +                       !   1 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE1_PERFORM_FUNCTION__  (in CoreFoundation) + 56  [0x180423628]
+    +                       !     1 __CFMachPortPerform  (in CoreFoundation) + 164  [0x1803e6c50]
+    +                       !       1 UC::DriverCore::continueProcessing()  (in UpdateCycle) + 80  [0x2343d22c0]
+    +                       !         1 schedulerStepScheduledMainSectionBegin  (in UIKitCore) + 112  [0x1863b5fb0]
+    +                       !           1 _UIQOSProcessingBegin  (in UIKitCore) + 248  [0x18693ab80]
+    +                       !             1 _tracepointArg4  (in UIKitCore) + 56  [0x18693ad50]
+    +                       !               1 CFDictionaryGetCount  (in CoreFoundation) + 0  [0x1803d6c18]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 2444  [0x180421e9c]
+    +                         1 __CFRunLoopModeIsEmpty  (in CoreFoundation) + 296  [0x18041c6e8]
+    +                           1 CFSetContainsValue  (in CoreFoundation) + 76  [0x18042c82c]
+    +                             1 CFBasicHashGetCountOfKey  (in CoreFoundation) + 180  [0x1804f244c]
+    +                               1 ___CFBasicHashFindBucket_Linear  (in CoreFoundation) + 104  [0x1804f60a8]
+    +                                 1 CFHash  (in CoreFoundation) + 168  [0x180425c9c]
+    +                                   1 __CF_IS_OBJC  (in CoreFoundation) + 8  [0x180423bc8]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        13307
+        mach_msg2_trap  (in libsystem_kernel.dylib)        3802
+        __semwait_signal  (in libsystem_kernel.dylib)        1869
+        pthread_getspecific  (in libsystem_pthread.dylib)        105
+        generationCountFromListOfSources  (in CoreFoundation)        103
+        _swift_isClassOrObjCExistentialType  (in libswiftCore.dylib)        51
+        objc_msgSend  (in libobjc.A.dylib)        45
+        __CF_IS_OBJC  (in CoreFoundation)        40
+        static PageTexture.smooth(_:_:_:_:_:)  (in Chronotheca.debug.dylib)        36
+        protocol witness for Collection.formIndex(after:) in conformance <> Range<A>  (in libswiftCore.dylib)        35
+        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        33
+        Array._checkSubscript(_:wasNativeTypeChecked:)  (in libswiftCore.dylib)        32
+        Array.subscript.getter  (in libswiftCore.dylib)        32
+        min<A>(_:_:)  (in libswiftCore.dylib)        28
+        pthread_setspecific  (in libsystem_pthread.dylib)        27
+        os_unfair_lock_unlock  (in libsystem_platform.dylib)        26
+        swift::LockingConcurrentMap<(anonymous namespace)::TupleCacheEntry, (anonymous namespace)::TupleCacheStorage>::getOrInsert<(anonymous namespace)::TupleCacheEntry::Key, swift::MetadataRequest&, swift::TargetValueWitnessTable<swift::InProcess> const*&>((anonymous namespace)::TupleCacheEntry::Key, swift::MetadataRequest&, swift::TargetValueWitnessTable<swift::InProcess> const*&)  (in libswiftCore.dylib)        26
+        __CFStringHash  (in CoreFoundation)        25
+        static PageTexture.makeAgedFolder(size:band:seed:tab:share:light:)  (in Chronotheca.debug.dylib)        25
+        _xzm_free  (in libsystem_malloc.dylib)        24
+        _CFStringGetCStringPtrInternal  (in CoreFoundation)        23
+        _platform_memmove  (in libsystem_platform.dylib)        23
+        os_log_type_enabled  (in libsystem_trace.dylib)        21
+        os_unfair_lock_lock  (in libsystem_platform.dylib)        21
+        normalizeQuintuplet  (in CoreFoundation)        18
+        static PageTexture.grey.getter  (in Chronotheca.debug.dylib)        18
+        objc_release  (in libobjc.A.dylib)        17
+        swift::metadataimpl::ValueWitnesses<swift::metadataimpl::NativeBox<unsigned int, 4ul, 4ul, 4ul>>::initializeWithCopy(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        17
+        <deduplicated_symbol>  (in libsystem_malloc.dylib)        15
+        _free  (in libsystem_malloc.dylib)        15
+        String._bridgeToObjectiveC()  (in Foundation)        14
+        _CFStringCreateIndirectASCIITaggedPointerString  (in CoreFoundation)        14
+        os_unfair_lock_assert_not_owner  (in libsystem_platform.dylib)        14
+        swift_beginAccess  (in libswiftCore.dylib)        14
+        at #1 (_:_:) in static PageTexture.edgeDistance(_:width:height:)  (in Chronotheca.debug.dylib)        13
+        -[CFPrefsSearchListSource alreadylocked_getDictionary:]  (in CoreFoundation)        12
+        -[__NSArrayM getObjects:range:]  (in CoreFoundation)        12
+        -[__NSDictionaryM objectForKey:]  (in CoreFoundation)        12
+        <deduplicated_symbol>  (in libswiftCore.dylib)        12
