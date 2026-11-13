@@ -700,7 +700,11 @@ struct RootView: View {
                 .zIndex(0.5)
             DayPages()
                 .frame(width: size.width,
-                       height: size.height - (store.isFuture && !shell.dayCard ? FollowRibbon.futureTop : 0))
+                       // Пока будущий лист закрывается, он той же высоты (P913):
+                       // прежде в миг щелчка он вырастал вверх на полоску и
+                       // «прыгал на прежнее место» (видео автора к 286).
+                       height: size.height - (store.isFuture && (!shell.dayCard || shell.ribbon.folding)
+                                              ? FollowRibbon.futureTop : 0))
                 .frame(width: size.width, height: size.height, alignment: .bottom)
                 .modifier(FollowRibbon(ribbon: shell.ribbon, live: shell.ribbonLive))
                 // У края остаётся только лист сегодняшнего дня (P863).
@@ -1212,6 +1216,7 @@ struct RootView: View {
                 ribbon.frozen = true
                 ribbon.opened()
                 ribbon.folding = true
+                ribbon.veiled = true
                 shell.dayCard = true
                 shell.ribbonOpen = true
                 shell.screen = .search
@@ -1750,7 +1755,9 @@ private struct FoldGhost: View {
     var body: some View {
         let folding = on && ribbon.folding
         let top = FollowRibbon.shown(live ? ribbon.y : 0, height: size.height, stick: ribbon.stick)
-        let start = CGRect(x: 0, y: top, width: size.width, height: size.height)
+        // Будущий лист начинается под полоской «Сегодня» — и схема с него же (P913).
+        let under: CGFloat = ribbon.foldSide < 0 ? FollowRibbon.futureTop : 0
+        let start = CGRect(x: 0, y: top + under, width: size.width, height: size.height - under)
         let r = ribbon.foldTo ?? start
         FoldSchema()
             .frame(width: r.width, height: r.height)

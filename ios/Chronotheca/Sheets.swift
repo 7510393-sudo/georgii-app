@@ -188,7 +188,8 @@ struct SettingsSticker: View {
         NoteRow(title: T("Резервная копия", "Backup"), detail: Backup.detail(size: storageBytes),
                 detailColor: Backup.healthy ? Look.inkSoft : .orange, pinned: true) {
             if Backup.healthy {
-                NoteButton(title: T("Сделать", "Make"), main: true) { showingBackup = true }
+                // Как прочие кнопки раздела (P914): надпись со стрелкой.
+                NoteButton(title: T("Сделать ›", "Make ›")) { showingBackup = true }
             } else {
                 DueButton(title: T("Пора сделать", "Time to make one")) { showingBackup = true }
             }
@@ -202,11 +203,11 @@ struct SettingsSticker: View {
             NoteButton(title: T("Открыть ›", "Open ›")) { showingTrash = true }
         }
         // Перенос из других дневников — бесплатно всегда (M14, P378).
-        NoteRow(title: T("Переход из другого приложения", "Switch from another app")) {
+        NoteRow(title: T("Из другого приложения", "From another app")) {
             NoteButton(title: T("Открыть ›", "Open ›")) { showingImport = true }
         }
         // Уйти можно в любой день: записи и так обычные файлы (P428).
-        NoteRow(title: T("Переход в другое приложение", "Switch to another app")) {
+        NoteRow(title: T("В другое приложение", "To another app")) {
             NoteButton(title: T("Как ›", "How ›")) { showingLeave = true }
         }
         .alert(T("Как перейти в другое приложение", "How to move to another app"), isPresented: $showingLeave) {
@@ -368,8 +369,8 @@ struct SettingsSticker: View {
         }
         if calendarEvents {
             NoteRow(title: T("Праздники и дни рождения", "Holidays and birthdays")) {
-                Choice(options: [(true, T("показывать", "show")), (false, T("нет", "hide"))],
-                       selection: $calendarHolidays)
+                // Один рычажок вместо двух кнопок (P914).
+                Lever(isOn: $calendarHolidays)
             }
         }
     }

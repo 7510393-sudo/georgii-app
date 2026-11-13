@@ -562,6 +562,16 @@ struct SearchView: View {
                 // «Сегодня» на своей стороне, пока лента пересобирается (P896).
                 ribbon.foldSide = side
             }
+            // Схема летит к своему месту сразу, с толчком в руку (P913), а
+            // не стоит во весь экран, пока лента пересобирается (автор по
+            // 286: «сзади мелькает и меняется экран»). Место известно заранее:
+            // туда вернётся карточка; когда лента встанет — поправка до точного.
+            let started = CACurrentMediaTime()
+            DispatchQueue.main.async {
+                guard ribbon.folding, ribbon.foldTo == nil else { return }
+                let about = CGRect(x: inset, y: top, width: w - 2 * inset, height: full)
+                ribbon.foldTo = about.offsetBy(dx: 0, dy: Afar.shift(top, side: side, height: height) - Landing.lift)
+            }
             // Лист растаял — картотека собирается вокруг сегодня (P890).
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 guard shell.dayCard, ribbon.folding else { return }
@@ -606,7 +616,9 @@ struct SearchView: View {
                         // она стоит в раскладке: между ними — сближение (P909).
                         let place = nest.offsetBy(dx: 0, dy: Afar.shift(nest.minY, side: side, height: height))
                         ribbon.foldTo = place.offsetBy(dx: 0, dy: -Landing.lift)
-                        DispatchQueue.main.asyncAfter(deadline: .now() + Self.flight) {
+                        // Садится, когда долетела: полёт начат с толчком (P913).
+                        let left = max(0.18, Self.flight - (CACurrentMediaTime() - started))
+                        DispatchQueue.main.asyncAfter(deadline: .now() + left) {
                             guard ribbon.folding else { return }
                             // …там она уже сама карточка, в своём ряду…
                             withTransaction(still) {
@@ -708,7 +720,7 @@ struct SearchView: View {
                 // От верха экрана, а не окна ленты (P861).
                 ribbon.measured(y - Afar.above(height))
             }
-            .onAppear { ribbon.seen = true }
+            .onAppear { ribbon.appeared() }
             .onDisappear { ribbon.lost() }
             .accessibilityLabel(T("Вернуться в день", "Back to the day"))
             .accessibilityAddTraits(.isButton)
@@ -1319,7 +1331,12 @@ enum Afar {
     static func shift(_ top: CGFloat, side: Int, height h: CGFloat) -> CGFloat {
         // Расстояние от ближнего края: у прошлого — от низа экрана, у
         // будущего — от верха.
-        let d = side > 0 ? h - top : top
+        // Край — не край экрана, а край листа «Сегодня» (P913): верх его
+        // корешка внизу или низ его полоски вверху. Прежде опорой был край
+        // экрана, и завтрашняя карточка уезжала корешком с датой под
+        // полоску «Сегодня» (снимок автора к 286).
+        let near: CGFloat = side > 0 ? h - FollowRibbon.peekBottom : FollowRibbon.peekTop
+        let d = side > 0 ? near - top : top - near
         let loss = 1 - tightest
         let shown: CGFloat
         if d < 0 {
@@ -1330,7 +1347,7 @@ enum Afar {
         } else {
             shown = tightest * h + loss * h / 2 + (d - h)
         }
-        let place = side > 0 ? h - shown : shown
+        let place = side > 0 ? near - shown : near + shown
         return place - top
     }
 }

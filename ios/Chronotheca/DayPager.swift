@@ -401,6 +401,9 @@ struct DayPage: View {
                          if !store.isToday {
                              ribbon.frozen = true
                              ribbon.folding = true
+                             // Картотека под листом не вспыхивает на кадр
+                             // перед тем, как скрыться на пересборку (P913).
+                             ribbon.veiled = true
                              shell.dayCard = true
                              shell.ribbonOpen = true
                              shell.screen = .search
