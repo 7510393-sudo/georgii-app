@@ -1,0 +1,224 @@
+    948 Thread_110634   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 948 start  (in dyld) + 6992  [0x1010244e4]
+    +   948 start_sim  (in dyld_sim) + 20  [0x100e4b0e4]
+    +     948 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x102e746a8]  ChronothecaApp.swift:0
+    +       948 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x102e745fc]  /<compiler-generated>:0
+    +         948 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           948 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             948 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               948 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 948 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   948 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     948 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       917 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    +                       ! 917 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    +                       !   917 mach_msg  (in libsystem_kernel.dylib) + 20  [0x100d00ef0]
+    +                       !     917 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x100d08c44]
+    +                       !       917 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x100d11e84]
+    +                       !         917 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x100d00b70]
+    +                       28 __CFRunLoopRun  (in CoreFoundation) + 1884  [0x180421c6c]
+    +                       ! 28 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__  (in CoreFoundation) + 12  [0x180422a94]
+    +                       !   28 _dispatch_main_queue_callback_4CF  (in libdispatch.dylib) + 40  [0x180195890]
+    +                       !     27 _dispatch_main_queue_drain  (in libdispatch.dylib) + 1172  [0x180195d34]
+    +                       !     : 27 <deduplicated_symbol>  (in libdispatch.dylib) + 24  [0x1801bd748]
+    +                       !     :   27 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                       !     :     27 _dispatch_call_block_and_release  (in libdispatch.dylib) + 24  [0x1801866a0]
+    +                       !     :       18 _UIAXBroadcastMainThread  (in UIAccessibility) + 796  [0x1952aae80]
+    +                       !     :       | 18 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     :       |   18 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     :       |     18 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9820  [0x1800b68f4]
+    +                       !     :       |       18 _os_log_impl_stream  (in libsystem_trace.dylib) + 524  [0x1800b6e94]
+    +                       !     :       |         18 _os_activity_stream_reflect  (in libsystem_trace.dylib) + 336  [0x1800a605c]
+    +                       !     :       |           18 dyld4::APIs::dyld_image_path_containing_address(void const*)  (in dyld_sim) + 68  [0x100e43184]
+    +                       !     :       |             18 dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 528  [0x100e42ec0]
+    +                       !     :       |               18 dyld4::RuntimeLocks::withLoadersReadLock(void () block_pointer)  (in dyld_sim) + 48  [0x100e51390]
+    +                       !     :       |                 18 _os_unfair_lock_lock_slow  (in libsystem_platform.dylib) + 168  [0x100d81258]
+    +                       !     :       |                   18 __ulock_wait2  (in libsystem_kernel.dylib) + 8  [0x100d0db04]
+    +                       !     :       5 -[AXBinaryMonitor _handleLoadedImagePath:]  (in AXCoreUtilities) + 356  [0x192abf750]
+    +                       !     :       | 5 -[AXBinaryMonitor _applyHandlerBlocks:handlerMap:]  (in AXCoreUtilities) + 172  [0x192abf574]
+    +                       !     :       |   5 __54+[AXMobileQuickLookGlue accessibilityInitializeBundle]_block_invoke_4  (in QuickLook) + 116  [0x11ee5d1e4]
+    +                       !     :       |     5 +[NSBundle bundleWithIdentifier:]  (in Foundation) + 32  [0x18103d4b8]
+    +                       !     :       |       5 _CFBundleGetBundleWithIdentifier  (in CoreFoundation) + 232  [0x1803af954]
+    +                       !     :       |         4 _CFBundleEnsureBundlesUpToDateWithHint  (in CoreFoundation) + 40  [0x1803b1924]
+    +                       !     :       |         + 4 _CFBundleEnsureBundlesExistForImagePaths  (in CoreFoundation) + 60  [0x1803b25a4]
+    +                       !     :       |         +   2 _CFBundleEnsureBundleExistsForImagePath  (in CoreFoundation) + 64  [0x1803b1ed0]
+    +                       !     :       |         +   ! 2 _CFBundleCreate  (in CoreFoundation) + 652  [0x1803afe88]
+    +                       !     :       |         +   !   2 CFBundleGetInfoDictionary  (in CoreFoundation) + 44  [0x180537d8c]
+    +                       !     :       |         +   !     2 _CFBundleRefreshInfoDictionaryAlreadyLocked  (in CoreFoundation) + 148  [0x180537e6c]
+    +                       !     :       |         +   !       2 _CFBundleCopyInfoDictionaryInDirectoryWithVersion  (in CoreFoundation) + 1528  [0x180537220]
+    +                       !     :       |         +   !         2 _CFDataCreateFromURL  (in CoreFoundation) + 80  [0x180491428]
+    +                       !     :       |         +   !           2 _CFReadBytesFromFile  (in CoreFoundation) + 360  [0x1803ddda4]
+    +                       !     :       |         +   !             2 read  (in libsystem_kernel.dylib) + 8  [0x100d016cc]
+    +                       !     :       |         +   2 _CFBundleEnsureBundleExistsForImagePath  (in CoreFoundation) + 96  [0x1803b1ef0]
+    +                       !     :       |         +     2 _CFBundleDlfcnCheckLoaded  (in CoreFoundation) + 104  [0x1803e3a78]
+    +                       !     :       |         +       1 DYLD-STUB$$dlopen  (in libRPAC.dylib) + 0  [0x101341e44]
+    +                       !     :       |         +       1 dyld4::APIs::dlopen_from(char const*, int, void*)  (in dyld_sim) + 344  [0x100e43b1c]
+    +                       !     :       |         +         1 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const  (in dyld_sim) + 184  [0x100e48390]
+    +                       !     :       |         +           1 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const::'lambda'()::operator()() const  (in dyld_sim) + 280  [0x100e48bc0]
+    +                       !     :       |         +             1 dyld4::Loader::getLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 828  [0x100e5da70]
+    +                       !     :       |         +               1 dyld4::Loader::forEachPath(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer)  (in dyld_sim) + 236  [0x100e5d378]
+    +                       !     :       |         +                 1 dyld4::ProcessConfig::PathOverrides::forEachPathVariant(char const*, mach_o::Platform, bool, bool, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer) const  (in dyld_sim) + 884  [0x100e507e0]
+    +                       !     :       |         +                   1 dyld4::Loader::forEachResolvedAtPathVar(dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, dyld4::ProcessConfig::PathOverrides::Type, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer)  (in dyld_sim) + 468  [0x100e5d6f4]
+    +                       !     :       |         +                     1 invocation function for block in dyld4::Loader::getLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 252  [0x100e5df00]
+    +                       !     :       |         +                       1 dyld4::JustInTimeLoader::matchesPath(dyld4::RuntimeState const&, char const*) const  (in dyld_sim) + 40  [0x100e59158]
+    +                       !     :       |         +                         1 strcmp  (in dyld_sim) + 4  [0x100e76f98]
+    +                       !     :       |         1 _CFBundleEnsureBundlesUpToDateWithHint  (in CoreFoundation) + 28  [0x1803b1918]
+    +                       !     :       |           1 _CFBundleDYLDCopyLoadedImagePathsForHint  (in CoreFoundation) + 628  [0x1803e37e8]
+    +                       !     :       |             1 _CFRelease  (in CoreFoundation) + 1108  [0x180425048]
+    +                       !     :       |               1 xzm_malloc_zone_free  (in libsystem_malloc.dylib) + 0  [0x1801f30d8]
+    +                       !     :       3 __104+[UIAccessibilityLoader _performInitialAccessibilityBundleLoad:monitorForFutureLoadEvents:trackingMode:]_block_invoke_3  (in UIAccessibility) + 168  [0x195264a5c]
+    +                       !     :       | 1 +[AXPhotoLibraryFrameworkGlue accessibilityInitializeBundle]  (in PhotoLibraryFramework) + 100  [0x120634eb4]
+    +                       !     :       | + 1 -[AXValidationManager performValidations:withPreValidationHandler:postValidationHandler:safeCategoryInstallationHandler:]  (in AXCoreUtilities) + 280  [0x192ac0a10]
+    +                       !     :       | +   1 -[AXAccessQueue performSynchronousWritingBlock:]  (in AXCoreUtilities) + 48  [0x192acfc90]
+    +                       !     :       | +     1 AXPerformBlockSynchronouslyOnMainThread  (in AXCoreUtilities) + 56  [0x192ac8b90]
+    +                       !     :       | +       1 __121-[AXValidationManager performValidations:withPreValidationHandler:postValidationHandler:safeCategoryInstallationHandler:]_block_invoke  (in AXCoreUtilities) + 612  [0x192ac0cc4]
+    +                       !     :       | +         1 __60+[AXPhotoLibraryFrameworkGlue accessibilityInitializeBundle]_block_invoke_3  (in PhotoLibraryFramework) + 344  [0x120635538]
+    +                       !     :       | +           1 -[AXValidationManager installSafeCategory:canInteractWithTargetClass:]  (in AXCoreUtilities) + 1128  [0x192ac534c]
+    +                       !     :       | +             1 +[UIAccessibilitySafeCategory _initializeSafeCategoryFromValidationManager]  (in libAXSafeCategoryBundle.dylib) + 48  [0x19394fb40]
+    +                       !     :       | +               1 _objc_msgSend_uncached  (in libobjc.A.dylib) + 64  [0x18003af00]
+    +                       !     :       | +                 1 lookUpImpOrForward  (in libobjc.A.dylib) + 400  [0x180053464]
+    +                       !     :       | +                   1 cache_t::insert(objc_selector*, void (*)(), objc_object*)  (in libobjc.A.dylib) + 420  [0x18003cf78]
+    +                       !     :       | +                     1 cache_t::collectNolock(bool)  (in libobjc.A.dylib) + 68  [0x18003d0d8]
+    +                       !     :       | +                       1 _collecting_in_critical()  (in libobjc.A.dylib) + 136  [0x18003d2f0]
+    +                       !     :       | +                         1 thread_get_state  (in libsystem_kernel.dylib) + 252  [0x100d092c0]
+    +                       !     :       | +                           1 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x100d11e84]
+    +                       !     :       | +                             1 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x100d00b70]
+    +                       !     :       | 1 +[AXPhotosUICoreGlue accessibilityInitializeBundle]  (in PhotosUICore) + 32  [0x120458e20]
+    +                       !     :       | + 1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +                       !     :       | +   1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                       !     :       | +     1 __51+[AXPhotosUICoreGlue accessibilityInitializeBundle]_block_invoke  (in PhotosUICore) + 68  [0x120458e6c]
+    +                       !     :       | +       1 -[AXValidationManager performValidations:withPreValidationHandler:postValidationHandler:safeCategoryInstallationHandler:]  (in AXCoreUtilities) + 280  [0x192ac0a10]
+    +                       !     :       | +         1 -[AXAccessQueue performSynchronousWritingBlock:]  (in AXCoreUtilities) + 48  [0x192acfc90]
+    +                       !     :       | +           1 AXPerformBlockSynchronouslyOnMainThread  (in AXCoreUtilities) + 56  [0x192ac8b90]
+    +                       !     :       | +             1 __121-[AXValidationManager performValidations:withPreValidationHandler:postValidationHandler:safeCategoryInstallationHandler:]_block_invoke  (in AXCoreUtilities) + 612  [0x192ac0cc4]
+    +                       !     :       | +               1 __51+[AXPhotosUICoreGlue accessibilityInitializeBundle]_block_invoke_4  (in PhotosUICore) + 184  [0x120458fdc]
+    +                       !     :       | +                 1 -[AXValidationManager installSafeCategory:canInteractWithTargetClass:]  (in AXCoreUtilities) + 1128  [0x192ac534c]
+    +                       !     :       | +                   1 +[UIAccessibilitySafeCategory _initializeSafeCategoryFromValidationManager]  (in libAXSafeCategoryBundle.dylib) + 48  [0x19394fb40]
+    +                       !     :       | +                     1 +[UIAccessibilitySafeCategory _installSafeCategoryOnClass:isManaged:]  (in libAXSafeCategoryBundle.dylib) + 356  [0x193950244]
+    +                       !     :       | +                       1 +[UIAccessibilitySafeCategory _addCategoryMethods:count:excluding:toClass:isClass:useReplace:]  (in libAXSafeCategoryBundle.dylib) + 656  [0x19394ff8c]
+    +                       !     :       | +                         1 class_addMethodsBulk  (in libobjc.A.dylib) + 96  [0x180055240]
+    +                       !     :       | +                           1 addMethods(objc_class*, objc_selector* const*, void (* const*)(), char const**, unsigned int, bool, unsigned int*)  (in libobjc.A.dylib) + 500  [0x1800554ac]
+    +                       !     :       | +                             1 addMethods_finish(objc_class*, method_list_t*)  (in libobjc.A.dylib) + 204  [0x180046048]
+    +                       !     :       | +                               1 flushCaches(objc_class*, char const*, bool (objc_class*) block_pointer)  (in libobjc.A.dylib) + 148  [0x180044c48]
+    +                       !     :       | +                                 1 invocation function for block in flushCaches(objc_class*, char const*, bool (objc_class*) block_pointer)  (in libobjc.A.dylib) + 312  [0x180044ec8]
+    +                       !     :       | +                                   1 cache_t::collectNolock(bool)  (in libobjc.A.dylib) + 68  [0x18003d0d8]
+    +                       !     :       | +                                     1 _collecting_in_critical()  (in libobjc.A.dylib) + 296  [0x18003d390]
+    +                       !     :       | +                                       1 mach_vm_deallocate  (in libsystem_kernel.dylib) + 84  [0x100d024d4]
+    +                       !     :       | +                                         1 _kernelrpc_mach_vm_deallocate_trap  (in libsystem_kernel.dylib) + 8  [0x100d009e4]
+    +                       !     :       | 1 +[AXSceneKitGlue accessibilityInitializeBundle]  (in SceneKit) + 92  [0x11ba9cd04]
+    +                       !     :       |   1 -[AXValidationManager performValidations:withPreValidationHandler:postValidationHandler:safeCategoryInstallationHandler:]  (in AXCoreUtilities) + 280  [0x192ac0a10]
+    +                       !     :       |     1 -[AXAccessQueue performSynchronousWritingBlock:]  (in AXCoreUtilities) + 48  [0x192acfc90]
+    +                       !     :       |       1 AXPerformBlockSynchronouslyOnMainThread  (in AXCoreUtilities) + 56  [0x192ac8b90]
+    +                       !     :       |         1 __121-[AXValidationManager performValidations:withPreValidationHandler:postValidationHandler:safeCategoryInstallationHandler:]_block_invoke  (in AXCoreUtilities) + 612  [0x192ac0cc4]
+    +                       !     :       |           1 __47+[AXSceneKitGlue accessibilityInitializeBundle]_block_invoke_3  (in SceneKit) + 84  [0x11ba9cdd8]
+    +                       !     :       |             1 -[AXValidationManager installSafeCategory:canInteractWithTargetClass:]  (in AXCoreUtilities) + 1128  [0x192ac534c]
+    +                       !     :       |               1 +[UIAccessibilitySafeCategory _initializeSafeCategoryFromValidationManager]  (in libAXSafeCategoryBundle.dylib) + 48  [0x19394fb40]
+    +                       !     :       |                 1 +[UIAccessibilitySafeCategory _installSafeCategoryOnClass:isManaged:]  (in libAXSafeCategoryBundle.dylib) + 196  [0x1939501a4]
+    +                       !     :       |                   1 +[UIAccessibilitySafeCategory _addCategoryMethods:count:excluding:toClass:isClass:useReplace:]  (in libAXSafeCategoryBundle.dylib) + 432  [0x19394feac]
+    +                       !     :       |                     1 class_getInstanceMethod  (in libobjc.A.dylib) + 56  [0x18005326c]
+    +                       !     :       |                       1 resolveMethod_locked(objc_object*, objc_selector*, objc_class*, int)  (in libobjc.A.dylib) + 272  [0x180053684]
+    +                       !     :       |                         1 SCNObject_resolveInstanceMethod  (in SceneKit) + 212  [0x1a3d075a8]
+    +                       !     :       |                           1 -[NSString capitalizedStringWithLocale:]  (in Foundation) + 68  [0x1811458d8]
+    +                       !     :       |                             1 CFStringCapitalize  (in CoreFoundation) + 552  [0x18045cf7c]
+    +                       !     :       1 __104+[UIAccessibilityLoader _performInitialAccessibilityBundleLoad:monitorForFutureLoadEvents:trackingMode:]_block_invoke_3  (in UIAccessibility) + 48  [0x1952649e4]
+    +                       !     :         1 -[NSBundle principalClass]  (in Foundation) + 20  [0x18103e008]
+    +                       !     :           1 -[NSBundleAccessibility loadAndReturnError:]  (in UIAccessibility) + 84  [0x1952b9ba8]
+    +                       !     :             1 AXSettingsReturnBoolValue  (in AccessibilityUtilities) + 68  [0x1933d8d7c]
+    +                       !     :               1 ???  (in AXCoreUtilities)  load address 0x192aa5000 + 0xa31f0  [0x192b481f0]
+    +                       !     :                 1 ???  (in AXCoreUtilities)  load address 0x192aa5000 + 0xa2ff0  [0x192b47ff0]
+    +                       !     :                   1 ???  (in FeatureFlags)  load address 0x1dbc30000 + 0x6a4  [0x1dbc306a4]
+    +                       !     :                     1 ???  (in FeatureFlags)  load address 0x1dbc30000 + 0x824  [0x1dbc30824]
+    +                       !     :                       1 _os_feature_enabled_SLOWPATH  (in libsystem_featureflags.dylib) + 92  [0x1cc2c1af4]
+    +                       !     :                         1 _xpc_dictionary_look_up  (in libxpc.dylib) + 36  [0x1800d6278]
+    +                       !     :                           1 _xpc_dictionary_look_up_table  (in libxpc.dylib) + 28  [0x1800d77a4]
+    +                       !     :                             1 _hash_bucket  (in libxpc.dylib) + 28  [0x1800d78ac]
+    +                       !     :                               1 _platform_strcmp$VARIANT$Base  (in libsystem_platform.dylib) + 172  [0x100d8453c]
+    +                       !     1 _dispatch_main_queue_drain  (in libdispatch.dylib) + 644  [0x180195b24]
+    +                       !       1 _dispatch_source_invoke  (in libdispatch.dylib) + 1800  [0x18019df44]
+    +                       !         1 _dispatch_continuation_pop  (in libdispatch.dylib) + 776  [0x18018b068]
+    +                       !           1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                       !             1 __66+[AXUIContextDrawingAnnotation addLabel:boundingRect:withContext:]_block_invoke  (in AccessibilityUIUtilities) + 72  [0x1d5b00098]
+    +                       !               1 _objc_msgSend_uncached  (in libobjc.A.dylib) + 64  [0x18003af00]
+    +                       !                 1 lookUpImpOrForward  (in libobjc.A.dylib) + 312  [0x18005340c]
+    +                       !                   1 getMethodFromRelativeList(relative_list_list_t<method_list_t>*, objc_selector*)  (in libobjc.A.dylib) + 196  [0x1800474a4]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 760  [0x180421808]
+    +                       ! 1 __CFRunLoopDoSources0  (in CoreFoundation) + 220  [0x180422634]
+    +                       !   1 __CFRunLoopDoSource0  (in CoreFoundation) + 168  [0x180422ea4]
+    +                       !     1 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__  (in CoreFoundation) + 24  [0x180422f5c]
+    +                       !       1 UC::DriverCore::continueProcessing()  (in UpdateCycle) + 80  [0x2343d22c0]
+    +                       !         1 schedulerStepScheduledMainSectionContinue  (in UIKitCore) + 56  [0x1863b6064]
+    +                       !           1 _UIUpdateSequenceRunNext  (in UIKitCore) + 120  [0x18590339c]
+    +                       !             1 __setupUpdateSequence_block_invoke_2  (in UIKitCore) + 372  [0x1863b5c0c]
+    +                       !               1 _UIApplicationFlushCATransaction  (in UIKitCore) + 48  [0x1864a3b50]
+    +                       !                 1 CA::Transaction::flush_as_runloop_observer(bool)  (in QuartzCore) + 68  [0x18cefa1a4]
+    +                       !                   1 CA::Transaction::commit()  (in QuartzCore) + 632  [0x18cef88f0]
+    +                       !                     1 CA::Context::commit_transaction(CA::Transaction*, double, double*)  (in QuartzCore) + 560  [0x18cecacc8]
+    +                       !                       1 CA::Layer::layout_and_display_if_needed(CA::Transaction*)  (in QuartzCore) + 156  [0x18cfb2978]
+    +                       !                         1 CA::Layer::update_if_needed_(CA::Transaction*, CA::LayerUpdateReason)  (in QuartzCore) + 600  [0x18cfa6d94]
+    +                       !                           1 CA::Layer::perform_update_(CA::Layer*, CALayer*, unsigned int, CA::LayerUpdateReason, CA::Transaction*)  (in QuartzCore) + 456  [0x18cfa7548]
+    +                       !                             1 -[UIView(CALayerDelegate) layoutSublayersOfLayer:]  (in UIKitCore) + 2648  [0x186ab0548]
+    +                       !                               1 ???  (in UIKitCore)  load address 0x185289000 + 0x3c511c  [0x18564e11c]
+    +                       !                                 1 ???  (in UIKitCore)  load address 0x185289000 + 0x3c4d74  [0x18564dd74]
+    +                       !                                   1 @objc _UIHostingView.layoutSubviews()  (in SwiftUI) + 32  [0x1d3474ac0]
+    +                       !                                     1 _UIHostingView.layoutSubviews()  (in SwiftUI) + 80  [0x1d3474a8c]
+    +                       !                                       1 ???  (in UIKitCore)  load address 0x185289000 + 0x14c250  [0x1853d5250]
+    +                       !                                         1 ViewGraphRootValueUpdater.render(interval:updateDisplayList:targetTimestamp:)  (in SwiftUICore) + 460  [0x1d43be2c0]
+    +                       !                                           1 closure #1 in ViewGraphRootValueUpdater.render(interval:updateDisplayList:targetTimestamp:)  (in SwiftUICore) + 752  [0x1d43bfbe8]
+    +                       !                                             1 AGGraphGetWeakValue  (in AttributeGraph) + 368  [0x1c42eade4]
+    +                       !                                               1 AG::Graph::value_ref(AG::AttributeID, unsigned int, AGSwiftMetadata const*, unsigned char&)  (in AttributeGraph) + 260  [0x1c42d2b48]
+    +                       !                                                 1 AG::Graph::update_attribute(AG::data::ptr<AG::Node>, unsigned int)  (in AttributeGraph) + 352  [0x1c42cbda8]
+    +                       !                                                   1 AG::Graph::UpdateStack::update()  (in AttributeGraph) + 488  [0x1c42cb6c0]
+    +                       !                                                     1 specialized implicit closure #1 in closure #1 in closure #1 in Attribute.init<A>(_:)  (in SwiftUICore) + 80  [0x1d3e4bb08]
+    +                       !                                                       1 AGGraphSetOutputValue  (in AttributeGraph) + 880  [0x1c42eb4a4]
+    +                       !                                                         1 AG::LayoutDescriptor::fetch(AG::swift::metadata const*, unsigned int, int)  (in AttributeGraph) + 0  [0x1c42dfce4]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 1528  [0x180421b08]
+    +                       ! 1 __CFRunLoopDoObservers  (in CoreFoundation) + 284  [0x180421320]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 1756  [0x180421bec]
+    +                         1 __CFRunLoopDoTimers  (in CoreFoundation) + 276  [0x1804229d4]
+    +                           1 __CFRunLoopDoTimer  (in CoreFoundation) + 1348  [0x1804234a8]
+    +                             1 __CFRunLoopCopyMode  (in CoreFoundation) + 144  [0x18041c374]
+    +                               1 CFSetGetValue  (in CoreFoundation) + 132  [0x18042c8bc]
+    +                                 1 ___CFBasicHashFindBucket_Linear  (in CoreFoundation) + 244  [0x1804f6134]
+    +                                   1 CFEqual  (in CoreFoundation) + 288  [0x180425830]
+    +                                     1 __CF_IS_OBJC  (in CoreFoundation) + 32  [0x180423be0]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        9884
+        mach_msg2_trap  (in libsystem_kernel.dylib)        1867
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        826
+        __ulock_wait2  (in libsystem_kernel.dylib)        146
+        mach_msg2_trap  (in dyld)        120
+        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        74
+        getattrlistbulk  (in libsystem_kernel.dylib)        71
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib)        42
+        <deduplicated_symbol>  (in dyld)        35
+        swift::equalContexts(swift::TargetContextDescriptor<swift::InProcess> const*, swift::TargetContextDescriptor<swift::InProcess> const*)  (in libswiftCore.dylib)        24
+        __ulock_wait  (in libsystem_kernel.dylib)        20
+        getContextDescriptor(swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        16
+        getSuperclassForMaybeIncompleteMetadata(swift::TargetMetadata<swift::InProcess> const*, std::optional<swift::MetadataState>, bool)  (in libswiftCore.dylib)        14
+        _swift_class_getSuperclass  (in libswiftCore.dylib)        9
+        read  (in libsystem_kernel.dylib)        8
+        strcmp  (in dyld_sim)        7
+        CreateStringFromFileSystemRepresentationByAddingPercentEscapes  (in CoreFoundation)        5
+        __open  (in libsystem_kernel.dylib)        5
+        mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim)        5
+        objc_msgSend  (in libobjc.A.dylib)        5
+
+Binary Images:
+       0x100cec000 -        0x100cef507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC/data/Containers/Bundle/Application/19E4FA6E-DBA1-42F0-94B5-3EB0E634FC1B/Chronotheca.app/Chronotheca
+       0x100d00000 -        0x100d3aee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
+       0x100d80000 -        0x100d883d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
+       0x100e40000 -        0x100e8ee9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x100efc000 -        0x100f0810b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
+       0x101004000 -        0x1010b7523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
+       0x10115c000 -        0x10119f65f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x1012b0000 -        0x1013492af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x10198c000 -        0x10198cb99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x1019a0000 -        0x1019a803f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x101ab4000 -        0x101abf39f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x101ad8000 -        0x101adadff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x101af8000 -        0x101b0149f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x101b1c000 -        0x101b22b7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x101b4c000 -        0x101b6527f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
+       0x101b9c000 -        0x101b9fe5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x101fb4000 -        0x101fb71ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
