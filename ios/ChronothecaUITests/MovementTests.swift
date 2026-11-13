@@ -544,7 +544,7 @@ final class MovementTests: XCTestCase {
         app.launchEnvironment["CHRONOTHECA_SELFDRIVE"] = "1"
         traceFrom = traceText().count
         app.launch()
-        Thread.sleep(forTimeInterval: 85)
+        Thread.sleep(forTimeInterval: 100)
         save("06-большой-архив")
 
         let text = String(traceText().dropFirst(traceFrom))

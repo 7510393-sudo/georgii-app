@@ -893,15 +893,15 @@ struct RootView: View {
             let url = URL(fileURLWithPath: path).deletingLastPathComponent().appendingPathComponent("want-" + name)
             try? Data().write(to: url)
         }
-        step(5, "просьба снимка картотеки") { wantSample("big-search") }
-        step(1, "картотека прошлого") {
+        step(3, "просьба снимка картотеки") { wantSample("big-search") }
+        step(3, "картотека прошлого") {
             let tap = Date()
             shell.fileFrom = 1
             shell.screen = .search
             LaunchClock.opened("search", since: tap)
         }
-        step(6, "просьба снимка поиска") { wantSample("big-query") }
-        step(1, "поиск слова") {
+        step(8, "просьба снимка поиска") { wantSample("big-query") }
+        step(3, "поиск слова") {
             let tap = Date()
             shell.query = "garden"
             LaunchClock.opened("query", since: tap)

@@ -79,14 +79,14 @@ jobs:
               tick=$((tick + 1))
               pid=$(pgrep -f "Chronotheca.app/Chronotheca" | head -1)
               # Проверка просит снимок в нужный миг (P808): кладёт файл
-              # want-<имя>, здесь снимается sample-<имя>.txt на 3 секунды.
+              # want-<имя>, здесь снимается sample-<имя>.txt на 7 секунд.
               for want in ../docs/motion/want-*; do
                 [ -f "$want" ] || continue
                 name=${want##*/want-}
                 rm -f "$want"
                 if [ -n "$pid" ]; then
-                  sample "$pid" 3 -file "../docs/motion/sample-$name.txt" >>"$log" 2>&1 \
-                    || sudo sample "$pid" 3 -file "../docs/motion/sample-$name.txt" >>"$log" 2>&1 \
+                  sample "$pid" 7 -file "../docs/motion/sample-$name.txt" >>"$log" 2>&1 \
+                    || sudo sample "$pid" 7 -file "../docs/motion/sample-$name.txt" >>"$log" 2>&1 \
                     || echo "снимок $name не снялся (pid $pid)" >> "$log"
                 fi
               done
