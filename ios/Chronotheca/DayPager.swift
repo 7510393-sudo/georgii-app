@@ -1764,6 +1764,10 @@ struct AttachBar: View {
                     DispatchQueue.main.async {
                         if store.addPhoto(data, to: tab, camera: !allowed) {
                             shell.say(T("Снимок положен в папку «", "Photo saved to the “") + vault.name(.photos) + T("»", "” folder"))
+                        } else if store.keepForLater(data, kind: .photos, name: "", tab: tab) {
+                            // Не лёг в папку — остаётся у приложения и дойдёт сам (P904).
+                            shell.say(T("Снимок пока не лёг в папку — приложение хранит его и доложит само",
+                                        "The photo has not reached your folder yet — the app is keeping it and will add it"))
                         } else if allowed {
                             shell.say(T("В папку снимок не лёг — он есть в «Фото» iPhone",
                                         "The photo did not reach your folder — it is in iPhone Photos"))
@@ -1794,10 +1798,16 @@ struct AttachBar: View {
     private func keepVoice(_ url: URL) {
         recording = false
         defer { try? FileManager.default.removeItem(at: url) }
-        guard let data = try? Data(contentsOf: url), !data.isEmpty,
-              store.addAttachment(data, to: .audio, name: Vault.moment(store.date) + ".m4a",
-                                  tab: into)
+        guard let data = try? Data(contentsOf: url), !data.isEmpty
         else { return shell.say(T("Запись не сохранилась.", "The recording was not saved.")) }
+        let name = Vault.moment(store.date) + ".m4a"
+        guard store.addAttachment(data, to: .audio, name: name, tab: into) else {
+            // Не лёг в папку — голос остаётся у приложения и дойдёт сам (P904).
+            return shell.say(store.keepForLater(data, kind: .audio, name: name, tab: into)
+                ? T("Голос пока не лёг в папку — приложение хранит его и доложит само",
+                    "The voice note has not reached your folder yet — the app is keeping it and will add it")
+                : T("Запись не сохранилась.", "The recording was not saved."))
+        }
         shell.say(T("Голос положен в папку «", "Voice note saved to the “") + vault.name(.audio) + T("»", "” folder"))
     }
 

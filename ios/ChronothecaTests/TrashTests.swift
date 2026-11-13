@@ -10,6 +10,7 @@ final class TrashTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
+        TrashClock.reset()
         folder = FileManager.default.temporaryDirectory
             .appendingPathComponent("корзина-\(UUID().uuidString)")
         try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)

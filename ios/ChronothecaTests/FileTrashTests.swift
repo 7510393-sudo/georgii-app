@@ -11,6 +11,7 @@ final class FileTrashTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
+        TrashClock.reset()
         folder = fm.temporaryDirectory.appendingPathComponent("корзина-\(UUID().uuidString)")
         try? fm.createDirectory(at: folder, withIntermediateDirectories: true)
         vault = Vault()
@@ -65,5 +66,15 @@ final class FileTrashTests: XCTestCase {
         XCTAssertEqual(FileTrash.items(vault).count, 1, "29 дней — ещё лежит")
         FileTrash.purgeOld(vault, now: Date().addingTimeInterval(31 * 86_400))
         XCTAssertTrue(FileTrash.items(vault).isEmpty, "31 день — стёрт")
+    }
+
+    // MARK: - Часы и места (P904)
+
+    func testСкачокЧасовНеЧиститКорзину() {
+        let now = Date()
+        XCTAssertTrue(TrashClock.steady(now))
+        XCTAssertFalse(TrashClock.steady(now.addingTimeInterval(40 * 86_400)), "дата прыгнула на 40 дней — стирать нельзя")
+        XCTAssertFalse(TrashClock.steady(now.addingTimeInterval(86_400)), "дату вернули назад — в этот раз тоже не стираем")
+        XCTAssertTrue(TrashClock.steady(now.addingTimeInterval(2 * 86_400)), "время снова идёт ровно")
     }
 }

@@ -291,7 +291,8 @@ enum Places {
 
     static func delete(_ place: Place, in vault: Vault) {
         guard let folder = folder(vault), let file = place.file else { return }
-        try? FileManager.default.removeItem(at: folder.appendingPathComponent(file))
+        // В корзину на 30 дней, как вложения (P904); прежде — сразу и навсегда.
+        FileTrash.putLoose(folder.appendingPathComponent(file), vault: vault)
         known.removeAll { $0.file == file }
     }
 }

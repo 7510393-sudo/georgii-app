@@ -56,7 +56,18 @@ enum FileTrash {
               FileManager.default.fileExists(atPath: file.path)
         else { return .failed }
         if let other = usedElsewhere(file.lastPathComponent, root: root) { return .stillUsed(other) }
+        return stash(file, root: root, day: Vault.stamp(day), tab: tab, link: link)
+    }
 
+    /// Убрать в корзину файл архива, на который не ссылается ни один день, —
+    /// место на карте (P904; прежде места стирались сразу, мимо корзины).
+    @discardableResult
+    static func putLoose(_ file: URL, vault: Vault) -> Bool {
+        guard let root = vault.root, FileManager.default.fileExists(atPath: file.path) else { return false }
+        return stash(file, root: root, day: "", tab: "", link: "") == .trashed
+    }
+
+    private static func stash(_ file: URL, root: URL, day: String, tab: String, link: String) -> Outcome {
         let rootPath = root.standardizedFileURL.resolvingSymlinksInPath().path
         let filePath = file.standardizedFileURL.resolvingSymlinksInPath().path
         guard filePath.hasPrefix(rootPath + "/") else { return .failed }
@@ -77,7 +88,7 @@ enum FileTrash {
         guard move(file, to: target) else { return .failed }
         var list = index(dayFolder)
         let kept = String(target.path.dropFirst(dayFolder.path.count + 1))
-        list.append(Entry(path: rel, stored: kept, day: Vault.stamp(day), tab: tab, link: link,
+        list.append(Entry(path: rel, stored: kept, day: day, tab: tab, link: link,
                           deleted: stamp))
         save(list, dayFolder)
         return .trashed
@@ -174,6 +185,7 @@ enum FileTrash {
     /// Стереть всё, что пролежало 30 дней, — при каждом возвращении в
     /// приложение.
     static func purgeOld(_ vault: Vault, now: Date = Date()) {
+        guard TrashClock.steady(now) else { return }
         guard let root = vault.root,
               let names = try? FileManager.default.contentsOfDirectory(atPath: base(root).path)
         else { return }

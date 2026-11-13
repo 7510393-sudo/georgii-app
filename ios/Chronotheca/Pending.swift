@@ -118,3 +118,101 @@ enum Pending {
         return done
     }
 }
+
+/// Страховка вложений (P904): голос или снимок с камеры не лёг в папку —
+/// прежде приложение говорило «не сохранилось» и стирало его. Теперь он
+/// лежит здесь, пока папка не вернётся, и докладывается сам: файл — в свою
+/// папку архива, ссылка — на страницу дня (по правилам P182–P183).
+enum PendingMedia {
+
+    struct Item: Codable, Equatable {
+        var id: String
+        var root: String
+        var kind: String
+        var name: String
+        var stamp: String
+        /// "diary" или "plan".
+        var tab: String
+        /// Файл уже в архиве, осталось поставить ссылку в день.
+        var link: String?
+    }
+
+    static var home: URL?
+
+    private static var dir: URL? {
+        if let home { return home }
+        return FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?
+            .appendingPathComponent("Pending/Media", isDirectory: true)
+    }
+
+    static func items(root: URL) -> [Item] {
+        guard let dir, let names = try? FileManager.default.contentsOfDirectory(atPath: dir.path)
+        else { return [] }
+        let path = root.standardizedFileURL.path
+        return names.filter { $0.hasSuffix(".json") }.sorted()
+            .compactMap { name -> Item? in
+                guard let data = try? Data(contentsOf: dir.appendingPathComponent(name)) else { return nil }
+                return try? JSONDecoder().decode(Item.self, from: data)
+            }
+            .filter { $0.root == path }
+    }
+
+    private static func write(_ item: Item) -> Bool {
+        guard let dir, let data = try? JSONEncoder().encode(item) else { return false }
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return (try? data.write(to: dir.appendingPathComponent(item.id + ".json"), options: .atomic)) != nil
+    }
+
+    private static func drop(_ item: Item) {
+        guard let dir else { return }
+        try? FileManager.default.removeItem(at: dir.appendingPathComponent(item.id + ".json"))
+        try? FileManager.default.removeItem(at: dir.appendingPathComponent(item.id + ".bin"))
+    }
+
+    @discardableResult
+    static func keep(_ data: Data, kind: Vault.Folder, name: String, date: Date, tab: String, root: URL) -> Bool {
+        guard let dir else { return false }
+        let item = Item(id: UUID().uuidString, root: root.standardizedFileURL.path, kind: kind.rawValue,
+                        name: name, stamp: Vault.stamp(date), tab: tab, link: nil)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        guard (try? data.write(to: dir.appendingPathComponent(item.id + ".bin"), options: .atomic)) != nil
+        else { return false }
+        return write(item)
+    }
+
+    /// Доложить всё, что можно. `attach` — поставить ссылку на открытый
+    /// день (его ведёт `DayStore`); другим дням ссылка дописывается в файл.
+    /// Возвращает, сколько вложений дошло.
+    @discardableResult
+    static func settle(_ vault: Vault, open: Date, attach: (String, String) -> Void) -> Int {
+        guard let root = vault.root, let dir else { return 0 }
+        var done = 0
+        for var item in items(root: root) {
+            guard let kind = Vault.Folder(rawValue: item.kind), let date = Vault.date(from: item.stamp)
+            else { continue }
+            if item.link == nil {
+                guard let data = try? Data(contentsOf: dir.appendingPathComponent(item.id + ".bin")) else {
+                    drop(item)
+                    continue
+                }
+                let link = kind == .photos ? vault.addPhoto(data, for: date)
+                    : vault.addAttachment(data, to: kind, name: item.name, for: date)
+                guard let link else { continue }
+                // Файл в архиве — у себя больше не держим; ссылку помним.
+                item.link = link
+                _ = write(item)
+                try? FileManager.default.removeItem(at: dir.appendingPathComponent(item.id + ".bin"))
+            }
+            guard let link = item.link else { continue }
+            if Vault.stamp(open) == item.stamp {
+                attach(link, item.tab)
+            } else {
+                let entry = FileTrash.Entry(path: "", stored: "", day: item.stamp, tab: item.tab, link: link)
+                guard FileTrash.relink(entry, vault) else { continue }
+            }
+            drop(item)
+            done += 1
+        }
+        return done
+    }
+}

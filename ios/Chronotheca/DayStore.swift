@@ -1569,15 +1569,41 @@ final class DayStore: ObservableObject {
     /// Довести до папки недописанное других дней; что осталось — помнить,
     /// чтобы строка на странице не гасла, пока текст лежит в страховке.
     private func settleOthers() {
-        guard Pending.any, let root = vault.root else {
+        guard let root = vault.root else { return }
+        // Вложения, не дошедшие до папки (P904).
+        if !settlingMedia, !PendingMedia.items(root: root).isEmpty {
+            settlingMedia = true
+            let got = PendingMedia.settle(vault, open: date) { [weak self] link, tab in
+                self?.attach(link, to: tab == "plan" ? .plan : .diary)
+            }
+            settlingMedia = false
+            if got > 0 { settledNotice += 1 }
+        }
+        let media = !PendingMedia.items(root: root).isEmpty
+        guard Pending.any || media else {
             if owedElsewhere != nil { owedElsewhere = nil }
             return
         }
         if Pending.settle(vault, except: date) > 0 { settledNotice += 1 }
-        let left = Pending.all(root: root).contains { $0.stamp != Vault.stamp(date) }
+        let left = media || Pending.all(root: root).contains { $0.stamp != Vault.stamp(date) }
         let why = left ? (owedElsewhere ?? vault.problem
                           ?? T("папка сейчас недоступна", "the folder is unavailable right now")) : nil
         if why != owedElsewhere { owedElsewhere = why }
+    }
+
+    private var settlingMedia = false
+
+    /// Голос или снимок не лёг в папку (P904) — оставить у себя и доложить,
+    /// когда папка вернётся. `false` — оставить не вышло или день закрыт
+    /// для правки.
+    func keepForLater(_ data: Data, kind: Vault.Folder, name: String, tab: Shell.Tab) -> Bool {
+        guard canEdit(tab), let root = vault.root,
+              PendingMedia.keep(data, kind: kind, name: name, date: date,
+                                tab: tab == .plan ? "plan" : "diary", root: root)
+        else { return false }
+        owedElsewhere = vault.problem ?? T("папка сейчас недоступна", "the folder is unavailable right now")
+        retryIfUnsaved()
+        return true
     }
 
     /// Пока запись не проходит — пробовать каждые пять секунд, не дожидаясь

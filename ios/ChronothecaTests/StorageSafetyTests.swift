@@ -19,6 +19,7 @@ final class StorageSafetyTests: XCTestCase {
         try? fm.createDirectory(at: folder, withIntermediateDirectories: true)
         Pending.home = fm.temporaryDirectory.appendingPathComponent("страховка-\(UUID().uuidString)")
         Vault.brokenWrites = nil
+        PendingMedia.home = fm.temporaryDirectory.appendingPathComponent("страховка-вложений-\(UUID().uuidString)")
         vault = Vault()
         vault.adopt(folder)
         vault.acceptProposal()
@@ -30,6 +31,8 @@ final class StorageSafetyTests: XCTestCase {
         Vault.brokenWrites = nil
         if let home = Pending.home { try? fm.removeItem(at: home) }
         Pending.home = nil
+        if let home = PendingMedia.home { try? fm.removeItem(at: home) }
+        PendingMedia.home = nil
         try? fm.removeItem(at: folder)
         super.tearDown()
     }
@@ -300,5 +303,43 @@ final class StorageSafetyTests: XCTestCase {
         XCTAssertEqual(contents(diaryURL()), "Поправлено на Mac.\n", "правка с Mac затёрта")
         XCTAssertTrue(asides(near: diaryURL()).contains { contents($0)?.contains("Своё, недописанное") == true },
                       "недописанное не положено рядом")
+    }
+
+    // MARK: - Беда 5: вложение не легло в папку (P904)
+
+    func testГолосНеТеряетсяИДоходитСам() {
+        let день = DayStore(vault: vault, date: today)
+        Vault.brokenWrites = "нет места"
+        let голос = Data("надиктовано".utf8)
+        XCTAssertFalse(день.addAttachment(голос, to: .audio, name: "voice-note.m4a", tab: .diary))
+        XCTAssertTrue(день.keepForLater(голос, kind: .audio, name: "voice-note.m4a", tab: .diary),
+                      "голос не оставлен в страховке")
+        XCTAssertNotNil(день.unsaved, "человеку не сказано, что голос не дошёл")
+        XCTAssertEqual(PendingMedia.items(root: vault.root!).count, 1)
+
+        Vault.brokenWrites = nil
+        день.comeBack(newDay: false)
+
+        XCTAssertTrue(PendingMedia.items(root: vault.root!).isEmpty, "страховка не стёрта")
+        XCTAssertTrue(contents(diaryURL())?.contains("voice-note") == true, "ссылки на голос нет в дне")
+        let год = String(Vault.stamp(today).prefix(4))
+        let файл = Vault.folder(.audio, in: vault.root!).appendingPathComponent(год).appendingPathComponent("voice-note.m4a")
+        XCTAssertEqual(try? Data(contentsOf: файл), голос, "голос не лёг в папку")
+        XCTAssertNil(день.unsaved)
+    }
+
+    func testВложениеДругогоДняДоходитВСвойДень() {
+        let вчера = Calendar.current.date(byAdding: .day, value: -1, to: today)!
+        let день = DayStore(vault: vault, date: вчера)
+        Vault.brokenWrites = "нет места"
+        XCTAssertTrue(день.keepForLater(Data("вчерашний голос".utf8), kind: .audio, name: "yesterday-note.m4a", tab: .diary))
+        день.go(to: today)
+
+        Vault.brokenWrites = nil
+        день.comeBack(newDay: false)
+
+        let файл = vault.file(.diary, for: вчера)!
+        XCTAssertTrue(contents(файл)?.contains("yesterday-note.m4a") == true, "ссылка легла не в свой день")
+        XCTAssertFalse(contents(diaryURL())?.contains("yesterday-note.m4a") == true)
     }
 }

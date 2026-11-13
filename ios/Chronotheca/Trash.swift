@@ -83,6 +83,7 @@ enum Trash {
     /// без отметки, получают её сегодня: их 30 дней начинаются сейчас, а не
     /// задним числом.
     static func purgeOld(_ vault: Vault, now: Date = Date()) {
+        guard TrashClock.steady(now) else { return }
         let limit = Calendar.current.date(byAdding: .day, value: -days,
                                           to: Calendar.current.startOfDay(for: now)) ?? now
         for item in items(in: vault) {
@@ -279,7 +280,7 @@ struct TrashSheet: View {
                 Text((entry.path as NSString).lastPathComponent)
                     .font(Look.sans(14, weight: .medium))
                     .lineLimit(1)
-                Text(dayName(entry.day) + " · "
+                Text((entry.day.isEmpty ? T("место на карте", "map place") : dayName(entry.day)) + " · "
                      + T("сотрётся через \(left) дн.", "erased in \(left) days"))
                     .font(Look.sans(12.5))
                     .foregroundStyle(Look.inkSoft)
@@ -319,7 +320,8 @@ struct TrashSheet: View {
             return
         }
         Feel.done()
-        if !FileTrash.relink(entry, vault) {
+        // Место на карте (P904) — ссылки в днях у него нет.
+        if !entry.day.isEmpty, !FileTrash.relink(entry, vault) {
             note = T("Файл вернулся в папку, но на страницу дня его поставить не вышло — день ещё в iCloud или изменился в другом месте. Добавьте его снова из «Файлов».",
                      "The file is back in its folder, but it could not be put back on the day’s page — the day is still in iCloud or was changed elsewhere. Add it again from Files.")
         }
