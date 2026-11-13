@@ -1749,10 +1749,28 @@ struct AttachBar: View {
             CameraPicker { data in
                 shooting = false
                 guard let data else { return }
-                if store.addPhoto(data, to: into, camera: true) {
-                    shell.say(T("Снимок положен в папку «", "Photo saved to the “") + vault.name(.photos) + T("»", "” folder"))
-                } else {
-                    shell.say(T("Снимок не сохранился", "The photo was not saved"))
+                let tab = into
+                // Снимок с камеры приложения — ещё и в «Фото» iPhone, в полном
+                // размере (P903, автор: «класть и в галерею»): прежде
+                // единственным экземпляром был сжатый снимок в архиве. «Фото»
+                // не разрешили — в просмотре снимка остаётся кнопка «В Фото».
+                PHPhotoLibrary.requestAuthorization(for: .addOnly) { status in
+                    let allowed = status == .authorized || status == .limited
+                    if allowed {
+                        PHPhotoLibrary.shared().performChanges {
+                            PHAssetCreationRequest.forAsset().addResource(with: .photo, data: data, options: nil)
+                        }
+                    }
+                    DispatchQueue.main.async {
+                        if store.addPhoto(data, to: tab, camera: !allowed) {
+                            shell.say(T("Снимок положен в папку «", "Photo saved to the “") + vault.name(.photos) + T("»", "” folder"))
+                        } else if allowed {
+                            shell.say(T("В папку снимок не лёг — он есть в «Фото» iPhone",
+                                        "The photo did not reach your folder — it is in iPhone Photos"))
+                        } else {
+                            shell.say(T("Снимок не сохранился", "The photo was not saved"))
+                        }
+                    }
                 }
             }
             .ignoresSafeArea()
