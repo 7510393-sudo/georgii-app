@@ -18,10 +18,13 @@ final class MovementTests: XCTestCase {
     /// Запуск на образцах. Экран снимков ставится ещё раз через 1,5 и 4
     /// секунды (P448) — поэтому трогать приложение только после этого.
     /// `trace` — имя файла следа жестов в папке снимков (P787).
-    private func launch(_ screen: String = "", big: Bool = false, trace: String = "") {
+    /// `slow` — медленная лента (P921): замеры ячеек картотеки доходят с
+    /// опозданием, как на телефоне.
+    private func launch(_ screen: String = "", big: Bool = false, trace: String = "", slow: Bool = false) {
         app = XCUIApplication()
         app.launchEnvironment["CHRONOTHECA_PREVIEW"] = "1"
         app.launchEnvironment["CHRONOTHECA_UITEST"] = "1"
+        if slow { app.launchEnvironment["CHRONOTHECA_SLOW_RIBBON"] = "1" }
         if big {
             app.launchEnvironment["CHRONOTHECA_BIG"] = "1"
             // Замирания экрана — изнутри приложения (P573).
@@ -429,6 +432,194 @@ final class MovementTests: XCTestCase {
         note("после закрытия будущего", shown.map { "\($0.label) \(Int($0.top))" }.joined(separator: "; "))
         XCTAssertGreaterThanOrEqual(top(of: picked.label), 0,
                                     "закрытой будущей карточки не видно — лента ушла: \(shown.first?.label ?? "пусто")")
+    }
+
+    // MARK: - Медленная лента (P921, `docs/71` §5)
+    //
+    // Четыре случая из видео автора к сборкам 278–288. В симуляторе лента
+    // всегда успевает, и поломки не повторялись; здесь замеры ячеек
+    // доходят с опозданием. На прежнем коде (сборка А) эти проверки
+    // обязаны краснеть — иначе они ничего не стерегут; зеленеют со
+    // сборки Б.
+
+    /// Строка состояния картотеки (`DeckProbe`).
+    private func probe() -> [String: String] {
+        var out: [String: String] = [:]
+        for part in app.staticTexts["deckProbe"].firstMatch.label.split(separator: ";") {
+            let pair = part.split(separator: "=", maxSplits: 1)
+            if pair.count == 2 { out[String(pair[0])] = String(pair[1]) }
+        }
+        return out
+    }
+
+    /// Картотека стоит спокойно: открыта, не скрыта, посадка кончена, лист
+    /// «Сегодня» — полоской у своего края (`side`: 1 — внизу, −1 — вверху).
+    private func checkCalm(_ side: Int, _ name: String) {
+        let p = probe()
+        let deck = p["deck"] ?? "?"
+        let today = CGFloat(Double(p["today"] ?? "") ?? 0)
+        let height = CGFloat(Double(p["height"] ?? "") ?? 0)
+        note(name, "состояние \(deck), «Сегодня» на \(Int(today)) из \(Int(height)), скрыта \(p["veiled"] ?? "?")")
+        XCTAssertEqual(openScreen, "search", "\(name): картотека не открыта")
+        XCTAssertEqual(openDay, "today", "\(name): на листе не сегодня")
+        XCTAssertTrue(deck.hasPrefix("картотека"), "\(name): состояние не «картотека»: \(deck)")
+        XCTAssertEqual(p["veiled"], "0", "\(name): картотека осталась скрытой")
+        XCTAssertEqual(p["card"], "0", "\(name): посадка не кончилась")
+        if side > 0 {
+            XCTAssertGreaterThan(today, height * 0.8, "\(name): лист «Сегодня» не у нижнего края — прилип")
+        } else {
+            XCTAssertLessThan(today, -height * 0.8, "\(name): лист «Сегодня» не у верхнего края — прилип")
+        }
+    }
+
+    /// Открыть картотеку из сегодняшнего листа: прошлое или будущее.
+    private func openFile(future: Bool) {
+        if future {
+            for _ in 0..<4 { app.swipeUp() }
+            sleep(1)
+        }
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: future ? 0.7 : 0.2))
+            .press(forDuration: 0.05,
+                   thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: future ? 0.3 : 0.6)),
+                   withVelocity: .slow, thenHoldForDuration: 0.1)
+        XCTAssertTrue(wait(5) { openScreen == "search" }, "картотека не открылась: \(openScreen)")
+        sleep(3)
+    }
+
+    /// Открыть день с карточки.
+    private func openCard(_ picked: (label: String, top: CGFloat)) {
+        app.coordinate(withNormalizedOffset: .zero)
+            .withOffset(CGVector(dx: 120, dy: picked.top + 55)).tap()
+        XCTAssertTrue(wait(5) { openScreen == "today" && openDay != "today" },
+                      "карточка не открыла день: \(openScreen) \(openDay)")
+        sleep(3)
+    }
+
+    /// Закрыть открытый лист свайпом вниз. Сколько движений понадобилось.
+    private func closeSheet(tries: Int = 2) -> Int {
+        var used = 0
+        for _ in 0..<tries where openScreen != "search" {
+            used += 1
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2))
+                .press(forDuration: 0.05,
+                       thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7)),
+                       withVelocity: 900, thenHoldForDuration: 0)
+            _ = wait(2) { openScreen == "search" }
+        }
+        return used
+    }
+
+    /// 1. Прошлое → закрыть карточку → «Сегодня» у своего края, не прилип
+    /// (P899, P906); карточка — там, где была (P893).
+    func testSlow1PastCardTodayAtEdge() {
+        launch(trace: "след-медленно-1", slow: true)
+        XCTAssertEqual(openDay, "today")
+        openFile(future: false)
+        // Чуть в прошлое — не у самого сегодня.
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.35))
+            .press(forDuration: 0.05,
+                   thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.6)),
+                   withVelocity: .slow, thenHoldForDuration: 0.3)
+        sleep(3)
+        guard let picked = card(near: 0.4) else {
+            XCTFail("в ленте нет карточек")
+            return
+        }
+        note("медленно 1", "карточка \(picked.label) на \(Int(picked.top))")
+        openCard(picked)
+        note("медленно 1", "закрыта за \(closeSheet()) движ.")
+        XCTAssertTrue(wait(4) { openScreen == "search" }, "свайп не закрыл карточку: \(openScreen)")
+        usleep(400_000)
+        save("20-медленно-прошлое-посадка")
+        checkStays(picked.label, at: picked.top, "медленно 1")
+        checkCalm(1, "медленно 1")
+        save("21-медленно-прошлое-закрыто")
+    }
+
+    /// 2. Будущее → карта → назад → закрыть лист → видно будущее, не
+    /// прошлое (P898, P906).
+    func testSlow2FutureCardAfterMap() {
+        launch(trace: "след-медленно-2", slow: true)
+        XCTAssertEqual(openDay, "today")
+        openFile(future: true)
+        guard let picked = card(near: 0.45) else {
+            XCTFail("в ленте будущего нет карточек")
+            return
+        }
+        note("медленно 2", "карточка \(picked.label) на \(Int(picked.top))")
+        openCard(picked)
+        func swipe(_ from: CGFloat, _ to: CGFloat) {
+            app.coordinate(withNormalizedOffset: CGVector(dx: from, dy: 0.55))
+                .press(forDuration: 0.05,
+                       thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: to, dy: 0.55)),
+                       withVelocity: 1500, thenHoldForDuration: 0)
+        }
+        swipe(0.2, 0.9)
+        XCTAssertTrue(wait(6) { openScreen == "map" }, "свайп вправо не открыл карту: \(openScreen)")
+        sleep(2)
+        swipe(0.985, 0.1)
+        XCTAssertTrue(wait(6) { openScreen == "today" }, "с карты не вернулся «Дневник»: \(openScreen)")
+        sleep(2)
+        note("медленно 2", "закрыт за \(closeSheet()) движ.")
+        XCTAssertTrue(wait(4) { openScreen == "search" }, "будущий лист не закрылся: \(openScreen)")
+        checkStays(picked.label, at: picked.top, "медленно 2")
+        checkCalm(-1, "медленно 2")
+        save("22-медленно-будущее-после-карты")
+    }
+
+    /// 3. «Сегодня» вверх → завтра из картотеки → закрыть свайпом (P913):
+    /// с первого движения.
+    func testSlow3TomorrowClosesBySwipe() {
+        launch(trace: "след-медленно-3", slow: true)
+        XCTAssertEqual(openDay, "today")
+        openFile(future: true)
+        guard let picked = cards().min(by: { $0.top < $1.top }) else {
+            XCTFail("в ленте будущего нет карточек")
+            return
+        }
+        note("медленно 3", "карточка \(picked.label) на \(Int(picked.top))")
+        openCard(picked)
+        let used = closeSheet(tries: 3)
+        note("медленно 3", "закрыт за \(used) движ.")
+        XCTAssertTrue(wait(4) { openScreen == "search" }, "завтрашний лист не закрылся свайпом: \(openScreen)")
+        XCTAssertEqual(used, 1, "завтрашний лист закрылся не с первого движения")
+        checkStays(picked.label, at: picked.top, "медленно 3")
+        checkCalm(-1, "медленно 3")
+        save("23-медленно-завтра-закрыто")
+    }
+
+    /// 4. Закрыть карточку и тут же потянуть снова: посадка не ломается,
+    /// картотека встаёт спокойно, карточка на виду.
+    func testSlow4CloseAndPullAtOnce() {
+        launch(trace: "след-медленно-4", slow: true)
+        XCTAssertEqual(openDay, "today")
+        openFile(future: false)
+        guard let picked = card(near: 0.4) else {
+            XCTFail("в ленте нет карточек")
+            return
+        }
+        note("медленно 4", "карточка \(picked.label) на \(Int(picked.top))")
+        openCard(picked)
+        // Закрыли — и сразу второе движение, не дожидаясь посадки.
+        for _ in 0..<2 {
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2))
+                .press(forDuration: 0.05,
+                       thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7)),
+                       withVelocity: 900, thenHoldForDuration: 0)
+        }
+        usleep(300_000)
+        save("24-медленно-сразу-снова")
+        sleep(6)
+        var seen: [CGFloat] = []
+        for _ in 0..<3 {
+            sleep(1)
+            seen.append(top(of: picked.label))
+        }
+        note("медленно 4", "\(picked.label): " + seen.map { "\(Int($0))" }.joined(separator: " → "))
+        XCTAssertGreaterThanOrEqual(seen.last ?? -1, 0, "закрытой карточки не видно — лента ушла")
+        XCTAssertLessThan((seen.max() ?? 0) - (seen.min() ?? 0), 3, "лента сама сдвинулась")
+        checkCalm(1, "медленно 4")
+        save("25-медленно-после-второго-движения")
     }
 
     /// Календарь стоит, где его оставили (P821): по замечанию к 248 год и

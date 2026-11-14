@@ -1190,6 +1190,10 @@ private struct SpeedSheet: View {
             out += T("архив: ", "archive: ") + ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file) + "\n"
         }
         out += "\n" + LaunchClock.lines.joined(separator: "\n")
+        // След переходов картотеки (P921): «✗» — события нет в таблице.
+        if !DeckTrail.lines.isEmpty {
+            out += "\n\n" + DeckTrail.lines.joined(separator: "\n")
+        }
         return out
     }
 
