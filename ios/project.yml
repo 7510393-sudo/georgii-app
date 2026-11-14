@@ -86,6 +86,9 @@ targets:
     platform: iOS
     sources:
       - path: ChronothecaTests
+        # Эталоны формата (P951) читаются с диска, в набор не входят.
+        excludes:
+          - "Fixtures/**"
     dependencies:
       - target: Chronotheca
     settings:

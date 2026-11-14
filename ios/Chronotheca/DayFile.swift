@@ -32,19 +32,26 @@ struct DayFile: Equatable {
     }
 
     init(text: String) {
-        var lines = text.components(separatedBy: .newlines)
+        // Файл из Windows-редактора — «\r\n»: по `.newlines` он делился бы
+        // на лишние пустые строки, и план удваивался бы при записи (P951).
+        let plain = text.replacingOccurrences(of: "\r\n", with: "\n")
+            .replacingOccurrences(of: "\r", with: "\n")
+        var lines = plain.components(separatedBy: "\n")
         var meta: [MetaLine] = []
 
-        if lines.first?.trimmingCharacters(in: .whitespaces) == DayFile.fence {
-            lines.removeFirst()
-            while let line = lines.first {
-                lines.removeFirst()
-                if line.trimmingCharacters(in: .whitespaces) == DayFile.fence { break }
+        // Шапка — только если есть и закрывающая черта. Файл, который просто
+        // начинается чертой (разделитель в разметке), — весь текст: прежде
+        // он уходил в шапку и показывался пустым (P951).
+        if lines.first?.trimmingCharacters(in: .whitespaces) == DayFile.fence,
+           let close = lines.dropFirst().firstIndex(where: {
+               $0.trimmingCharacters(in: .whitespaces) == DayFile.fence }) {
+            for line in lines[1..<close] {
                 guard let colon = line.firstIndex(of: ":") else { continue }
                 let key = String(line[line.startIndex..<colon]).trimmingCharacters(in: .whitespaces)
                 let value = String(line[line.index(after: colon)...]).trimmingCharacters(in: .whitespaces)
                 if !key.isEmpty { meta.append(MetaLine(key: key, value: value)) }
             }
+            lines.removeFirst(close + 1)
         }
 
         self.meta = meta
