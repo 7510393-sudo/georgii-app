@@ -609,7 +609,7 @@ struct SettingsSticker: View {
         // на этом телефоне с этим архивом. Для автора и для тех, кто пишет
         // о медленной работе: снимок этого окна говорит, что именно медлит.
         .onLongPressGesture { showingSpeed = true }
-        .sheet(isPresented: $showingSpeed) { SpeedSheet(bytes: storageBytes) }
+        .sheet(isPresented: $showingSpeed) { SpeedSheet(bytes: storageBytes, root: vault.root) }
     }
 
     private func close() {
@@ -1203,12 +1203,26 @@ struct WelcomeView: View {
 /// телефоне человека.
 private struct SpeedSheet: View {
     let bytes: Int64?
+    let root: URL?
+    /// Счёт прежних русских имён в архиве (P917) — в стороне, пока окно
+    /// открыто: на большом архиве это секунды.
+    @State private var census: Rename.Census?
     @Environment(\.dismiss) private var dismiss
 
     private var text: String {
         var out = Build.label + "\n"
         if let bytes {
             out += T("архив: ", "archive: ") + ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file) + "\n"
+        }
+        if root != nil {
+            out += T("файлов со старой шапкой: ", "old-style files: ")
+            if let census {
+                out += "\(census.old) / \(census.files)\n"
+                if census.unread > 0 { out += T("не прочитано: ", "unread: ") + "\(census.unread)\n" }
+                if census.folders > 0 { out += T("папок с прежним именем: ", "old folder names: ") + "\(census.folders)\n" }
+            } else {
+                out += T("считаю…", "counting…") + "\n"
+            }
         }
         out += "\n" + LaunchClock.lines.joined(separator: "\n")
         return out
@@ -1226,6 +1240,13 @@ private struct SpeedSheet: View {
             }
             .navigationTitle(T("Замеры скорости", "Speed measurements"))
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                guard census == nil, let root else { return }
+                DispatchQueue.global(qos: .utility).async {
+                    let found = Rename.census(in: root)
+                    DispatchQueue.main.async { census = found }
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(T("Готово", "Done")) { dismiss() }

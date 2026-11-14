@@ -104,6 +104,49 @@ enum Rename {
         return report
     }
 
+    // MARK: - Счёт прежнего (P917)
+
+    /// Сколько в архиве осталось прежнего, русского: файлов, которые
+    /// перевод бы поправил (ключи шапки, заголовок ответов, ссылки на
+    /// русские папки), и папок под прежним именем. Ничего не пишет.
+    /// Ноль у автора — чтение прежних имён и сам перевод можно убирать.
+    struct Census {
+        var files = 0
+        var old = 0
+        /// Не прочитались (ещё в iCloud): про них ничего не известно.
+        var unread = 0
+        var folders = 0
+    }
+
+    static func census(in root: URL) -> Census {
+        var out = Census()
+        let fm = FileManager.default
+        for pair in pairs where fm.fileExists(atPath: root.appendingPathComponent(pair.ru).path) {
+            out.folders += 1
+        }
+        for folder in [Vault.Folder.diary, .planner, .places] {
+            guard let walk = fm.enumerator(at: Vault.folder(folder, in: root),
+                                           includingPropertiesForKeys: nil)
+            else { continue }
+            for case let url as URL in walk {
+                let name = url.lastPathComponent
+                // Заглушка выгруженного в iCloud файла: «.ИМЯ.md.icloud».
+                if name.hasPrefix(".") {
+                    if name.hasSuffix(".md.icloud") { out.files += 1; out.unread += 1 }
+                    continue
+                }
+                guard url.pathExtension == "md" else { continue }
+                out.files += 1
+                guard case .text(let text) = Vault.reading(at: url, coordinated: false) else {
+                    out.unread += 1
+                    continue
+                }
+                if translate(text) != text { out.old += 1 }
+            }
+        }
+        return out
+    }
+
     // MARK: - Текст файла
 
     /// Файл записи с английскими ключами шапки, ссылками на английские

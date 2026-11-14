@@ -1027,6 +1027,11 @@ final class Vault: ObservableObject {
         }
     }
 
+    /// Пометка в имени второй версии дня — одна на всех языках (P917):
+    /// имя файла не должно зависеть от языка телефона. Прежние, на языке
+    /// телефона («— вторая версия»), остаются лежать как лежали.
+    static let asideMark = " — second version "
+
     static let noteName = "About this folder.txt"
     static let oldNoteName = "Что это за папка.txt"
 
@@ -1335,7 +1340,7 @@ final class Vault: ObservableObject {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX")
         f.dateFormat = "HH.mm.ss"
-        let name = Vault.stamp(date) + T(" — вторая версия ", " — second version ") + f.string(from: Date()) + ".md"
+        let name = Vault.stamp(date) + Vault.asideMark + f.string(from: Date()) + ".md"
         let aside = url.deletingLastPathComponent().appendingPathComponent(name)
         if let trouble = Vault.write(text, to: aside) {
             problem = trouble

@@ -41,6 +41,21 @@ final class RenameTests: XCTestCase {
         XCTAssertEqual(Vault.folder(.diary, in: корень).lastPathComponent, "Diary")
     }
 
+    /// Счёт прежнего (P917): считается только то, что перевод бы поправил.
+    func testСчётПрежнихФайлов() {
+        положить("Diary/2026/2026-09-30.md", "---\ndate: 2026-09-30\n---\n\nСлово «дата: » в тексте.\n")
+        положить("Diary/2026/2026-10-01.md", "---\nдата: 2026-10-01\n---\n\nТекст.\n")
+        положить("Planner/2026/2026-10-01.md", "- Дело\n![](../../Фотографии/2026/a.jpg)\n")
+        let счёт = Rename.census(in: корень)
+        XCTAssertEqual(счёт.files, 3)
+        XCTAssertEqual(счёт.old, 2)
+        XCTAssertEqual(счёт.unread, 0)
+        XCTAssertEqual(счёт.folders, 0)
+        try? fm.createDirectory(at: корень.appendingPathComponent("Аудио"),
+                                withIntermediateDirectories: true)
+        XCTAssertEqual(Rename.census(in: корень).folders, 1)
+    }
+
     func testТекстЗаписиПереводитсяТолькоВСвоихМестах() {
         let было = """
         ---
