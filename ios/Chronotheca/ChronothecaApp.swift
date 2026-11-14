@@ -108,8 +108,7 @@ struct ChronothecaApp: App {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [vault, store, shell] in
                     // Повторяющиеся дела — дописать на год вперёд (P359).
                     Repeats.extendAll(vault: vault, open: store.date)
-                    // Файлы, пролежавшие в корзине 30 дней, — стереть (P371).
-                    FileTrash.purgeOld(vault)
+                    // Пролежавшее в корзине 30 дней — стереть (P371, одна корзина P954).
                     Trash.purgeOld(vault)
                     store.syncUpcomingReminders()
                     store.fetchWeatherIfNeeded()

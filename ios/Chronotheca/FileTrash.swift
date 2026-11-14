@@ -1,5 +1,10 @@
 import Foundation
 
+/// Одна корзина (P954): файлы дней (план, дневник) и вложения лежат в одной
+/// описи. Прежде дни лежали отдельно — `Trash/ГГГГ-ММ-ДД/…` с отметкой
+/// `.deleted` (`Trash`); такие читаются и возвращаются по-прежнему, новые
+/// туда не кладутся.
+///
 /// Корзина файлов (P371): снимок, видео, голос или документ, удалённый «из
 /// хранилища», не стирается сразу, а переезжает в `Trash/Files/ГГГГ-ММ-ДД/`
 /// — день удаления — со своим путём внутри архива: `Photos/2026/…`. Там он
@@ -32,7 +37,12 @@ enum FileTrash {
         var link: String
         /// Когда удалили: ГГГГ-ММ-ДД — по нему считаются 30 дней.
         var deleted: String = ""
+        /// `day` — файл плана или дневника (P954); нет — вложение или место.
+        /// Необязательное: прежние описи его не знают.
+        var kind: String? = nil
         var id: String { deleted + "/" + stored }
+        var isDay: Bool { kind == Entry.dayKind }
+        static let dayKind = "day"
     }
 
     static func base(_ root: URL) -> URL {
@@ -67,7 +77,14 @@ enum FileTrash {
         return stash(file, root: root, day: "", tab: "", link: "") == .trashed
     }
 
-    private static func stash(_ file: URL, root: URL, day: String, tab: String, link: String) -> Outcome {
+    /// Убрать в корзину файл плана или дневника дня (P954).
+    static func putDay(_ file: URL, day: String, tab: String, vault: Vault) -> Bool {
+        guard let root = vault.root, FileManager.default.fileExists(atPath: file.path) else { return false }
+        return stash(file, root: root, day: day, tab: tab, link: "", kind: Entry.dayKind) == .trashed
+    }
+
+    private static func stash(_ file: URL, root: URL, day: String, tab: String, link: String,
+                              kind: String? = nil) -> Outcome {
         let rootPath = root.standardizedFileURL.resolvingSymlinksInPath().path
         let filePath = file.standardizedFileURL.resolvingSymlinksInPath().path
         guard filePath.hasPrefix(rootPath + "/") else { return .failed }
@@ -89,7 +106,7 @@ enum FileTrash {
         var list = index(dayFolder)
         let kept = String(target.path.dropFirst(dayFolder.path.count + 1))
         list.append(Entry(path: rel, stored: kept, day: day, tab: tab, link: link,
-                          deleted: stamp))
+                          deleted: stamp, kind: kind))
         save(list, dayFolder)
         return .trashed
     }

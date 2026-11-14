@@ -86,6 +86,56 @@ final class TrashTests: XCTestCase {
                        "Туман над полем.")
     }
 
+    /// Одна корзина (P954): день ложится в общую опись рядом с файлами, а
+    /// не в свою папку; в списке файлов его нет.
+    func testДеньЛожитсяВОбщуюКорзину() {
+        let day = DayStore.today()
+        write("Туман.", .diary, day)
+        XCTAssertTrue(Trash.put(day, parts: Trash.allParts, in: vault))
+        let entries = FileTrash.items(vault)
+        XCTAssertEqual(entries.count, 1)
+        XCTAssertTrue(entries[0].isDay)
+        XCTAssertEqual(entries[0].path, "Diary/" + String(Vault.stamp(day).prefix(4)) + "/" + Vault.stamp(day) + ".md")
+        let old = Vault.trash(in: vault.root!).appendingPathComponent(Vault.stamp(day))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: old.path), "день лёг в прежнюю корзину")
+    }
+
+    /// Прежняя корзина дней (до P954) читается, возвращается и стирается.
+    func testПрежняяКорзинаДнейЧитается() throws {
+        let day = DayStore.today()
+        let stamp = Vault.stamp(day)
+        let old = Vault.trash(in: vault.root!).appendingPathComponent(stamp)
+        let file = Vault.folder(.diary, in: old).appendingPathComponent(stamp + ".md")
+        try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "Прежний день.".write(to: file, atomically: true, encoding: .utf8)
+        try stamp.write(to: old.appendingPathComponent(".deleted"), atomically: true, encoding: .utf8)
+
+        let items = Trash.items(in: vault)
+        XCTAssertEqual(items.count, 1)
+        XCTAssertEqual(items[0].preview, "Прежний день.")
+        XCTAssertEqual(items[0].daysLeft(), 30)
+        XCTAssertTrue(Trash.restore(items[0], in: vault))
+        XCTAssertEqual(try? String(contentsOf: vault.file(.diary, for: day)!, encoding: .utf8), "Прежний день.")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: old.path))
+    }
+
+    /// Прежняя опись файлов (без поля `kind`) читается: файлы не пропадают.
+    func testПрежняяОписьФайловЧитается() throws {
+        let stamp = Vault.stamp(DayStore.today())
+        let folder = FileTrash.base(vault.root!).appendingPathComponent(stamp)
+        let stored = folder.appendingPathComponent("Photos/2026/old.heic")
+        try FileManager.default.createDirectory(at: stored.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data([1, 2, 3]).write(to: stored)
+        let index = """
+        [{"day":"\(stamp)","deleted":"\(stamp)","link":"../../Photos/2026/old.heic","path":"Photos/2026/old.heic","stored":"Photos/2026/old.heic","tab":"diary"}]
+        """
+        try index.write(to: folder.appendingPathComponent("index.json"), atomically: true, encoding: .utf8)
+        let entries = FileTrash.items(vault)
+        XCTAssertEqual(entries.count, 1)
+        XCTAssertFalse(entries[0].isDay)
+        XCTAssertTrue(Trash.items(in: vault).isEmpty, "файл показан днём")
+    }
+
     /// PDF (P296): обложка и по странице на день; пустые дни пропущены;
     /// второй раз за тот же срок — новый файл рядом, первый цел.
     func testPDFОбложкаИДеньСНовойСтраницы() throws {

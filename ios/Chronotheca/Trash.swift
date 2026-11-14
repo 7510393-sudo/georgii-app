@@ -1,26 +1,32 @@
 import SwiftUI
 
-/// Корзина дней (P295).
+/// Корзина дней (P295) — дни в одной корзине с файлами (P954).
 ///
-/// Убранный день не стирается: его файл переезжает в папку «Trash»
-/// внутри папки записей — `Trash/ГГГГ-ММ-ДД/Diary/…` (до P353 — «Корзина»
-/// и «Дневник»; их приложение понимает по-прежнему). Убирают вкладку,
-/// которая сейчас открыта, — план и дневник по отдельности, не весь день
-/// разом (P300). Их видно в «Файлах», их можно вернуть на место из настроек
-/// или удалить навсегда. Снимки, голос и документы дня остаются в своих
-/// папках: вернули день — ссылки на них снова работают.
+/// Убранный день не стирается: его файл переезжает в общую корзину
+/// `Trash/Files/<день удаления>/Planner/ГГГГ/ГГГГ-ММ-ДД.md` с описью
+/// (`FileTrash`). Убирают вкладку, которая сейчас открыта, — план и
+/// дневник по отдельности, не весь день разом (P300). Их видно в «Файлах»,
+/// их можно вернуть на место из настроек или удалить навсегда. Снимки,
+/// голос и документы дня остаются в своих папках: вернули день — ссылки на
+/// них снова работают.
+///
+/// До P954 дни лежали в своей корзине — `Trash/ГГГГ-ММ-ДД/Diary/…` с
+/// отметкой `.deleted`. Такие по-прежнему видны, возвращаются и стираются
+/// через 30 дней; новые туда не кладутся.
 enum Trash {
-
 
     struct Item: Identifiable {
         let stamp: String
         let date: Date
-        let url: URL
+        /// Папка дня в прежней корзине; у дня из общей корзины — `nil`.
+        let url: URL?
+        /// Файлы дня в общей корзине (P954); у прежнего — пусто.
+        var entries: [FileTrash.Entry] = []
         /// Первые слова записи или первое дело — чтобы узнать день.
         let preview: String
         /// Когда день убрали в корзину — от этого считаются 30 дней (P373).
         var deleted: Date?
-        var id: String { stamp }
+        var id: String { url == nil ? "new/" + entries.map(\.id).joined(separator: "+") : "old/" + stamp }
 
         /// Сколько дней осталось до того, как день сотрётся.
         func daysLeft(now: Date = Date()) -> Int {
@@ -32,39 +38,32 @@ enum Trash {
     }
 
     /// Сколько лежит в корзине, прежде чем стереться (P373) — как файлы.
-    static let days = 30
-    /// Отметка дня удаления внутри папки дня в корзине.
+    static let days = FileTrash.days
+    /// Отметка дня удаления внутри папки дня в прежней корзине.
     private static let markName = ".deleted"
 
     /// Обе стороны дня — для возврата, показа и удаления навсегда: там
     /// берётся то, что нашлось, какую вкладку тогда ни убирали (P300).
     static let allParts: [Vault.Folder] = [.planner, .diary]
 
-    static func folder(_ vault: Vault) -> URL? {
+    /// Прежняя корзина дней — сама папка «Trash».
+    private static func folder(_ vault: Vault) -> URL? {
         vault.root.map { Vault.trash(in: $0) }
     }
 
-    /// Убрать в корзину только эти стороны дня. Уже лежит там такой же
-    /// день — новый ляжет рядом под своим номером: ничего не затирается.
+    /// Убрать в корзину только эти стороны дня (P954 — в общую корзину).
+    /// Уже лежит там такой же день — новый ляжет рядом под своим номером:
+    /// ничего не затирается.
     @discardableResult
     static func put(_ date: Date, parts: [Vault.Folder], in vault: Vault) -> Bool {
-        guard !Vault.newer, let base = folder(vault) else { return false }   // P953
-        let stamp = Vault.stamp(date)
+        guard !Vault.newer else { return false }   // P953
         let fm = FileManager.default
-        var day = base.appendingPathComponent(stamp)
-        var n = 2
-        while fm.fileExists(atPath: day.path) {
-            day = base.appendingPathComponent("\(stamp) (\(n))")
-            n += 1
-        }
         var moved = false
         for part in parts {
             guard let from = vault.file(part, for: date), fm.fileExists(atPath: from.path) else { continue }
-            let dir = day.appendingPathComponent(part.rawValue)
-            try? fm.createDirectory(at: dir, withIntermediateDirectories: true)
-            if move(from, to: dir.appendingPathComponent(from.lastPathComponent)) { moved = true }
+            if FileTrash.putDay(from, day: Vault.stamp(date), tab: part == .planner ? "plan" : "diary",
+                                vault: vault) { moved = true }
         }
-        if moved { mark(day, Date()) }
         return moved
     }
 
@@ -79,25 +78,47 @@ enum Trash {
         return Vault.date(from: text.trimmingCharacters(in: .whitespacesAndNewlines))
     }
 
-    /// Стереть дни, пролежавшие в корзине 30 дней, — при каждом
-    /// возвращении в приложение (P373). Дни, убранные до этого правила,
-    /// без отметки, получают её сегодня: их 30 дней начинаются сейчас, а не
-    /// задним числом.
+    /// Стереть всё, что пролежало в корзине 30 дней, — при каждом
+    /// возвращении в приложение (P373): общую корзину и прежнюю корзину
+    /// дней. Прежние дни без отметки получают её сегодня: их 30 дней
+    /// начинаются сейчас, а не задним числом.
     static func purgeOld(_ vault: Vault, now: Date = Date()) {
+        FileTrash.purgeOld(vault, now: now)
         guard TrashClock.steady(now) else { return }
         let limit = Calendar.current.date(byAdding: .day, value: -days,
                                           to: Calendar.current.startOfDay(for: now)) ?? now
-        for item in items(in: vault) {
+        for item in oldItems(in: vault) {
             guard let when = item.deleted else {
-                mark(item.url, now)
+                if let url = item.url { mark(url, now) }
                 continue
             }
-            if when <= limit { purge(item) }
+            if when <= limit { purge(item, in: vault) }
         }
     }
 
-    /// Что лежит в корзине — свежие дни сверху.
+    /// Что лежит в корзине — дни из общей корзины и из прежней, свежие
+    /// сверху.
     static func items(in vault: Vault) -> [Item] {
+        (newItems(in: vault) + oldItems(in: vault)).sorted {
+            ($0.deleted ?? .distantPast, $0.stamp) > ($1.deleted ?? .distantPast, $1.stamp)
+        }
+    }
+
+    /// Дни общей корзины: план и дневник одного дня, убранные в один день,
+    /// — одна строка.
+    private static func newItems(in vault: Vault) -> [Item] {
+        let days = FileTrash.items(vault).filter(\.isDay)
+        let groups = Dictionary(grouping: days) { $0.deleted + "|" + $0.day }
+        return groups.values.compactMap { entries -> Item? in
+            guard let first = entries.first, let date = Vault.date(from: first.day) else { return nil }
+            let files = entries.sorted { $0.tab < $1.tab }.compactMap { FileTrash.url(of: $0, vault) }
+            return Item(stamp: first.day, date: date, url: nil, entries: entries,
+                        preview: preview(files), deleted: Vault.date(from: first.deleted))
+        }
+    }
+
+    /// Дни прежней корзины (до P954).
+    private static func oldItems(in vault: Vault) -> [Item] {
         guard let base = folder(vault),
               let names = try? FileManager.default.contentsOfDirectory(atPath: base.path)
         else { return [] }
@@ -105,19 +126,35 @@ enum Trash {
             let stamp = String(name.prefix(10))
             guard let date = Vault.date(from: stamp) else { return nil }
             let url = base.appendingPathComponent(name)
-            return Item(stamp: name, date: date, url: url, preview: preview(url, stamp: stamp),
+            let files = [Vault.Folder.diary, .planner].map {
+                Vault.folder($0, in: url).appendingPathComponent(stamp + ".md")
+            }
+            return Item(stamp: name, date: date, url: url, preview: preview(files),
                         deleted: deletedOn(url))
         }
-        .sorted { $0.stamp > $1.stamp }
     }
 
     /// Вернуть день на место. На его месте уже новая запись — не трогаем
     /// ни ту, ни другую и говорим об этом (P182: чужое не затирается).
     static func restore(_ item: Item, in vault: Vault) -> Bool {
+        guard !Vault.newer else { return false }   // P953
         let fm = FileManager.default
+        if item.url == nil {
+            // Общая корзина: сперва убедиться, что все места свободны, —
+            // не возвращать полдня.
+            guard let root = vault.root else { return false }
+            for e in item.entries where fm.fileExists(atPath: root.appendingPathComponent(e.path).path) {
+                return false
+            }
+            for e in item.entries {
+                guard FileTrash.restore(e, vault) else { return false }
+            }
+            return true
+        }
+        guard let url = item.url else { return false }
         var pairs: [(URL, URL)] = []
         for part in allParts {
-            let from = Vault.folder(part, in: item.url)
+            let from = Vault.folder(part, in: url)
                 .appendingPathComponent(String(item.stamp.prefix(10)) + ".md")
             guard fm.fileExists(atPath: from.path) else { continue }
             guard let to = vault.file(part, for: item.date) else { return false }
@@ -128,26 +165,30 @@ enum Trash {
             try? fm.createDirectory(at: to.deletingLastPathComponent(), withIntermediateDirectories: true)
             guard move(from, to: to) else { return false }
         }
-        try? fm.removeItem(at: item.url)
+        try? fm.removeItem(at: url)
         return true
     }
 
     /// Удалить навсегда.
-    static func purge(_ item: Item) {
+    static func purge(_ item: Item, in vault: Vault) {
         guard !Vault.newer else { return }   // P953
+        guard let url = item.url else {
+            for e in item.entries { FileTrash.purge(e, vault) }
+            return
+        }
         var trouble: NSError?
         NSFileCoordinator(filePresenter: nil)
-            .coordinate(writingItemAt: item.url, options: .forDeleting, error: &trouble) { real in
+            .coordinate(writingItemAt: url, options: .forDeleting, error: &trouble) { real in
                 try? FileManager.default.removeItem(at: real)
             }
-        if FileManager.default.fileExists(atPath: item.url.path) {
-            try? FileManager.default.removeItem(at: item.url)
+        if FileManager.default.fileExists(atPath: url.path) {
+            try? FileManager.default.removeItem(at: url)
         }
     }
 
-    private static func preview(_ day: URL, stamp: String) -> String {
-        for part in [Vault.Folder.diary, .planner] {
-            let file = Vault.folder(part, in: day).appendingPathComponent(stamp + ".md")
+    /// Первые слова из файлов дня: дневник, потом план.
+    private static func preview(_ files: [URL]) -> String {
+        for file in files {
             guard let text = try? String(contentsOf: file, encoding: .utf8) else { continue }
             let body = DayFile(text: text).body
             let words = body.components(separatedBy: .newlines)
@@ -240,7 +281,7 @@ struct TrashSheet: View {
             .confirmationDialog(T("Удалить день навсегда?", "Delete the day forever?"), isPresented: Binding(
                 get: { doomed != nil }, set: { if !$0 { doomed = nil } }), titleVisibility: .visible) {
                 Button(T("Удалить навсегда", "Delete forever"), role: .destructive) {
-                    if let doomed { Trash.purge(doomed) }
+                    if let doomed { Trash.purge(doomed, in: vault) }
                     doomed = nil
                     reload()
                 }
@@ -259,7 +300,7 @@ struct TrashSheet: View {
 
     private func reload() {
         items = Trash.items(in: vault)
-        files = FileTrash.items(vault)
+        files = FileTrash.items(vault).filter { !$0.isDay }
     }
 
     /// Удалённый файл (P371): превью, откуда он и сколько ему осталось;
