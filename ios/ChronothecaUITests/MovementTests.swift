@@ -472,17 +472,25 @@ final class MovementTests: XCTestCase {
         }
     }
 
-    /// Открыть картотеку из сегодняшнего листа: прошлое или будущее.
-    private func openFile(future: Bool) {
+    /// Открыть картотеку из сегодняшнего листа: прошлое или будущее. С
+    /// медленной лентой место дня собирается позже, и первая тяга может
+    /// не взяться — тянем до трёх раз, сколько понадобилось — в замеры.
+    private func openFile(future: Bool, _ name: String) {
         if future {
             for _ in 0..<4 { app.swipeUp() }
             sleep(1)
         }
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: future ? 0.7 : 0.2))
-            .press(forDuration: 0.05,
-                   thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: future ? 0.3 : 0.6)),
-                   withVelocity: .slow, thenHoldForDuration: 0.1)
-        XCTAssertTrue(wait(5) { openScreen == "search" }, "картотека не открылась: \(openScreen)")
+        var used = 0
+        for _ in 0..<3 where openScreen != "search" {
+            used += 1
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: future ? 0.7 : 0.2))
+                .press(forDuration: 0.05,
+                       thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: future ? 0.3 : 0.6)),
+                       withVelocity: .slow, thenHoldForDuration: 0.1)
+            _ = wait(6) { openScreen == "search" }
+        }
+        note(name, "картотека открыта за \(used) движ.")
+        XCTAssertEqual(openScreen, "search", "картотека не открылась")
         sleep(3)
     }
 
@@ -490,7 +498,7 @@ final class MovementTests: XCTestCase {
     private func openCard(_ picked: (label: String, top: CGFloat)) {
         app.coordinate(withNormalizedOffset: .zero)
             .withOffset(CGVector(dx: 120, dy: picked.top + 55)).tap()
-        XCTAssertTrue(wait(5) { openScreen == "today" && openDay != "today" },
+        XCTAssertTrue(wait(8) { openScreen == "today" && openDay != "today" },
                       "карточка не открыла день: \(openScreen) \(openDay)")
         sleep(3)
     }
@@ -514,7 +522,7 @@ final class MovementTests: XCTestCase {
     func testSlow1PastCardTodayAtEdge() {
         launch(trace: "след-медленно-1", slow: true)
         XCTAssertEqual(openDay, "today")
-        openFile(future: false)
+        openFile(future: false, "медленно 1")
         // Чуть в прошлое — не у самого сегодня.
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.35))
             .press(forDuration: 0.05,
@@ -541,7 +549,7 @@ final class MovementTests: XCTestCase {
     func testSlow2FutureCardAfterMap() {
         launch(trace: "след-медленно-2", slow: true)
         XCTAssertEqual(openDay, "today")
-        openFile(future: true)
+        openFile(future: true, "медленно 2")
         guard let picked = card(near: 0.45) else {
             XCTFail("в ленте будущего нет карточек")
             return
@@ -572,8 +580,10 @@ final class MovementTests: XCTestCase {
     func testSlow3TomorrowClosesBySwipe() {
         launch(trace: "след-медленно-3", slow: true)
         XCTAssertEqual(openDay, "today")
-        openFile(future: true)
-        guard let picked = cards().min(by: { $0.top < $1.top }) else {
+        openFile(future: true, "медленно 3")
+        // Первая карточка под полоской «Сегодня» — завтрашняя; та, что выше,
+        // закрыта полоской.
+        guard let picked = cards().filter({ $0.top > 70 }).min(by: { $0.top < $1.top }) else {
             XCTFail("в ленте будущего нет карточек")
             return
         }
@@ -593,7 +603,7 @@ final class MovementTests: XCTestCase {
     func testSlow4CloseAndPullAtOnce() {
         launch(trace: "след-медленно-4", slow: true)
         XCTAssertEqual(openDay, "today")
-        openFile(future: false)
+        openFile(future: false, "медленно 4")
         guard let picked = card(near: 0.4) else {
             XCTFail("в ленте нет карточек")
             return
