@@ -58,6 +58,23 @@ final class Ribbon: ObservableObject {
     /// С какой карточки открыли день и где она стояла.
     var openedFrom: (id: String, top: CGFloat)?
 
+    /// Замер рамки карточки ленты (`frame` — пусто: карточку разобрала
+    /// ленивая стопка). В проверке с медленной лентой доходит позже, с
+    /// поправкой на то, сколько лента прошла с мига замера (P921).
+    func saw(_ id: String, _ frame: CGRect?, anchorCard: String? = nil) {
+        let at = box.view?.contentOffset.y ?? 0
+        Slow.late(Slow.card) { [weak self] in
+            guard let self else { return }
+            var frame = frame
+            if Slow.on, let was = frame, let now = self.box.view?.contentOffset.y {
+                frame = was.offsetBy(dx: 0, dy: at - now)
+            }
+            // Карточка закрытого дня — в неё складывается лист (P883).
+            if let frame, id == (self.closedID ?? anchorCard) { self.anchorFrame = frame }
+            self.frames[id] = frame
+        }
+    }
+
     /// Лист «Сегодня» — не выше своего места у края (P893): закрытая
     /// карточка рядом с сегодня, и лента вставала так, что лист торчал на
     /// полэкрана. Сдвигает ленту, только если место дня собрано.
@@ -276,10 +293,18 @@ final class Ribbon: ObservableObject {
     func measured(_ value: CGFloat) {
         guard let scroll = box.view else { return }
         watchScroll(scroll)
+        // Место в содержимом ленты — по прокрутке в миг замера: в проверке
+        // с медленной лентой замер доходит позже (P921).
+        let top = value + scroll.contentOffset.y
+        Slow.late(Slow.slot) { [weak self] in self?.took(top) }
+    }
+
+    private func took(_ top: CGFloat) {
+        guard let scroll = box.view else { return }
         // Пока ведёт программа, содержимое не меняется, а замер может
         // отставать на кадр от прокрутки — не верим ему.
         guard !driving else { return }
-        slotTop = value + scroll.contentOffset.y
+        slotTop = top
         known = true
         farSide = 0
         // Замер пришёл — значит, место собрано (P894): отметку «собрано»
@@ -465,11 +490,18 @@ final class Ribbon: ObservableObject {
     private var slots = 0
 
     func appeared() {
-        slots += 1
-        seen = true
+        Slow.late(Slow.slot) { [weak self] in
+            guard let self else { return }
+            self.slots += 1
+            self.seen = true
+        }
     }
 
     func lost() {
+        Slow.late(Slow.slot) { [weak self] in self?.gone() }
+    }
+
+    private func gone() {
         slots = max(0, slots - 1)
         guard slots == 0 else { return }
         seen = false

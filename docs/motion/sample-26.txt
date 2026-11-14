@@ -1,0 +1,86 @@
+    2836 Thread_175974   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 2836 start  (in dyld) + 6992  [0x104e284e4]
+    +   2836 start_sim  (in dyld_sim) + 20  [0x104d3f0e4]
+    +     2836 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x106e440a4]  ChronothecaApp.swift:0
+    +       2836 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x106e43ff8]  /<compiler-generated>:0
+    +         2836 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           2836 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             2836 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               2836 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 2836 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   2836 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     2836 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       2834 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    +                       ! 2834 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    +                       !   2834 mach_msg  (in libsystem_kernel.dylib) + 20  [0x104f60ef0]
+    +                       !     2834 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x104f68c44]
+    +                       !       2834 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x104f71e84]
+    +                       !         2834 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x104f60b70]
+    +                       2 __CFRunLoopRun  (in CoreFoundation) + 1884  [0x180421c6c]
+    +                         2 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__  (in CoreFoundation) + 12  [0x180422a94]
+    +                           2 _dispatch_main_queue_callback_4CF  (in libdispatch.dylib) + 40  [0x180195890]
+    +                             2 _dispatch_main_queue_drain  (in libdispatch.dylib) + 1172  [0x180195d34]
+    +                               2 <deduplicated_symbol>  (in libdispatch.dylib) + 24  [0x1801bd748]
+    +                                 2 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                                   2 _dispatch_call_block_and_release  (in libdispatch.dylib) + 24  [0x1801866a0]
+    +                                     2 __104+[UIAccessibilityLoader _performInitialAccessibilityBundleLoad:monitorForFutureLoadEvents:trackingMode:]_block_invoke_3  (in UIAccessibility) + 168  [0x195264a5c]
+    +                                       2 +[AXCoverSheetKitGlue accessibilityInitializeBundle]  (in CoverSheetKit) + 92  [0x123488c84]
+    +                                         2 -[AXValidationManager performValidations:withPreValidationHandler:postValidationHandler:safeCategoryInstallationHandler:]  (in AXCoreUtilities) + 280  [0x192ac0a10]
+    +                                           2 -[AXAccessQueue performSynchronousWritingBlock:]  (in AXCoreUtilities) + 48  [0x192acfc90]
+    +                                             2 AXPerformBlockSynchronouslyOnMainThread  (in AXCoreUtilities) + 56  [0x192ac8b90]
+    +                                               2 __121-[AXValidationManager performValidations:withPreValidationHandler:postValidationHandler:safeCategoryInstallationHandler:]_block_invoke  (in AXCoreUtilities) + 612  [0x192ac0cc4]
+    +                                                 2 __52+[AXCoverSheetKitGlue accessibilityInitializeBundle]_block_invoke_3  (in CoverSheetKit) + 64  [0x123488d44]
+    +                                                   2 -[AXValidationManager installSafeCategory:canInteractWithTargetClass:]  (in AXCoreUtilities) + 1128  [0x192ac534c]
+    +                                                     2 +[UIAccessibilitySafeCategory _initializeSafeCategoryFromValidationManager]  (in libAXSafeCategoryBundle.dylib) + 48  [0x19394fb40]
+    +                                                       2 _objc_msgSend_uncached  (in libobjc.A.dylib) + 64  [0x18003af00]
+    +                                                         2 lookUpImpOrForward  (in libobjc.A.dylib) + 400  [0x180053464]
+    +                                                           2 cache_t::insert(objc_selector*, void (*)(), objc_object*)  (in libobjc.A.dylib) + 420  [0x18003cf78]
+    +                                                             2 cache_t::collectNolock(bool)  (in libobjc.A.dylib) + 68  [0x18003d0d8]
+    +                                                               1 _collecting_in_critical()  (in libobjc.A.dylib) + 136  [0x18003d2f0]
+    +                                                               : 1 thread_get_state  (in libsystem_kernel.dylib) + 252  [0x104f692c0]
+    +                                                               :   1 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x104f71e84]
+    +                                                               :     1 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x104f60b70]
+    +                                                               1 _collecting_in_critical()  (in libobjc.A.dylib) + 296  [0x18003d390]
+    +                                                                 1 mach_vm_deallocate  (in libsystem_kernel.dylib) + 84  [0x104f624d4]
+    +                                                                   1 _kernelrpc_mach_vm_deallocate_trap  (in libsystem_kernel.dylib) + 8  [0x104f609e4]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        19896
+        mach_msg2_trap  (in libsystem_kernel.dylib)        5672
+        __semwait_signal  (in libsystem_kernel.dylib)        2835
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        2510
+        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        293
+        _platform_strlen  (in libsystem_platform.dylib)        230
+        objc_msgSend  (in libobjc.A.dylib)        229
+        objc_msgSend$stringWithUTF8String:  (in AXCoreUtilities)        183
+        dyld4::RuntimeLocks::withLoadersReadLock(void () block_pointer)  (in dyld_sim)        151
+        dyld4::APIs::_dyld_get_image_name(unsigned int)  (in dyld_sim)        144
+        _xzm_free  (in libsystem_malloc.dylib)        121
+        pthread_getspecific  (in libsystem_pthread.dylib)        117
+        __CFStringCreateImmutableFunnel3  (in CoreFoundation)        109
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib)        101
+        __CFStringDeallocate  (in CoreFoundation)        99
+        _platform_memmove  (in libsystem_platform.dylib)        98
+        specialized BidirectionalCollection._range<A>(of:anchored:backwards:)  (in Foundation)        98
+        Substring.subscript.getter  (in libswiftCore.dylib)        90
+        _Block_object_dispose  (in dyld_sim)        83
+        start_wqthread  (in libsystem_pthread.dylib)        78
+        pthread_setspecific  (in libsystem_pthread.dylib)        72
+        getContextDescriptor(swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        70
+        swift::MetadataCacheKey::operator==(swift::MetadataCacheKey const&) const  (in libswiftCore.dylib)        70
+        object_setClass  (in libobjc.A.dylib)        63
+        Substring.index(_:offsetBy:)  (in libswiftCore.dylib)        62
+        _xzm_xzone_malloc_tiny  (in libsystem_malloc.dylib)        62
+        DYLD-STUB$$_platform_bzero  (in libsystem_malloc.dylib)        57
+        objc_allocWithZone  (in libobjc.A.dylib)        56
+        swift_retain  (in libswiftCore.dylib)        52
+        _CFRuntimeCreateInstance  (in CoreFoundation)        51
+        _CFStringGetCStringPtrInternal  (in CoreFoundation)        51
+        objc_retainAutoreleasedReturnValue  (in libobjc.A.dylib)        51
+        icu::RegexMatcher::MatchAt(long long, signed char, UErrorCode&)  (in libicucore.A.dylib)        50
+        specialized static String._uncheckedFromUTF8(_:isASCII:)  (in libswiftCore.dylib)        50
+        swift_bridgeObjectRelease  (in libswiftCore.dylib)        48
+        <deduplicated_symbol>  (in libswiftCore.dylib)        43
+        _CFRelease  (in CoreFoundation)        43
+        objc_autorelease  (in libobjc.A.dylib)        39
+        objc_release_x23  (in libobjc.A.dylib)        39

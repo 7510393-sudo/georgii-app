@@ -269,7 +269,7 @@ final class Shell: ObservableObject {
             instant = true
             screen = target
             // Лента — не плашка в стопке, а продолжение дня (P777).
-            ribbonOpen = target == .search
+            go(.place(open: target == .search))
         }
     }
 
@@ -281,6 +281,9 @@ final class Shell: ObservableObject {
     /// По нему лента встаёт в покой: вчера над нижней строкой или завтра под
     /// строкой поиска.
     @Published var fileFrom = 0
+    /// Что на экране в разделе «День» — одним значением (P921, `Deck`).
+    /// Меняет только `go(_:)`; прежние флажки ниже ставит он же.
+    var deck: Deck = .day
     /// Лента картотеки (P777): прошлое, место дня, будущее — одной
     /// прокруткой. Сама не публикуется: её сдвиги смотрит только день.
     let ribbon = Ribbon()
@@ -404,13 +407,13 @@ final class Shell: ObservableObject {
         case "filefuture":
             // Картотека будущего (P771, P773): вместо снимка «Списка»
             // календаря, которого больше нет.
-            fileFrom = -1
+            go(.aim(-1))
             screen = .search
         default: break
         }
         // Для снимков — сразу, без хода (P799: разделы — лента вбок).
         instant = true
-        ribbonOpen = screen == .search
+        go(.place(open: screen == .search))
     }
 
 }

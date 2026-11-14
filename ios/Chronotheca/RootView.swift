@@ -353,6 +353,8 @@ struct RootView: View {
                     .allowsHitTesting(false)
                     .accessibilityIdentifier("openScreen")
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                // Состояние картотеки и где лист «Сегодня» (P921).
+                DeckProbe(ribbon: shell.ribbon)
                 // Большой архив сложен (P589).
                 if vault.bigReady {
                     Text("bigReady")
@@ -874,7 +876,7 @@ struct RootView: View {
         step(3, "просьба снимка картотеки") { wantSample("big-search") }
         step(3, "картотека прошлого") {
             let tap = Date()
-            shell.fileFrom = 1
+            shell.go(.aim(1))
             shell.screen = .search
             LaunchClock.opened("search", since: tap)
         }
@@ -1075,7 +1077,7 @@ struct RootView: View {
         // Лента картотеки (P777) — не раздел, а продолжение дня.
         if new == .search, pageAt == .today || !ribbonAway {
             shell.instant = false
-            shell.ribbonOpen = true
+            shell.go(.place(open: true))
             ribbonAway = false
             return
         }
@@ -1144,10 +1146,7 @@ struct RootView: View {
         let finish = { [shell, archive] in
             var still = Transaction()
             still.disablesAnimations = true
-            withTransaction(still) {
-                shell.ribbonOpen = false
-                shell.fileFrom = 0
-            }
+            withTransaction(still) { shell.go(.backInDay) }
             // Опись — когда лента уже закрыта (P797).
             archive.reloadSoon()
             then?()
@@ -1186,14 +1185,8 @@ struct RootView: View {
         if !store.isToday && !shell.dayCard {
             hideKeyboard()
             withTransaction(still) {
-                shell.fileFrom = top ? -1 : 1
-                ribbon.frozen = true
-                ribbon.opened()
-                ribbon.folding = true
-                ribbon.veiled = true
-                shell.dayCard = true
-                shell.ribbonOpen = true
-                shell.screen = .search
+                shell.go(.fold(card: Vault.stamp(store.date), store.isFuture ? .future : .past,
+                               swipe: top ? -1 : 1))
             }
             // Карточка садится дольше прежнего (P895).
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { liftToday(top: top) }
@@ -1216,18 +1209,13 @@ struct RootView: View {
             // встаёт корешком внизу уже сегодняшним.
             ribbon.veiled = true
             withTransaction(still) {
-                ribbon.frozen = true
-                ribbon.foldSide = dir
-                shell.dayCard = true
+                shell.go(.hide(dir))
                 store.go(to: DayStore.today())
             }
         }
         ribbon.opened()
         ribbon.settle(dir) { [shell] in
-            withTransaction(still) {
-                shell.dayCard = false
-                shell.fileFrom = dir
-            }
+            withTransaction(still) { shell.go(.todayAtEdge(dir)) }
             ribbon.place(ribbon.restY(dir))
             ribbon.refresh()
             ribbon.veiled = false
@@ -1243,11 +1231,7 @@ struct RootView: View {
         guard shell.ribbonOpen || shell.pulling else { return }
         var still = Transaction()
         still.disablesAnimations = true
-        withTransaction(still) {
-            shell.ribbonOpen = false
-            shell.pulling = false
-            shell.fileFrom = 0
-        }
+        withTransaction(still) { shell.go(.closeNow) }
         ribbonAway = false
         shell.ribbon.release()
         shell.ribbon.park()

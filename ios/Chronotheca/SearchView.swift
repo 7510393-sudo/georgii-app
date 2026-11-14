@@ -419,17 +419,13 @@ struct SearchView: View {
                         .onGeometryChange(for: CGRect.self) { proxy in
                             proxy.frame(in: .named(Ribbon.space))
                         } action: { frame in
-                            let onScreen = frame.offsetBy(dx: 0, dy: -above)
-                            if entry.id == (ribbon.closedID ?? anchorCard) {
-                                ribbon.anchorFrame = onScreen
-                            }
                             // Где карточки на экране — чтобы, закрыв открытый с
                             // неё день, вернуть ленту туда же (P893).
-                            ribbon.frames[entry.id] = onScreen
+                            ribbon.saw(entry.id, frame.offsetBy(dx: 0, dy: -above), anchorCard: anchorCard)
                         }
                         // Карточку разобрала ленивая стопка — её рамки больше
                         // нет: по ней видно, удался ли переход к карточке (P906).
-                        .onDisappear { ribbon.frames[entry.id] = nil }
+                        .onDisappear { ribbon.saw(entry.id, nil) }
                         .background {
                             if entry.id == firstAfter {
                                 GeometryReader { g in
@@ -583,6 +579,7 @@ struct SearchView: View {
                 // пока нового нет, «Сегодня» — у своего края (P899).
                 ribbon.forget(far: side)
                 withTransaction(still) { store.go(to: DayStore.today()) }
+                shell.go(.rebuilt)
                 DispatchQueue.main.async {
                     withTransaction(still) { proxy.scrollTo(closed, anchor: spot(top)) }
                     // Карточка — ровно на своё место, пока лента скрыта
@@ -604,6 +601,7 @@ struct SearchView: View {
                             return
                         }
                         guard ribbon.folding else { return }
+                        shell.go(.stood)
                         // Рамка карточки без полей по бокам (схема была шире
                         // карточки на эти поля).
                         let nest = ribbon.anchorFrame?.insetBy(dx: Search.cardInset, dy: 0)
@@ -633,7 +631,7 @@ struct SearchView: View {
                                     ribbon.landing.stage = .done
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
                                         guard shell.dayCard else { return }
-                                        withTransaction(still) { shell.dayCard = false }
+                                        withTransaction(still) { shell.go(.landed) }
                                         // Села — опись больше не двигает ленту (P898).
                                         ribbon.settledHere()
                                         ribbon.refresh()
@@ -810,8 +808,7 @@ struct SearchView: View {
         Trace.note(String(format: "лента: открыт %@ с места %.0f", id, from?.top ?? -1))
         withTransaction(still) {
             shell.instant = true
-            shell.ribbonOpen = false
-            shell.fileFrom = 0
+            shell.go(.openCard)
             store.go(to: date)
             shell.tab = tab
             shell.screen = .today
