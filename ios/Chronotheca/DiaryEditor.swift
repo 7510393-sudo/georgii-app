@@ -629,6 +629,7 @@ struct DiaryEditor: UIViewRepresentable {
         }
 
         @objc private func inputModeChanged(_: Notification) {
+            StampTrace.note("ввод: " + (view?.textInputMode?.primaryLanguage ?? "—"))
             // Сразу и ещё раз, когда пройдёт «хвост» диктовки (P881).
             for delay in [0.0, Self.dictationTail + 0.1] {
                 DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
@@ -644,6 +645,8 @@ struct DiaryEditor: UIViewRepresentable {
         /// время (P869): где эта строка и какое время ей поставить. Время
         /// берётся в миг первых слов.
         private var dictatedLine: (at: Int, stamp: String)?
+        /// Проверка после диктовки уже назначена (P956).
+        private var checkPending = false
 
         /// Идёт диктовка — запомнить строку, куда она пишет, если это чистая
         /// строка в конце записи без отметки и время ставить пора.
@@ -654,14 +657,44 @@ struct DiaryEditor: UIViewRepresentable {
             guard location <= ns.length, end <= ns.length,
                   Self.atEnd(storage, from: end) else { return }
             let line = ns.lineRange(for: NSRange(location: location, length: 0))
-            // Строка уже с отметкой — время на месте.
-            if DiaryEditor.stamp.firstMatch(in: storage.string, range: line) != nil { return }
+            // Строка уже с отметкой — время на месте; но запомнить её (P956):
+            // если отметку потом снимет сама диктовка, она встанет обратно.
+            if let m = DiaryEditor.stamp.firstMatch(in: storage.string, range: line),
+               m.numberOfRanges > 1, m.range(at: 1).location == line.location {
+                dictatedLine = (line.location, ns.substring(with: m.range(at: 1)) + " ")
+                StampTrace.note("диктовка: строка с отметкой")
+                return
+            }
             // До места диктовки в строке — только пробелы.
             let before = ns.substring(with: NSRange(location: line.location,
                                                     length: location - line.location))
-            guard before.allSatisfy({ $0 == " " || $0 == "\t" || $0 == "\u{00A0}" }),
-                  let stamp = parent.peekStamp?() else { return }
+            guard before.allSatisfy({ $0 == " " || $0 == "\t" || $0 == "\u{00A0}" }) else {
+                StampTrace.note("диктовка: не с начала строки")
+                return
+            }
+            guard let stamp = parent.peekStamp?() else {
+                StampTrace.note("диктовка: время не пора (писали меньше часа назад)")
+                return
+            }
             dictatedLine = (line.location, stamp)
+            StampTrace.note("диктовка: строка запомнена")
+        }
+
+        /// Проверить надиктованную строку, когда пройдёт «хвост» диктовки
+        /// (P956): конец диктовки iPhone сообщает не всегда — микрофон
+        /// выключили, а смены способа ввода не пришло, и время ставилось
+        /// только по уходу из записи.
+        private func checkDictationSoon() {
+            guard !checkPending else { return }
+            checkPending = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + Self.dictationTail + 0.2) { [weak self] in
+                guard let self else { return }
+                self.checkPending = false
+                guard let view = self.view, self.dictatedLine != nil else { return }
+                if Self.dictating(view) { self.checkDictationSoon(); return }
+                self.stampDictated(view)
+                self.raiseFirst(view)
+            }
         }
 
         /// Диктовка отпустила поле (P869): строка, которую она начала в
@@ -678,9 +711,16 @@ struct DiaryEditor: UIViewRepresentable {
             let ns = storage.string as NSString
             guard parent.stamped, parent.editable, d.at <= ns.length,
                   d.at == 0 || ns.character(at: d.at - 1) == 10,
-                  Self.lineHasText(ns, from: d.at) else { return false }
+                  Self.lineHasText(ns, from: d.at) else {
+                StampTrace.note("после диктовки: строка сдвинулась или пуста")
+                return false
+            }
             let line = ns.lineRange(for: NSRange(location: d.at, length: 0))
-            if DiaryEditor.stamp.firstMatch(in: storage.string, range: line) != nil { return false }
+            if DiaryEditor.stamp.firstMatch(in: storage.string, range: line) != nil {
+                StampTrace.note("после диктовки: отметка на месте")
+                return false
+            }
+            StampTrace.note("после диктовки: время поставлено")
             // Пробелы, которые диктовка оставила в начале строки, — вон.
             var lead = d.at
             while lead < ns.length, [32, 9, 0xA0].contains(ns.character(at: lead)) { lead += 1 }
@@ -755,6 +795,13 @@ struct DiaryEditor: UIViewRepresentable {
             // заголовок дня и перешёл в запись. Тогда вестей о ней больше
             // не будет, и место надо освободить самому.
             DispatchQueue.main.async { [weak self] in self?.makeRoom(scroll: true) }
+            // Курсор мог встать в запись без вести о выборе (из заголовка
+            // по «Вводу», P762) — тогда время не вставало до первой буквы,
+            // а диктовка её мимо и проходит (P956).
+            DispatchQueue.main.async { [weak self, weak view] in
+                guard let self, let view, view.isFirstResponder else { return }
+                self.settleStamp(view, leaving: false)
+            }
         }
 
         func textViewDidEndEditing(_ view: UITextView) {
@@ -1823,6 +1870,7 @@ struct DiaryEditor: UIViewRepresentable {
                     return
                 }
                 // Ушли, ничего не написав, — убрать.
+                StampTrace.note("отметка убрана: ушли, не написав")
                 placing = true
                 view.textStorage.replaceCharacters(in: p, with: "")
                 var s = view.selectedRange
@@ -1845,9 +1893,13 @@ struct DiaryEditor: UIViewRepresentable {
             guard view.isFirstResponder, parent.editable, view.markedTextRange == nil,
                   sel.length == 0, sel.location <= ns.length, declinedAt != sel.location,
                   Self.atEnd(view.textStorage, from: sel.location),
-                  sel.location == 0 || ns.character(at: sel.location - 1) == 10,
-                  let stamp = parent.peekStamp?()
+                  sel.location == 0 || ns.character(at: sel.location - 1) == 10
             else { return }
+            guard let stamp = parent.peekStamp?() else {
+                StampTrace.note("курсор на чистой строке: время не пора")
+                return
+            }
+            StampTrace.note("курсор на чистой строке: время поставлено")
             placing = true
             view.textStorage.replaceCharacters(
                 in: NSRange(location: sel.location, length: 0),
@@ -2011,6 +2063,7 @@ struct DiaryEditor: UIViewRepresentable {
                 } else {
                     noteDictation(view, at: sel.location, end: NSMaxRange(sel))
                 }
+                if dictatedLine != nil { checkDictationSoon() }
             }
             // Время надиктованной строке — только когда диктовку выключили
             // или ушли из записи (P881): правка поля посреди фразы

@@ -1190,6 +1190,10 @@ private struct SpeedSheet: View {
             out += T("архив: ", "archive: ") + ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file) + "\n"
         }
         out += "\n" + LaunchClock.lines.joined(separator: "\n")
+        // След отметки времени (P956) — что поле решило про время.
+        if !StampTrace.lines.isEmpty {
+            out += "\n\n" + T("отметка времени:", "time stamp:") + "\n" + StampTrace.lines.joined(separator: "\n")
+        }
         return out
     }
 
