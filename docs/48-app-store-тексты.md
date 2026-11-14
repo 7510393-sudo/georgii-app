@@ -1,4 +1,12 @@
-# Graphomanus в App Store — тексты и порядок (17.10)
+# Graphomanus в App Store — тексты и порядок (17.10, сверено 14.11)
+
+**Сверено 14.11 с приложением после сборки 289** (P950): цена по P908
+(£14,99 — цена первого года, £24,99 с iPad; одна покупка на все
+устройства Apple), проба — с нажатия «Начать бесплатный месяц» (P908),
+копия сама раз в неделю (P902), снимок с камеры — и в «Фото» (P903),
+места в корзине (P904). Убранного в тексте не было: граница суток (P915)
+и перевод папок (P920) нигде не упоминались. Письмо тестировщикам и
+«What to Test» — отдельным файлом `docs/80-тестировщики-письмо.md`.
 
 Готовые тексты для App Store Connect. Названия полей — как в самом сайте
 (на английском). Лимиты Apple: имя — 30 знаков, подзаголовок — 30,
@@ -28,7 +36,7 @@
 ## 2. Тексты (English — основной)
 
 **Promotional Text (170):**
-Plan the morning. Remember the evening. Your notebook, your files — one page a day, no account, no subscription.
+Plan the morning. Remember the evening. One page a day in your own files — no account, no subscription. Launch price for the first year.
 
 **Keywords (100):**
 `diary,journal,planner,day planner,notebook,notes,markdown,habit,to do,private,photo journal,files`
@@ -62,8 +70,9 @@ FIND AND REMEMBER
 • A PDF book of any period.
 
 SAFE BY DESIGN
-• Backup with byte-for-byte check.
-• A 30-day trash for days, photos and files.
+• Backup with byte-for-byte check — once you pick the place, it updates itself every week.
+• A 30-day trash for days, photos, files and places.
+• A photo you take in the app also goes to your Photos at full size.
 • Your entries are never overwritten: if a file was changed elsewhere, both versions are kept.
 • Face ID / passcode lock.
 
@@ -71,7 +80,7 @@ MOVE IN, MOVE OUT
 Import from Day One, Diarium, Journey, Markdown and text files. Because your entries are files, leaving is as easy.
 
 FAIR PRICE
-The first 30 days are the whole app for free. After that, one purchase — like a notebook. No subscription. What you wrote always stays readable, even without the purchase.
+Start a free month — the whole app, from the day you choose. After that, one purchase, like a notebook. No subscription. One purchase for all your Apple devices: when the iPad version comes, it is included. This is the launch price; it will go up with the iPad version. Without the purchase you can always read, search and take your entries with you.
 
 Eleven languages: English, Русский, Українська, Deutsch, Français, Español, Italiano, Português, Nederlands, 日本語, ქართული.
 
@@ -81,7 +90,7 @@ First release.
 ## 3. Тексты (русский) — не применяются (P765: страница App Store только по-английски)
 
 **Рекламный текст:**
-Утром — план, вечером — как прошло. Тетрадь дня, где записи — ваши файлы: без учётной записи и без подписки.
+Утром — план, вечером — как прошло. Тетрадь дня, где записи — ваши файлы: без учётной записи и без подписки. Цена первого года.
 
 **Описание:**
 
@@ -112,8 +121,9 @@ Graphomanus — дневник и планировщик дня на одной 
 • PDF-книга за любой срок.
 
 СОХРАННОСТЬ
-• Резервная копия со сверкой байт в байт.
-• Корзина на 30 дней — для дней, снимков и файлов.
+• Резервная копия со сверкой байт в байт — место выбираете раз, дальше она обновляется сама раз в неделю.
+• Корзина на 30 дней — для дней, снимков, файлов и мест.
+• Снимок с камеры приложения ложится и в «Фото» — в полном размере.
 • Записи не затираются: если файл изменили в другом месте, целы обе версии.
 • Замок Face ID / код.
 
@@ -121,7 +131,7 @@ Graphomanus — дневник и планировщик дня на одной 
 Перенос из Day One, Diarium, Journey, Markdown и текстовых файлов. А уйти так же просто — записи и так файлы.
 
 ЧЕСТНАЯ ЦЕНА
-Первые 30 дней — всё приложение бесплатно. Дальше разовая покупка, как блокнот. Без подписки. Написанное читается всегда, даже без покупки.
+Бесплатный месяц всего приложения — с того дня, когда вы его начнёте. Дальше разовая покупка, как блокнот. Без подписки. Одна покупка на все ваши устройства Apple: выйдет версия для iPad — она уже ваша. Это цена первого года; с версией для iPad она вырастет. Без покупки всегда можно читать, искать и забрать записи с собой.
 
 Одиннадцать языков: English, Русский, Українська, Deutsch, Français, Español, Italiano, Português, Nederlands, 日本語, ქართული.
 
@@ -139,9 +149,14 @@ Graphomanus — дневник и планировщик дня на одной 
 2. **Полная версия** — Non-Consumable
    - Reference Name: `Graphomanus Full`
    - Product ID: `com.kobiashvili.diary.full`
-   - Price: £14.99 (Tier по сетке Apple)
+   - Price: £14.99 (Tier по сетке Apple) — цена первого года (P908); с
+     выходом iPad поднять до £24.99 в той же покупке, код не меняется
    - Display Name: `Graphomanus for good` / «Graphomanus навсегда»
-   - Description: `One purchase, no subscription.` / «Разовая покупка, без подписки.»
+   - Description: `One purchase for all your Apple devices.` / «Одна покупка на все устройства Apple.» (до 55 знаков)
+   - Одна покупка на iPhone, iPad и Mac получается сама: покупка привязана
+     к приложению и учётной записи Apple, а iPad и Mac будут тем же
+     приложением (тот же Bundle ID). Отдельное приложение для iPad её бы
+     не унаследовало — так не делать.
 3. Каждой нужен **Review Screenshot** — снимок листка покупки из приложения
    (Настройки → «Graphomanus навсегда»).
 
@@ -176,11 +191,15 @@ Graphomanus — дневник и планировщик дня на одной 
 Graphomanus is a diary and day planner. No account is needed.
 On first launch tap "Start" to create a folder (iCloud Drive or On My iPhone).
 Sample days are added so every screen can be seen.
-The first 30 days are free (non-consumable "30-day Trial");
-afterwards a one-time purchase "Graphomanus for good" unlocks writing.
-Existing entries always stay readable without a purchase.
-Permissions (camera, photos, microphone, location, calendar, Health,
-notifications, Face ID) are optional and asked only when the feature is used.
+To write, tap "Start the free month" on the first sheet
+(non-consumable "30-day Trial", free). After 30 days a one-time
+purchase "Graphomanus for good" keeps writing open.
+Reading, search, import and moving the folder never need a purchase.
+Permissions (camera, adding to Photos, microphone, speech recognition,
+location, calendar, Health, notifications, Face ID) are optional and
+asked only when the feature is used. A photo taken with the in-app
+camera is also added to Photos; the app never reads the Photos library
+except for pictures the user picks.
 Entries are plain files in the user's own folder; the app has no server.
 Contact: support@graphomanus.com
 ```
@@ -230,25 +249,22 @@ Contact: support@graphomanus.com
 5. Статус договора должен стать **Active**; до этого покупки в
    TestFlight/магазине не приходят.
 
-## 9. «Письмо» тестировщикам (TestFlight)
+## 9. Тестировщики (TestFlight)
 
-Это не одно письмо, а три текста, которые видят тестировщики:
-
-1. **Beta App Description** (на странице приложения в TestFlight):
-   > Graphomanus is a diary and day planner on one page: a plan in the morning, “How did it go?” in the evening. Your entries are plain files in a folder you choose. Free during testing — purchases cost nothing in TestFlight.
-2. **What to Test** (по каждой сборке; пример для 128):
-   > Please try writing in the diary: when the keyboard opens, the line you type should stay visible. Also: open and close Settings (feel and look), and the page strip above the bottom bar.
-3. **Письмо-приглашение** (от вас, с публичной ссылкой TestFlight):
-   > Hi! I am testing a diary app called Graphomanus. It is free in TestFlight. Install TestFlight from the App Store, open this link: [ссылка]. Your entries are your own files; updates never delete them. To send feedback: take a screenshot in the app and tap “Share Beta Feedback”. Thank you!
-
-Письма влияют на то, как люди понимают приложение и какие отзывы пришлют;
-к проверке Apple отношение имеет только **Beta App Description** и контакты.
-Адрес для отзывов — `support@graphomanus.com`.
+Готовые тексты — **`docs/80-тестировщики-письмо.md`** (14.11): описание
+для TestFlight, «What to Test» к ближайшей сборке, письмо-приглашение.
 
 ## 10. Чего нельзя обещать
 
-iPad, Mac, Android, веб; собственная синхронизация (только iCloud Drive);
+Android, веб; iPad и Mac — только как «одна покупка их включит, когда
+выйдут» (P908), без сроков и без снимков; собственная синхронизация (только iCloud Drive);
 шифрование записей (нарочно нет — замок приложения); несколько дневников,
 шаблоны, ИИ; **погода** — пока не подтверждено, что WeatherKit включён у
 знака приложения: в описание вынесено только «Photos, videos, voice, files,
 places» — слово «погода» там нарочно не стоит.
+
+**Риск, о котором сказать автору (14.11):** Apple иногда отклоняет
+описание, где упомянуто то, чего в приложении ещё нет (правило 2.3 —
+«метаданные о том, что есть»). Фразы про iPad стоят только в разделе цены
+и говорят о покупке, а не о функции. Если проверка придерётся — убрать
+два предложения про iPad из описания, цена и покупка от этого не меняются.

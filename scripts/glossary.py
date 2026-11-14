@@ -19,7 +19,7 @@ for m in re.finditer(r'INFOPLIST_KEY_(NS\w+UsageDescription): "((?:[^"\\]|\\.)*)
 ru_perm=S.read_strings('ios/Chronotheca/ru.lproj/InfoPlist.strings')
 perm_title={
  "NSMicrophoneUsageDescription":"Microphone / Микрофон","NSLocationWhenInUseUsageDescription":"Location / Местоположение",
- "NSCameraUsageDescription":"Camera / Камера","NSPhotoLibraryUsageDescription":"Photos / Фото",
+ "NSCameraUsageDescription":"Camera / Камера","NSPhotoLibraryUsageDescription":"Photos / Фото","NSPhotoLibraryAddUsageDescription":"Photos, adding / Фото, добавление",
  "NSCalendarsFullAccessUsageDescription":"Calendar / Календарь","NSCalendarsUsageDescription":"Calendar (older iOS) / Календарь (старые iOS)",
  "NSCalendarsWriteOnlyAccessUsageDescription":"Calendar, editing / Календарь, правка","NSSpeechRecognitionUsageDescription":"Speech recognition / Распознавание речи",
  "NSHealthShareUsageDescription":"Health, reading / Здоровье, чтение","NSHealthUpdateUsageDescription":"Health, writing / Здоровье, запись",
