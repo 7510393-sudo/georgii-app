@@ -13,7 +13,7 @@ final class DiaryTests: XCTestCase {
 
     func testОтветыОтделяютсяОтТекста() {
         let d = Diary(body: """
-        ## Как прошло?
+        ## How did it go?
 
         - Отвезти документы: всё получилось
         - Позвонить в поликлинику: не собрался
@@ -40,7 +40,7 @@ final class DiaryTests: XCTestCase {
 
     func testЗаголовокНижеПоТекстуНеСчитаетсяНашим() {
         // Такая же строка в середине записи — часть текста человека.
-        let body = "Сегодня думал вот о чём.\n\n## Как прошло?\n\n- всё странно"
+        let body = "Сегодня думал вот о чём.\n\n## How did it go?\n\n- всё странно"
         let d = Diary(body: body)
         XCTAssertTrue(d.answers.isEmpty)
         XCTAssertEqual(d.text, body)

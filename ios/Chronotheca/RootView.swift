@@ -118,31 +118,6 @@ struct RootView: View {
                 "” folder for 30 days. Photos and voice notes stay where they are. You can restore it in Settings → Trash.")
     }
 
-    static func renameText(_ r: Rename.Report) -> String {
-        var out = T("Папок переименовано: \(r.folders). Записей поправлено: \(r.files).",
-                    "Folders renamed: \(r.folders). Entries updated: \(r.files).")
-        if !r.stuck.isEmpty {
-            out += T("\n\nОстались под прежним именем: ", "\n\nKept their old name: ")
-                + r.stuck.joined(separator: ", ")
-            out += T(". Они работают как раньше; перевод можно запустить ещё раз.",
-                     ". They work as before; you can run the renaming again.")
-        }
-        if r.skipped > 0 {
-            out += T("\n\nНе поправлено записей: \(r.skipped) — они ещё в iCloud или "
-                     + "изменились в другом месте. Снимки в них видны и так; "
-                     + "перевод можно запустить ещё раз позже.",
-                     "\n\nEntries not updated: \(r.skipped) — they are still in iCloud or "
-                     + "were changed elsewhere. Their photos show anyway; you can run it again later.")
-        }
-        if r.kept > 0 {
-            out += T("\n\nФайлов с одинаковыми именами, но разных: \(r.kept). "
-                     + "Они остались в папках с прежними именами — ничего не затёрто.",
-                     "\n\nFiles with the same name but different contents: \(r.kept). "
-                     + "They stayed in the folders with the old names — nothing was overwritten.")
-        }
-        return out
-    }
-
     private static func reportText(_ r: Transfer.Report) -> String {
         var out = T("Перенесено файлов: \(r.moved).", "Files moved: \(r.moved).")
         if r.kept > 0 {
@@ -262,7 +237,6 @@ struct RootView: View {
         } message: { r in
             Text(Self.reportText(r))
         }
-        .modifier(RenameShown())
         // Пора ли сделать резервную копию (P368) — спросить, но не делать.
         .modifier(BackupReminder())
         // Голосовая запись — небольшой шторкой снизу, а не на весь экран

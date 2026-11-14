@@ -94,10 +94,6 @@ final class PlaceTests: XCTestCase {
         let чужое = файл.replacingOccurrences(of: "icon: private", with: "icon: ракета")
         XCTAssertEqual(Place(text: чужое, file: "Дача.md")?.mark, "ракета")
         XCTAssertTrue(Place(text: чужое, file: "Дача.md")!.fileText.contains("icon: ракета"))
-        // Файл, записанный до P353, — русскими словами — читается так же.
-        let прежний = "---\nназвание: Дача\nместо: 55, 37\nзначок: личное\n---\n"
-        XCTAssertEqual(Place(text: прежний, file: "Дача.md")?.mark, "личное")
-        XCTAssertEqual(Place(text: прежний, file: "Дача.md")?.name, "Дача")
     }
 
     /// Курсор после вписанной точки встаёт за ней: в поле точка — один

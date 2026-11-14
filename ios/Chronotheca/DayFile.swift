@@ -63,29 +63,15 @@ struct DayFile: Equatable {
         return out
     }
 
-    /// Прежние, русские, ключи шапки — и какими они стали (P353). Читаются
-    /// оба; пишется английский: ключ, который приложение задаёт само,
-    /// переводится при первой же правке дня.
-    static let english: [String: String] = [
-        "дата": "date", "заголовок": "title", "погода": "weather",
-        "место": "place", "правлено": "edited", "название": "name",
-        "значок": "icon",
-    ]
-
-    static func canon(_ key: String) -> String { english[key] ?? key }
-
     func value(_ key: String) -> String? {
-        let k = DayFile.canon(key)
-        return meta.first { DayFile.canon($0.key) == k }?.value
+        meta.first { $0.key == key }?.value
     }
 
     mutating func set(_ key: String, _ value: String) {
-        let k = DayFile.canon(key)
-        if let i = meta.firstIndex(where: { DayFile.canon($0.key) == k }) {
-            meta[i].key = k
+        if let i = meta.firstIndex(where: { $0.key == key }) {
             meta[i].value = value
         } else {
-            meta.append(MetaLine(key: k, value: value))
+            meta.append(MetaLine(key: key, value: value))
         }
     }
 }

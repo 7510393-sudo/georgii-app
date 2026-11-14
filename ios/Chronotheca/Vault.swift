@@ -13,9 +13,8 @@ final class Vault: ObservableObject {
     ///
     /// Имена английские (P353): архив переживёт и смену языка телефона, и
     /// переезд к человеку, который по-русски не читает. Прежние, русские,
-    /// приложение понимает всегда: в архиве, который ещё не перевели, —
-    /// или перевели не до конца, — каждая папка находится под тем именем,
-    /// под каким она лежит (`Vault.folder(_:in:)`).
+    /// больше не читаются (P920): до выхода приложения архив был один, и
+    /// в нём их не осталось.
     enum Folder: String, CaseIterable {
         case diary     = "Diary"
         case planner   = "Planner"
@@ -27,51 +26,21 @@ final class Vault: ObservableObject {
         /// Места своей карты — по файлу на место (P207).
         case places    = "Places"
 
-        /// Прежнее имя — до P353.
-        var russian: String {
-            switch self {
-            case .diary:     return "Дневник"
-            case .planner:   return "Планировщик"
-            case .photos:    return "Фотографии"
-            case .videos:    return "Видео"
-            case .audio:     return "Аудио"
-            case .documents: return "Документы"
-            case .service:   return "Служебное"
-            case .places:    return "Места"
-            }
-        }
-
-        /// Папка по имени — по нынешнему или по прежнему.
-        static func named(_ name: String) -> Folder? {
-            Folder(rawValue: name) ?? allCases.first { $0.russian == name }
-        }
+        /// Папка по имени.
+        static func named(_ name: String) -> Folder? { Folder(rawValue: name) }
     }
 
     /// Корзина дней — не подпапка архива в строгом смысле: её заводят,
     /// только когда что-то убрали (P295).
     static let trashName = "Trash"
-    static let trashRussian = "Корзина"
 
-    /// Где в архиве `root` лежит папка: под английским именем, если оно
-    /// есть; под прежним русским, если лежит только оно; иначе — где она
-    /// будет заведена, под английским (P353). Никакого запомненного
-    /// «языка архива»: смотрится сама папка, поэтому и прерванный на
-    /// середине перевод имён ничего не теряет.
+    /// Где в архиве `root` лежит папка. Путь брать только отсюда.
     static func folder(_ folder: Folder, in root: URL) -> URL {
-        resolve(folder.rawValue, folder.russian, in: root)
+        root.appendingPathComponent(folder.rawValue)
     }
 
     static func trash(in root: URL) -> URL {
-        resolve(trashName, trashRussian, in: root)
-    }
-
-    private static func resolve(_ english: String, _ russian: String, in root: URL) -> URL {
-        let fm = FileManager.default
-        let en = root.appendingPathComponent(english)
-        if fm.fileExists(atPath: en.path) { return en }
-        let ru = root.appendingPathComponent(russian)
-        if fm.fileExists(atPath: ru.path) { return ru }
-        return en
+        root.appendingPathComponent(trashName)
     }
 
     /// Папка открытого архива.
@@ -82,15 +51,6 @@ final class Vault: ObservableObject {
     /// Имя папки, как его видно в «Файлах», — для слов на экране.
     func name(_ folder: Folder) -> String {
         self.folder(folder)?.lastPathComponent ?? folder.rawValue
-    }
-
-    /// Остались ли в архиве папки с русскими именами — тогда в настройках
-    /// есть строка «перевести имена папок» (P353).
-    var hasRussianNames: Bool {
-        guard let root else { return false }
-        let fm = FileManager.default
-        let names = Folder.allCases.map(\.russian) + [Vault.trashRussian]
-        return names.contains { fm.fileExists(atPath: root.appendingPathComponent($0).path) }
     }
 
     /// Имя папки, которую приложение заводит себе само.
@@ -517,27 +477,6 @@ final class Vault: ObservableObject {
     @Published var transfer: Transfer.Offer?
     @Published var moving: Transfer.Progress?
     @Published var transferDone: Transfer.Report?
-
-    /// Перевод имён папок на английский: ход и чем кончилось (P353).
-    @Published var renaming: Transfer.Progress?
-    @Published var renamed: Rename.Report?
-
-    /// Перевести имена папок открытого архива. Пока идёт — экран закрыт,
-    /// как при переносе: записи в эту минуту не трогают.
-    func translateNames() {
-        guard let root, renaming == nil else { return }
-        renaming = Transfer.Progress(done: 0, total: 0)
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            let report = Rename.run(in: root) { done, total in
-                DispatchQueue.main.async { self?.renaming = Transfer.Progress(done: done, total: total) }
-            }
-            DispatchQueue.main.async {
-                self?.renaming = nil
-                self?.renamed = report
-                self?.objectWillChange.send()
-            }
-        }
-    }
 
     /// Папка, из которой человек только что ушёл, и сколько в ней записей.
     /// Считается до смены доступа: после неё прежняя папка уже закрыта, и
@@ -1018,11 +957,9 @@ final class Vault: ObservableObject {
             try Data(json.utf8).write(to: marker, options: .atomic)
         }
 
-        // Записка тому, кто найдёт эту папку через много лет. Прежняя,
-        // русская, уже лежит — вторая не нужна.
+        // Записка тому, кто найдёт эту папку через много лет.
         let note = service.appendingPathComponent(Vault.noteName)
-        let oldNote = service.appendingPathComponent(Vault.oldNoteName)
-        if !fm.fileExists(atPath: note.path), !fm.fileExists(atPath: oldNote.path) {
+        if !fm.fileExists(atPath: note.path) {
             try Data(Vault.noteText.utf8).write(to: note, options: .atomic)
         }
     }
@@ -1033,7 +970,6 @@ final class Vault: ObservableObject {
     static let asideMark = " — second version "
 
     static let noteName = "About this folder.txt"
-    static let oldNoteName = "Что это за папка.txt"
 
     /// Записка на двух языках: папку может найти кто угодно.
     static let noteText = """
@@ -1058,23 +994,6 @@ final class Vault: ObservableObject {
     и «Planner» (планировщик) — простой текст: их можно открыть любым
     текстовым редактором, на любом устройстве, без всякой программы.
     Фотографии, видео, аудио и документы лежат как есть, в своих папках.
-
-    Приложение, которое их писало, называется Graphomanus. Оно ничего
-    не прячет и ничем не владеет: удалите его — всё это останется.
-
-    Папку можно переносить, копировать и переименовывать. Чтобы
-    приложение снова её нашло, укажите ей это место заново.
-    """
-
-    /// Прежняя записка слово в слово — только такую перевод имён папок
-    /// заменяет новой. Поправленную человеком не трогает (P353).
-    static let oldNoteText = """
-    Это архив дневника и планировщика.
-
-    Всё, что здесь лежит, — обычные файлы. Записи в папках «Дневник» и
-    «Планировщик» — простой текст: их можно открыть любым текстовым
-    редактором, на любом устройстве, без всякой программы. Фотографии,
-    видео, аудио и документы лежат как есть, в своих папках.
 
     Приложение, которое их писало, называется Graphomanus. Оно ничего
     не прячет и ничем не владеет: удалите его — всё это останется.
@@ -1410,14 +1329,7 @@ final class Vault: ObservableObject {
         let clean = link.removingPercentEncoding ?? link
         let url = day.deletingLastPathComponent()
             .appendingPathComponent(clean).standardizedFileURL
-        // Ссылка ещё со старым именем папки, а папку уже перевели, — или
-        // наоборот (P353): файл тот же, ищем его под другим именем.
         guard !FileManager.default.fileExists(atPath: url.path) else { return url }
-        if let other = Vault.otherName(of: clean) {
-            let there = day.deletingLastPathComponent()
-                .appendingPathComponent(other).standardizedFileURL
-            if FileManager.default.fileExists(atPath: there.path) { return there }
-        }
         // Файл удалили в корзину, а ссылку вернули «шагом назад» — снимок
         // виден из корзины, пока его не вернули или не стёрли (P371).
         if let root, clean.hasPrefix("../../"),
@@ -1425,17 +1337,6 @@ final class Vault: ObservableObject {
             return trashed
         }
         return url
-    }
-
-    /// Та же ссылка с именем папки на другом языке: `../../Фотографии/…` ⇄
-    /// `../../Photos/…`. `nil` — в ссылке нет папки архива.
-    static func otherName(of link: String) -> String? {
-        var parts = link.components(separatedBy: "/")
-        guard let i = parts.firstIndex(where: { $0 != ".." && $0 != "." }),
-              let folder = Folder.named(parts[i])
-        else { return nil }
-        parts[i] = parts[i] == folder.rawValue ? folder.russian : folder.rawValue
-        return parts.joined(separator: "/")
     }
 
     /// Обратно из имени файла в дату. Имя файла — это и есть дата записи:

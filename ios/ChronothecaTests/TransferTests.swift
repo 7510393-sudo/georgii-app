@@ -199,21 +199,4 @@ final class TransferTests: XCTestCase {
         XCTAssertTrue(fm.fileExists(atPath: куда
             .appendingPathComponent("Photos/2026/снимок.jpg").path))
     }
-
-    /// Прежний архив с русскими именами папок, новый — с английскими
-    /// (P353): записи ложатся в «Diary», а не в «Дневник» рядом с ним —
-    /// иначе их бы не было видно.
-    func testРусскиеПапкиЛожатсяВАнглийские() {
-        let прежний = fm.temporaryDirectory.appendingPathComponent("прежний-\(UUID().uuidString)")
-        defer { try? fm.removeItem(at: прежний) }
-        let день = прежний.appendingPathComponent("Дневник/2026/2026-09-22.md")
-        try? fm.createDirectory(at: день.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try? Data("запись".utf8).write(to: день)
-
-        let отчёт = Transfer.move(Transfer.contents(of: прежний), from: прежний, to: куда)
-
-        XCTAssertEqual(отчёт.moved, 1)
-        XCTAssertEqual(текст(куда.appendingPathComponent("Diary/2026/2026-09-22.md")), "запись")
-        XCTAssertFalse(fm.fileExists(atPath: куда.appendingPathComponent("Дневник").path))
-    }
 }

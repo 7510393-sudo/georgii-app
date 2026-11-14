@@ -11,7 +11,6 @@ struct SettingsSticker: View {
 
     @EnvironmentObject private var vault: Vault
     @EnvironmentObject private var shell: Shell
-    @State private var askingRename = false
     @State private var askingTrial = false
     /// Замеры скорости — долгим нажатием на «Версия» (P910).
     @State private var showingSpeed = false
@@ -216,26 +215,6 @@ struct SettingsSticker: View {
         } message: {
             Text(T("Ничего выгружать не нужно: записи — обычные текстовые файлы Markdown в вашей папке, по дню на файл, снимки и голос — рядом в своих папках. Их открывают Obsidian, iA Writer и любой текстовый редактор: укажите им эту папку. Для чтения и печати — PDF за любой срок.",
                    "There is nothing to export: your entries are plain Markdown text files in your folder, one per day, with photos and voice next to them in their own folders. Obsidian, iA Writer and any text editor open them: point them at this folder. For reading and printing, make a PDF for any period."))
-        }
-        // Папки с прежними, русскими, именами — перевести (P353).
-        if vault.hasRussianNames {
-            NoteRow(title: T("Имена папок — по-английски", "Rename folders to English")) {
-                NoteButton(title: T("Перевести ›", "Rename ›")) { askingRename = true }
-            }
-            .confirmationDialog(T("Перевести имена папок?", "Rename the folders to English?"), isPresented: $askingRename,
-                                titleVisibility: .visible) {
-                Button(T("Перевести", "Rename")) {
-                    store.save()
-                    close()
-                    vault.translateNames()
-                }
-                Button(T("Не сейчас", "Not now"), role: .cancel) { }
-            } message: {
-                Text(T("«Дневник» станет «Diary», «Фотографии» — «Photos» и так далее; ", "“Дневник” becomes “Diary”, “Фотографии” — “Photos” and so on; ")
-                     + T("ссылки на снимки в записях поправятся следом. Файлы не копируются ", "photo links in your entries are updated after that. Files are not copied ")
-                     + T("и не пересоздаются — меняются только имена. Если перевод оборвётся, ", "or recreated — only the names change. If it is interrupted, ")
-                     + T("ничего не пропадёт: приложение понимает оба имени.", "nothing is lost: the app understands both names."))
-            }
         }
     }
 
@@ -609,7 +588,7 @@ struct SettingsSticker: View {
         // на этом телефоне с этим архивом. Для автора и для тех, кто пишет
         // о медленной работе: снимок этого окна говорит, что именно медлит.
         .onLongPressGesture { showingSpeed = true }
-        .sheet(isPresented: $showingSpeed) { SpeedSheet(bytes: storageBytes, root: vault.root) }
+        .sheet(isPresented: $showingSpeed) { SpeedSheet(bytes: storageBytes) }
     }
 
     private func close() {
@@ -1203,26 +1182,12 @@ struct WelcomeView: View {
 /// телефоне человека.
 private struct SpeedSheet: View {
     let bytes: Int64?
-    let root: URL?
-    /// Счёт прежних русских имён в архиве (P917) — в стороне, пока окно
-    /// открыто: на большом архиве это секунды.
-    @State private var census: Rename.Census?
     @Environment(\.dismiss) private var dismiss
 
     private var text: String {
         var out = Build.label + "\n"
         if let bytes {
             out += T("архив: ", "archive: ") + ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file) + "\n"
-        }
-        if root != nil {
-            out += T("файлов со старой шапкой: ", "old-style files: ")
-            if let census {
-                out += "\(census.old) / \(census.files)\n"
-                if census.unread > 0 { out += T("не прочитано: ", "unread: ") + "\(census.unread)\n" }
-                if census.folders > 0 { out += T("папок с прежним именем: ", "old folder names: ") + "\(census.folders)\n" }
-            } else {
-                out += T("считаю…", "counting…") + "\n"
-            }
         }
         out += "\n" + LaunchClock.lines.joined(separator: "\n")
         return out
@@ -1240,13 +1205,6 @@ private struct SpeedSheet: View {
             }
             .navigationTitle(T("Замеры скорости", "Speed measurements"))
             .navigationBarTitleDisplayMode(.inline)
-            .onAppear {
-                guard census == nil, let root else { return }
-                DispatchQueue.global(qos: .utility).async {
-                    let found = Rename.census(in: root)
-                    DispatchQueue.main.async { census = found }
-                }
-            }
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(T("Готово", "Done")) { dismiss() }

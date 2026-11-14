@@ -97,40 +97,6 @@ struct CornerShape: Shape {
     }
 }
 
-/// Перевод имён папок (P353): пока идёт — экран закрыт, как при переносе;
-/// кончился — отчёт. Отдельно от `RootView`: её цепочка и так длинная.
-struct RenameShown: ViewModifier {
-    @EnvironmentObject private var vault: Vault
-    @EnvironmentObject private var store: DayStore
-    @EnvironmentObject private var archive: Archive
-
-    func body(content: Content) -> some View {
-        content
-            .overlay {
-                if let m = vault.renaming {
-                    MovingView(progress: m, title: T("Перевожу имена папок", "Renaming folders"))
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .ignoresSafeArea()
-                }
-            }
-            .alert(T("Имена папок переведены", "Folders renamed"), isPresented: shown, presenting: vault.renamed) { _ in
-                Button(T("Понятно", "OK")) { done() }
-            } message: { r in
-                Text(RootView.renameText(r))
-            }
-    }
-
-    private var shown: Binding<Bool> {
-        Binding(get: { vault.renamed != nil }, set: { if !$0 { vault.renamed = nil } })
-    }
-
-    private func done() {
-        vault.renamed = nil
-        store.load()
-        archive.reload()
-    }
-}
-
 /// Голосовая запись открывается небольшой шторкой снизу: имя, ход
 /// записи, «играть» и «убрать» — весь экран ей ни к чему (P360).
 struct VoiceShown: ViewModifier {

@@ -62,8 +62,7 @@ enum Transfer {
         let head = root.standardizedFileURL.path
         var out: [String] = []
 
-        let names = Vault.Folder.allCases.filter { $0 != .service }
-            .flatMap { [$0.rawValue, $0.russian] }
+        let names = Vault.Folder.allCases.filter { $0 != .service }.map(\.rawValue)
         for name in names {
             let base = root.appendingPathComponent(name)
             // Скрытое не пропускаем целиком: не скачанный из iCloud файл
@@ -92,7 +91,7 @@ enum Transfer {
         // Из служебного переезжает только список повторяющихся дел: без
         // него на новом месте «этот и все следующие» не находили следующих,
         // и повторы не дописывались дальше (P427).
-        for name in [Vault.Folder.service.rawValue, Vault.Folder.service.russian] {
+        for name in [Vault.Folder.service.rawValue] {
             let list = root.appendingPathComponent(name).appendingPathComponent(Repeats.fileName)
             if fm.fileExists(atPath: list.path) || fm.fileExists(atPath: stub(of: list).path) {
                 out.append(name + "/" + Repeats.fileName)

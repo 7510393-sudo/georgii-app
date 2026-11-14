@@ -10,10 +10,8 @@ import Foundation
 /// Всё, что не разобрано, остаётся текстом и возвращается в файл как есть.
 struct Diary: Equatable {
 
-    /// Заголовок ответов в файле — английский (P353). Прежний, русский,
-    /// читается по-прежнему; при первой правке дня он становится новым.
+    /// Заголовок ответов в файле — английский (P353).
     static let heading = "## How did it go?"
-    static let oldHeading = "## Как прошло?"
 
     /// Название дела → ответ.
     var answers: [String: String] = [:]
@@ -50,8 +48,7 @@ struct Diary: Equatable {
         var i = 0
         while i < lines.count, lines[i].trimmingCharacters(in: .whitespaces).isEmpty { i += 1 }
         guard i < lines.count,
-              [Diary.heading, Diary.oldHeading]
-                .contains(lines[i].trimmingCharacters(in: .whitespaces)) else {
+              lines[i].trimmingCharacters(in: .whitespaces) == Diary.heading else {
             (text, photos) = Diary.splitTail(body.trimmingCharacters(in: .newlines))
             return
         }
