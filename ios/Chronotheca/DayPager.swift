@@ -380,7 +380,13 @@ struct DayPage: View {
                          // касание «Дневника».
                          let ribbon = shell.ribbon
                          guard shell.screen == .today, shell.movingTask == nil, shell.pulling else {
-                             ribbon.glide(to: 0) { shell.go(.pullBack); ribbon.release() }
+                             if ribbon.frozen {
+                                 // Лист несли рукой (P923) — он просто на место.
+                                 ribbon.carry(0)
+                                 shell.go(.pullBack)
+                             } else {
+                                 ribbon.glide(to: 0) { shell.go(.pullBack); ribbon.release() }
+                             }
                              return
                          }
                          hideKeyboard()
@@ -398,14 +404,13 @@ struct DayPage: View {
                          // меру доезжает до его карточки (P877, автор: «чтобы
                          // карточка не уходила за край и растворялась, а
                          // уменьшалась и вставала в своё гнездо»).
+                         // День пишется, когда карточка села (P923), — не
+                         // посреди её хода.
                          if !store.isToday {
                              shell.go(.fold(card: Vault.stamp(store.date),
-                                            store.isFuture ? .future : .past, swipe: nil))
+                                            store.isFuture ? .future : .past))
                              ribbon.release()
                              store.prune()
-                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                                 store.save()
-                             }
                              return
                          }
                          ribbon.glide(to: ribbon.restY(dir)) {
@@ -426,22 +431,46 @@ struct DayPage: View {
                      onPullMove: { [shell, store] amount, dir in
                          guard shell.screen == .today, shell.movingTask == nil else { return }
                          let ribbon = shell.ribbon
+                         // Не сегодняшний лист несут рукой (P923): он идёт
+                         // за пальцем сам, ленту под собой не двигает — она
+                         // стоит там, где карточка его дня.
+                         let carried = !store.isToday
                          if dir == 0 {
                              // Не дотянули или вернули палец — мягко назад.
                              guard shell.pulling else { return }
+                             if carried {
+                                 withAnimation(.easeOut(duration: 0.25)) { ribbon.carry(0) } completion: {
+                                     // Палец мог потянуть снова — тогда не трогаем.
+                                     if ribbon.y == 0 { shell.go(.pullBack) }
+                                 }
+                                 return
+                             }
                              ribbon.glide(to: 0) {
                                  shell.go(.pullBack)
                                  ribbon.release()
                              }
                              return
                          }
+                         // Картотека открыта или карточка садится — лист не
+                         // тянут (`docs/71` §3).
+                         guard shell.deck.canPull else { return }
                          if !shell.pulling {
-                             // Лента ещё не стоит у дня — ставим и ждём
-                             // следующего движения пальца.
-                             guard ribbon.begin() else { return }
+                             if carried {
+                                 ribbon.lift()
+                                 // Лента под листом — заранее к его карточке.
+                                 ribbon.aim(Vault.stamp(store.date), side: store.isFuture ? -1 : 1)
+                             } else {
+                                 // Лента ещё не стоит у дня — ставим и ждём
+                                 // следующего движения пальца.
+                                 guard ribbon.begin() else { return }
+                             }
                              shell.go(.pull(Deck.Side(dir), today: store.isToday))
                          } else if shell.fileFrom != dir {
                              shell.go(.pull(Deck.Side(dir), today: store.isToday))
+                         }
+                         if carried {
+                             ribbon.carry(amount * CGFloat(dir))
+                             return
                          }
                          // Лента и день — одной прокруткой: место дня ровно
                          // под днём, карточки вплотную к его краю.

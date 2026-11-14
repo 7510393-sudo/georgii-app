@@ -660,7 +660,9 @@ struct RootView: View {
                 .modifier(RibbonFade(ribbon: shell.ribbon, live: shell.ribbonLive,
                                      card: shell.dayCard,
                                      quiet: shell.pulling && !store.isToday && !shell.dayCard))
-                .allowsHitTesting(shell.screen == .search)
+                // Пока карточка садится, картотеку не листают (P923, `docs/71`
+                // §3: чего нет в таблице переходов — не происходит).
+                .allowsHitTesting(shell.screen == .search && !shell.dayCard)
                 .accessibilityHidden(!shell.ribbonLive)
                 .zIndex(0)
             // Пока открыта лента, день пропускает касания к ней: ленту
@@ -696,6 +698,11 @@ struct RootView: View {
                     $0.opacity(shell.dayCard ? 0 : 1)
                 }
                 .allowsHitTesting(shell.screen == .today)
+            // «Сегодня» с открытого дня — сразу, поверх него (P924).
+            if todayRise != 0 {
+                TodayRise(from: todayRise, size: size, risen: todayRisen)
+                    .zIndex(2)
+            }
         }
         // Где ты в картотеке (P845): линия от середины левого края.
         .overlay(alignment: .leading) {
@@ -713,7 +720,7 @@ struct RootView: View {
             TodayPeek(ribbon: shell.ribbon, live: shell.ribbonLive,
                       open: shell.screen == .search && shell.ribbonOpen,
                       card: shell.dayCard, todaySheet: store.isToday,
-                      future: store.isFuture, size: size) { riseToday() }
+                      future: store.isFuture, lifting: todayRise != 0, size: size) { riseToday() }
         }
         .background(Desk())
     }
@@ -765,6 +772,11 @@ struct RootView: View {
     /// картотеку или несут дело, не под листком и не во время переезда.
     /// С картотеки ушли на карту или календарь — вернёмся в неё же (P907).
     @State private var ribbonAway = false
+    /// Лист «Сегодня» поднимается с открытого дня (P924): 1 — снизу,
+    /// −1 — сверху, 0 — нет.
+    @State private var todayRise = 0
+    /// Он уже едет на место.
+    @State private var todayRisen = false
 
     private var pagingFree: Bool {
         !shell.pulling && !shell.holding && !shell.showingSettings && shell.settingsPull == nil
@@ -905,12 +917,6 @@ struct RootView: View {
         // меняется, когда встала, — как и при открытии картотеки. Прежде
         // раздел менялся в миг отпускания, экран перестраивался, и ход
         // догонял прыжком.
-        // Лента дошла до края к сегодня — «Сегодня» (P871), как касание
-        // его корешка.
-        shell.ribbon.toToday = { [shell] in
-            guard shell.screen == .search else { return }
-            riseToday()
-        }
         shell.ribbon.wantDay = { [shell] in
             guard shell.screen == .search else { return }
             backToDay {
@@ -1143,6 +1149,8 @@ struct RootView: View {
     /// Лента доезжает местом дня на экран, и день снова живой (P777).
     private func backToDay(then: (() -> Void)? = nil) {
         let ribbon = shell.ribbon
+        // Карточка ещё садится — досадить разом (P923).
+        ribbon.landing.hurry?()
         let finish = { [shell, archive] in
             var still = Transaction()
             still.disablesAnimations = true
@@ -1162,37 +1170,49 @@ struct RootView: View {
         }
     }
 
-    /// «Сегодня» из картотеки — касанием корешка, кнопкой «Дневник» или у
-    /// края ленты (P878: плавно и равномерно, одним путём). Лист выходит
-    /// оттуда, где он торчит (P896, вместо кольца): со стороны прошлого —
-    /// корешком снизу и поднимается; со стороны будущего — низом листа
-    /// сверху и опускается (прежде, по кольцу, всегда снизу).
+    /// «Сегодня» из картотеки — касанием корешка или кнопкой «Дневник»
+    /// (P878: плавно и равномерно, одним путём). Лист выходит оттуда, где
+    /// он торчит (P896, вместо кольца): со стороны прошлого — корешком
+    /// снизу и поднимается; со стороны будущего — низом листа сверху и
+    /// опускается (прежде, по кольцу, всегда снизу).
     private func riseToday() {
-        guard shell.screen == .search || (shell.screen == .today && !store.isToday),
-              !shell.ribbon.busy else { return }
         let ribbon = shell.ribbon
-        var still = Transaction()
-        still.disablesAnimations = true
+        // Карточка ещё садится — досадить разом (P923).
+        ribbon.landing.hurry?()
+        guard shell.screen == .search || (shell.screen == .today && !store.isToday),
+              !ribbon.busy, todayRise == 0 else { return }
+        var quiet = Transaction()
+        quiet.disablesAnimations = true
+        let still = quiet
+        // Открыт прошедший или будущий день (P924; отменяет P879 — «сперва
+        // он складывается в свою карточку, потом поднимается „Сегодня“»):
+        // сегодняшний лист сразу ложится поверх него. Карточка открытого дня
+        // не садится вовсе — лента под листом стоит, где её оставили.
+        if shell.screen == .today {
+            guard shell.go(.today) else { return }
+            hideKeyboard()
+            Feel.thud()
+            store.save()
+            withTransaction(still) { todayRise = store.isFuture ? -1 : 1 }
+            // Следующим тактом: лист уже стоит у своего края — оттуда и едет.
+            DispatchQueue.main.async {
+                withAnimation(.easeInOut(duration: 0.38)) { todayRisen = true } completion: {
+                    withTransaction(still) {
+                        ribbon.reset()
+                        store.go(to: DayStore.today())
+                        todayRise = 0
+                        todayRisen = false
+                    }
+                    archive.reloadSoon()
+                }
+            }
+            return
+        }
+        guard case .file = shell.deck else { return }
         Feel.thud()
         ribbon.felt = true
         // Со стороны будущего «Сегодня» сверху (P896).
-        let top = store.isFuture || (store.isToday && shell.screen == .search && ribbon.y < 0)
-        // Открыт прошедший или будущий день (P879, автор: «перед тем как
-        // сегодняшний лист поднимется, предыдущий должен стандартно
-        // сложиться и встать на своё место в картотеке»): сперва он
-        // складывается в свою карточку (P877), картотека открыта на ней, —
-        // потом поднимается «Сегодня».
-        if !store.isToday && !shell.dayCard {
-            hideKeyboard()
-            withTransaction(still) {
-                shell.go(.fold(card: Vault.stamp(store.date), store.isFuture ? .future : .past,
-                               swipe: top ? -1 : 1))
-            }
-            // Карточка садится дольше прежнего (P895).
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { liftToday(top: top) }
-            return
-        }
-        liftToday(top: top)
+        liftToday(top: ribbon.y < 0)
     }
 
     /// Вторая половина `riseToday`: сегодняшний лист — корешком внизу и
@@ -1200,22 +1220,13 @@ struct RootView: View {
     private func liftToday(top: Bool) {
         let ribbon = shell.ribbon
         let dir = top ? -1 : 1
-        var still = Transaction()
-        still.disablesAnimations = true
-        if !store.isToday {
-            store.save()
-            // Пока лента пересобирается вокруг сегодня, не видно ни листа, ни
-            // ленты (P888): иначе на глазах мелькали дальние карточки. Лист
-            // встаёт корешком внизу уже сегодняшним.
-            ribbon.veiled = true
-            withTransaction(still) {
-                shell.go(.hide(dir))
-                store.go(to: DayStore.today())
-            }
-        }
+        var quiet = Transaction()
+        quiet.disablesAnimations = true
+        let still = quiet
         ribbon.opened()
         ribbon.settle(dir) { [shell] in
-            withTransaction(still) { shell.go(.todayAtEdge(dir)) }
+            let on: Bool = withTransaction(still) { shell.go(.todayAtEdge(dir)) }
+            guard on else { return }
             ribbon.place(ribbon.restY(dir))
             ribbon.refresh()
             ribbon.veiled = false

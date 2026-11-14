@@ -261,7 +261,10 @@ final class MovementTests: XCTestCase {
                    thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3)),
                    withVelocity: .slow, thenHoldForDuration: 0.1)
         XCTAssertTrue(wait(4) { openScreen == "search" }, "снизу прошедшего дня не открылась картотека: \(openScreen)")
-        XCTAssertEqual(openDay, past, "тяга снизу сменила день")
+        // День закрылся в карточку, картотека — прошлого (P923: на листе
+        // снова сегодня, когда карточка села).
+        XCTAssertTrue(wait(5) { (probe()["deck"] ?? "").hasPrefix("картотека(прошлое") },
+                      "после тяги снизу картотека не прошлого: \(probe()["deck"] ?? "?")")
         sleep(1)
         save("14-прошлый-день-картотека-снизу")
     }
@@ -439,8 +442,8 @@ final class MovementTests: XCTestCase {
     // Четыре случая из видео автора к сборкам 278–288. В симуляторе лента
     // всегда успевает, и поломки не повторялись; здесь замеры ячеек
     // доходят с опозданием. На прежнем коде (сборка А) эти проверки
-    // обязаны краснеть — иначе они ничего не стерегут; зеленеют со
-    // сборки Б.
+    // краснели (прогон 14.11, коммит 41ae7a1) — значит, стерегут;
+    // зеленеют со сборки Б (P923).
 
     /// Строка состояния картотеки (`DeckProbe`).
     private func probe() -> [String: String] {
@@ -599,7 +602,11 @@ final class MovementTests: XCTestCase {
     }
 
     /// 4. Закрыть карточку и тут же потянуть снова: посадка не ломается,
-    /// картотека встаёт спокойно, карточка на виду.
+    /// картотека встаёт спокойно, карточка на виду. Второе движение —
+    /// короткое и с остановкой (P923): пока карточка садится, оно не делает
+    /// ничего; если она уже села — честно листает открытую картотеку, но
+    /// карточку с экрана не уводит (прежнее длинное движение с разгоном
+    /// уводило её и на исправной картотеке).
     func testSlow4CloseAndPullAtOnce() {
         launch(trace: "след-медленно-4", slow: true)
         XCTAssertEqual(openDay, "today")
@@ -611,12 +618,14 @@ final class MovementTests: XCTestCase {
         note("медленно 4", "карточка \(picked.label) на \(Int(picked.top))")
         openCard(picked)
         // Закрыли — и сразу второе движение, не дожидаясь посадки.
-        for _ in 0..<2 {
-            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2))
-                .press(forDuration: 0.05,
-                       thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7)),
-                       withVelocity: 900, thenHoldForDuration: 0)
-        }
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2))
+            .press(forDuration: 0.05,
+                   thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7)),
+                   withVelocity: 900, thenHoldForDuration: 0)
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2))
+            .press(forDuration: 0.05,
+                   thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.32)),
+                   withVelocity: .slow, thenHoldForDuration: 0.3)
         usleep(300_000)
         save("24-медленно-сразу-снова")
         sleep(6)

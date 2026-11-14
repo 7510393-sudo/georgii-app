@@ -299,7 +299,7 @@ struct RibbonFade: ViewModifier {
         content
             .opacity(shown)
             // Пересобирается вокруг другого дня — не видна (P888).
-            .animation(.easeInOut(duration: 0.15)) { $0.opacity(ribbon.veiled ? 0 : 1) }
+            .animation(.easeInOut(duration: 0.2)) { $0.opacity(ribbon.veiled ? 0 : 1) }
     }
 }
 
@@ -323,6 +323,9 @@ struct TodayPeek: View {
     let todaySheet: Bool
     /// На листе — будущий день.
     let future: Bool
+    /// Лист «Сегодня» уже поднимается с открытого дня (P924): его корешок
+    /// и полоска — на нём самом, свои здесь не нужны.
+    var lifting = false
     let size: CGSize
     let go: () -> Void
 
@@ -343,12 +346,12 @@ struct TodayPeek: View {
         let sheetHigh = rising && shown <= FollowRibbon.topClamp(size.height) + 0.5
         let bottomEdge = shown + size.height + DayPage.under
         let topY = aloneTop ? 0 : bottomEdge - FollowRibbon.peekTop
-        let topShown: Double = aloneTop ? 1 : rising ? Double(min(1, -ribbon.y / 80)) : 0
+        let topShown: Double = aloneTop ? (lifting ? 0 : 1) : rising ? Double(min(1, -ribbon.y / 80)) : 0
         ZStack(alignment: .topLeading) {
             TodayTab()
                 .frame(width: size.width)
                 .offset(y: low)
-                .opacity(aloneBottom ? 1 : 0)
+                .opacity(aloneBottom && !lifting ? 1 : 0)
                 .animation(.easeOut(duration: 0.35), value: aloneBottom)
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
@@ -433,12 +436,11 @@ struct FoldGhost: View {
         let under: CGFloat = ribbon.foldSide < 0 ? FollowRibbon.futureTop : 0
         let start = CGRect(x: 0, y: top + under, width: size.width, height: size.height - under)
         let r = ribbon.foldTo ?? start
-        FoldSchema()
+        // Из листа к гнезду — одним плавным движением (P895); ход задаёт
+        // посадка (P923): по его концу она и узнаёт, что схема долетела.
+        FoldSchema(aged: ribbon.foldSide > 0)
             .frame(width: r.width, height: r.height)
             .offset(x: r.minX, y: r.minY)
-            // Из листа к гнезду — одним плавным движением (P895).
-            .animation(ribbon.foldTo == nil ? nil
-                       : ribbon.foldLanded ? nil : .easeInOut(duration: SearchView.flight), value: ribbon.foldTo)
             .frame(width: size.width, height: size.height, alignment: .topLeading)
             // Долетела — дальше садится сама карточка в своём ряду (P895):
             // схема над лентой уходит в тот же кадр, без таяния поверх.
@@ -448,6 +450,44 @@ struct FoldGhost: View {
             .animation(ribbon.foldTo == nil ? nil : .easeIn(duration: SearchView.flight)) {
                 $0.opacity(ribbon.foldTo == nil ? 1 : 0.6)
             }
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+    }
+}
+
+/// «Сегодня» с открытого прошедшего или будущего дня — сразу (P924, автор
+/// по 290: «сначала закрывается карточка с тем же мельканием, а потом
+/// экран картотеки закрывается сегодняшним днём; надо, чтобы сразу
+/// поднимался экран сегодняшнего дня, а всё остальное происходило
+/// невидимо»; отменяет «сперва открытый день складывается в карточку»
+/// P879). Сегодняшний лист выходит оттуда, где торчит, — корешком снизу
+/// или полоской сверху — и ложится поверх открытого дня; нарисован он тем
+/// же кодом, что соседняя страница при перелистывании (P114). Лёг — под
+/// ним день сменился на сегодня, и этот лист убран: подмены не видно.
+struct TodayRise: View {
+    /// Откуда: 1 — снизу, корешком; −1 — сверху, низом листа.
+    let from: Int
+    let size: CGSize
+    /// Лист уже едет на место.
+    let risen: Bool
+
+    var body: some View {
+        let start: CGFloat = from > 0 ? size.height - FollowRibbon.peekBottom
+            : FollowRibbon.topClamp(size.height)
+        DayPage(date: DayStore.today(), live: false)
+            .frame(width: size.width, height: size.height)
+            // Сверху лист выходит низом: на нём та же надпись, что была на
+            // полоске, — она уезжает вместе с ним и тает.
+            .overlay(alignment: .topLeading) {
+                if from < 0 {
+                    TodayTop(bare: true)
+                        .frame(width: size.width, height: FollowRibbon.peekTop)
+                        .offset(y: size.height + DayPage.under - FollowRibbon.peekTop)
+                        .opacity(risen ? 0 : 1)
+                }
+            }
+            .offset(y: risen ? 0 : start)
+            .frame(width: size.width, height: size.height, alignment: .topLeading)
             .allowsHitTesting(false)
             .accessibilityHidden(true)
     }

@@ -227,14 +227,12 @@ struct SearchView: View {
         let kind: Kind
         /// Заходит на предыдущую карточку (P694, P695).
         var over = false
-        /// Карточка под днём (P791): у дня из прошлого там прошлое после него.
-        var below = false
 
         /// Куда уходит даль (P782): 1 — прошлое, вдаль вверх; -1 — будущее,
         /// вдаль вниз; 0 — не карточка (место дня, поля).
         var depth: Int {
             switch kind {
-            case .past: return below ? -1 : 1
+            case .past: return 1
             case .future: return -1
             default: return 0
             }
@@ -262,70 +260,30 @@ struct SearchView: View {
     /// Вся лента одной стопкой (P777, вместо двух картотек P771): старые
     /// сверху, внизу прошлого вчера, ниже место сегодняшнего дня, под ним
     /// завтра и дальше. Сегодняшней карточки нет: на её месте сам день.
-    private func entries(_ past: [Archive.Day], _ future: [Archive.Day],
-                         later: [Archive.Day], slot: Bool = true,
-                         between: [Archive.Day] = []) -> [Entry] {
+    /// Лента всегда собрана вокруг сегодня (P923): открытый с карточки день
+    /// её не пересобирает.
+    private func entries(_ past: [Archive.Day], _ future: [Archive.Day]) -> [Entry] {
         var out: [Entry] = []
         // Над самой старой — место под строку поиска; в коротком архиве —
         // стол до верха экрана, чтобы лента могла встать вчерашним днём
         // над нижней строкой.
-        // Будущий день закрыт в карточку (P883): ряд будущего начинается
-        // сразу под низом листа «Сегодня» у верха (P896) — пустого поля нет
-        // (автор: «карточки будущего, когда смахиваешь вниз, оставляют
-        // вверху свободное место»).
-        let lead = !slot && past.isEmpty && between.isEmpty && later.isEmpty
-            ? FollowRibbon.peekTop
-            // Открыт будущий день: над завтра — низ листа «Сегодня» (P896).
-            : max(past.isEmpty && !between.isEmpty ? FollowRibbon.peekTop : 8,
-                  height - CGFloat(past.count + between.count) * 60)
-        out.append(Entry(id: "lead", kind: .pad(lead)))
-        if !query.trimmingCharacters(in: .whitespaces).isEmpty && past.isEmpty && future.isEmpty && later.isEmpty && between.isEmpty {
+        out.append(Entry(id: "lead", kind: .pad(max(8, height - CGFloat(past.count) * 60))))
+        if !query.trimmingCharacters(in: .whitespaces).isEmpty && past.isEmpty && future.isEmpty {
             out.append(Entry(id: "note", kind: .note))
         }
         for (i, day) in past.enumerated() {
             out.append(Entry(id: Search.deep ? "p\(i)" : day.id, kind: .past(day), over: i > 0))
         }
-        // Открыт будущий день (P871): над ним — дни от завтра до него,
-        // карточками будущего; выше края — сегодня.
-        for (i, day) in between.enumerated() {
-            out.append(Entry(id: day.id, kind: .future(day), over: i > 0))
-        }
         // Место дня заходит на нижний край вчерашней карточки, как
         // следующая карточка; завтрашняя лежит под днём своим корешком.
-        if slot { out.append(Entry(id: Ribbon.slotID, kind: .slot, over: !past.isEmpty || !between.isEmpty)) }
-        // День закрыт в карточку (P840): сперва дни после него до сегодня,
-        // потом будущее — по порядку дат.
-        if !slot {
-            for day in later {
-                out.append(Entry(id: day.id, kind: .past(day), over: true))
-            }
-        }
+        out.append(Entry(id: Ribbon.slotID, kind: .slot, over: !past.isEmpty))
         for (i, day) in future.enumerated() {
-            out.append(Entry(id: day.id, kind: .future(day), over: slot ? i > 0 : true))
-        }
-        // У дня из прошлого под ним — прошлое после него (P791), такими же
-        // карточками, как над ним: ближайший следующий день сверху.
-        // День закрыт в карточку (P834) — после него дни идут обычной
-        // стопкой прошлого, наползая друг на друга.
-        for (i, day) in later.enumerated() where slot {
-            out.append(Entry(id: day.id, kind: .past(day), over: i > 0, below: true))
+            out.append(Entry(id: day.id, kind: .future(day), over: i > 0))
         }
         // Под последней — место под строку поиска внизу (P797).
-        // День закрыт в карточку (P875) — поле маленькое: последняя карточка
-        // встаёт над корешком «Сегодня», а не над пустым столом высотой с
-        // экран (автор: «большое пустое поле над сегодняшним днём»).
-        let tail = slot
-            ? max(Search.fieldHeight + 8, height - CGFloat(future.count + later.count) * 60)
-            : max(Search.fieldHeight + 8, FollowRibbon.peekBottom + 8)
-        out.append(Entry(id: "tail", kind: .pad(tail)))
+        out.append(Entry(id: "tail", kind: .pad(max(Search.fieldHeight + 8,
+                                                    height - CGFloat(future.count) * 60))))
         return out
-    }
-
-    /// В дне есть запись дневника — заголовок, текст или снимки (P791).
-    private static func written(_ day: Archive.Day) -> Bool {
-        !day.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            || !day.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            || day.photos > 0
     }
 
     /// Подходит ли день под «что искать» из меню поиска (P249).
@@ -343,67 +301,33 @@ struct SearchView: View {
     }
 
     private var ribbonList: some View {
-        // Лента — вокруг открытого дня, а не сегодняшнего (P791): над ним
-        // дни до него; под ним — у сегодняшнего и будущего дела вперёд, у
-        // прошлого — записанные дни после него.
-        let todayStamp = Vault.stamp(DayStore.today())
-        let anchor = Vault.stamp(store.date)
-        // Не сегодняшний день, закрытый в карточку (P834, P875): он сам —
-        // карточка в своём ряду, места дня нет.
-        let card = shell.dayCard && anchor != todayStamp
-        // Между прошлым и будущим всегда стоит сегодня (P871, автор 10.11;
-        // отменяет P840 — лента из закрытой карточки шла через сегодня в
-        // будущее). Открыт другой день — со стороны сегодня в ленте только
-        // дни между ним и сегодня, а дошли до края — раскрывается «Сегодня».
-        let toFuture = anchor > todayStamp
+        // Лента — всегда вокруг сегодня (P923; отменяет «вокруг открытого дня»
+        // P791 и ряды под закрытую карточку P834, P840, P871, P875). С тех
+        // пор как под не сегодняшним листом картотека не видна (P907), ленту
+        // вокруг его дня никто не видел — она только пересобиралась туда и
+        // обратно, и эта пересборка была пустым экраном при закрытии
+        // карточки (`docs/71` §8). Теперь, пока открыт день с карточки, лента
+        // стоит, где её оставили, и карточка садится в то же гнездо.
+        let today = DayStore.today()
+        let todayStamp = Vault.stamp(today)
         // Опись читается один раз за перерисовку (P771): старые сверху.
         let all = Array(found.reversed())
-        var past = toFuture ? [] : all.filter { card ? $0.stamp <= anchor : $0.stamp < anchor }
-        let between = toFuture && !card
-            ? ahead(all.filter { $0.stamp > todayStamp && $0.stamp < anchor }, from: DayStore.today())
-                .filter { $0.stamp < anchor }
-            : []
+        var past = all.filter { $0.stamp < todayStamp }
         // На снимке CI «лента поиска» находки повторены, чтобы было что
         // листать (P717).
         if Search.deep { past = Array(repeating: past, count: 12).flatMap { $0 } }
-        // У прошедшего дня будущего в ленте нет (P871): под ним дни до
-        // сегодня, у нижнего края — сегодня, листом, а не карточкой.
-        // Будущий день закрыт в карточку (P875) — весь ряд будущего от завтра,
-        // с ним самим на своём месте.
-        let future = card && toFuture
-            ? ahead(all.filter { $0.stamp > todayStamp }, from: DayStore.today())
-            : anchor >= todayStamp
-            ? ahead(all.filter { $0.stamp > anchor }, from: store.date) : []
-        let later = anchor < todayStamp
-            ? all.filter { $0.stamp > anchor && $0.stamp < todayStamp && Self.written($0) } : []
-        shell.ribbon.todayEnd = anchor < todayStamp ? 1 : toFuture ? -1 : 0
+        let future = ahead(all.filter { $0.stamp > todayStamp }, from: today)
         // Столбец времени у будущих карточек один на всю стопку, как в
         // «Списке» календаря (P756): по самому длинному виду времени.
         let times = future.flatMap { plan($0).compactMap(\.time) }
         let sample: String? = times.isEmpty ? nil
             : times.contains { $0.contains(where: \.isLetter) } ? "00:00 PM" : "00:00"
-        let items = entries(past, future, later: later, slot: !card, between: between)
-        // Мера для линии слева (P850).
-        var measure = Ribbon.Plan()
-        if case .pad(let h) = items.first?.kind { measure.lead = h }
-        // Запас над экраном (P861) — тоже поле сверху.
+        let items = entries(past, future)
+        // Запас над экраном (P861) — поле сверху, за верхним краем.
         let above = Afar.above(height)
-        measure.lead += above
-        shell.ribbon.above = above
-        if case .pad(let h) = items.last?.kind { measure.tail = h }
-        measure.tail += Afar.lift
-        measure.before = past.count + later.count + between.count
-        measure.total = past.count + later.count + future.count + between.count
-        measure.slot = !card
-        shell.ribbon.plan = measure
-        let firstLater = later.first?.id
-        // Карточка закрытого дня и первая после неё (P875).
-        let anchorCard = card
-            ? (toFuture ? future.first(where: { $0.stamp == anchor })?.id
-                        : past.last(where: { $0.stamp == anchor })?.id)
-            : nil
-        let firstAfter = toFuture ? future.first(where: { $0.stamp > anchor })?.id : firstLater
         let ribbon = shell.ribbon
+        // Какие карточки есть в ленте — чтобы не искать ту, которой нет (P923).
+        ribbon.ids = Set(items.map(\.id))
         return ScrollViewReader { proxy in ScrollView {
             // Карточки — вид сверху: нижняя лежит поверх верхней и своим
             // корешком с датой закрывает её низ (P694, P695).
@@ -412,8 +336,6 @@ struct SearchView: View {
                 Color.clear.frame(height: above)
                 ForEach(items) { entry in
                     piece(entry, sample: sample)
-                        // Рост первой карточки под днём — чтобы, когда день
-                        // закроется в карточку, лента встала точно (P857).
                         // Где карточка закрытого дня на экране — в неё
                         // складывается лист (P883).
                         .onGeometryChange(for: CGRect.self) { proxy in
@@ -421,20 +343,11 @@ struct SearchView: View {
                         } action: { frame in
                             // Где карточки на экране — чтобы, закрыв открытый с
                             // неё день, вернуть ленту туда же (P893).
-                            ribbon.saw(entry.id, frame.offsetBy(dx: 0, dy: -above), anchorCard: anchorCard)
+                            ribbon.saw(entry.id, frame.offsetBy(dx: 0, dy: -above))
                         }
                         // Карточку разобрала ленивая стопка — её рамки больше
                         // нет: по ней видно, удался ли переход к карточке (P906).
                         .onDisappear { ribbon.saw(entry.id, nil) }
-                        .background {
-                            if entry.id == firstAfter {
-                                GeometryReader { g in
-                                    Color.clear
-                                        .onAppear { ribbon.laterHeight = g.size.height }
-                                        .onChange(of: g.size.height) { _, h in ribbon.laterHeight = h }
-                                }
-                            }
-                        }
                         .padding(.top, entry.over ? -Search.overlap : 0)
                         .modifier(Distance(side: entry.depth, height: height))
                         .id(entry.id)
@@ -466,6 +379,16 @@ struct SearchView: View {
             // Место дня — на верх экрана, а не на верх окна ленты: окно выше
             // экрана на запас (P861).
             ribbon.home = { proxy.scrollTo(Ribbon.slotID, anchor: Afar.screenTop(height)) }
+            // Переход к карточке: верхом на `top` от верха экрана (P923).
+            // Окно ленты больше экрана на запасы сверху и снизу (P791, P861).
+            ribbon.jump = { id, top in
+                let window: CGFloat = above + height + Afar.reserve(height)
+                let row: CGFloat = Ribbon.cardHeight - Search.overlap
+                let spot = UnitPoint(x: 0.5, y: window > row ? (above + top) / (window - row) : 0)
+                var still = Transaction()
+                still.disablesAnimations = true
+                withTransaction(still) { proxy.scrollTo(id, anchor: spot) }
+            }
             DispatchQueue.main.async {
                 if shell.ribbonOpen { settle() } else { ribbon.park() }
                 // Ленивая стопка ставит дальнюю карточку со второго раза.
@@ -484,16 +407,25 @@ struct SearchView: View {
         // чтобы тяга из дня начиналась сразу.
         // Только что открытую ленту (снимок, запуск на картотеке) опись
         // догоняет позже — встаём в покой ещё раз.
+        // Открыт день с карточки — лента стоит, где её оставили (P923): в
+        // то же гнездо карточка и вернётся.
         .onChange(of: items.count) { _, _ in
             DispatchQueue.main.async {
-                if !shell.ribbonLive { ribbon.park() } else if ribbon.fresh { settle() }
+                if !shell.ribbonLive { if store.isToday { ribbon.park() } } else if ribbon.fresh { settle() }
+            }
+        }
+        // На листе снова сегодня, а картотека закрыта — место дня под день.
+        .onChange(of: store.isToday) { _, today in
+            guard today else { return }
+            DispatchQueue.main.async {
+                if !shell.ribbonLive { ribbon.park() }
             }
         }
         // Высота экрана известна не с первого кадра: до неё место дня
         // нулевое, и лента вставала не там (снимки CI к P777).
         .onChange(of: height) { _, _ in
             DispatchQueue.main.async {
-                if !shell.ribbonLive { ribbon.park() } else if ribbon.fresh { settle() }
+                if !shell.ribbonLive { if store.isToday { ribbon.park() } } else if ribbon.fresh { settle() }
             }
         }
         // Ленту открыли не тягой (снимок, запуск на картотеке) — в покой.
@@ -506,146 +438,19 @@ struct SearchView: View {
         .onChange(of: query) { _, _ in
             DispatchQueue.main.async { settle() }
         }
-        // День закрылся в карточку (P834, P875). Сперва — чтобы на экране
-        // ничто не прыгнуло: место дня над экраном сменилось карточкой, и всё
-        // ниже поднялось бы. Затем лента мягко доезжает, пока карточка дня не
-        // встанет на виду — картотека открыта там, куда она вернулась.
+        // День закрывают в карточку (P834, P875) — посадка по событиям (P923).
         .onChange(of: shell.dayCard) { _, now in
-            if !now {
+            guard now, case .landing(let closed, _, _) = shell.deck else {
+                // Посадка кончена или прервана: её шаги больше не к месту.
                 ribbon.landing.clear()
+                ribbon.unseat()
                 ribbon.foldSide = 0
                 ribbon.foldTo = nil
                 ribbon.foldLanded = false
                 ribbon.folding = false
-                ribbon.closedID = nil
+                return
             }
-            // Только когда день правда закрыт в карточку: «Сегодня» на миг
-            // тоже прячется так (P878), но карточки у него нет.
-            guard now, card else { return }
-            // Рост карточки — замеренный, не придуманный (P857).
-            let full: CGFloat = ribbon.laterHeight > 0 ? ribbon.laterHeight
-                : Search.tabHeight + 8 + Search.body + Search.overlap + 6
-            let frameHeight: CGFloat = full - Search.overlap
-            // Окно ленты больше экрана на запасы сверху и снизу (P791, P861).
-            let view: CGFloat = above + height + Afar.reserve(height)
-            func spot(_ top: CGFloat) -> UnitPoint {
-                UnitPoint(x: 0.5, y: view > frameHeight ? (above + top) / (view - frameHeight) : 0)
-            }
-            let closed = anchor
-            let swipe = shell.fileFrom
-            // Сторона «Сегодня» от закрытого дня: прошлое — снизу, будущее — сверху.
-            let side = anchor < todayStamp ? 1 : -1
-            let inset = 10 + Search.cardInset
-            let w = UIScreen.main.bounds.width
-            // Где была его карточка, когда его открыли (P893: «картотека
-            // открыта ровно там, где была до того, как открыли карточку»).
-            let back = ribbon.openedFrom?.id == closed ? ribbon.openedFrom?.top : nil
-            let edge: CGFloat = swipe < 0 ? FollowRibbon.peekTop : height - FollowRibbon.peekBottom - frameHeight
-            let top: CGFloat = back ?? edge
-            var still = Transaction()
-            still.disablesAnimations = true
-            // Без вспышек (P893, автор: «мелькают карточки, потом скачком
-            // правильная часть»): лента тает вместе с листом, пока
-            // пересобирается, и проступает уже на своём месте.
-            ribbon.veiled = true
-            // Гнездо карточки пустует, пока она летит (P895). Схема — во весь
-            // лист, пока лента пересобирается; сжатия у края больше нет
-            // (отменяет P893 (1): схема стояла маленькой у края и потом
-            // ехала — рывок, видео автора к 278).
-            withTransaction(still) {
-                ribbon.landing.id = closed
-                ribbon.landing.stage = .away
-                // «Сегодня» на своей стороне, пока лента пересобирается (P896).
-                ribbon.foldSide = side
-            }
-            // Схема летит к своему месту сразу, с толчком в руку (P913), а
-            // не стоит во весь экран, пока лента пересобирается (автор по
-            // 286: «сзади мелькает и меняется экран»). Место известно заранее:
-            // туда вернётся карточка; когда лента встанет — поправка до точного.
-            let started = CACurrentMediaTime()
-            DispatchQueue.main.async {
-                guard ribbon.folding, ribbon.foldTo == nil else { return }
-                let about = CGRect(x: inset, y: top, width: w - 2 * inset, height: full)
-                ribbon.foldTo = about.offsetBy(dx: 0, dy: Afar.shift(top, side: side, height: height) - Landing.lift)
-            }
-            // Лист растаял — картотека собирается вокруг сегодня (P890).
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                guard shell.dayCard, ribbon.folding else { return }
-                ribbon.closedID = closed
-                store.save()
-                Trace.note(String(format: "лента: закрыт %@, вернуть на %.0f (%@)", closed, top,
-                                  back == nil ? "у края" : "где был"))
-                // Прежний замер места дня — от ленты вокруг закрытого дня (P894);
-                // пока нового нет, «Сегодня» — у своего края (P899).
-                ribbon.forget(far: side)
-                withTransaction(still) { store.go(to: DayStore.today()) }
-                shell.go(.rebuilt)
-                DispatchQueue.main.async {
-                    withTransaction(still) { proxy.scrollTo(closed, anchor: spot(top)) }
-                    // Карточка — ровно на своё место, пока лента скрыта
-                    // (P894: прежде вставала приблизительно и потом лента
-                    // дёргалась). Затем лист «Сегодня» — не выше своего места
-                    // у края (P893: корешок торчал на полэкрана).
-                    var aligned = false
-                    DispatchQueue.main.async {
-                        ribbon.align(closed, top: top, again: {
-                            withTransaction(still) { proxy.scrollTo(closed, anchor: spot(top)) }
-                        }) {
-                            ribbon.keepToday(side)
-                            aligned = true
-                        }
-                    }
-                    func reveal(_ waited: Int = 0) {
-                        guard aligned || waited >= 24 else {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.03) { reveal(waited + 1) }
-                            return
-                        }
-                        guard ribbon.folding else { return }
-                        shell.go(.stood)
-                        // Рамка карточки без полей по бокам (схема была шире
-                        // карточки на эти поля).
-                        let nest = ribbon.anchorFrame?.insetBy(dx: Search.cardInset, dy: 0)
-                            ?? CGRect(x: inset, y: top, width: w - 2 * inset, height: full)
-                        // Лента проступает на своём месте, схема одним
-                        // движением летит из листа к гнезду и встаёт над ним
-                        // (P889, P895)…
-                        ribbon.veiled = false
-                        // Схема летит туда, где карточка видна, а не туда, где
-                        // она стоит в раскладке: между ними — сближение (P909).
-                        let place = nest.offsetBy(dx: 0, dy: Afar.shift(nest.minY, side: side, height: height))
-                        ribbon.foldTo = place.offsetBy(dx: 0, dy: -Landing.lift)
-                        // Садится, когда долетела: полёт начат с толчком (P913).
-                        let left = max(0.18, Self.flight - (CACurrentMediaTime() - started))
-                        DispatchQueue.main.asyncAfter(deadline: .now() + left) {
-                            guard ribbon.folding else { return }
-                            // …там она уже сама карточка, в своём ряду…
-                            withTransaction(still) {
-                                ribbon.landing.stage = .hover
-                                ribbon.foldLanded = true
-                            }
-                            DispatchQueue.main.async {
-                                // …опускается в гнездо под следующую карточку…
-                                withAnimation(.easeInOut(duration: 0.3)) { ribbon.landing.stage = .down }
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                    // …и на ней проступает надпись.
-                                    ribbon.landing.stage = .done
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                                        guard shell.dayCard else { return }
-                                        withTransaction(still) { shell.go(.landed) }
-                                        // Села — опись больше не двигает ленту (P898).
-                                        ribbon.settledHere()
-                                        ribbon.refresh()
-                                        if let f = ribbon.frames[closed] {
-                                            Trace.note(String(format: "лента: %@ встал на %.0f", closed, f.minY))
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.09) { reveal() }
-                }
-            }
+            land(closed)
         }
         }
         .animation(.easeOut(duration: 0.25), value: keyboard)
@@ -653,6 +458,164 @@ struct SearchView: View {
 
     /// Сколько летит схема из листа к гнезду (P895).
     static let flight: Double = 0.45
+
+    /// Посадка закрытой карточки — по событиям (P923, `docs/71` §3; вместо
+    /// восьми отложенных шагов P890–P913: 0,2 с; 0,09; 0,03 до 24 раз; 0,3;
+    /// 0,25…). Лента под листом уже стоит — она собрана вокруг сегодня и с
+    /// открытия карточки не двигалась, — поэтому проступает сразу, вместе с
+    /// тем как лист превращается в схему: пустого экрана между ними нет
+    /// (`docs/71` §8). Шаги идут друг за другом по делу, а не по часам:
+    /// схема долетела — конец её хода; лента встала — замер карточки;
+    /// карточка опустилась и надпись проступила — конец этих движений.
+    /// По времени остаётся один предохранитель: если что-то из этого не
+    /// пришло, карточка считается севшей.
+    private func land(_ closed: String) {
+        let ribbon = shell.ribbon
+        let landing = ribbon.landing
+        let run = landing.begin()
+        // Сторона «Сегодня» от закрытого дня: прошлое — снизу, будущее — сверху.
+        let side = ribbon.foldSide < 0 ? -1 : 1
+        var still = Transaction()
+        still.disablesAnimations = true
+        let quiet = still
+        let started = CACurrentMediaTime()
+        let spot = ribbon.nest(for: closed, side: side)
+        let known = ribbon.ids.contains(closed)
+        // Рамка карточки там, куда она встанет; пока её не мерили — на глаз.
+        let about = ribbon.frames[closed].map {
+            CGRect(x: $0.minX, y: spot.top, width: $0.width, height: $0.height)
+        } ?? CGRect(x: 10, y: spot.top, width: UIScreen.main.bounds.width - 20, height: Ribbon.cardHeight)
+        Trace.note(String(format: "лента: закрыт %@, гнездо на %.0f (%@)", closed, spot.top,
+                          spot.inPlace ? "стоит на месте" : known ? "навести" : "карточки нет"))
+        // Гнездо карточки пустует, пока она летит (P895).
+        withTransaction(quiet) {
+            landing.id = closed
+            landing.stage = .away
+        }
+
+        /// Номер полёта: дальше ведёт только последний.
+        var flights = 0
+        var arrived = false
+        var stood = false
+        /// Карточки в ленте не нашлось — схеме садиться некуда.
+        var lost = false
+        var target = CGRect.zero
+
+        func alive() -> Bool { landing.run == run && shell.dayCard && ribbon.folding }
+
+        /// Над гнездом: схема шире карточки на поля по бокам; место — где
+        /// карточка видна, а не где стоит в раскладке (сближение, P909).
+        func hover(over frame: CGRect) -> CGRect {
+            let card = frame.insetBy(dx: Search.cardInset, dy: 0)
+            return card.offsetBy(dx: 0, dy: Afar.shift(card.minY, side: side, height: height) - Landing.lift)
+        }
+
+        func finish() {
+            guard alive() else { return }
+            ribbon.unseat()
+            store.save()
+            // На листе снова сегодня — он у своего края, корешком или полоской.
+            ribbon.stick = true
+            let settled: Bool
+            if case .landing(_, _, .settling) = shell.deck { settled = true } else { settled = false }
+            withTransaction(quiet) {
+                store.go(to: DayStore.today())
+                shell.go(settled ? .landed : .cutShort)
+            }
+            // Села — опись больше не двигает ленту (P898).
+            ribbon.settledHere()
+            ribbon.refresh()
+            if let frame = ribbon.frames[closed] {
+                Trace.note(String(format: "лента: %@ встал на %.0f", closed, frame.minY))
+            }
+        }
+
+        /// Схема долетела, и лента стоит: над гнездом схема становится самой
+        /// карточкой в своём ряду, та опускается под следующую, и на ней
+        /// проступает надпись (P895).
+        func sit() {
+            guard alive(), arrived, stood, landing.stage == .away else { return }
+            if lost {
+                // Карточки нет — схема тает у края, а не пропадает разом.
+                withAnimation(.easeOut(duration: 0.25)) { ribbon.foldLanded = true } completion: { finish() }
+                return
+            }
+            withTransaction(quiet) {
+                landing.stage = .hover
+                ribbon.foldLanded = true
+            }
+            DispatchQueue.main.async {
+                guard alive() else { return }
+                withAnimation(.easeInOut(duration: 0.3)) { landing.stage = .down } completion: {
+                    guard alive() else { return }
+                    withAnimation(.easeOut(duration: 0.25)) { landing.stage = .done } completion: { finish() }
+                }
+            }
+        }
+
+        func fly(to place: CGRect, in time: Double) {
+            flights += 1
+            let no = flights
+            arrived = false
+            target = place
+            withAnimation(.easeInOut(duration: time)) { ribbon.foldTo = place } completion: {
+                guard alive(), no == flights else { return }
+                arrived = true
+                sit()
+            }
+        }
+
+        /// Лента встала: картотека проступает на своём месте, схема — к
+        /// точному гнезду, если оно не там, куда она уже летит.
+        func stand(_ frame: CGRect?) {
+            guard alive(), !stood else { return }
+            stood = true
+            lost = frame == nil
+            shell.go(.aimed)
+            shell.go(.stood)
+            ribbon.veiled = false
+            let place = hover(over: frame ?? about)
+            if abs(place.minY - target.minY) > 0.5 || abs(place.height - target.height) > 0.5 {
+                fly(to: place, in: max(0.2, Self.flight - (CACurrentMediaTime() - started)))
+            } else {
+                sit()
+            }
+        }
+
+        // Единственный шаг по времени — предохранитель.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+            guard alive() else { return }
+            Trace.note("лента: посадка не дождалась своих событий — предохранитель")
+            ribbon.veiled = false
+            finish()
+        }
+        landing.hurry = {
+            guard alive() else { return }
+            ribbon.veiled = false
+            finish()
+        }
+        // Следующим тактом: схема уже нарисована во весь лист — оттуда и летит,
+        // сразу, с толчком в руку (P913).
+        DispatchQueue.main.async {
+            guard alive() else { return }
+            fly(to: hover(over: about), in: Self.flight)
+            if spot.inPlace {
+                stand(ribbon.frames[closed])
+            } else if known {
+                ribbon.seat(closed, top: spot.top) { frame in
+                    guard alive() else { return }
+                    if frame != nil { ribbon.keepToday(side) }
+                    stand(ribbon.frames[closed] ?? frame)
+                }
+            } else {
+                // Карточки у этого дня нет (пустой день из календаря, или
+                // ищут слово, которого в нём нет): картотека — в покой у
+                // «Сегодня» с его стороны; покой — как у сегодняшнего листа.
+                ribbon.stick = true
+                ribbon.settle(side) { stand(nil) }
+            }
+        }
+    }
 
     /// Лента в покое: вчера над нижней строкой или завтра под строкой поиска.
     private func settle() {
@@ -678,7 +641,7 @@ struct SearchView: View {
                        seed: PageTexture.seed(day.date) &+ (Search.deep ? (Int(entry.id.dropFirst()) ?? 0) * 7 : 0)) {
                 row(day)
             }
-            .modifier(Landed(landing: shell.ribbon.landing, id: entry.id))
+            .modifier(Landed(landing: shell.ribbon.landing, id: entry.id, aged: Ru.isPast(day.date)))
             // Касание по всей карточке, а не только по буквам (P866).
             .contentShape(FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare))
             .onTapGesture { openPast(day) }
@@ -793,27 +756,30 @@ struct SearchView: View {
     /// мелькал вверху, пропадал и всплывал снизу (запись автора к 244).
     /// Теперь лента закрывается в том же такте, что и меняется день.
     private func openCard(_ date: Date, tab: Shell.Tab) {
-        typing = false
-        Feel.thud()
         let ribbon = shell.ribbon
+        // Соседняя карточка ещё садится — досадить её разом.
+        ribbon.landing.hurry?()
         var still = Transaction()
         still.disablesAnimations = true
-        // Откуда открыли — туда и вернётся лента, когда день закроют (P893).
+        // Откуда открыли — туда карточка и вернётся, когда день закроют
+        // (P893). Лента при этом стоит, где была (P923): прежде она
+        // пересобиралась вокруг открытого дня и уходила к его месту.
         let id = Vault.stamp(date)
         let from = ribbon.frames[id].map { (id: id, top: $0.minY) }
-        ribbon.reset()
-        // Лента пересоберётся вокруг открытого дня (P894).
-        ribbon.forget()
-        ribbon.openedFrom = from
-        Trace.note(String(format: "лента: открыт %@ с места %.0f", id, from?.top ?? -1))
-        withTransaction(still) {
+        let opened: Bool = withTransaction(still) {
+            guard shell.go(.openCard) else { return false }
             shell.instant = true
-            shell.go(.openCard)
             store.go(to: date)
             shell.tab = tab
             shell.screen = .today
+            return true
         }
-        ribbon.park()
+        guard opened else { return }
+        typing = false
+        Feel.thud()
+        ribbon.reset()
+        ribbon.openedFrom = from
+        Trace.note(String(format: "лента: открыт %@ с места %.0f", id, from?.top ?? -1))
         archive.reloadSoon()
     }
 
@@ -1137,12 +1103,28 @@ enum WearNotch {
 /// Контур карточки с корешком на левой трети: корешок и лист — одна фигура.
 /// Схема карточки — пустой контур цвета бумаги (P886): летит из листа к
 /// гнезду и, сев, уступает место надписи карточки (P895).
+/// У прошедшего дня схема — сразу цвета своей карточки (P923, `docs/71`
+/// §8: «схема светлая, а карточки тёмные, состаренные — видна смена
+/// цвета»): тот же рельеф бумаги и затёртый по контуру край.
 struct FoldSchema: View {
+    var aged = false
+    @Environment(\.colorScheme) private var scheme
+    @AppStorage(Prefs.plainPast) private var plainPast = false
+
     var body: some View {
         let shape = FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare)
-        shape
-            .fill(Scheme.current.past)
-            .overlay(shape.stroke(Scheme.current.kraftEdge.opacity(0.7), lineWidth: 1))
+        ZStack {
+            shape.fill(Scheme.current.past)
+            if aged && !plainPast {
+                Image(uiImage: PageTexture.paper)
+                    .resizable(resizingMode: .tile)
+                    .opacity(scheme == .dark ? 0.2 : 0.3)
+                    .clipShape(shape)
+                EdgeWear(shape: shape, depth: 8)
+                    .opacity(scheme == .dark ? 0.35 : 1)
+            }
+            shape.stroke(Scheme.current.kraftEdge.opacity(0.7), lineWidth: 1)
+        }
     }
 }
 
@@ -1152,6 +1134,8 @@ struct FoldSchema: View {
 private struct Landed: ViewModifier {
     @ObservedObject var landing: Landing
     let id: String
+    /// Карточка прошлого — схема той же старой бумаги (P923).
+    var aged = false
 
     func body(content: Content) -> some View {
         let stage = landing.id == id ? landing.stage : .none
@@ -1164,9 +1148,10 @@ private struct Landed: ViewModifier {
             .animation(.easeOut(duration: 0.2)) { $0.opacity(stage == .away ? 0 : 1) }
             .overlay {
                 if stage == .hover || stage == .down || stage == .done {
-                    FoldSchema()
+                    // Меняется вместе со ступенью — её ходом (P923), своего нет:
+                    // по концу этого хода посадка идёт дальше.
+                    FoldSchema(aged: aged)
                         .opacity(veil)
-                        .animation(.easeOut(duration: 0.3), value: stage)
                         .allowsHitTesting(false)
                 }
             }

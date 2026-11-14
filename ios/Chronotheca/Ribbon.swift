@@ -28,22 +28,15 @@ final class Ribbon: ObservableObject {
 
     /// Прокрутка ленты.
     let box = SheetScroller()
-    /// Рост первой карточки под местом дня (P857).
-    var laterHeight: CGFloat = 0
 
     /// Где лента в архиве — для линии слева (P850): 0 — у дня; к 1 — к самой
     /// старой карточке; к −1 — к самой дальней будущей.
     @Published private(set) var reach: CGFloat = 0
-    /// Как собрана лента: поля сверху и снизу, карточек до будущего и
-    /// всего, есть ли место дня. Ставит картотека при каждой сборке.
-    var plan = Plan()
     /// На листе сегодняшний день (P863): только его лист остаётся у края
     /// экрана. Прошедший уходит за край целиком — он закроется в карточку,
     /// и полоска его листа рядом со своей же карточкой мелькала (видео
     /// автора к 260).
     var stick = true
-    /// Запас ленты над экраном (P861): верхнее поле `plan.lead` больше на него.
-    var above: CGFloat = 0
 
     // MARK: - Лист в своё гнездо (P883)
 
@@ -61,19 +54,28 @@ final class Ribbon: ObservableObject {
     /// Замер рамки карточки ленты (`frame` — пусто: карточку разобрала
     /// ленивая стопка). В проверке с медленной лентой доходит позже, с
     /// поправкой на то, сколько лента прошла с мига замера (P921).
-    func saw(_ id: String, _ frame: CGRect?, anchorCard: String? = nil) {
+    /// Замер несёт метку (P923): сколько раз лента к мигу замера двигала
+    /// себя сама. Снятый до последнего сдвига решений не принимает — по
+    /// таким лента прежде поправляла себя дважды и уезжала мимо.
+    func saw(_ id: String, _ frame: CGRect?) {
         let at = box.view?.contentOffset.y ?? 0
+        let mark = moves
         Slow.late(Slow.card) { [weak self] in
             guard let self else { return }
             var frame = frame
             if Slow.on, let was = frame, let now = self.box.view?.contentOffset.y {
                 frame = was.offsetBy(dx: 0, dy: at - now)
             }
-            // Карточка закрытого дня — в неё складывается лист (P883).
-            if let frame, id == (self.closedID ?? anchorCard) { self.anchorFrame = frame }
             self.frames[id] = frame
+            guard frame != nil, id == self.seatWant?.id, mark == self.moves else { return }
+            self.seatIdle = 0
+            // Не из самого замера: сдвиг ленты меняет то, что сейчас мерится.
+            DispatchQueue.main.async { [weak self] in self?.seatStep() }
         }
     }
+
+    /// Какие карточки есть в ленте (ставит картотека при каждой сборке).
+    var ids: Set<String> = []
 
     /// Лист «Сегодня» — не выше своего места у края (P893): закрытая
     /// карточка рядом с сегодня, и лента вставала так, что лист торчал на
@@ -81,72 +83,189 @@ final class Ribbon: ObservableObject {
     func keepToday(_ side: Int) {
         guard let scroll = box.view, seen, known, height > 0 else { return }
         let raw = slotTop - scroll.contentOffset.y
-        var offset = scroll.contentOffset.y
-        if side > 0, raw < restY(1) { offset -= restY(1) - raw }
-        if side < 0, raw > restY(-1) { offset += raw - restY(-1) }
+        var step: CGFloat = 0
+        if side > 0, raw < restY(1, stick: true) { step = raw - restY(1, stick: true) }
+        if side < 0, raw > restY(-1, stick: true) { step = raw - restY(-1, stick: true) }
         let most = max(0, scroll.contentSize.height - scroll.bounds.height)
-        offset = min(most, max(0, offset))
-        if abs(offset - scroll.contentOffset.y) > 0.5 {
-            Trace.note(String(format: "лента: «Сегодня» на своё место — сдвиг %.0f", offset - scroll.contentOffset.y))
-            scroll.contentOffset.y = offset
+        step = min(most, max(0, scroll.contentOffset.y + step)) - scroll.contentOffset.y
+        guard abs(step) > 0.5 else { return }
+        Trace.note(String(format: "лента: «Сегодня» на своё место — сдвиг %.0f", step))
+        nudge(by: step)
+    }
+
+    // MARK: - Наведение на карточку (P923)
+
+    /// Перейти к карточке: верхом на столько от верха экрана. Ставит
+    /// картотека — у неё ключ к прокрутке.
+    var jump: ((String, CGFloat) -> Void)?
+
+    private struct Seat {
+        let id: String
+        let top: CGFloat
+        /// Сколько ещё раз можно перейти или поправить.
+        var tries: Int
+        /// Сколько кадров подряд карточка стоит на месте; пусто — не стоит.
+        var calm: Int?
+        let then: (CGRect?) -> Void
+    }
+    private var seatWant: Seat?
+    private var seatLink: CADisplayLink?
+    /// Кадров без свежего замера карточки.
+    private var seatIdle = 0
+    /// Сколько раз лента двигала себя сама — метка замеров.
+    private var moves = 0
+
+    /// Рост карточки, пока её рамка не замерена.
+    static var cardHeight: CGFloat { Search.tabHeight + 8 + Search.body + Search.overlap + 6 }
+
+    /// Где встать карточке закрываемого дня — верх её рамки от верха
+    /// экрана: где стоит, если на виду («картотека открыта ровно там, где
+    /// была», P893); иначе — где была, когда с неё открыли день; иначе — у
+    /// края «Сегодня» (прошедшая — над корешком внизу, будущая — под
+    /// полоской вверху).
+    func nest(for id: String, side: Int) -> (top: CGFloat, inPlace: Bool) {
+        let full = frames[id]?.height ?? Ribbon.cardHeight
+        let low: CGFloat = side < 0 ? FollowRibbon.peekTop : 8
+        let high = max(low, height - FollowRibbon.peekBottom - (full - Search.overlap))
+        if let frame = frames[id], frame.minY >= low - 0.5, frame.minY <= high + 0.5 {
+            return (frame.minY, true)
+        }
+        if let from = openedFrom, from.id == id { return (min(high, max(low, from.top)), false) }
+        return (side > 0 ? high : low, false)
+    }
+
+    /// Навести ленту: карточка `id` — верхом на `top` от верха экрана.
+    /// Без шагов по времени (P923, вместо `align` P894 с его повторами через
+    /// 0,03 и 0,05 с): решение — по замеру самой карточки, снятому после
+    /// последнего сдвига ленты; «встала» — когда замер совпал с местом и два
+    /// кадра ничто его не оспорило. Карточки нет на экране — переход к ней,
+    /// и ещё раз, если за восемь кадров она не появилась (ленивая стопка
+    /// ставит дальнюю карточку не с первого раза, P906). `then` получает
+    /// рамку карточки или пусто, если её так и не нашлось.
+    func seat(_ id: String, top: CGFloat, then: @escaping (CGRect?) -> Void) {
+        unseat()
+        seatWant = Seat(id: id, top: top, tries: 6, calm: nil, then: then)
+        seatIdle = 0
+        let made = CADisplayLink(target: self, selector: #selector(seatTick))
+        made.add(to: .main, forMode: .common)
+        seatLink = made
+        seatStep()
+    }
+
+    /// Наведение больше не нужно.
+    func unseat() {
+        seatLink?.invalidate()
+        seatLink = nil
+        seatWant = nil
+    }
+
+    /// Тягу не сегодняшнего листа начали (P923): лента под ним невидима и
+    /// листом не движется — заранее встаёт на его карточку, чтобы к порогу
+    /// картотека была готова.
+    func aim(_ id: String, side: Int) {
+        guard ids.contains(id), seatWant?.id != id else { return }
+        let spot = nest(for: id, side: side)
+        guard !spot.inPlace else { return }
+        seat(id, top: spot.top) { [weak self] frame in
+            if frame != nil { self?.keepToday(side) }
         }
     }
 
-    /// Поставить карточку `id` верхом ровно на `top` от верха экрана (P894):
-    /// переход ленты к карточке ставит её приблизительно — ленивая стопка
-    /// знает рост дальних карточек на глаз, — и потом лента дёргалась,
-    /// подстраиваясь (автор по 278). Поправка — по замеру самой карточки,
-    /// пока лента скрыта; несколько раз, пока замер не совпадёт.
-    func align(_ id: String, top: CGFloat, tries: Int = 8, again: (() -> Void)? = nil,
-               then: @escaping () -> Void) {
-        guard let scroll = box.view, tries > 0 else {
-            then()
+    @objc private func seatTick() {
+        guard var want = seatWant else {
+            unseat()
             return
         }
-        // Карточки на экране нет — переход к ней не удался (ленивая стопка
-        // ставит дальнюю карточку не с первого раза): ещё раз (P906; у
-        // автора после будущего листа лента оставалась в начале прошлого).
-        guard let frame = frames[id] else {
-            Trace.note("лента: карточки \(id) нет на экране — переход ещё раз")
-            again?()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
-                self?.align(id, top: top, tries: tries - 1, again: again, then: then)
+        if let calm = want.calm {
+            if calm >= 1 {
+                seated(frames[want.id])
+            } else {
+                want.calm = calm + 1
+                seatWant = want
             }
             return
         }
-        let miss = frame.minY - top
-        guard abs(miss) > 0.5 else {
-            then()
-            return
-        }
-        let most = max(0, scroll.contentSize.height - scroll.bounds.height)
-        let offset = min(most, max(0, scroll.contentOffset.y + miss))
-        Trace.note(String(format: "лента: карточка %@ мимо места на %.0f — поправка", id, miss))
-        fixing = true
-        scroll.contentOffset.y = offset
-        fixing = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.03) { [weak self] in
-            self?.align(id, top: top, tries: tries - 1, again: again, then: then)
+        seatIdle += 1
+        if seatIdle >= 8 {
+            seatIdle = 0
+            seatStep()
         }
     }
 
-    /// Лента пересобрана вокруг другого дня (P894): прежний замер места дня
-    /// больше не верен. Стена и «Сегодня у края» ждут нового замера —
-    /// прежде по старому замеру лента сама уезжала, когда её трогала
-    /// ленивая стопка (автор по 278: «вся картотека дёргается и переходит к
-    /// последним записям»).
-    func forget(far side: Int = 0) {
-        known = false
-        farSide = side
-        hintSide = side
-        hintUntil = CACurrentMediaTime() + 2.5
-        Trace.note("лента: пересобрана — место дня ждёт замера")
+    private func seatStep() {
+        guard var want = seatWant, let scroll = box.view else { return }
+        guard let frame = frames[want.id] else {
+            want.calm = nil
+            guard want.tries > 0 else {
+                seatWant = want
+                seated(nil)
+                return
+            }
+            want.tries -= 1
+            seatWant = want
+            Trace.note("лента: карточки \(want.id) нет на экране — переход")
+            jump?(want.id, want.top)
+            return
+        }
+        let miss = frame.minY - want.top
+        let most = max(0, scroll.contentSize.height - scroll.bounds.height)
+        let step = min(most, max(0, scroll.contentOffset.y + miss)) - scroll.contentOffset.y
+        // На месте — или дальше ленте ехать некуда.
+        if abs(miss) <= 0.5 || abs(step) <= 0.5 || want.tries <= 0 {
+            if want.calm == nil {
+                want.calm = 0
+                seatWant = want
+            }
+            return
+        }
+        want.tries -= 1
+        want.calm = nil
+        seatWant = want
+        Trace.note(String(format: "лента: карточка %@ мимо места на %.0f — поправка", want.id, miss))
+        nudge(by: step)
     }
-    /// Пока место дня не замерено после пересборки — где оно (P899): 1 —
-    /// ниже экрана (картотека прошлого), −1 — выше (будущего), 0 — не
-    /// знаем, верим прежнему замеру. Прежде лист «Сегодня» вставал по
-    /// старому замеру посреди картотеки прошлого и «прилипал» (автор по 279).
+
+    private func seated(_ frame: CGRect?) {
+        guard let want = seatWant else { return }
+        unseat()
+        want.then(frame)
+    }
+
+    /// Лента двигает себя сама: известные рамки карточек едут вместе с ней,
+    /// а метка замеров растёт — снятые до сдвига больше ничего не решают.
+    private func nudge(by step: CGFloat) {
+        guard let scroll = box.view else { return }
+        moves += 1
+        fixing = true
+        scroll.contentOffset.y += step
+        fixing = false
+        for (id, frame) in frames { frames[id] = frame.offsetBy(dx: 0, dy: -step) }
+    }
+
+    /// Места дня в ленте нет — с какой оно стороны (P899): 1 — ниже экрана
+    /// (картотека прошлого), −1 — выше (будущего), 0 — место собрано, верим
+    /// замеру. Прежде лист «Сегодня» вставал по старому замеру посреди
+    /// картотеки прошлого и «прилипал» (автор по 279).
     private var farSide = 0
+
+    // MARK: - Не сегодняшний лист несут рукой (P923)
+
+    /// Тягу не сегодняшнего листа начали: лист идёт прямо за пальцем, а
+    /// лента под ним стоит. Прежде и он ехал через прокрутку ленты — та
+    /// пересобиралась вокруг его дня и пересобиралась обратно, когда он
+    /// закрывался; отсюда пустой экран и мелькание (`docs/71` §8).
+    func lift() {
+        interrupt()
+        driving = false
+        frozen = true
+        if y != 0 { y = 0 }
+    }
+
+    /// Лист несут: его верх — на `amount` от своего места.
+    func carry(_ amount: CGFloat) {
+        guard frozen else { return }
+        if abs(amount - y) > 0.25 || amount == 0 { y = amount }
+    }
 
     /// Лента уже не «только что открыта» (P898): закрытая карточка села, и
     /// перечитанная опись больше не ставит ленту в покой у дня. Прежде,
@@ -155,75 +274,22 @@ final class Ribbon: ObservableObject {
     /// → убрал лист — прошлая картотека»).
     func settledHere() { openedAt = 0 }
 
-    /// Какой день закрыли в карточку — по нему мерится её рамка, когда
-    /// лента уже собрана вокруг сегодня (P890).
-    var closedID: String?
     /// Схема долетела до гнезда — дальше садится сама карточка (P895).
     @Published var foldLanded = false
     /// Посадка закрытой карточки в своё гнездо (P895).
     let landing = Landing()
-    /// Последняя замеренная рамка карточки закрытого дня.
-    var anchorFrame: CGRect?
 
-    // MARK: - Край к «Сегодня» (P871)
-
-    /// С какого края ленты — сегодняшний день, когда на листе другой день:
-    /// 1 — снизу (открыт прошедший), −1 — сверху (открыт будущий), 0 — нет
-    /// (открыт сегодняшний). Между прошлым и будущим всегда стоит сегодня:
-    /// лента не проскакивает из одного в другое (автор 10.11, видео).
-    var todayEnd = 0
-    /// Лента дошла до края к сегодня — открыть «Сегодня».
-    var toToday: (() -> Void)?
-    /// Уже позвали — второй раз не звать, пока лента не отошла от края.
-    private var todayAsked = false
-    private var lastOffset: CGFloat = 0
     /// Последняя прокрутка, которую видели (для следа, P894).
     private var lastSeen: CGFloat = 0
 
-    /// Лента дошла до края к сегодняшнему дню, двигаясь к нему, — сегодня
-    /// раскрывается. Только по ходу пальца или его разгона и не в первые
-    /// полторы секунды, пока лента встаёт в покой.
-    private func reachToday(_ scroll: UIScrollView, pushing: Bool = false) {
-        let offset = scroll.contentOffset.y
-        defer { if !pushing { lastOffset = offset } }
-        guard todayEnd != 0, toToday != nil else { return }
-        let most = max(0, scroll.contentSize.height - scroll.bounds.height)
-        let away = todayEnd > 0 ? most - offset : offset
-        if away > 40 { todayAsked = false }
-        guard !todayAsked, !driving, link == nil, !fresh, !frozen,
-              scroll.isTracking || scroll.isDecelerating, most > 0, away <= 1 else { return }
-        let toward = todayEnd > 0 ? offset > lastOffset : offset < lastOffset
-        guard toward || pushing else { return }
-        todayAsked = true
-        Trace.note("лента: дошли до сегодня — открыть")
-        DispatchQueue.main.async { [weak self] in self?.toToday?() }
-    }
-    struct Plan {
-        var lead: CGFloat = 0
-        var tail: CGFloat = 0
-        var before = 0
-        var total = 0
-        var slot = true
-    }
-
     /// Доля пройденного архива. Прошлое — от покоя «вчера над нижней
     /// строкой» до самого верха ленты; будущее — от покоя «завтра у верха»
-    /// до самого низа. Без места дня (день закрыт в карточку, P834) граница
-    /// будущего — по числу карточек: они одной высоты.
+    /// до самого низа.
     private func measureReach(_ scroll: UIScrollView) {
         let offset = scroll.contentOffset.y
         let most = max(0, scroll.contentSize.height - scroll.bounds.height)
-        let line: CGFloat
-        if plan.slot {
-            line = slotTop
-        } else {
-            let cards = scroll.contentSize.height - plan.lead - plan.tail
-            let pitch = plan.total > 0 ? cards / CGFloat(plan.total) : 0
-            // Место — от верха экрана: окно ленты выше на запас (P861).
-            line = plan.lead - above + CGFloat(plan.before) * pitch
-        }
-        let pastRest = line - height
-        let futureRest = plan.slot ? slotTop + height : line
+        let pastRest = slotTop - height
+        let futureRest = slotTop + height
         var r: CGFloat = 0
         if offset < pastRest, pastRest > 0 {
             r = (pastRest - offset) / pastRest
@@ -273,7 +339,7 @@ final class Ribbon: ObservableObject {
 
     /// Где место дня стоит в покое: 1 — прошлое (вчера над нижней строкой,
     /// день за нижним краем), -1 — будущее (завтра под строкой поиска).
-    func restY(_ dir: Int) -> CGFloat {
+    func restY(_ dir: Int, stick: Bool? = nil) -> CGFloat {
         // Будущее (P797): завтрашняя — у самого верха, день — над ним, за
         // верхним краем; строка поиска теперь внизу.
         // В прошлом лист «Сегодня» стоит корешком внизу (P860): вчерашняя
@@ -281,7 +347,7 @@ final class Ribbon: ObservableObject {
         // будущем у верха остаётся низ листа с именем, датой и днём недели
         // (P896, вместо кольца P876): завтрашняя карточка — сразу под ним,
         // дальние уходят под него.
-        guard stick else { return dir > 0 ? height : -height }
+        guard stick ?? self.stick else { return dir > 0 ? height : -height }
         return dir > 0 ? height - FollowRibbon.peekBottom + Search.overlap
             : FollowRibbon.peekTop - height
     }
@@ -362,7 +428,6 @@ final class Ribbon: ObservableObject {
         if abs(moved) > 20, !scroll.isTracking, !scroll.isDecelerating, !driving {
             Trace.note(String(format: "лента: сама на %.0f (стена %@)", moved, walls() ? "да" : "нет"))
         }
-        reachToday(scroll)
         guard walls(), !driving, link == nil, known, height > 0 else {
             if scroll.isTracking {
                 Trace.note("лента: стены нет — открыта \(walls()) ведёт \(driving) ход \(link != nil) "
@@ -430,14 +495,6 @@ final class Ribbon: ObservableObject {
     }
 
     @objc private func panned(_ pan: UIPanGestureRecognizer) {
-        // Лента уже у края к сегодня и сдвинуться не может — палец тянет
-        // дальше к сегодня (P871): тоже «дошли».
-        if pan.state == .changed, let scroll = box.view {
-            let v = pan.velocity(in: scroll).y
-            // Сегодня снизу — палец идёт вверх; сверху — вниз.
-            if todayEnd != 0, (todayEnd > 0 ? v < -80 : v > 80) { reachToday(scroll, pushing: true) }
-            return
-        }
         guard pan.state == .ended || pan.state == .cancelled || pan.state == .failed else { return }
         let go = armed && pan.state == .ended
         Trace.note("лента: отпустили — \(go ? "в день" : "к стене") (состояние \(pan.state.rawValue))")
@@ -506,22 +563,16 @@ final class Ribbon: ObservableObject {
         guard slots == 0 else { return }
         seen = false
         // Места дня в ленте сейчас нет — лист у своего края, а не там, где
-        // его место видели в последний раз (P906). Прежде после закрытия
-        // карточки место дня мелькало в пересобираемой ленте, замерялось
-        // и тут же уходило; замер оставался, а ленивая стопка, достраивая
-        // карточки, сдвигала всё под ним — и лист «Сегодня» вставал посреди
-        // картотеки (видео автора 13.11).
-        // Подсказка годится только сразу после закрытия карточки (P907):
-        // прежде она оставалась навсегда, и корешок «Сегодня» в картотеке
-        // прошлого перескакивал наверх, а в будущем — вниз.
-        let hint = CACurrentMediaTime() < hintUntil ? hintSide : 0
-        if farSide == 0 { farSide = hint != 0 ? hint : (y >= 0 ? 1 : -1) }
+        // его место видели в последний раз (P906). С какой стороны — по
+        // последнему замеру места и нынешней прокрутке (P923): лента всегда
+        // собрана вокруг сегодня, место дня в ней не переезжает. Прежние
+        // подсказки «с какой стороны сегодня» (P906, P907) убраны.
+        if farSide == 0 {
+            let offset = box.view?.contentOffset.y ?? 0
+            farSide = (known ? slotTop - offset : y) >= 0 ? 1 : -1
+        }
         if let scroll = box.view { follow(scroll.contentOffset.y) }
     }
-    /// С какой стороны «Сегодня» от закрытой карточки — подсказка на случай,
-    /// когда место дня уходит из ленты (P906).
-    private var hintSide = 0
-    private var hintUntil: CFTimeInterval = 0
 
     /// Начало тяги из дня: место дня должно быть собрано и измерено. Если
     /// нет — ставим его и ждём следующего движения пальца.
@@ -676,10 +727,9 @@ final class Ribbon: ObservableObject {
         foldLanded = false
         landing.clear()
         foldSide = 0
-        hintSide = 0
-        closedID = nil
         veiled = false
         done = nil
+        unseat()
     }
 
     /// Лента скрыта, пока пересобирается вокруг другого дня (P888: после
@@ -707,7 +757,21 @@ final class Landing: ObservableObject {
     /// нахлёста — следующая карточка её ещё не закрывает.
     static let lift: CGFloat = Search.overlap + 4
 
+    /// Номер посадки (P923): шаги прежней, прерванной посадки по нему
+    /// узнают, что они уже не к месту.
+    private(set) var run = 0
+    /// Досадить разом — человек не стал ждать (нажал «Сегодня» или
+    /// «Дневник», пока карточка садится).
+    var hurry: (() -> Void)?
+
+    func begin() -> Int {
+        run += 1
+        return run
+    }
+
     func clear() {
+        run += 1
+        hurry = nil
         if id != nil { id = nil }
         if stage != .none { stage = .none }
     }
