@@ -20,11 +20,11 @@ final class DayStore: ObservableObject {
     /// пока файл плана не скачан из iCloud.
     /// Месяц прошёл без покупки — писать новое нельзя, читать можно всегда
     /// (M14, P432).
-    var canEditPlan: Bool { !away.contains(.planner) && Purchase.canWrite }
+    var canEditPlan: Bool { !away.contains(.planner) && Purchase.canWrite && !Vault.newer }
 
     /// Дневник живёт назад: вчерашнее дописывают и через неделю (решение P63).
     /// А вот дня, который ещё не наступил, в дневнике не бывает.
-    var canEditDiary: Bool { !isFuture && !away.contains(.diary) && Purchase.canWrite }
+    var canEditDiary: Bool { !isFuture && !away.contains(.diary) && Purchase.canWrite && !Vault.newer }
 
     /// Файлы дня, которые лежат, но не прочитались — чаще всего ещё не
     /// скачаны из iCloud. Писать в такой день нельзя: пустая страница на
@@ -1494,7 +1494,8 @@ final class DayStore: ObservableObject {
     /// видело, и день надо перечитать.
     @discardableResult
     private func write(_ file: DayFile, to folder: Vault.Folder, keep: Bool) -> Bool {
-        guard !away.contains(folder) else { return false }
+        // Архив новее приложения — не писать и не класть в страховку (P953).
+        guard !away.contains(folder), !Vault.newer else { return false }
         let ours = file.text
         guard ours != mine[folder] else { return false }
 

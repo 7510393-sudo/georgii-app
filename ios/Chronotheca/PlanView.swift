@@ -536,6 +536,9 @@ struct PlanView: View {
             VStack(alignment: .leading, spacing: 0) {
                 // Запись не дошла до папки (P900) — сказать прямо на странице.
                 if let why = store.unsaved { UnsavedNote(why: why) }
+                // Архив новее приложения (P953) — спокойно сказать, почему
+                // не пишется.
+                if Vault.newer { NewerArchiveNote() }
                 if store.away.contains(.planner) {
                     PlanEmpty(inCloud: true)
                 } else {
@@ -1605,6 +1608,32 @@ struct UnsavedNote: View {
         .padding(.bottom, 4)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("unsavedNote")
+    }
+}
+
+/// Строка вверху страницы: папку вела более новая версия приложения, здесь
+/// только чтение (P953). Без слов из P482.
+struct NewerArchiveNote: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(T("Эту папку вела более новая версия приложения",
+                   "This folder was kept by a newer version of the app"))
+                .font(Look.sans(13, weight: .semibold))
+                .foregroundStyle(Look.ink)
+            Text(T("Записи видны и ищутся. Писать здесь можно будет после обновления приложения.",
+                   "Entries can be read and searched. Writing here opens after the app is updated."))
+                .font(Look.sans(12))
+                .foregroundStyle(Look.inkSoft)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Look.chrome.opacity(0.7)))
+        .padding(.horizontal, 14)
+        .padding(.top, 6)
+        .padding(.bottom, 4)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("newerArchiveNote")
     }
 }
 

@@ -292,6 +292,7 @@ enum DayOneImport {
             target = dir.appendingPathComponent("\(base) \(n).\(ext)")
             n += 1
         }
+        guard !Vault.newer else { return nil }   // P953
         do {
             try fm.createDirectory(at: dir, withIntermediateDirectories: true)
             try fm.copyItem(at: source, to: target)

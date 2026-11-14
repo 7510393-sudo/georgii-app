@@ -232,6 +232,7 @@ enum FileTrash {
     }
 
     private static func move(_ from: URL, to: URL) -> Bool {
+        guard !Vault.newer else { return false }   // P953
         var done = false
         var trouble: NSError?
         NSFileCoordinator(filePresenter: nil)
@@ -247,6 +248,7 @@ enum FileTrash {
     }
 
     private static func remove(_ url: URL) {
+        guard !Vault.newer else { return }   // P953
         var trouble: NSError?
         NSFileCoordinator(filePresenter: nil)
             .coordinate(writingItemAt: url, options: .forDeleting, error: &trouble) { real in

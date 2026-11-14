@@ -342,4 +342,90 @@ final class StorageSafetyTests: XCTestCase {
         XCTAssertTrue(contents(файл)?.contains("yesterday-note.m4a") == true, "ссылка легла не в свой день")
         XCTAssertFalse(contents(diaryURL())?.contains("yesterday-note.m4a") == true)
     }
+
+    // MARK: - Беда 6: архив новее приложения (P952, P953)
+
+    /// Папка-архив с меткой и одним днём плана.
+    private func archive(mark: String, plan: String? = nil) -> URL {
+        let other = fm.temporaryDirectory.appendingPathComponent("архив-\(UUID().uuidString)")
+        put(mark, at: Vault.folder(.service, in: other).appendingPathComponent(Vault.markerName))
+        if let plan {
+            put(plan, at: Vault.folder(.planner, in: other)
+                .appendingPathComponent(String(Vault.stamp(today).prefix(4)))
+                .appendingPathComponent(Vault.stamp(today) + ".md"))
+        }
+        return other
+    }
+
+    func testНоваяМеткаСАнглийскимиКлючами() throws {
+        let url = Vault.folder(.service, in: vault.root!).appendingPathComponent(Vault.markerName)
+        let text = try XCTUnwrap(contents(url))
+        let mark = try XCTUnwrap(ArchiveMark.parse(text))
+        XCTAssertFalse(mark.russian)
+        XCTAssertEqual(mark.format, ArchiveMark.format)
+        XCTAssertEqual(mark.app, "Graphomanus")
+        XCTAssertFalse(text.contains("версия формата"))
+        XCTAssertFalse(Vault.newer)
+    }
+
+    func testПрежняяМеткаПереписываетсяАнглийскими() throws {
+        let other = archive(mark: """
+        {
+          "приложение": "Graphomanus",
+          "версия формата": 1,
+          "заведено": "2025-03-01"
+        }
+        """, plan: "- [ ] дело\n")
+        defer { try? fm.removeItem(at: other) }
+        vault.adopt(other)
+        XCTAssertNotNil(vault.root)
+        let url = Vault.folder(.service, in: other).appendingPathComponent(Vault.markerName)
+        let mark = try XCTUnwrap(contents(url).flatMap(ArchiveMark.parse))
+        XCTAssertFalse(mark.russian, "метка осталась с русскими ключами")
+        XCTAssertEqual(mark.created, "2025-03-01", "дата заведения потерялась")
+        XCTAssertEqual(mark.format, 1)
+        XCTAssertFalse(Vault.newer)
+    }
+
+    func testНечитаемаяМеткаНеПереписывается() {
+        // Метка не JSON — не наша забота её чинить: файл человека.
+        let other = archive(mark: "{ приложение: Graphomanus", plan: "- [ ] дело\n")
+        defer { try? fm.removeItem(at: other) }
+        vault.adopt(other)
+        let url = Vault.folder(.service, in: other).appendingPathComponent(Vault.markerName)
+        XCTAssertEqual(contents(url), "{ приложение: Graphomanus")
+        XCTAssertFalse(Vault.newer)
+    }
+
+    func testАрхивНовееПриложенияТолькоЧитается() {
+        let plan = "- [ ] дело из будущего\n"
+        let mark = ArchiveMark.text(format: ArchiveMark.format + 1, created: "2030-01-01")
+        let other = archive(mark: mark, plan: plan)
+        defer { try? fm.removeItem(at: other) }
+        vault.adopt(other)
+        XCTAssertNotNil(vault.root)
+        XCTAssertTrue(Vault.newer, "архив новее приложения не узнан")
+
+        // Читается.
+        let день = DayStore(vault: vault, date: today)
+        XCTAssertEqual(день.tasks.map(\.text), ["дело из будущего"])
+        // Не пишется: ни правкой дня, ни мимо неё.
+        XCTAssertFalse(день.canEditPlan)
+        XCTAssertFalse(день.canEditDiary)
+        день.planRows = [.task("написано старым приложением")]
+        день.save()
+        XCTAssertEqual(contents(vault.file(.planner, for: today)!), plan, "старое приложение переписало день")
+        let завтра = Calendar.current.date(byAdding: .day, value: 1, to: today)!
+        XCTAssertNotNil(Vault.write("- [ ] новое\n", to: vault.file(.planner, for: завтра)!))
+        XCTAssertFalse(fm.fileExists(atPath: vault.file(.planner, for: завтра)!.path))
+        XCTAssertFalse(Trash.put(today, parts: [.planner], in: vault), "день ушёл в корзину")
+        XCTAssertEqual(contents(vault.file(.planner, for: today)!), plan)
+        // Метка нового архива не трогается.
+        let url = Vault.folder(.service, in: other).appendingPathComponent(Vault.markerName)
+        XCTAssertEqual(contents(url), mark)
+
+        // Другая папка — запрет снят.
+        vault.adopt(folder)
+        XCTAssertFalse(Vault.newer)
+    }
 }

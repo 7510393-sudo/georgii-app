@@ -240,7 +240,7 @@ enum JsonImport {
             for n in 1..<10 {
                 let target = dir.appendingPathComponent(n == 1 ? "\(base).\(ext)" : "\(base) \(n).\(ext)")
                 guard fm.fileExists(atPath: target.path) else { break }
-                if UIImage(contentsOfFile: target.path) == nil {
+                if UIImage(contentsOfFile: target.path) == nil, !Vault.newer {
                     if (try? Data(contentsOf: source).write(to: target, options: .atomic)) != nil { report.fixed += 1 }
                     break
                 }

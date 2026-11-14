@@ -48,7 +48,7 @@ enum Trash {
     /// день — новый ляжет рядом под своим номером: ничего не затирается.
     @discardableResult
     static func put(_ date: Date, parts: [Vault.Folder], in vault: Vault) -> Bool {
-        guard let base = folder(vault) else { return false }
+        guard !Vault.newer, let base = folder(vault) else { return false }   // P953
         let stamp = Vault.stamp(date)
         let fm = FileManager.default
         var day = base.appendingPathComponent(stamp)
@@ -69,6 +69,7 @@ enum Trash {
     }
 
     private static func mark(_ day: URL, _ date: Date) {
+        guard !Vault.newer else { return }   // P953
         try? Data(Vault.stamp(date).utf8).write(to: day.appendingPathComponent(markName))
     }
 
@@ -133,6 +134,7 @@ enum Trash {
 
     /// Удалить навсегда.
     static func purge(_ item: Item) {
+        guard !Vault.newer else { return }   // P953
         var trouble: NSError?
         NSFileCoordinator(filePresenter: nil)
             .coordinate(writingItemAt: item.url, options: .forDeleting, error: &trouble) { real in
@@ -157,6 +159,7 @@ enum Trash {
     }
 
     private static func move(_ from: URL, to: URL) -> Bool {
+        guard !Vault.newer else { return false }   // P953
         var done = false
         var trouble: NSError?
         NSFileCoordinator(filePresenter: nil)

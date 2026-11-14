@@ -72,7 +72,29 @@ final class Vault: ObservableObject {
     @Published private(set) var granted: URL?
 
     /// Папка, в которой лежат записи: либо сама разрешённая, либо наша внутри неё.
-    @Published private(set) var root: URL?
+    @Published private(set) var root: URL? {
+        didSet { if root != oldValue { readMark() } }
+    }
+
+    /// Архив новее приложения (P953): версия формата в метке больше той,
+    /// что знает приложение. Читать можно всё, писать нельзя ничего —
+    /// прежнее приложение не знает, что испортило бы записью.
+    private(set) static var newer = false
+
+    /// Прочитать метку нового архива (P952, P953). Сперва снять прежний
+    /// запрет: он относился к прежней папке.
+    private func readMark() {
+        Vault.newer = false
+        guard let root else { return }
+        let mark = ArchiveMark.check(root: root)
+        Vault.newer = ArchiveMark.isNewer(mark)
+    }
+
+    /// Причина отказа в записи для архива новее приложения.
+    static var newerReason: String {
+        T("Эту папку вела более новая версия приложения — записи здесь только читаются.",
+          "This folder was kept by a newer version of the app, so entries here are read-only.")
+    }
     @Published private(set) var problem: String?
 
     /// Заполняется, если при запуске выяснилось, что папку переименовали или
@@ -947,13 +969,8 @@ final class Vault: ObservableObject {
         let service = Vault.folder(.service, in: url)
         let marker = service.appendingPathComponent(Vault.markerName)
         if !fm.fileExists(atPath: marker.path) {
-            let json = """
-            {
-              "приложение": "Graphomanus",
-              "версия формата": 1,
-              "заведено": "\(Vault.stamp(Date()))"
-            }
-            """
+            // Ключи метки — английские (P952).
+            let json = ArchiveMark.text(created: Vault.stamp(Date()))
             try Data(json.utf8).write(to: marker, options: .atomic)
         }
 
@@ -1219,6 +1236,8 @@ final class Vault: ObservableObject {
     static func write(data: Data, to url: URL) -> String? {
         // Для проверок: запись не проходит, как при полном диске (P900).
         if let broken = Vault.brokenWrites { return broken }
+        // Архив новее приложения — не писать (P953).
+        if Vault.newer { return Vault.newerReason }
         do {
             try FileManager.default.createDirectory(at: url.deletingLastPathComponent(),
                                                     withIntermediateDirectories: true)

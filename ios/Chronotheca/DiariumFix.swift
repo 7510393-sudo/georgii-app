@@ -90,6 +90,7 @@ enum DiariumFix {
                     target = dir.appendingPathComponent("\(base) \(n).\(ext)")
                     n += 1
                 }
+                guard !Vault.newer else { continue }   // P953
                 do {
                     try fm.createDirectory(at: dir, withIntermediateDirectories: true)
                     try fm.moveItem(at: file, to: target)
