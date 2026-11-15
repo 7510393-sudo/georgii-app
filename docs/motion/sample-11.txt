@@ -1,83 +1,208 @@
+    1000 Thread_97156   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 1000 start  (in dyld) + 6992  [0x10329c4e4]
+    +   1000 start_sim  (in dyld_sim) + 20  [0x1031430e4]
+    +     1000 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x105110080]  ChronothecaApp.swift:0
+    +       1000 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x10510ffd4]  /<compiler-generated>:0
+    +         1000 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           1000 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             1000 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               1000 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 1000 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   1000 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     1000 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       980 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    +                       ! 980 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    +                       !   980 mach_msg  (in libsystem_kernel.dylib) + 20  [0x102ff8ef0]
+    +                       !     980 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x103000c44]
+    +                       !       980 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x103009e84]
+    +                       !         980 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x102ff8b70]
+    +                       17 __CFRunLoopRun  (in CoreFoundation) + 2280  [0x180421df8]
+    +                       ! 17 __CFRunLoopDoBlocks  (in CoreFoundation) + 340  [0x1804224b4]
+    +                       !   17 __CFRUNLOOP_IS_CALLING_OUT_TO_A_BLOCK__  (in CoreFoundation) + 20  [0x180422d28]
+    +                       !     16 __XCTPerformOnMainRunLoop_block_invoke  (in XCTAutomationSupport) + 392  [0x1064d3ca4]
+    +                       !     : 16 __90-[XCTElementQuery matchingSnapshotsInSnapshotTree:relatedElements:noMatchesMessage:error:]_block_invoke  (in XCTAutomationSupport) + 156  [0x1064b6a24]
+    +                       !     :   16 +[XCTRuntimeIssueContext captureIssuesWithContext:inScope:]  (in XCTAutomationSupport) + 196  [0x1064c07ec]
+    +                       !     :     16 __90-[XCTElementQuery matchingSnapshotsInSnapshotTree:relatedElements:noMatchesMessage:error:]_block_invoke_2  (in XCTAutomationSupport) + 328  [0x1064b6b90]
+    +                       !     :       16 -[XCTElementQuery _firstMatchingSnapshotForInput:transformersSubarrays:relatedElements:noMatchesMessage:error:]  (in XCTAutomationSupport) + 256  [0x1064b723c]
+    +                       !     :         16 -[XCTElementQuery _firstMatchingSnapshotForInput:transformers:relatedElements:noMatchesMessage:error:]  (in XCTAutomationSupport) + 848  [0x1064b7884]
+    +                       !     :           11 -[XCTFilteringTransformerIterator nextMatch]  (in XCTAutomationSupport) + 100  [0x1064b0758]
+    +                       !     :           | 11 -[NSComparisonPredicate evaluateWithObject:substitutionVariables:]  (in Foundation) + 276  [0x18104d1bc]
+    +                       !     :           |   11 -[NSKeyPathExpression expressionValueWithObject:context:]  (in Foundation) + 216  [0x18109e7bc]
+    +                       !     :           |     11 -[NSFunctionExpression expressionValueWithObject:context:]  (in Foundation) + 2388  [0x181085144]
+    +                       !     :           |       11 -[NSObject(NSKeyValueCoding) valueForKey:]  (in Foundation) + 260  [0x1810aad78]
+    +                       !     :           |         11 _NSGetUnsignedLongLongValueWithMethod  (in Foundation) + 72  [0x1810a5930]
+    +                       !     :           |           9 -[XCElementSnapshot elementType]  (in XCTAutomationSupport) + 200  [0x1064caa28]
+    +                       !     :           |           + 9 -[XCTAutomationSession attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 76  [0x1064daca4]
+    +                       !     :           |           +   5 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 360  [0x1064b2d28]
+    +                       !     :           |           +   ! 5 -[XCTAccessibilityFramework attributes:forElement:error:]  (in XCTAutomationSupport) + 128  [0x1064b3f2c]
+    +                       !     :           |           +   !   5 AXUIElementCopyMultipleAttributeValues  (in AXRuntime) + 584  [0x1938ee088]
+    +                       !     :           |           +   !     5 _AXXMIGCopyMultipleAttributeValues  (in AXRuntime) + 596  [0x1938f3960]
+    +                       !     :           |           +   !       5 _handleNonMainThreadCallback  (in AXRuntime) + 52  [0x1938f35e0]
+    +                       !     :           |           +   !         5 ___AXXMIGCopyMultipleAttributeValues_block_invoke  (in AXRuntime) + 60  [0x1938f3a60]
+    +                       !     :           |           +   !           5 _copyMultipleAttributeValuesCallback  (in UIAccessibility) + 552  [0x1952685b4]
+    +                       !     :           |           +   !             4 -[NSObject(AXPrivCategory) _iosAccessibilityAttributeValue:]  (in UIAccessibility) + 9164  [0x19528d998]
+    +                       !     :           |           +   !             : 4 -[NSObject(UIAccessibilityAutomation) _accessibilityUserTestingElementBaseType]  (in UIAccessibility) + 92  [0x1952b6f7c]
+    +                       !     :           |           +   !             :   2 +[NSBundle bundleForClass:]  (in Foundation) + 136  [0x18103e0d8]
+    +                       !     :           |           +   !             :   | 2 class_getImageName  (in libobjc.A.dylib) + 40  [0x180058f5c]
+    +                       !     :           |           +   !             :   |   2 internal_class_getImageName(objc_class*, char const**)  (in libobjc.A.dylib) + 20  [0x180058f1c]
+    +                       !     :           |           +   !             :   |     2 dyld4::APIs::dyld_image_path_containing_address(void const*)  (in dyld_sim) + 68  [0x10313b184]
+    +                       !     :           |           +   !             :   |       2 dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 528  [0x10313aec0]
+    +                       !     :           |           +   !             :   |         2 dyld4::RuntimeLocks::withLoadersReadLock(void () block_pointer)  (in dyld_sim) + 60  [0x10314939c]
+    +                       !     :           |           +   !             :   |           2 invocation function for block in dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 108  [0x10313b004]
+    +                       !     :           |           +   !             :   |             2 dyld4::JustInTimeLoader::contains(dyld4::RuntimeState&, void const*, void const**, unsigned long long*, unsigned char*) const  (in dyld_sim) + 136  [0x103151064]
+    +                       !     :           |           +   !             :   |               2 mach_o::UnsafeHeader::preferredLoadAddress() const  (in dyld_sim) + 96  [0x103178a04]
+    +                       !     :           |           +   !             :   |                 2 mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 96  [0x103179460]
+    +                       !     :           |           +   !             :   |                   2 invocation function for block in mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 272  [0x1031796f4]
+    +                       !     :           |           +   !             :   1 +[NSBundle bundleForClass:]  (in Foundation) + 44  [0x18103e07c]
+    +                       !     :           |           +   !             :   | 1 class_respondsToSelector_inst  (in libobjc.A.dylib) + 164  [0x18003e244]
+    +                       !     :           |           +   !             :   |   1 resolveMethod_locked(objc_object*, objc_selector*, objc_class*, int)  (in libobjc.A.dylib) + 124  [0x1800535f0]
+    +                       !     :           |           +   !             :   |     1 getMaybeUnrealizedNonMetaClass(objc_class*, objc_object*)  (in libobjc.A.dylib) + 240  [0x18004122c]
+    +                       !     :           |           +   !             :   |       1 getClassExceptSomeSwift(char const*)  (in libobjc.A.dylib) + 20  [0x180041658]
+    +                       !     :           |           +   !             :   |         1 getClass_impl(char const*)  (in libobjc.A.dylib) + 168  [0x1800417a8]
+    +                       !     :           |           +   !             :   |           1 dyld4::APIs::_dyld_for_each_objc_class(char const*, dyld4::ReadOnlyCallback<void (void*, bool, bool*) block_pointer>)  (in dyld_sim) + 140  [0x10313dac4]
+    +                       !     :           |           +   !             :   |             1 objc::ObjectHashTable::forEachObject(char const*, void (unsigned long long, unsigned short, bool&) block_pointer) const  (in dyld_sim) + 64  [0x10313ff5c]
+    +                       !     :           |           +   !             :   1 +[NSBundle bundleForClass:]  (in Foundation) + 180  [0x18103e104]
+    +                       !     :           |           +   !             :     1 _NSFrameworkPathFromLibraryPath  (in Foundation) + 292  [0x18103c494]
+    +                       !     :           |           +   !             :       1 @objc NSString.__swiftFillFileSystemRepresentation(pointer:maxLength:)  (in Foundation) + 48  [0x180e45af0]
+    +                       !     :           |           +   !             :         1 NSString.__swiftFillFileSystemRepresentation(pointer:maxLength:)  (in Foundation) + 76  [0x180e4567c]
+    +                       !     :           |           +   !             :           1 objc_autorelease  (in libobjc.A.dylib) + 132  [0x18005fea4]
+    +                       !     :           |           +   !             :             1 AutoreleasePoolPage::moveTLSAutoreleaseToPool(ReturnAutoreleaseInfo)  (in libobjc.A.dylib) + 164  [0x18005f8cc]
+    +                       !     :           |           +   !             :               1 pthread_setspecific  (in libsystem_pthread.dylib) + 0  [0x1031f5ab0]
+    +                       !     :           |           +   !             1 -[NSObject(AXPrivCategory) _iosAccessibilityAttributeValue:]  (in UIAccessibility) + 10112  [0x19528dd4c]
+    +                       !     :           |           +   !               1 _objc_msgSend_uncached  (in libobjc.A.dylib) + 64  [0x18003af00]
+    +                       !     :           |           +   !                 1 lookUpImpOrForward  (in libobjc.A.dylib) + 348  [0x180053430]
+    +                       !     :           |           +   !                   1 cache_getImp  (in libobjc.A.dylib) + 28  [0x18003afdc]
+    +                       !     :           |           +   2 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 264  [0x1064b2cc8]
+    +                       !     :           |           +   ! 2 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     :           |           +   !   2 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     :           |           +   !     2 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !     :           |           +   !       2 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !     :           |           +   !         2 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !     :           |           +   !           2 writev  (in libsystem_kernel.dylib) + 8  [0x102ffc600]
+    +                       !     :           |           +   2 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 524  [0x1064b2dcc]
+    +                       !     :           |           +     2 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     :           |           +       2 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     :           |           +         2 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !     :           |           +           2 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !     :           |           +             2 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !     :           |           +               2 writev  (in libsystem_kernel.dylib) + 8  [0x102ffc600]
+    +                       !     :           |           2 -[XCElementSnapshot elementType]  (in XCTAutomationSupport) + 932  [0x1064cad04]
+    +                       !     :           |             2 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     :           |               2 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     :           |                 2 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !     :           |                   2 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !     :           |                     2 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !     :           |                       2 writev  (in libsystem_kernel.dylib) + 8  [0x102ffc600]
+    +                       !     :           5 -[XCTFilteringTransformerIterator nextMatch]  (in XCTAutomationSupport) + 124  [0x1064b0770]
+    +                       !     :             5 -[XCTElementSnapshotDescendantsEnumerator nextObject]  (in XCTAutomationSupport) + 140  [0x1064d2334]
+    +                       !     :               5 -[XCElementSnapshot childEnumerator]  (in XCTAutomationSupport) + 16  [0x1064cf254]
+    +                       !     :                 5 -[XCElementSnapshot children]  (in XCTAutomationSupport) + 124  [0x1064cd2f8]
+    +                       !     :                   3 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 636  [0x1064ca3e4]
+    +                       !     :                   + 3 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     :                   +   3 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     :                   +     3 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !     :                   +       3 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !     :                   +         3 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !     :                   +           3 writev  (in libsystem_kernel.dylib) + 8  [0x102ffc600]
+    +                       !     :                   2 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 264  [0x1064ca270]
+    +                       !     :                     2 -[XCTAutomationSession attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 76  [0x1064daca4]
+    +                       !     :                       1 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 264  [0x1064b2cc8]
+    +                       !     :                       ! 1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     :                       !   1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     :                       !     1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !     :                       !       1 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !     :                       !         1 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !     :                       !           1 writev  (in libsystem_kernel.dylib) + 8  [0x102ffc600]
+    +                       !     :                       1 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 360  [0x1064b2d28]
+    +                       !     :                         1 -[XCTAccessibilityFramework attributes:forElement:error:]  (in XCTAutomationSupport) + 128  [0x1064b3f2c]
+    +                       !     :                           1 AXUIElementCopyMultipleAttributeValues  (in AXRuntime) + 584  [0x1938ee088]
+    +                       !     :                             1 _AXXMIGCopyMultipleAttributeValues  (in AXRuntime) + 596  [0x1938f3960]
+    +                       !     :                               1 _handleNonMainThreadCallback  (in AXRuntime) + 52  [0x1938f35e0]
+    +                       !     :                                 1 ___AXXMIGCopyMultipleAttributeValues_block_invoke  (in AXRuntime) + 60  [0x1938f3a60]
+    +                       !     :                                   1 _copyMultipleAttributeValuesCallback  (in UIAccessibility) + 552  [0x1952685b4]
+    +                       !     :                                     1 -[NSObject(AXPrivCategory) _iosAccessibilityAttributeValue:]  (in UIAccessibility) + 200  [0x19528b694]
+    +                       !     :                                       1 -[UIViewAccessibility automationElements]  (in UIKit) + 156  [0x10a54af04]
+    +                       !     :                                         1 -[UIViewAccessibility _accessibilityUserTestingSubviewsSorted:]  (in UIKit) + 328  [0x10a54b06c]
+    +                       !     :                                           1 -[NSMutableArray sortUsingSelector:]  (in CoreFoundation) + 148  [0x1804d8a6c]
+    +                       !     :                                             1 -[NSMutableArray sortRange:options:usingComparator:]  (in CoreFoundation) + 384  [0x1804d7e90]
+    +                       !     :                                               1 CFSortIndexes  (in CoreFoundation) + 240  [0x180438168]
+    +                       !     :                                                 1 __CFSimpleMergeSort  (in CoreFoundation) + 232  [0x1804386b8]
+    +                       !     :                                                   1 __CFSimpleMergeSort  (in CoreFoundation) + 88  [0x180438628]
+    +                       !     :                                                     1 -[NSObject(AXPrivCategory) accessibilityCompareGeometry:]  (in UIAccessibility) + 48  [0x195298a1c]
+    +                       !     :                                                       1 -[NSObject _accessibilityCompareGeometry:]  (in UIAccessibility) + 80  [0x1952c4bdc]
+    +                       !     :                                                         1 -[NSObject(AXPrivCategory) _accessibilityFrameForSorting]  (in UIAccessibility) + 260  [0x1952988cc]
+    +                       !     :                                                           1 -[UIViewAccessibility accessibilityFrame]  (in UIKit) + 108  [0x10a540ec0]
+    +                       !     :                                                             1 -[UIViewAccessibility _accessibilityFrameForView:]  (in UIKit) + 224  [0x10a54046c]
+    +                       !     :                                                               1 UIAccessibilityFrameForBounds  (in UIAccessibility) + 188  [0x1952b4b7c]
+    +                       !     :                                                                 1 -[UITextEffectsWindowAccessibility _axConvertRect:toWindow:]  (in UIKit) + 76  [0x10a522dec]
+    +                       !     :                                                                   1 _objc_msgSend_uncached  (in libobjc.A.dylib) + 0  [0x18003aec0]
+    +                       !     1 __XCTPerformOnMainRunLoop_block_invoke  (in XCTAutomationSupport) + 124  [0x1064d3b98]
+    +                       !       1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !         1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !           1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !             1 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !               1 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !                 1 writev  (in libsystem_kernel.dylib) + 8  [0x102ffc600]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 864  [0x180421870]
+    +                       ! 1 __CFRunLoopDoObservers  (in CoreFoundation) + 556  [0x180421430]
+    +                       !   1 __CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__  (in CoreFoundation) + 32  [0x180421f4c]
+    +                       !     1 _UIApplicationDrainManagedAutoreleasePool  (in UIKitCore) + 20  [0x185eaaac0]
+    +                       !       1 DYLD-STUB$$pthread_main_np  (in UIKitCore) + 0  [0x186ba9458]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 1884  [0x180421c6c]
+    +                       ! 1 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__  (in CoreFoundation) + 12  [0x180422a94]
+    +                       !   1 _dispatch_main_queue_callback_4CF  (in libdispatch.dylib) + 40  [0x180195890]
+    +                       !     1 _dispatch_main_queue_drain  (in libdispatch.dylib) + 1172  [0x180195d34]
+    +                       !       1 <deduplicated_symbol>  (in libdispatch.dylib) + 24  [0x1801bd748]
+    +                       !         1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                       !           1 _Block_release  (in libsystem_blocks.dylib) + 296  [0x180106b44]
+    +                       !             1 objc_destructInstance  (in libobjc.A.dylib) + 40  [0x180057588]
+    +                       !               1 objc_destructInstance_nonnull_realized(objc_object*)  (in libobjc.A.dylib) + 88  [0x1800575f0]
+    +                       !                 1 _object_remove_associations  (in libobjc.A.dylib) + 72  [0x18005add0]
+    +                       !                   1 objc::DenseMapBase<objc::DenseMap<DisguisedPtr<objc_object>, objc::DenseMap<void const*, objc::ObjcAssociation, objc::DenseMapValueInfo<objc::ObjcAssociation>, objc::DenseMapInfo<void const*>, objc::detail::DenseMapPair<void const*, objc::ObjcAssociation>>, objc::DenseMapValueInfo<objc::DenseMap<void const*, objc::ObjcAssociation, objc::DenseMapValueInfo<objc::ObjcAssociation>, objc::DenseMapInfo<void const*>, objc::detail::DenseMapPair<void const*, objc::ObjcAssociation>>>, objc::DenseMapInfo<DisguisedPtr<objc_object>>, objc::detail::DenseMapPair<DisguisedPtr<objc_object>, objc::DenseMap<void const*, objc::ObjcAssociation, objc::DenseMapValueInfo<objc::ObjcAssociation>, objc::DenseMapInfo<void const*>, objc::detail::DenseMapPair<void const*, objc::ObjcAssociation>>>>, DisguisedPtr<objc_object>, objc::DenseMap<void const*, objc::ObjcAssociation, objc::DenseMapValueInfo<objc::ObjcAssociation>, objc::DenseMapInfo<void const*>, objc::detail::DenseMapPair<void const*, objc::ObjcAssociation>>, objc::DenseMapValueInfo<objc::DenseMap<void const*, objc::ObjcAssociation, objc::DenseMapValueInfo<objc::ObjcAssociation>, objc::DenseMapInfo<void const*>, objc::detail::DenseMapPair<void const*, objc::ObjcAssociation>>>, objc::DenseMapInfo<DisguisedPtr<objc_object>>, objc::detail::DenseMapPair<DisguisedPtr<objc_object>, objc::DenseMap<void const*, objc::ObjcAssociation, objc::DenseMapValueInfo<objc::ObjcAssociation>, objc::DenseMapInfo<void const*>, objc::detail::DenseMapPair<void const*, objc::ObjcAssociation>>>>::LookupBucketFor<DisguisedPtr<objc_object>>(DisguisedPtr<objc_object> const&, objc::detail::DenseMapPair<DisguisedPtr<objc_object>, objc::DenseMap<void const*, objc::ObjcAssociation, objc::DenseMapValueInfo<objc::ObjcAssociation>, objc::DenseMapInfo<void const*>, objc::detail::DenseMapPair<void const*, objc::ObjcAssociation>>> const*&) const  (in libobjc.A.dylib) + 116  [0x18005a7d8]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 2444  [0x180421e9c]
+    +                         1 __CFRunLoopModeIsEmpty  (in CoreFoundation) + 296  [0x18041c6e8]
+    +                           1 CFSetContainsValue  (in CoreFoundation) + 76  [0x18042c82c]
+    +                             1 CFBasicHashGetCountOfKey  (in CoreFoundation) + 180  [0x1804f244c]
+    +                               1 ___CFBasicHashFindBucket_Linear  (in CoreFoundation) + 104  [0x1804f60a8]
+    +                                 1 __CFStringHash  (in CoreFoundation) + 0  [0x1804476f8]
 
 Sort by top of stack, same collapsed (when >= 5):
-<<<<<<< HEAD
-        __workq_kernreturn  (in libsystem_kernel.dylib)        2079
-        mach_msg2_trap  (in libsystem_kernel.dylib)        1262
-        semaphore_timedwait_trap  (in libsystem_kernel.dylib)        822
-        semaphore_wait_trap  (in libsystem_kernel.dylib)        731
-        __semwait_signal  (in libsystem_kernel.dylib)        296
-        writev  (in libsystem_kernel.dylib)        54
-        objc_msgSend  (in libobjc.A.dylib)        38
-        pthread_getspecific  (in libsystem_pthread.dylib)        26
-        pthread_setspecific  (in libsystem_pthread.dylib)        26
-        __CF_IS_OBJC  (in CoreFoundation)        20
-        __CFStringHash  (in CoreFoundation)        18
-        _platform_memmove  (in libsystem_platform.dylib)        18
-        <deduplicated_symbol>  (in SwiftUI)        16
-        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        15
-        __CFStringAppendFormatCore  (in CoreFoundation)        13
-        swift_retain  (in libswiftCore.dylib)        12
-        _CFRelease  (in CoreFoundation)        10
-        ___CFBasicHashFindBucket_Linear  (in CoreFoundation)        10
-        _xzm_free  (in libsystem_malloc.dylib)        9
-        DYLD-STUB$$pthread_setspecific  (in libobjc.A.dylib)        8
-        objc_retainAutoreleasedReturnValue  (in libobjc.A.dylib)        8
-        _xzm_xzone_malloc  (in libsystem_malloc.dylib)        7
-        CFNumberGetValue  (in CoreFoundation)        6
-        __CFStringEqual  (in CoreFoundation)        6
-        _platform_memset  (in libsystem_platform.dylib)        6
-        objc_autoreleaseReturnValue  (in libobjc.A.dylib)        6
-        swift_release  (in libswiftCore.dylib)        6
-        <deduplicated_symbol>  (in SwiftUICore)        5
-        _platform_strcmp$VARIANT$Base  (in libsystem_platform.dylib)        5
-        _xzm_xzone_malloc_tiny  (in libsystem_malloc.dylib)        5
-        objc_opt_isKindOfClass  (in libobjc.A.dylib)        5
-        objc_release  (in libobjc.A.dylib)        5
-        specialized find1<A>(_:key:filter:)  (in SwiftUICore)        5
-        static String._unconditionallyBridgeFromObjectiveC(_:)  (in Foundation)        5
+        __workq_kernreturn  (in libsystem_kernel.dylib)        4982
+        mach_msg2_trap  (in libsystem_kernel.dylib)        1982
+        __semwait_signal  (in libsystem_kernel.dylib)        974
+        semaphore_wait_trap  (in libsystem_kernel.dylib)        18
+        semaphore_timedwait_trap  (in libsystem_kernel.dylib)        17
+        writev  (in libsystem_kernel.dylib)        12
 
 Binary Images:
-       0x102224000 -        0x102227507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC/data/Containers/Bundle/Application/3E323C32-5DEF-4AC9-9370-590BDF061D83/Chronotheca.app/Chronotheca
-       0x102238000 -        0x102272ee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
-       0x1022b8000 -        0x1022c03d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
-=======
-        __workq_kernreturn  (in libsystem_kernel.dylib)        5998
-        mach_msg2_trap  (in libsystem_kernel.dylib)        4619
-        __semwait_signal  (in libsystem_kernel.dylib)        1783
-        semaphore_timedwait_trap  (in libsystem_kernel.dylib)        1380
-        semaphore_wait_trap  (in libsystem_kernel.dylib)        1186
-        writev  (in libsystem_kernel.dylib)        1007
-        objc_msgSend  (in libobjc.A.dylib)        116
-        pthread_setspecific  (in libsystem_pthread.dylib)        49
-        pthread_getspecific  (in libsystem_pthread.dylib)        43
-        _platform_memmove  (in libsystem_platform.dylib)        42
-        __CF_IS_OBJC  (in CoreFoundation)        30
-        ___CFBasicHashFindBucket_Linear  (in CoreFoundation)        30
-        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        24
-        <deduplicated_symbol>  (in SwiftUICore)        23
-        __CFStringAppendFormatCore  (in CoreFoundation)        23
-        specialized find1<A>(_:key:filter:)  (in SwiftUICore)        21
-        _CFRelease  (in CoreFoundation)        19
-        _xzm_free  (in libsystem_malloc.dylib)        19
-        __CFStringCreateImmutableFunnel3  (in CoreFoundation)        18
-        _platform_memset  (in libsystem_platform.dylib)        16
-        swift_retain  (in libswiftCore.dylib)        16
-        <deduplicated_symbol>  (in SwiftUI)        15
-        __CFBasicHashRehash  (in CoreFoundation)        14
-        __CFStringHash  (in CoreFoundation)        14
-        _xzm_xzone_malloc  (in libsystem_malloc.dylib)        13
-        objc_retain  (in libobjc.A.dylib)        13
-        CFStringAppend  (in CoreFoundation)        12
-        objc_release  (in libobjc.A.dylib)        12
-        objc_retainAutoreleasedReturnValue  (in libobjc.A.dylib)        11
-        swift::MetadataCacheKey::operator==(swift::MetadataCacheKey const&) const  (in libswiftCore.dylib)        11
-        _CFStringGetLength2  (in CoreFoundation)        10
-        __CFStringChangeSizeMultiple  (in CoreFoundation)        10
-        _platform_strcmp$VARIANT$Base  (in libsystem_platform.dylib)        10
-        objc_autoreleaseReturnValue  (in libobjc.A.dylib)        10
-        CFRetain  (in CoreFoundation)        9
-        _xzm_xzone_malloc_tiny  (in libsystem_malloc.dylib)        9
-        madvise  (in libsystem_kernel.dylib)        9
-        -[__NSDictionaryM objectForKey:]  (in CoreFoundation)        8
-        customRR_retain  (in libobjc.A.dylib)        8
->>>>>>> origin/claude/gallant-hamilton-1ovksl
+       0x102fe4000 -        0x102fe7507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC/data/Containers/Bundle/Application/C29FD65C-50C6-4B33-B0C1-29EB35D79BD8/Chronotheca.app/Chronotheca
+       0x102ff8000 -        0x103032ee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
+       0x103078000 -        0x1030803d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
+       0x103138000 -        0x103186e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x1031f4000 -        0x10320010b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
+       0x10327c000 -        0x10332f523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
+       0x1033d4000 -        0x10341765f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x103528000 -        0x1035c12af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x103c84000 -        0x103c84b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x103c98000 -        0x103ca003f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x103dac000 -        0x103db739f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x103dd0000 -        0x103dd2dff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x103df0000 -        0x103df949f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x103e14000 -        0x103e1ab7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x103e44000 -        0x103e5d27f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
+       0x103e94000 -        0x103e97e5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x1041a4000 -        0x1041a71ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
+       0x1043ac000 -        0x1043b32df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
+       0x1043cc000 -        0x1043d1407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
+       0x104428000 -        0x10442c6ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
+       0x104448000 -        0x1046a3bbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+       0x104d78000 -        0x104d9acff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
+       0x104e10000 -        0x104e36f5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
+       0x104e5c000 -        0x104e9615f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
+       0x10503c000 -        0x1058477d3 +Chronotheca.debug.dylib (0) <4F998821-BF6E-3FCD-B745-2B6490013D4C> /Users/*/Library/Developer/CoreSimulator/Devices/FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC/data/Containers/Bundle/Application/C29FD65C-50C6-4B33-B0C1-29EB35D79BD8/Chronotheca.app/Chronotheca.debug.dylib
+       0x1064ac000 -        0x1064ff7bf  com.apple.dt.XCTAutomationSupport (26.5 - 24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
+       0x106614000 -        0x1066485bf  com.apple.MTLSimDriver (373.2 - 373.2) <8339CA77-3986-3588-9DF9-8B8D511AE608> /Volumes/*/MTLSimDriver.framework/MTLSimDriver
+       0x1066e4000 -        0x106753cbf  com.apple.UIUnderstanding (1.0 - 1) <576E64EB-8AA4-3B1E-A89D-365C4DE0C7C8> /Volumes/*/UIUnderstanding.framework/UIUnderstanding
+       0x109684000 -        0x1096b227f  com.apple.gpusw.MetalSerializer (1.0 - 1) <19460939-4BCE-3E8D-8868-5388DD78ACE3> /Volumes/*/MetalSerializer.framework/MetalSerializer
+       0x10a3ec000 -        0x10a5dfd3f  com.apple.UIKit.axbundle (1.0.0 - 1.0) <D3D808D1-AB02-3566-B2DD-1B139F8E9569> /Volumes/*/UIKit
+       0x10ba28000 -        0x10ba2abdf  com.apple.GeoServices.axbundle (1.0 - 1.0) <69D2FB7A-6D7C-3EDE-9495-629B7904ED32> /Volumes/*/GeoServices
