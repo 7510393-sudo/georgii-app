@@ -408,11 +408,24 @@ struct DayPage: View {
                          // День пишется, когда карточка села (P923), — не
                          // посреди её хода.
                          if !store.isToday {
+                             // Ход листа назад, если шёл, обрывается (P930):
+                             // иначе он довёл бы лист на место посреди посадки.
+                             ribbon.lifting.stop()
                              shell.go(.fold(card: Vault.stamp(store.date),
                                             store.isFuture ? .future : .past))
                              ribbon.release()
                              store.prune()
                              return
+                         }
+                         // Лист уже ехал назад («не дотянули»), а отпустили
+                         // его за порогом (P930; след автора к 295: «✗ день →
+                         // день · отпустили за порогом»). Прерванный ход
+                         // назад договаривает «тягу вернули» — тяга
+                         // продолжается, иначе картотека встала бы открытой
+                         // на вид, а по состоянию — закрытой.
+                         ribbon.interrupt()
+                         if case .day = shell.deck {
+                             shell.go(.pull(Deck.Side(dir), today: true))
                          }
                          ribbon.glide(to: ribbon.restY(dir)) {
                              shell.go(.released)

@@ -806,7 +806,7 @@ final class Ribbon: ObservableObject {
 
     /// Прерванный ход всё же договаривает своё: открыта лента или нет,
     /// тянут или нет — иначе это осталось бы висеть.
-    private func interrupt() {
+    func interrupt() {
         guard link != nil else { return }
         stop()
         driving = false
