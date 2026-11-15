@@ -768,10 +768,16 @@ final class Ribbon: ObservableObject {
 /// ним — «кончил». Схема карточки и лист «Сегодня» едут им, а не ходом
 /// SwiftUI с ответом «ход окончен»: на телефоне тот ответ приходил, когда
 /// схема была ещё в пути, и карточка появлялась раньше неё — прыжок в
-/// конце посадки (видео автора к 291).
+/// конце посадки (видео автора к 291). По следу автора ответ приходил
+/// вовремя по часам, а на экране ход начинался позже: в миг закрытия экран
+/// замирал на 0,15–0,2 с, пока проступала картотека. Поэтому время здесь
+/// считается по показанным кадрам: замерший кадр хода не съедает, после
+/// замирания схема продолжает с того же места, а не перескакивает.
 final class Glide {
     private var link: CADisplayLink?
-    private var began: CFTimeInterval = 0
+    /// Сколько хода уже показано и когда был прошлый кадр.
+    private var shown: CFTimeInterval = 0
+    private var last: CFTimeInterval = 0
     private var length: CFTimeInterval = 0.3
     private var step: ((CGFloat) -> Void)?
     private var done: (() -> Void)?
@@ -784,7 +790,8 @@ final class Glide {
         self.length = max(0.01, length)
         self.step = step
         done = then
-        began = CACurrentMediaTime()
+        shown = 0
+        last = 0
         let made = CADisplayLink(target: self, selector: #selector(tick))
         made.add(to: .main, forMode: .common)
         link = made
@@ -798,7 +805,11 @@ final class Glide {
     }
 
     @objc private func tick() {
-        let t = CGFloat(min(1, (CACurrentMediaTime() - began) / length))
+        let now = CACurrentMediaTime()
+        // За один кадр — не больше двух обычных: замирание хода не съедает.
+        if last > 0 { shown += min(1.0 / 30, now - last) }
+        last = now
+        let t = CGFloat(min(1, shown / length))
         step?(t * t * (3 - 2 * t))
         guard t >= 1 else { return }
         let then = done
