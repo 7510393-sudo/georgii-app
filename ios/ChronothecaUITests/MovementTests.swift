@@ -726,6 +726,27 @@ final class MovementTests: XCTestCase {
 
     /// Вложения в конце записи — рядом внизу страницы (P665): снимок
     /// образца стоит в ряду, справа внизу — «＋», и её меню открывается.
+    /// Вложение с нижней строки несут вверх, в текст (P958): лист за ним
+    /// не тянется в картотеку — день остаётся открытым (P962).
+    func testStripCarryKeepsSheet() {
+        launch("diary")
+        let before = openScreen
+        // Долистать лист до полоски вложений внизу.
+        for _ in 0..<3 { app.swipeUp() }
+        sleep(1)
+        XCTAssertEqual(openScreen, before, "лист ушёл, пока его листали")
+        let item = app.descendants(matching: .any).matching(identifier: "strip.item").firstMatch
+        guard item.waitForExistence(timeout: 5) else { return XCTFail("вложения внизу нет") }
+        let from = item.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        from.press(forDuration: 0.8,
+                   thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3)),
+                   withVelocity: .slow, thenHoldForDuration: 0.4)
+        sleep(2)
+        save("26-вложение-снизу-в-текст")
+        XCTAssertEqual(openScreen, before, "лист уехал в картотеку: \(openScreen)")
+        XCTAssertEqual(openDay, "today", "открыт другой день: \(openDay)")
+    }
+
     func testPlusOpensMenu() {
         launch("diary")
         let row = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "Photo 1")).firstMatch

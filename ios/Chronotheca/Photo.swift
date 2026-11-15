@@ -327,6 +327,8 @@ struct PhotoStrip: View {
                                 : kind(i) == .photo ? T("Фотография \(i + 1)", "Photo \(i + 1)")
                                 : kind(i) == .video ? T("Видео", "Video")
                                 : kind(i) == .audio ? T("Голосовая запись", "Voice note") : T("Файл", "File"))
+            // Для проверок движения: вложение с нижней строки (P962).
+            .accessibilityIdentifier("strip.item")
             .contentShape(Rectangle())
             .onTapGesture { tapped(i) }
             // Долгое нажатие и касание — жестами iPhone поверх превью (P541):

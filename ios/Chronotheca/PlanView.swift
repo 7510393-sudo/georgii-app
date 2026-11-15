@@ -442,7 +442,9 @@ struct PlanView: View {
             // взять пальцем (P203, P362); и дело, под которое ляжет
             // несомый снимок (P377).
             lifted: up || photoTo == id || shell.planHover?.id == id,
-            past: store.isPast)
+            past: store.isPast,
+            // Подложка «Удалить / На другой день» — на высоте рамки (P962).
+            swipe: up ? slide : 0)
             // Снимок из полоски или из-под другого дела — под это дело, в
             // ряд с теми, что уже там (P358).
             .onDrop(of: store.canEditPlan ? [UTType.plainText] : [],
@@ -458,7 +460,6 @@ struct PlanView: View {
                     ? dragOffset
                     : CGFloat(displaced(id)) * dragHeight)
             .animation(dragged == id ? nil : Self.makeRoom, value: displaced(id))
-            .background { underneath(id) }
             .shadow(color: .black.opacity(dragged == id ? 0.18 : 0),
                     radius: 8, x: 3, y: 3)
             .zIndex(dragged == id || up ? 1 : 0)
@@ -475,12 +476,7 @@ struct PlanView: View {
 
     /// Что открывается под делом, отведённым вбок: справа — красная
     /// корзина (P362), слева — синий календарик «на другой день» (P383).
-    @ViewBuilder private func underneath(_ id: UUID) -> some View {
-        if lifted == id, slide != 0 {
-            Self.swipeBack(slide)
-        }
-    }
-
+    /// Рисует её сама строка дела, на высоте рамки (P962).
     /// Под значком — подпись словами (P465): жесты вбок угадать нельзя,
     /// подпись говорит, что случится, если отпустить.
     static func swipeBack(_ slide: CGFloat,
@@ -727,7 +723,9 @@ struct PlanView: View {
                         onCheck: { checkEvent(e) },
                         onLift: { eventLift(e, $0) },
                         lifted: up || photoToEvent == e.key || shell.eventHover == e.key,
-                        past: store.isPast)
+                        past: store.isPast,
+                        swipe: up && eventSlide < 0 ? eventSlide : 0,
+                        swipeWord: T("Убрать", "Remove"))
         }
         // Без пересчёта на каждом кадре свайпа вбок (P833).
         .trackFrame(appear: { frame in
@@ -740,9 +738,6 @@ struct PlanView: View {
                     PlanZones.marks[e.key] = nil
                 })
         .offset(x: up ? eventSlide : 0, y: up ? eventDrag : 0)
-        .background {
-            if up, eventSlide < 0 { Self.swipeBack(eventSlide, left: T("Убрать", "Remove")) }
-        }
         .shadow(color: .black.opacity(up && eventDrag != 0 ? 0.18 : 0), radius: 8, x: 3, y: 3)
         .zIndex(up ? 1 : 0)
         .contentShape(Rectangle())
