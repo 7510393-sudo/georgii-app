@@ -74,6 +74,9 @@ struct PlanRowLine: View {
     /// колокольчика больше нет.
     static let bellWidth: CGFloat = PageTexture.cell * 1.5
     static let gap: CGFloat = 8
+
+    /// Насколько плашка поднятого дела выходит над записью и под неё (P957).
+    static let plateRoom: CGFloat = 9
     /// Высота площадки для пальца у номера и времени (P465).
     static let reach: CGFloat = 44
 
@@ -95,8 +98,8 @@ struct PlanRowLine: View {
     @State private var told = false
 
     var body: some View {
-        // Строка — целое число клеток листа, и плашка во всю её высоту:
-        // промежутки между плашками ложатся на линии клетки (P413).
+        // Строка — целое число клеток листа (плашка поднятого дела — на
+        // самой записи, P957); строки ложатся на линии клетки (P413).
         GridSnap(top: true) {
         VStack(alignment: .leading, spacing: 2) {
             // Голова стоит поверх отступа первой строки названия, а не
@@ -112,6 +115,11 @@ struct PlanRowLine: View {
         // Плашка уже с боков — и содержимое отступает вместе с ней (P413).
         .padding(.trailing, 20)
         .padding(.leading, 18)
+        // Плашка — только у поднятого дела (P793), и ложится на саму
+        // запись, поровну над ней и под ней (P957): прежде она шла во всю
+        // высоту строки, где нижняя клетка — пустой просвет, и запись
+        // оказывалась прижата к верху рамки.
+        .background { contour }
         // Строчка письма — на линии клетки (P795): сверху ровно столько,
         // чтобы низ букв лёг на первую линию; строка в одну строчку — две
         // клетки, вторая — просвет до следующего дела.
@@ -119,8 +127,6 @@ struct PlanRowLine: View {
         .padding(.bottom, 2)
         .frame(maxWidth: .infinity, alignment: .leading)
         }
-        // Плашка — только у поднятого дела (P793).
-        .background { contour }
     }
 
     /// Сделанное дело (P383): текст и кнопки бледнеют, а номер остаётся
@@ -142,7 +148,7 @@ struct PlanRowLine: View {
                 .shadow(color: Look.glow.opacity(0.9), radius: 5)
                 .padding(.leading, 10)
                 .padding(.trailing, 10)
-                .padding(.vertical, 2)
+                .padding(.vertical, -Self.plateRoom)
                 .allowsHitTesting(false)
         }
     }
