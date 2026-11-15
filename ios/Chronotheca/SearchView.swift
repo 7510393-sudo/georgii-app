@@ -80,6 +80,13 @@ struct SearchView: View {
             .onChange(of: typing) { _, now in
                 if !now && query.isEmpty { searching = false }
             }
+            // Слово стёрли, когда клавиатуры уже нет, — тоже снова лупа
+            // (P930): прежде строка сворачивалась, только если клавиатуру
+            // убирали при пустой строке, и после крестика оставалась пустой
+            // полосой (снимок автора к 295).
+            .onChange(of: query) { _, now in
+                if now.isEmpty && !typing { searching = false }
+            }
             .onAppear { shell.ribbon.height = height }
             .onChange(of: height) { _, h in shell.ribbon.height = h }
     }
@@ -87,7 +94,12 @@ struct SearchView: View {
     /// Насколько поднять строку поиска над клавиатурой (P797): строка стоит
     /// над нижней строкой разделов, клавиатура поднимается от низа экрана.
     private var fieldLift: CGFloat {
-        guard keyboard > 0, shell.barTop > 0 else { return 0 }
+        // Без клавиатуры в картотеке прошлого строка стоит над корешком
+        // «Сегодня» (P930, автор по 296: «наполовину скрыта за торчащей
+        // снизу карточкой „Сегодня“»).
+        guard keyboard > 0, shell.barTop > 0 else {
+            return shell.deck.side == .past ? FollowRibbon.peekBottom : 0
+        }
         let safe = UIApplication.shared.connectedScenes
             .compactMap { ($0 as? UIWindowScene)?.keyWindow?.safeAreaInsets.bottom }.first ?? 0
         let keysTop = UIScreen.main.bounds.height - safe - keyboard
@@ -115,6 +127,34 @@ struct SearchView: View {
     /// Строка поиска — внизу ленты (P797).
     private var field: some View {
         HStack(spacing: 8) {
+            fieldBox
+            // Закончить поиск одним касанием (P930), как «Отменить» в Почте
+            // и Заметках: слово стёрто, клавиатура убрана, снова лупа.
+            // Крестик в строке только стирает слово — строка остаётся для
+            // уточнения.
+            Button {
+                shell.query = ""
+                typing = false
+                searching = false
+            } label: {
+                Text(T("Отменить", "Cancel"))
+                    .font(.system(size: 15))
+                    .foregroundStyle(Look.accent)
+                    .lineLimit(1)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 9)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
+                    .background(Look.fieldBg.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 6)
+        .padding(.bottom, 8)
+    }
+
+    private var fieldBox: some View {
+        HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(Look.inkFaint)
             TextField(prompt, text: $shell.query)
@@ -133,9 +173,6 @@ struct SearchView: View {
         // размыто — иначе их текст спорил со словом «Поиск».
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
         .background(Look.fieldBg.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
-        .padding(.horizontal, 16)
-        .padding(.top, 6)
-        .padding(.bottom, 8)
     }
 
     /// Где и что искать — меню в самой строке поиска (P632; прежде в меню
