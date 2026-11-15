@@ -518,6 +518,11 @@ struct RootView: View {
             archive.reloadSoon()
             // Свои места — для подписи точек в дневнике (P559), тоже в стороне.
             Places.loadSoon(vault)
+            // Прежний ряд вложений плана — в конец записи дневника, один раз
+            // всем архивом, в стороне (P959).
+            StripMove.startSoon(vault: vault, openDay: { [store] in store.date }) { [archive] in
+                archive.reloadSoon()
+            }
             // Свайп между разделами (P778).
             wireRibbon()
             selfDrive()
