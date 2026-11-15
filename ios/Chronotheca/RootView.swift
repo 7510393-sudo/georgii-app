@@ -662,13 +662,13 @@ struct RootView: View {
                 .frame(width: size.width, height: size.height)
                 // Картотека проступает плавно, по мере того как лист уходит
                 // (P858): прежде появлялась разом с первым движением.
-                .modifier(RibbonFade(ribbon: shell.ribbon, live: shell.ribbonLive,
-                                     card: shell.dayCard,
-                                     quiet: shell.pulling && !store.isToday && !shell.dayCard))
+                .modifier(RibbonFade(ribbon: shell.ribbon, live: shell.deck.isLive,
+                                     card: shell.deck.isLanding,
+                                     quiet: shell.deck.isPulled && !store.isToday))
                 // Пока карточка садится, картотеку не листают (P923, `docs/71`
                 // §3: чего нет в таблице переходов — не происходит).
-                .allowsHitTesting(shell.screen == .search && !shell.dayCard)
-                .accessibilityHidden(!shell.ribbonLive)
+                .allowsHitTesting(shell.screen == .search && !shell.deck.isLanding)
+                .accessibilityHidden(!shell.deck.isLive)
                 .zIndex(0)
             // Пока открыта лента, день пропускает касания к ней: ленту
             // листают и по месту дня (P777). Справа от корешка — стол (P797).
@@ -678,18 +678,17 @@ struct RootView: View {
             // Будущий день — под низом листа «Сегодня» (P896, вместо кольца
             // P876): лист начинается на 8 точек под полоской и заходит под неё.
             // Схема карточки, в которую складывается закрытый день (P886).
-            FoldGhost(ribbon: shell.ribbon, on: shell.dayCard,
-                      live: shell.ribbonLive, size: size)
+            FoldGhost(ribbon: shell.ribbon, landing: shell.ribbon.landing, size: size)
                 .zIndex(0.5)
             DayPages()
                 .frame(width: size.width,
-                       // Пока будущий лист закрывается, он той же высоты (P913):
-                       // прежде в миг щелчка он вырастал вверх на полоску и
-                       // «прыгал на прежнее место» (видео автора к 286).
-                       height: size.height - (store.isFuture && (!shell.dayCard || shell.ribbon.folding)
-                                              ? FollowRibbon.futureTop : 0))
+                       // Будущий лист ниже на полоску «Сегодня» — и пока
+                       // закрывается, он той же высоты (P913): прежде в миг
+                       // щелчка он вырастал вверх на полоску и «прыгал на
+                       // прежнее место» (видео автора к 286).
+                       height: size.height - (store.isFuture ? FollowRibbon.futureTop : 0))
                 .frame(width: size.width, height: size.height, alignment: .bottom)
-                .modifier(FollowRibbon(ribbon: shell.ribbon, live: shell.ribbonLive))
+                .modifier(FollowRibbon(ribbon: shell.ribbon, live: shell.deck.isLive))
                 // У края остаётся только лист сегодняшнего дня (P863).
                 .onChange(of: store.isToday, initial: true) { _, today in shell.ribbon.stick = today }
                 // День закрыт в карточку (P834) — листа нет: место дня из
@@ -699,8 +698,8 @@ struct RootView: View {
                 // что торчал у верха экрана, исчезал рывком. Обратно — сразу.
                 // Тает, а складывается в карточку его схема — `FoldGhost`
                 // под ним (P886, вместо сжатия самого листа P883).
-                .animation(shell.dayCard ? .easeOut(duration: 0.2) : nil) {
-                    $0.opacity(shell.dayCard ? 0 : 1)
+                .animation(shell.deck.isLanding ? .easeOut(duration: 0.2) : nil) {
+                    $0.opacity(shell.deck.isLanding ? 0 : 1)
                 }
                 .allowsHitTesting(shell.screen == .today)
             // «Сегодня» с открытого дня — сразу, поверх него (P924).
@@ -712,7 +711,7 @@ struct RootView: View {
         // Где ты в картотеке (P845): линия от середины левого края.
         .overlay(alignment: .leading) {
             // Только в открытой картотеке (P907): на открытом листе черты нет.
-            if shell.screen == .search && shell.ribbonOpen {
+            if shell.screen == .search && shell.deck.isOpen {
                 TimeLine(ribbon: shell.ribbon, height: size.height)
             }
         }
@@ -722,9 +721,9 @@ struct RootView: View {
         // Открыт не сегодняшний день — корешок «Сегодня» торчит внизу поверх
         // него всегда (P862).
         .overlay(alignment: .topLeading) {
-            TodayPeek(ribbon: shell.ribbon, live: shell.ribbonLive,
-                      open: shell.screen == .search && shell.ribbonOpen,
-                      card: shell.dayCard, todaySheet: store.isToday,
+            TodayPeek(ribbon: shell.ribbon, live: shell.deck.isLive,
+                      open: shell.screen == .search && shell.deck.isOpen,
+                      card: shell.deck.isLanding, todaySheet: store.isToday,
                       future: store.isFuture, lifting: todayRise != 0, size: size) { riseToday() }
         }
         .background(Desk())
@@ -782,7 +781,7 @@ struct RootView: View {
     @State private var todayRise = 0
 
     private var pagingFree: Bool {
-        !shell.pulling && !shell.holding && !shell.showingSettings && shell.settingsPull == nil
+        !shell.deck.isPulled && !shell.holding && !shell.showingSettings && shell.settingsPull == nil
             && shell.movingTask == nil && shell.drawer == nil && shell.screen != .map
             && vault.moving == nil
     }
@@ -799,7 +798,7 @@ struct RootView: View {
         // С картотеки на карту или календарь — картотека остаётся как была,
         // и возвращаемся в неё же (P907, автор: «должен возвращаться туда,
         // где был»). Прежде картотека закрывалась, и возврат вёл на «Сегодня».
-        if shell.ribbonOpen {
+        if shell.deck.isOpen {
             if shell.screen == .search && page != .today { ribbonAway = true }
             else if !(ribbonAway && page == .today) { closeRibbonNow() }
         }
@@ -891,7 +890,6 @@ struct RootView: View {
         step(3, "просьба снимка картотеки") { wantSample("big-search") }
         step(3, "картотека прошлого") {
             let tap = Date()
-            shell.go(.aim(1))
             shell.screen = .search
             LaunchClock.opened("search", since: tap)
         }
@@ -914,7 +912,7 @@ struct RootView: View {
         shell.ribbon.walls = { [shell] in
             // У прошедшего дня, закрытого в карточку, места дня в ленте нет —
             // нет и стены (P834).
-            shell.screen == .search && shell.ribbonOpen && !shell.pulling && !shell.dayCard
+            shell.screen == .search && shell.deck.isFile
         }
         // В день тягой (P828): сперва лента доезжает до места дня, раздел
         // меняется, когда встала, — как и при открытии картотеки. Прежде
@@ -1073,7 +1071,7 @@ struct RootView: View {
     private func open(_ target: Shell.Screen) {
         var target = target
         // «Дневник» с карты или календаря — в картотеку, если ушли из неё (P907).
-        if target == .today, ribbonAway, shell.ribbonOpen, shell.screen != .search, shell.screen != .today {
+        if target == .today, ribbonAway, shell.deck.isOpen, shell.screen != .search, shell.screen != .today {
             target = .search
         }
         if target != shell.screen { hideKeyboard() }
@@ -1097,7 +1095,7 @@ struct RootView: View {
         let page: Shell.Screen = back ? .today : new
         let instant = shell.instant
         shell.instant = false
-        if shell.ribbonOpen, !back {
+        if shell.deck.isOpen, !back {
             // С картотеки на карту или календарь — она остаётся (P907).
             if old == .search && page != .today {
                 ribbonAway = true
@@ -1227,7 +1225,7 @@ struct RootView: View {
     /// сегодня это были два её прыжка на глазах.
     private func liftToday(top: Bool) {
         let ribbon = shell.ribbon
-        guard !ribbon.frozen, !ribbon.lifting.running else { return }
+        guard !ribbon.inHand else { return }
         var quiet = Transaction()
         quiet.disablesAnimations = true
         let still = quiet
@@ -1238,7 +1236,6 @@ struct RootView: View {
                 shell.screen = .today
                 return true
             }
-            ribbon.frozen = false
             guard on else {
                 ribbon.refresh()
                 return
@@ -1251,7 +1248,7 @@ struct RootView: View {
 
     /// Закрыть ленту без хода — она под другой плашкой, её не видно.
     private func closeRibbonNow() {
-        guard shell.ribbonOpen || shell.pulling else { return }
+        guard shell.deck.isLive else { return }
         var still = Transaction()
         still.disablesAnimations = true
         withTransaction(still) { shell.go(.closeNow) }

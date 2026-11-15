@@ -308,6 +308,7 @@ struct SearchView: View {
         // обратно, и эта пересборка была пустым экраном при закрытии
         // карточки (`docs/71` §8). Теперь, пока открыт день с карточки, лента
         // стоит, где её оставили, и карточка садится в то же гнездо.
+        let began = CACurrentMediaTime()
         let today = DayStore.today()
         let todayStamp = Vault.stamp(today)
         // Опись читается один раз за перерисовку (P771): старые сверху.
@@ -328,6 +329,8 @@ struct SearchView: View {
         let ribbon = shell.ribbon
         // Какие карточки есть в ленте — чтобы не искать ту, которой нет (P923).
         ribbon.ids = Set(items.map(\.id))
+        // Сколько стоила эта сборка — в заметки посадки (P929).
+        ribbon.built = (CACurrentMediaTime() - began, items.count)
         return ScrollViewReader { proxy in ScrollView {
             // Карточки — вид сверху: нижняя лежит поверх верхней и своим
             // корешком с датой закрывает её низ (P694, P695).
@@ -390,11 +393,10 @@ struct SearchView: View {
                 withTransaction(still) { proxy.scrollTo(id, anchor: spot) }
             }
             DispatchQueue.main.async {
-                if shell.ribbonOpen { settle() } else { ribbon.park() }
-                // Ленивая стопка ставит дальнюю карточку со второго раза.
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    if shell.ribbonOpen && ribbon.fresh { settle() }
-                }
+                // Ленивая стопка ставит дальнее со второго раза — это ждёт
+                // сам покой ленты, по замеру места дня (P928; прежде —
+                // второй раз через 0,3 с).
+                if shell.deck.isOpen { settle() } else { ribbon.park() }
                 // Снимок «лента поиска»: список пролистан, как у человека.
                 if Search.deep {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
@@ -411,26 +413,26 @@ struct SearchView: View {
         // то же гнездо карточка и вернётся.
         .onChange(of: items.count) { _, _ in
             DispatchQueue.main.async {
-                if !shell.ribbonLive { if store.isToday { ribbon.park() } } else if ribbon.fresh { settle() }
+                if !shell.deck.isLive { if store.isToday { ribbon.park() } } else if ribbon.fresh { settle() }
             }
         }
         // На листе снова сегодня, а картотека закрыта — место дня под день.
         .onChange(of: store.isToday) { _, today in
             guard today else { return }
             DispatchQueue.main.async {
-                if !shell.ribbonLive { ribbon.park() }
+                if !shell.deck.isLive { ribbon.park() }
             }
         }
         // Высота экрана известна не с первого кадра: до неё место дня
         // нулевое, и лента вставала не там (снимки CI к P777).
         .onChange(of: height) { _, _ in
             DispatchQueue.main.async {
-                if !shell.ribbonLive { if store.isToday { ribbon.park() } } else if ribbon.fresh { settle() }
+                if !shell.deck.isLive { if store.isToday { ribbon.park() } } else if ribbon.fresh { settle() }
             }
         }
         // Ленту открыли не тягой (снимок, запуск на картотеке) — в покой.
-        .onChange(of: shell.ribbonOpen) { _, open in
-            guard open, !shell.pulling else { return }
+        .onChange(of: shell.deck.isOpen) { _, open in
+            guard open else { return }
             DispatchQueue.main.async { settle() }
         }
         // Набрали слово — к ближайшей находке: в прошлом она над днём, в
@@ -439,19 +441,16 @@ struct SearchView: View {
             DispatchQueue.main.async { settle() }
         }
         // День закрывают в карточку (P834, P875) — посадка по событиям (P923).
-        .onChange(of: shell.dayCard) { _, now in
-            guard now, case .landing(let closed, _, _) = shell.deck else {
+        .onChange(of: shell.deck.isLanding) { _, now in
+            guard now, case .landing(let closed, let at, _) = shell.deck else {
                 // Посадка кончена или прервана: её шаги больше не к месту.
                 ribbon.landing.clear()
                 ribbon.unseat()
                 ribbon.flight.stop()
-                ribbon.foldSide = 0
                 ribbon.foldTo = nil
-                ribbon.foldLanded = false
-                ribbon.folding = false
                 return
             }
-            land(closed)
+            land(closed, at)
         }
         }
         .animation(.easeOut(duration: 0.25), value: keyboard)
@@ -471,12 +470,12 @@ struct SearchView: View {
     /// последний кадр этих движений. По времени остаётся один
     /// предохранитель: если что-то из этого не пришло, карточка считается
     /// севшей.
-    private func land(_ closed: String) {
+    private func land(_ closed: String, _ at: Deck.Side) {
         let ribbon = shell.ribbon
         let landing = ribbon.landing
         let run = landing.begin()
         // Сторона «Сегодня» от закрытого дня: прошлое — снизу, будущее — сверху.
-        let side = ribbon.foldSide < 0 ? -1 : 1
+        let side = at.rawValue
         var still = Transaction()
         still.disablesAnimations = true
         let quiet = still
@@ -503,8 +502,16 @@ struct SearchView: View {
         let under: CGFloat = side < 0 ? FollowRibbon.futureTop : 0
         var from = CGRect(x: 0, y: lead + under, width: UIScreen.main.bounds.width, height: height - under)
         var target = CGRect.zero
+        // Замер замирания в миг закрытия (P929): когда показан первый кадр
+        // хода схемы, какой кадр был самым долгим и сколько стоила последняя
+        // сборка списка ленты — в след, одной заметкой.
+        let began = CACurrentMediaTime()
+        var firstFrame: Double?
+        var lastFrame = 0.0
+        var worstFrame = 0.0
+        var told = false
 
-        func alive() -> Bool { landing.run == run && shell.dayCard && ribbon.folding }
+        func alive() -> Bool { landing.run == run && shell.deck.isLanding }
 
         /// Над гнездом: схема шире карточки на поля по бокам. Замер рамки
         /// карточки — уже там, где она видна, со сближением (P927): замер
@@ -516,7 +523,16 @@ struct SearchView: View {
             frame.insetBy(dx: Search.cardInset, dy: 0).offsetBy(dx: 0, dy: -Landing.lift)
         }
 
-        func finish() {
+        /// Картотека под карточкой проступает — если ещё не проступила:
+        /// посадка доходит до ступени «встаёт» (P928; прежде — отдельный
+        /// флажок ленты). Не в безходовой перемене: проступает плавно.
+        func unveil() {
+            if case .landing(_, _, .flying) = shell.deck { shell.go(.aimed) }
+            if case .landing(_, _, .waiting) = shell.deck { shell.go(.stood) }
+        }
+
+        /// `cut` — досадили разом: предохранитель или человек не стал ждать.
+        func finish(cut: Bool = false) {
             guard alive() else { return }
             ribbon.unseat()
             ribbon.flight.stop()
@@ -524,7 +540,7 @@ struct SearchView: View {
             // На листе снова сегодня — он у своего края, корешком или полоской.
             ribbon.stick = true
             let settled: Bool
-            if case .landing(_, _, .settling) = shell.deck { settled = true } else { settled = false }
+            if case .landing(_, _, .settling) = shell.deck { settled = !cut } else { settled = false }
             withTransaction(quiet) {
                 store.go(to: DayStore.today())
                 shell.go(settled ? .landed : .cutShort)
@@ -544,14 +560,11 @@ struct SearchView: View {
             guard alive(), arrived, stood, landing.stage == .away else { return }
             if lost {
                 // Карточки нет — схема тает у края, а не пропадает разом.
-                withAnimation(.easeOut(duration: 0.25)) { ribbon.foldLanded = true }
+                withAnimation(.easeOut(duration: 0.25)) { landing.stage = .lost }
                 ribbon.flight.run(0.25, then: { finish() })
                 return
             }
-            withTransaction(quiet) {
-                landing.stage = .hover
-                ribbon.foldLanded = true
-            }
+            withTransaction(quiet) { landing.stage = .hover }
             DispatchQueue.main.async {
                 guard alive() else { return }
                 withAnimation(.easeInOut(duration: 0.3)) { landing.stage = .down }
@@ -570,12 +583,22 @@ struct SearchView: View {
             arrived = false
             ribbon.flight.run(time, step: { p in
                 guard alive() else { return }
+                let now = CACurrentMediaTime()
+                if firstFrame == nil { firstFrame = now - began } else { worstFrame = max(worstFrame, now - lastFrame) }
+                lastFrame = now
                 ribbon.foldTo = CGRect(x: from.minX + (target.minX - from.minX) * p,
                                        y: from.minY + (target.minY - from.minY) * p,
                                        width: from.width + (target.width - from.width) * p,
                                        height: from.height + (target.height - from.height) * p)
             }, then: {
                 guard alive() else { return }
+                if !told {
+                    told = true
+                    DeckTrail.mark(String(format: "схема долетела: первый кадр через %.2f с, самый долгий кадр %.2f с; "
+                                          + "лента перед этим собиралась %.0f мс на %ld карточек",
+                                          firstFrame ?? -1, worstFrame,
+                                          ribbon.built.time * 1000, ribbon.built.cards))
+                }
                 arrived = true
                 sit()
             })
@@ -587,9 +610,7 @@ struct SearchView: View {
             guard alive(), !stood else { return }
             stood = true
             lost = frame == nil
-            shell.go(.aimed)
-            shell.go(.stood)
-            ribbon.veiled = false
+            unveil()
             let place = hover(over: frame ?? about)
             DeckTrail.mark(String(format: "лента встала, карточка на %.0f, схема к %.0f (было %.0f)",
                                   frame?.minY ?? -1, place.minY, target.minY))
@@ -603,13 +624,13 @@ struct SearchView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
             guard alive() else { return }
             DeckTrail.mark("посадка не дождалась своих событий — предохранитель")
-            ribbon.veiled = false
-            finish()
+            unveil()
+            finish(cut: true)
         }
         landing.hurry = {
             guard alive() else { return }
-            ribbon.veiled = false
-            finish()
+            unveil()
+            finish(cut: true)
         }
         // Следующим тактом: схема уже нарисована во весь лист — оттуда и летит,
         // сразу, с толчком в руку (P913).
@@ -637,9 +658,9 @@ struct SearchView: View {
 
     /// Лента в покое: вчера над нижней строкой или завтра под строкой поиска.
     private func settle() {
-        guard shell.ribbonOpen, !shell.pulling, !shell.ribbon.busy, !shell.dayCard else { return }
+        guard case .file(let side) = shell.deck, !shell.ribbon.busy else { return }
         shell.ribbon.opened()
-        shell.ribbon.settle(shell.fileFrom < 0 ? -1 : 1)
+        shell.ribbon.settle(side.rawValue)
     }
 
     @ViewBuilder private func piece(_ entry: Entry, sample: String?) -> some View {

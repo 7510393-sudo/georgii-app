@@ -70,12 +70,14 @@ final class DeckTests: XCTestCase {
     }
 
     func testКартотекаБезТягиИНазад() {
-        XCTAssertEqual(Deck.step(.day, .place(open: true), aim: -1).to, .file(.future))
-        XCTAssertEqual(Deck.step(.day, .place(open: true), aim: 0).to, .file(.past))
+        XCTAssertEqual(Deck.step(.day, .place(open: true, .future)).to, .file(.future))
+        XCTAssertEqual(Deck.step(.day, .place(open: true)).to, .file(.past))
+        // Уже открытую картотеку постановка без тяги не переворачивает.
+        XCTAssertEqual(Deck.step(.file(.future), .place(open: true)).to, .file(.future))
         let card = walk([.place(open: true), .openCard])
         XCTAssertEqual(card.deck, .day)
         XCTAssertTrue(card.listed)
-        let today = walk([.place(open: true), .todayAtEdge(-1), .backInDay])
+        let today = walk([.place(open: true), .backInDay])
         XCTAssertEqual(today.deck, .day)
         XCTAssertTrue(today.listed)
         // Другой раздел закрывает картотеку из любого состояния.
@@ -91,5 +93,55 @@ final class DeckTests: XCTestCase {
         XCTAssertFalse(Deck.step(.file(.past), .today).listed)
         XCTAssertFalse(Deck.step(.landing(card: "x", .past, .flying), .today).listed)
         XCTAssertFalse(Deck.step(.pulling(.past, today: false), .today).listed)
+    }
+
+    /// Что прежде держали флажки, читается из состояния (P928).
+    func testИзСостоянияЧитаетсяВсёПрочее() {
+        let day = Deck.day
+        XCTAssertFalse(day.isLive)
+        XCTAssertFalse(day.isOpen)
+        XCTAssertNil(day.side)
+        let pull = Deck.pulling(.future, today: true)
+        XCTAssertTrue(pull.isPulled)
+        XCTAssertTrue(pull.isLive)
+        XCTAssertFalse(pull.isOpen)
+        XCTAssertFalse(pull.isCarried)
+        XCTAssertEqual(pull.side, .future)
+        // Не сегодняшний лист несут рукой с первой точки тяги.
+        XCTAssertTrue(Deck.pulling(.past, today: false).isCarried)
+        let file = Deck.file(.past)
+        XCTAssertTrue(file.isOpen)
+        XCTAssertTrue(file.isFile)
+        XCTAssertFalse(file.isLanding)
+        XCTAssertFalse(file.isCarried)
+        let flying = Deck.landing(card: "x", .future, .flying)
+        XCTAssertTrue(flying.isOpen)
+        XCTAssertFalse(flying.isFile)
+        XCTAssertEqual(flying.folding, .future)
+        XCTAssertTrue(flying.isCarried)
+        // Картотека под карточкой скрыта, пока лента не встала.
+        XCTAssertTrue(flying.isVeiled)
+        XCTAssertTrue(Deck.landing(card: "x", .future, .waiting).isVeiled)
+        let settling = Deck.landing(card: "x", .future, .settling)
+        XCTAssertFalse(settling.isVeiled)
+        // Ступень посадки для оболочки — не перемена.
+        XCTAssertEqual(flying.coarse, settling.coarse)
+        XCTAssertNotEqual(flying.coarse, file.coarse)
+    }
+
+    /// Оболочка ведёт состояние сама: отброшенное событие ничего не меняет.
+    func testОболочкаВедётСостояние() {
+        let shell = Shell()
+        XCTAssertTrue(shell.go(.pull(.past, today: false)))
+        XCTAssertTrue(shell.ribbon.inHand)
+        XCTAssertFalse(shell.go(.released))
+        XCTAssertTrue(shell.go(.fold(card: "2026-11-01", .past)))
+        XCTAssertEqual(shell.screen, .search)
+        XCTAssertFalse(shell.go(.pull(.past, today: true)))
+        XCTAssertTrue(shell.go(.cutShort))
+        XCTAssertEqual(shell.deck, .file(.past))
+        XCTAssertFalse(shell.ribbon.inHand)
+        XCTAssertTrue(shell.go(.closeNow))
+        XCTAssertEqual(shell.deck, .day)
     }
 }

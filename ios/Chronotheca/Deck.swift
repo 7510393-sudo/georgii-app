@@ -6,9 +6,10 @@ import SwiftUI
 /// скорости телефона (поломки сборок 278–288).
 ///
 /// Сборка Б (P923): событие, которого нет в таблице, отбрасывается — и
-/// помечается в следе «✗». Прежние флажки (`pulling`, `ribbonOpen`,
-/// `dayCard`, `fileFrom`) пока живы, но ставит их только `Shell.go(_:)`;
-/// в сборке В виды станут читать само состояние.
+/// помечается в следе «✗». Сборка В (P928): прежних флажков (`pulling`,
+/// `ribbonOpen`, `dayCard`, `fileFrom` в `Shell`; `folding`, `frozen`,
+/// `veiled`, `foldSide` в `Ribbon`) больше нет — виды читают само состояние
+/// и то, что из него следует (ниже: `isPulled`, `isOpen`, `folding`…).
 enum Deck: Equatable {
     /// С какой стороны от «Сегодня»: прошлое или будущее. Число — прежний
     /// знак `fileFrom`: 1 — прошлое, −1 — будущее.
@@ -61,12 +62,9 @@ enum Deck: Equatable {
         case landed
         /// Посадку досадили разом: предохранитель или человек не стал ждать.
         case cutShort
-        /// Картотеку поставили без тяги: запуск, снимок, кнопка.
-        case place(open: Bool)
-        /// С какой стороны открыть картотеку (снимок, замер).
-        case aim(Int)
-        /// «Сегодня» у своего края — сейчас поднимется.
-        case todayAtEdge(Int)
+        /// Картотеку поставили без тяги: запуск, снимок, кнопка. Сторона —
+        /// с какой открыть, если она ещё закрыта (снимок будущего).
+        case place(open: Bool, Side = .past)
         /// Лента доехала местом дня на экран — снова день.
         case backInDay
         /// Нажали карточку — открыт её день.
@@ -87,9 +85,7 @@ enum Deck: Equatable {
             case .stood: return "лента встала"
             case .landed: return "карточка села"
             case .cutShort: return "досадили разом"
-            case .place(let open): return open ? "поставили картотеку" : "поставили день"
-            case .aim: return "сторона"
-            case .todayAtEdge: return "«Сегодня» у края"
+            case .place(let open, _): return open ? "поставили картотеку" : "поставили день"
             case .backInDay: return "лента доехала до дня"
             case .openCard: return "нажали карточку"
             case .today: return "«Сегодня» с открытого листа"
@@ -121,11 +117,75 @@ enum Deck: Equatable {
         }
     }
 
+    // MARK: - Что следует из состояния (P928, вместо прежних флажков)
+
+    /// Лист тянут за край.
+    var isPulled: Bool {
+        if case .pulling = self { return true }
+        return false
+    }
+
+    /// Картотека открыта: стоит или в неё садится карточка.
+    var isOpen: Bool {
+        switch self {
+        case .file, .landing: return true
+        case .day, .pulling: return false
+        }
+    }
+
+    /// Картотека стоит открытой: её листают, у дня держится стена.
+    var isFile: Bool {
+        if case .file = self { return true }
+        return false
+    }
+
+    /// Лента на экране: тянут или открыта.
+    var isLive: Bool { self != .day }
+
+    /// Не сегодняшний день садится в карточку — с какой он стороны от
+    /// «Сегодня»; пусто — посадки нет.
+    var folding: Side? {
+        if case .landing(_, let side, _) = self { return side }
+        return nil
+    }
+
+    var isLanding: Bool { folding != nil }
+
+    /// Сторона: куда тянут, какая картотека открыта, где садится карточка.
+    var side: Side? {
+        switch self {
+        case .day: return nil
+        case .pulling(let side, _), .file(let side), .landing(_, let side, _): return side
+        }
+    }
+
+    /// Картотека под садящейся карточкой ещё не проступила: лента не встала.
+    var isVeiled: Bool {
+        switch self {
+        case .landing(_, _, .flying), .landing(_, _, .waiting): return true
+        default: return false
+        }
+    }
+
+    /// Лист ведёт рука, а не лента: не сегодняшний лист тянут (P923) или он
+    /// уже складывается в карточку.
+    var isCarried: Bool {
+        switch self {
+        case .pulling(_, false), .landing: return true
+        default: return false
+        }
+    }
+
+    /// То же без ступеней посадки: их смотрят только виды ленты, оболочке
+    /// о них знать незачем (экран целиком из-за ступени не перерисовывается).
+    var coarse: Deck {
+        if case .landing(let card, let side, _) = self { return .landing(card: card, side, .flying) }
+        return self
+    }
+
     /// Таблица переходов (`docs/71`, §3). Возвращает, куда ведёт событие и
     /// есть ли такой переход в таблице; нет — состояние остаётся прежним.
-    /// `aim` — прежний `fileFrom`: сторона, с которой открыть картотеку,
-    /// поставленную без тяги.
-    static func step(_ from: Deck, _ event: Event, aim: Int = 0) -> (to: Deck, listed: Bool) {
+    static func step(_ from: Deck, _ event: Event) -> (to: Deck, listed: Bool) {
         switch event {
         case .pull(let side, let today):
             switch from {
@@ -155,18 +215,13 @@ enum Deck: Equatable {
         case .cutShort:
             if case .landing(_, let side, _) = from { return (.file(side), true) }
             return (from, false)
-        case .place(let open):
+        case .place(let open, let side):
             guard open else { return (.day, true) }
             switch from {
-            case .day: return (.file(Side(aim)), true)
+            case .day: return (.file(side), true)
             case .file, .landing: return (from, true)
             case .pulling: return (from, false)
             }
-        case .aim:
-            return (from, true)
-        case .todayAtEdge(let dir):
-            if case .file = from { return (.file(Side(dir)), true) }
-            return (from, false)
         case .backInDay:
             if case .file = from { return (.day, true) }
             return (from, false)
@@ -186,65 +241,27 @@ enum Deck: Equatable {
 
 extension Shell {
     /// Единственное место, где меняется состояние картотеки (P921). Ведёт
-    /// `deck` по таблице, пишет переход в след и ставит прежние флажки.
-    /// Событие не по таблице отбрасывается (P923): ни состояние, ни флажки
-    /// не меняются, ответ — «нет».
+    /// `deck` по таблице и пишет переход в след. Событие не по таблице
+    /// отбрасывается (P923): состояние прежнее, ответ — «нет».
+    /// Флажков рядом с состоянием больше нет (P928): всё прочее из него
+    /// вычисляется. Оболочка сообщает о перемене своим видам, только когда
+    /// сменилось что-то кроме ступени посадки.
     @discardableResult
     func go(_ event: Deck.Event) -> Bool {
         let from = deck
-        let next = Deck.step(from, event, aim: fileFrom)
+        let next = Deck.step(from, event)
         DeckTrail.note(from: from, event: event, to: next.to, listed: next.listed)
         guard next.listed else { return false }
-        deck = next.to
+        if next.to != from {
+            if next.to.coarse != from.coarse { objectWillChange.send() }
+            ribbon.deck = next.to
+        }
         switch event {
-        case .pull(let side, _):
-            let dir = side.rawValue
-            if !pulling {
-                fileFrom = dir
-                pulling = true
-            } else if fileFrom != dir {
-                fileFrom = dir
-            }
-        case .pullBack:
-            pulling = false
-            ribbon.frozen = false
-        case .released:
-            ribbonOpen = true
+        case .released, .fold:
+            // Картотека открыта — раздел её.
             screen = .search
-            pulling = false
-        case .fold(_, let side):
-            // Лист стоит, где его отпустили; «Сегодня» — на своей стороне
-            // (P896): у прошедшего дня снизу, у будущего сверху.
-            ribbon.frozen = true
-            ribbon.folding = true
-            ribbon.foldSide = side.rawValue
-            // Картотека под листом не вспыхивает разом: проступает, когда
-            // стоит на карточке (P913, P923).
-            ribbon.veiled = true
-            dayCard = true
-            ribbonOpen = true
-            screen = .search
-            pulling = false
-        case .aimed, .stood, .today:
+        default:
             break
-        case .landed, .cutShort:
-            if case .file(let side) = next.to { fileFrom = side.rawValue }
-            dayCard = false
-        case .place(let open):
-            ribbonOpen = open
-        case .aim(let dir):
-            fileFrom = dir
-        case .todayAtEdge(let dir):
-            dayCard = false
-            fileFrom = dir
-        case .backInDay, .openCard:
-            ribbonOpen = false
-            fileFrom = 0
-        case .closeNow:
-            ribbonOpen = false
-            pulling = false
-            fileFrom = 0
-            ribbon.frozen = false
         }
         return true
     }
@@ -300,14 +317,14 @@ enum Slow {
 /// Для проверок движения (P921): состояние картотеки и где лист «Сегодня» —
 /// невидимой строкой, только когда приложение запустила проверка.
 struct DeckProbe: View {
-    @EnvironmentObject private var shell: Shell
     @ObservedObject var ribbon: Ribbon
 
     var body: some View {
-        let y = shell.ribbonLive ? ribbon.y : 0
+        let deck = ribbon.deck
+        let y = deck.isLive ? ribbon.y : 0
         let today = FollowRibbon.shown(y, height: ribbon.height, stick: ribbon.stick)
-        Text("deck=\(shell.deck.name);today=\(Int(today));height=\(Int(ribbon.height));"
-             + "veiled=\(ribbon.veiled ? 1 : 0);card=\(shell.dayCard ? 1 : 0)")
+        Text("deck=\(deck.name);today=\(Int(today));height=\(Int(ribbon.height));"
+             + "veiled=\(deck.isVeiled ? 1 : 0);card=\(deck.isLanding ? 1 : 0)")
             .font(.system(size: 2))
             .opacity(0.02)
             .allowsHitTesting(false)
