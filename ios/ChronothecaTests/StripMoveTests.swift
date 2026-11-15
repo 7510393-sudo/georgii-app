@@ -82,7 +82,7 @@ final class StripMoveTests: XCTestCase {
 
         // План: дела и снимок под делом на месте, ряда нет.
         let newPlan = read(.planner) ?? ""
-        let rows = Plan.splitPhotos(Plan.rows(from: DayFile(text: newPlan).body))
+        let rows = StripMove.split(Plan.rows(from: DayFile(text: newPlan).body))
         XCTAssertTrue(rows.photos.isEmpty, newPlan)
         XCTAssertTrue(newPlan.contains("![](../../Photos/2026/под-делом.jpg)"))
         XCTAssertTrue(newPlan.contains("      с отрубями"))

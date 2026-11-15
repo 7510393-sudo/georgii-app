@@ -26,6 +26,12 @@ final class DayStore: ObservableObject {
     /// А вот дня, который ещё не наступил, в дневнике не бывает.
     var canEditDiary: Bool { !isFuture && !away.contains(.diary) && Purchase.canWrite && !Vault.newer }
 
+    /// Ряд вложений внизу страницы — один на день и лежит в файле дневника
+    /// (P961). Правится и в день, который ещё не наступил: текста дневника
+    /// там нет, а вложения уже кладутся в его файл. Прежде в будущем дне они
+    /// ложились рядом в конец файла плана (P203).
+    var canEditStrip: Bool { !away.contains(.diary) && Purchase.canWrite && !Vault.newer }
+
     /// Файлы дня, которые лежат, но не прочитались — чаще всего ещё не
     /// скачаны из iCloud. Писать в такой день нельзя: пустая страница на
     /// экране не значит пустой файл на диске (решение P182).
@@ -251,8 +257,6 @@ final class DayStore: ObservableObject {
     }
     /// Ссылки на фотографии дня, как они записаны в файле (P200).
     @Published var photos: [String] = []
-    /// Фотографии плана — свои, отдельно от дневника (P203).
-    @Published var planPhotos: [String] = []
     /// Где человек был в этот день — «широта, долгота» в шапке дневника
     /// (A9, P207). Ставится только его рукой, кнопкой на карте.
     @Published var place: String?
@@ -705,17 +709,16 @@ final class DayStore: ObservableObject {
         save()
     }
 
-    /// Положить фотографию в папку и сослаться на неё из файла дня — плана
-    /// или дневника, смотря на какой вкладке её положили.
+    /// Положить фотографию в папку и сослаться на неё из ряда внизу
+    /// страницы — в файле дневника (P961).
     ///
-    /// Правила те же, что у правки вкладки: в закрытый день, в будущий
-    /// дневник и в день, который ещё не скачан из iCloud, её не положить
-    /// (P182, P200, P203).
+    /// В закрытый день и в день, который ещё не скачан из iCloud, её не
+    /// положить (P182, P200).
     @discardableResult
-    func addPhoto(_ data: Data, to tab: Shell.Tab, camera: Bool = false) -> Bool {
-        guard canEdit(tab), let link = vault.addPhoto(data, for: date) else { return false }
+    func addPhoto(_ data: Data, camera: Bool = false) -> Bool {
+        guard canEditStrip, let link = vault.addPhoto(data, for: date) else { return false }
         if camera { CameraShots.mark(link) }
-        attach(link, to: tab)
+        attach(link)
         Hints.shared.photoAdded()
         return true
     }
@@ -723,53 +726,41 @@ final class DayStore: ObservableObject {
     /// Положить голос или документ в его папку и сослаться на него из файла
     /// дня — там же, где лежат фотографии (P209).
     @discardableResult
-    func addAttachment(_ data: Data, to kind: Vault.Folder, name: String,
-                       tab: Shell.Tab) -> Bool {
-        guard canEdit(tab),
+    func addAttachment(_ data: Data, to kind: Vault.Folder, name: String) -> Bool {
+        guard canEditStrip,
               let link = vault.addAttachment(data, to: kind, name: name, for: date)
         else { return false }
-        attach(link, to: tab)
+        attach(link)
         return true
     }
 
-    private func attach(_ link: String, to tab: Shell.Tab) {
-        switch tab {
-        case .diary:
-            // В ряд внизу страницы (P665).
-            photos.append(link)
-            touchDiary()
-        case .plan:
-            planPhotos.append(link)
-        }
+    /// В ряд внизу страницы (P665) — в файле дневника, и в будущем дне тоже
+    /// (P961).
+    private func attach(_ link: String) {
+        photos.append(link)
+        touchDiary()
         save()
     }
 
-    /// Убрать вложение из файла дня; сам файл остаётся в папке. Удалить
-    /// файл — `removeAttachment(delete: true)`: в корзину на 30 дней (P371).
-    func removePhoto(at index: Int, from tab: Shell.Tab) {
-        guard canEdit(tab) else { return }
-        switch tab {
-        case .diary:
-            guard photos.indices.contains(index) else { return }
-            photos.remove(at: index)
-            touchDiary()
-        case .plan:
-            guard planPhotos.indices.contains(index) else { return }
-            planPhotos.remove(at: index)
-        }
+    /// Убрать вложение из ряда внизу страницы; сам файл остаётся в папке.
+    /// Удалить файл — `removeAttachment(delete: true)`: в корзину на 30 дней
+    /// (P371).
+    func removePhoto(at index: Int) {
+        guard canEditStrip, photos.indices.contains(index) else { return }
+        photos.remove(at: index)
+        touchDiary()
         save()
     }
 
     /// Убрать вложение со страницы и, если просят, удалить сам файл — в
     /// корзину на 30 дней (P371). Возвращает, что сказать человеку.
-    func removeAttachment(at index: Int, from tab: Shell.Tab, delete: Bool) -> String {
-        let links = self.links(tab)
-        guard canEdit(tab), links.indices.contains(index) else { return closedReason }
-        let link = links[index]
-        removePhoto(at: index, from: tab)
+    func removeAttachment(at index: Int, delete: Bool) -> String {
+        guard canEditStrip, photos.indices.contains(index) else { return closedReason }
+        let link = photos[index]
+        removePhoto(at: index)
         // У точки нет файла — она просто уходит со страницы (P588).
         if Diary.isPoint(link) { return T("Точка убрана со страницы.", "The place is removed from the page.") }
-        return trashed(link, from: tab, delete: delete)
+        return trashed(link, from: .diary, delete: delete)
     }
 
     /// Крестик у снимка под делом плана (P623): он уходит из плана, файл
@@ -817,14 +808,6 @@ final class DayStore: ObservableObject {
         photos.removeAll { placed.contains($0) }
     }
 
-    /// Снимок из прежней полоски плана встал в запись или в ответ — из
-    /// полоски он уходит: полоска одна на страницу (P408).
-    func dropFromPlanStrip(_ link: String) {
-        guard canEditPlan, let k = planPhotos.firstIndex(of: link) else { return }
-        planPhotos.remove(at: k)
-        save()
-    }
-
 
     /// День дополнен версией с другого устройства (P570) — растёт, чтобы
     /// экран сказал об этом.
@@ -835,9 +818,9 @@ final class DayStore: ObservableObject {
     /// Оттуда её переносят туда, где ей место. Прежде точка вставала сразу
     /// на место курсора — в текст, в дело, в ответ (P213, P240, P276, P407).
     @discardableResult
-    func writePoint(_ point: GeoPoint, to tab: Shell.Tab) -> Bool {
-        guard canEdit(tab) else { return false }
-        attach(Geo.pointLine(point), to: tab)
+    func writePoint(_ point: GeoPoint) -> Bool {
+        guard canEditStrip else { return false }
+        attach(Geo.pointLine(point))
         return true
     }
 
@@ -921,7 +904,13 @@ final class DayStore: ObservableObject {
     /// ряд с теми, что уже там. Откуда бы его ни взяли — из полоски или
     /// из-под другого дела, — там он больше не стоит.
     func putPlanPhoto(_ link: String, under id: UUID) {
-        guard canEditPlan, takeOutPlanPhoto(link), let i = index(of: id) else { return }
+        guard canEditPlan, takeOutPlanPhoto(link) else { return }
+        place(link, under: id)
+    }
+
+    /// Поставить вложение в ряд сразу под делом (или завести такой ряд).
+    private func place(_ link: String, under id: UUID) {
+        guard let i = index(of: id) else { return }
         let next = i + 1
         if next < planRows.count, let line = planRows[next].verbatim, Plan.isPhotoRow(line) {
             planRows[next].verbatim = line.trimmingCharacters(in: .whitespaces) + " " + Diary.line(link)
@@ -937,6 +926,11 @@ final class DayStore: ObservableObject {
     /// ней, в ряд с теми, что там есть.
     func putPlanPhoto(_ link: String, underEvent mark: DayEvents.Mark) {
         guard canEditPlan, takeOutPlanPhoto(link) else { return }
+        place(link, underEvent: mark)
+    }
+
+    /// Поставить вложение в ряд сразу под отметкой события.
+    private func place(_ link: String, underEvent mark: DayEvents.Mark) {
         let at: Int
         if let i = planRows.firstIndex(where: { $0.verbatim.flatMap(DayEvents.Mark.parse)?.key == mark.key }) {
             at = i
@@ -993,68 +987,43 @@ final class DayStore: ObservableObject {
     /// Снимок из полоски внизу страницы — под дело плана (P408): полоска
     /// одна, в неё ложится всё новое, а под дело снимок переносят пальцем.
     func stripPhotoToPlan(_ link: String, under id: UUID) {
-        guard canEditPlan, index(of: id) != nil else { return }
-        if let k = photos.firstIndex(of: link) {
-            guard canEditDiary else { return }
-            photos.remove(at: k)
-            touchDiary()
-            planPhotos.append(link)
-        }
-        putPlanPhoto(link, under: id)
+        guard canEditPlan, canEditStrip, index(of: id) != nil,
+              let k = photos.firstIndex(of: link) else { return }
+        photos.remove(at: k)
+        touchDiary()
+        place(link, under: id)
     }
 
     /// Вложение снизу страницы — под событие Календаря (P647), как под дело.
     func stripToEvent(_ link: String, underEvent mark: DayEvents.Mark) {
-        guard canEditPlan else { return }
-        if let k = photos.firstIndex(of: link) {
-            guard canEditDiary else { return }
-            photos.remove(at: k)
-            touchDiary()
-            planPhotos.append(link)
-        }
-        putPlanPhoto(link, underEvent: mark)
+        guard canEditPlan, canEditStrip, let k = photos.firstIndex(of: link) else { return }
+        photos.remove(at: k)
+        touchDiary()
+        place(link, underEvent: mark)
     }
 
     /// Точка из ленты — своей строкой под дело (P588): после самого дела и
     /// того, что уже стоит под ним.
     func stripPointToPlan(_ link: String, under id: UUID) {
-        guard canEditPlan, index(of: id) != nil else { return }
-        if let k = photos.firstIndex(of: link) {
-            guard canEditDiary else { return }
-            photos.remove(at: k)
-            touchDiary()
-        } else if let k = planPhotos.firstIndex(of: link) {
-            planPhotos.remove(at: k)
-        } else {
-            return
-        }
+        guard canEditPlan, canEditStrip, index(of: id) != nil,
+              let k = photos.firstIndex(of: link) else { return }
+        photos.remove(at: k)
+        touchDiary()
         addToPhotoRow(Diary.line(link), under: id)
         save()
     }
 
-    /// Всё, что лежит в полоске внизу страницы: снимки дневника, за ними —
-    /// прежние снимки полоски плана (P408).
-    var stripLinks: [String] { photos + planPhotos }
-
-    /// Снимок из-под дела — вниз: в конец записи, как всякое новое вложение
-    /// (P623). В будущем дне дневника нет — там он уходит в ленту плана.
+    /// Снимок из-под дела — вниз: в ряд внизу страницы, в файл дневника, как
+    /// всякое новое вложение (P623) — и в будущем дне тоже (P961).
     func returnPlanPhoto(_ link: String) {
-        guard canEditPlan, !planPhotos.contains(link), takeOutPlanPhoto(link) else { return }
-        if canEditDiary {
-            photos.append(link)
-            touchDiary()
-        } else {
-            planPhotos.append(link)
-        }
+        guard canEditPlan, canEditStrip, !photos.contains(link), takeOutPlanPhoto(link) else { return }
+        photos.append(link)
+        touchDiary()
         save()
     }
 
     /// Убрать снимок оттуда, где он стоит в плане. `false` — его там нет.
     private func takeOutPlanPhoto(_ link: String) -> Bool {
-        if let k = planPhotos.firstIndex(of: link) {
-            planPhotos.remove(at: k)
-            return true
-        }
         for r in planRows.indices {
             guard let line = planRows[r].verbatim else { continue }
             let links = Plan.items(in: line)
@@ -1201,34 +1170,25 @@ final class DayStore: ObservableObject {
 
     /// Переставить вложение в полоске — перетаскиванием вбок в режиме
     /// изменений (P210).
-    func movePhoto(from: Int, to: Int, in tab: Shell.Tab) {
-        guard canEdit(tab), from != to else { return }
-        switch tab {
-        case .diary:
-            guard photos.indices.contains(from), photos.indices.contains(to) else { return }
-            photos.insert(photos.remove(at: from), at: to)
-            touchDiary()
-        case .plan:
-            guard planPhotos.indices.contains(from), planPhotos.indices.contains(to) else { return }
-            planPhotos.insert(planPhotos.remove(at: from), at: to)
-        }
+    func movePhoto(from: Int, to: Int) {
+        guard canEditStrip, from != to,
+              photos.indices.contains(from), photos.indices.contains(to) else { return }
+        photos.insert(photos.remove(at: from), at: to)
+        touchDiary()
         save()
     }
-
-    func links(_ tab: Shell.Tab) -> [String] { tab == .diary ? photos : planPhotos }
 
     /// Все снимки дня одним рядом (P564): сначала стоящие в записи — по
     /// порядку, потом лента. Открытый снимок листается по нему вбок.
     var dayPhotos: [String] {
         var out: [String] = []
-        for link in DayStore.attachmentLinks(in: diaryText) + stripLinks
+        for link in DayStore.attachmentLinks(in: diaryText) + photos
         where Diary.kind(of: link) == .photo && !out.contains(link) {
             out.append(link)
         }
         return out
     }
 
-    func canEdit(_ tab: Shell.Tab) -> Bool { tab == .diary ? canEditDiary : canEditPlan }
 
     /// Где лежит фотография дня.
     func photoURL(_ link: String) -> URL? { vault.mediaURL(link, for: date) }
@@ -1281,7 +1241,7 @@ final class DayStore: ObservableObject {
         settleOthers()
 
         quietPlan = true
-        (planRows, planPhotos) = Plan.splitPhotos(Plan.rows(from: DayFile(text: shown[.planner] ?? "").body))
+        planRows = Plan.rows(from: DayFile(text: shown[.planner] ?? "").body)
         quietPlan = false
         noteSeries()
 
@@ -1450,7 +1410,7 @@ final class DayStore: ObservableObject {
 
     /// План дня таким, каким он ляжет в файл.
     private func planFile() -> DayFile {
-        var plan = DayFile(body: Plan.body(from: planRows, photos: planPhotos))
+        var plan = DayFile(body: Plan.body(from: planRows))
         plan.set("date", Vault.stamp(date))
         return plan
     }
@@ -1569,8 +1529,9 @@ final class DayStore: ObservableObject {
         // Вложения, не дошедшие до папки (P904).
         if !settlingMedia, !PendingMedia.items(root: root).isEmpty {
             settlingMedia = true
-            let got = PendingMedia.settle(vault, open: date) { [weak self] link, tab in
-                self?.attach(link, to: tab == "plan" ? .plan : .diary)
+            let got = PendingMedia.settle(vault, open: date) { [weak self] link, _ in
+                // Прежде положенное «в план» — тоже в ряд дневника (P961).
+                self?.attach(link)
             }
             settlingMedia = false
             if got > 0 { settledNotice += 1 }
@@ -1592,10 +1553,10 @@ final class DayStore: ObservableObject {
     /// Голос или снимок не лёг в папку (P904) — оставить у себя и доложить,
     /// когда папка вернётся. `false` — оставить не вышло или день закрыт
     /// для правки.
-    func keepForLater(_ data: Data, kind: Vault.Folder, name: String, tab: Shell.Tab) -> Bool {
-        guard canEdit(tab), let root = vault.root,
+    func keepForLater(_ data: Data, kind: Vault.Folder, name: String) -> Bool {
+        guard canEditStrip, let root = vault.root,
               PendingMedia.keep(data, kind: kind, name: name, date: date,
-                                tab: tab == .plan ? "plan" : "diary", root: root)
+                                tab: "diary", root: root)
         else { return false }
         owedElsewhere = vault.problem ?? T("папка сейчас недоступна", "the folder is unavailable right now")
         retryIfUnsaved()

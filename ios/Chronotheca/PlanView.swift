@@ -383,7 +383,7 @@ struct PlanView: View {
     private func extraLine(id: UUID, line: String) -> some View {
         PlanExtraLine(line: line, resolve: store.photoURL,
                       open: { url in
-                          shell.openedPhoto = .init(tab: .plan, index: 0, url: url)
+                          shell.openedPhoto = .init(index: -1, url: url)
                       },
                       openPoint: { shell.showPoint($0) },
                       onCarry: store.canEditPlan

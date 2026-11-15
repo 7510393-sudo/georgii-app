@@ -50,6 +50,18 @@ final class FileTrashTests: XCTestCase {
         XCTAssertTrue(FileTrash.items(vault).isEmpty)
     }
 
+    /// Убранное из-под дела плана возвращается в ряд внизу страницы — в файл
+    /// дневника, а не в конец плана (P961).
+    func testИзПланаВозвращаетсяВДневник() {
+        guard let link = photo() else { return XCTFail("снимок не лёг") }
+        XCTAssertEqual(FileTrash.put(link, from: DayStore.today(), tab: "plan", vault: vault), .trashed)
+        guard let entry = FileTrash.items(vault).first else { return XCTFail("в корзине пусто") }
+        XCTAssertTrue(FileTrash.restore(entry, vault))
+        XCTAssertTrue(FileTrash.relink(entry, vault))
+        XCTAssertTrue(vault.read(.diary, for: DayStore.today()).contains(Diary.line(link)))
+        XCTAssertFalse(vault.read(.planner, for: DayStore.today()).contains(Diary.line(link)))
+    }
+
     func testНужныйДругомуДнюФайлНеУдаляется() {
         guard let link = photo() else { return XCTFail("снимок не лёг") }
         let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: DayStore.today())!

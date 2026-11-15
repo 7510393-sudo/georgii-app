@@ -47,19 +47,18 @@ struct DiaryView: View {
             editable: store.canEditDiary,
             inCloud: store.away.contains(.diary),
             weather: store.weather,
-            // Полоска одна на всю страницу (P408): снимки дневника, за ними
-            // — прежние снимки полоски плана.
-            photos: store.stripLinks.map(store.photoURL),
-            points: store.stripLinks.map { Diary.isPoint($0) ? Geo.point(in: $0) : nil },
+            // Полоска одна на всю страницу (P408) и лежит в файле дневника
+            // (P961).
+            photos: store.photos.map(store.photoURL),
+            points: store.photos.map { Diary.isPoint($0) ? Geo.point(in: $0) : nil },
             resolve: store.photoURL,
             onOpenPhoto: { i in
                 // Точка из ленты — карта на ней (P588).
-                let links = store.stripLinks
+                let links = store.photos
                 if links.indices.contains(i), Diary.isPoint(links[i]), let point = Geo.point(in: links[i]) {
                     return shell.showPoint(point)
                 }
-                let n = store.photos.count
-                shell.openedPhoto = i < n ? .init(tab: .diary, index: i) : .init(tab: .plan, index: i - n)
+                shell.openedPhoto = .init(index: i)
             },
             // Брошенный в текст снимок отметку времени не ставит — это
             // знает само поле записи (P362).
@@ -67,8 +66,7 @@ struct DiaryView: View {
             peekStamp: { store.peekStamp() },
             onWrite: { store.noteWriting() },
             onOpenInline: { link in
-                shell.openedPhoto = .init(tab: .diary, index: -1,
-                                          url: store.photoURL(link), link: link)
+                shell.openedPhoto = .init(index: -1, url: store.photoURL(link), link: link)
             },
             onOpenPoint: { shell.showPoint($0) },
             onEditing: {
@@ -94,9 +92,7 @@ struct DiaryView: View {
             onStripCarry: { carryStrip($0, $1, $2) },
             stripCarried: stripCarry,
             onRemovePhoto: { i, delete in
-                let n = store.photos.count
-                shell.say(i < n ? store.removeAttachment(at: i, from: .diary, delete: delete)
-                                : store.removeAttachment(at: i - n, from: .plan, delete: delete))
+                shell.say(store.removeAttachment(at: i, delete: delete))
             },
             onAnswering: { if $0 != nil { shell.tab = .diary } },
             planTarget: store.canEditPlan ? { PlanZones.task(at: $0, tasks: store.tasks) } : nil,
@@ -136,7 +132,7 @@ extension DiaryView {
     /// Превью из полоски несут (P380): над полем записи текст расступается
     /// там, куда оно ляжет; над полоской — встанет на место соседа.
     fileprivate func carryStrip(_ i: Int, _ phase: Lift, _ spot: CGPoint) {
-        let links = store.stripLinks
+        let links = store.photos
         guard store.canEditDiary, links.indices.contains(i) else { return }
         let link = links[i]
         let line = Diary.line(link)
@@ -172,7 +168,7 @@ extension DiaryView {
             if stripCarry == nil {
                 Feel.lift()
                 stripCarry = i
-                StripGhost.shared.show(store.stripLinks[i], at: spot)
+                StripGhost.shared.show(store.photos[i], at: spot)
             }
             stripSpot = spot
             StripGhost.shared.spot = spot
@@ -205,19 +201,11 @@ extension DiaryView {
                 Feel.thud()
             } else if overStrip || spot == .zero {
                 DiaryEditor.active?.carryOut()
-                let n = store.photos.count
                 if let to = StripZones.nearest(to: spot, count: links.count), to != i, spot != .zero {
-                    if i < n, to < n {
-                        store.movePhoto(from: i, to: to, in: .diary)
-                    } else if i >= n, to >= n {
-                        store.movePhoto(from: i - n, to: to - n, in: .plan)
-                    }
+                    store.movePhoto(from: i, to: to)
                     Feel.light()
                 }
             } else if DiaryEditor.active?.carryEnd() == true {
-                // Снимок из прежней полоски плана встал в запись — из
-                // полоски он уходит (P408).
-                if i >= store.photos.count { store.dropFromPlanStrip(link) }
                 Feel.thud()
             }
             stripCarry = nil

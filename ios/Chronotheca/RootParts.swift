@@ -104,7 +104,7 @@ struct VoiceShown: ViewModifier {
     @EnvironmentObject private var store: DayStore
 
     static func isVoice(_ opened: Shell.OpenedPhoto, _ store: DayStore) -> Bool {
-        let links = store.links(opened.tab)
+        let links = store.photos
         let name = opened.url?.lastPathComponent
             ?? (links.indices.contains(opened.index) ? links[opened.index] : "")
         return Diary.kind(of: name) == .audio
@@ -131,29 +131,31 @@ struct VoiceSheet: View {
 
     private var url: URL? {
         if let url = opened.url { return url }
-        let links = store.links(opened.tab)
+        let links = store.photos
         return links.indices.contains(opened.index) ? store.photoURL(links[opened.index]) : nil
     }
 
     var body: some View {
         AttachmentViewer(
             url: url,
-            onRemove: opened.url == nil && store.canEdit(opened.tab) ? { remove($0) } : nil,
+            onRemove: opened.url == nil && store.canEditStrip ? { remove($0) } : nil,
             close: { shell.openedPhoto = nil },
-            onTranscript: opened.tab == .diary && store.canEditDiary && link != nil
+            // Под делом плана голос открыт по месту (`url`) — расшифровка
+            // ложится в запись только у голоса из ряда или из текста.
+            onTranscript: store.canEditDiary && link != nil
                 ? { store.addTranscript($0, after: link ?? "") } : nil)
     }
 
     /// Ссылка на запись: из текста — своя, из полоски — по месту в ней.
     private var link: String? {
         if let l = opened.link { return l }
-        let links = store.links(opened.tab)
-        return links.indices.contains(opened.index) ? links[opened.index] : nil
+        guard opened.url == nil else { return nil }
+        return store.photos.indices.contains(opened.index) ? store.photos[opened.index] : nil
     }
 
     private func remove(_ delete: Bool) {
         shell.openedPhoto = nil
-        shell.say(store.removeAttachment(at: opened.index, from: opened.tab, delete: delete))
+        shell.say(store.removeAttachment(at: opened.index, delete: delete))
     }
 }
 

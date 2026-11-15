@@ -87,16 +87,17 @@ final class PlanTests: XCTestCase {
 
         ![](../../Фотографии/2026/a.jpg)
         """
-        let (rows, photos) = Plan.splitPhotos(Plan.rows(from: body))
+        let (rows, photos) = StripMove.split(Plan.rows(from: body))
         XCTAssertEqual(photos, ["../../Фотографии/2026/a.jpg"])
         XCTAssertEqual(rows.filter(\.isTask).count, 2)
-        XCTAssertEqual(Plan.body(from: rows, photos: photos), body)
+        // Без переноса строки ряда остаются строками плана, как были (P961).
+        XCTAssertEqual(Plan.body(from: Plan.rows(from: body)), body)
     }
 
     func testПланБезФотографийНеМеняется() {
         let body = "- [ ] Позвонить\n\nЗаметка в конце"
-        let (rows, photos) = Plan.splitPhotos(Plan.rows(from: body))
+        let (rows, photos) = StripMove.split(Plan.rows(from: body))
         XCTAssertTrue(photos.isEmpty)
-        XCTAssertEqual(Plan.body(from: rows, photos: photos), body)
+        XCTAssertEqual(Plan.body(from: rows), body)
     }
 }

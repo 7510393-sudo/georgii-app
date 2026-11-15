@@ -228,7 +228,7 @@ extension DayStoreTests {
     func testТочкаГдеЯНеЗаводитМестаДня() {
         let день = store(0)
         let дом = CLLocationCoordinate2D(latitude: 54.3211, longitude: -2.7456)
-        день.writePoint(GeoPoint(title: "", at: дом), to: .diary)
+        день.writePoint(GeoPoint(title: "", at: дом))
         XCTAssertNil(день.place)
         XCTAssertEqual(день.photos, ["geo:54.32110,-2.74560"])
         XCTAssertEqual(день.diaryText, "")
@@ -314,17 +314,40 @@ extension DayStoreTests {
             .numberOfRanges, 2)
     }
 
-    /// Точка в план — в ленту плана внизу страницы (P588), а не строкой
-    /// под делом: под дело её переносят пальцем.
-    func testТочкаВПланВЛенту() {
-        let день = store(0)
-        день.planRows = [.task("Первое"), .task("Второе"), .verbatim("")]
+    /// В день, который ещё не наступил, вложение ложится в ряд внизу
+    /// страницы — в файл дневника, а не в конец плана (P961). Текст
+    /// дневника там по-прежнему не правится; план не трогается.
+    func testВБудущийДеньВложениеВФайлДневника() throws {
+        let день = store(2)
+        XCTAssertTrue(день.isFuture)
+        XCTAssertFalse(день.canEditDiary)
+        XCTAssertTrue(день.canEditStrip)
+        день.planRows = [.task("Первое"), .task("Второе")]
+        день.save()
         let c = CLLocationCoordinate2D(latitude: 1, longitude: 2)
-        день.writePoint(GeoPoint(title: "", at: c), to: .plan)
-        день.writePoint(GeoPoint(title: "Дом", at: c), to: .plan)
-        XCTAssertEqual(день.planRows.map { $0.verbatim ?? $0.text }, ["Первое", "Второе", ""])
-        XCTAssertEqual(день.planPhotos, ["geo:1.00000,2.00000", "[Дом](geo:1.00000,2.00000)"])
+        XCTAssertTrue(день.writePoint(GeoPoint(title: "", at: c)))
+        XCTAssertTrue(день.writePoint(GeoPoint(title: "Дом", at: c)))
+        XCTAssertEqual(день.planRows.map { $0.verbatim ?? $0.text }, ["Первое", "Второе"])
+        XCTAssertEqual(день.photos, ["geo:1.00000,2.00000", "[Дом](geo:1.00000,2.00000)"])
+        let план = vault.read(.planner, for: день.date)
+        XCTAssertFalse(план.contains("geo:"), "в файле плана ряда нет")
+        let дневник = vault.read(.diary, for: день.date)
+        XCTAssertTrue(дневник.contains("geo:1.00000,2.00000"), "ряд — в файле дневника")
+        // Перечитанный день видит тот же ряд.
+        let снова = store(2)
+        XCTAssertEqual(снова.photos, день.photos)
         XCTAssertEqual(Geo.stripped("Второе geo:1.00000,2.00000"), "Второе")
+    }
+
+    /// Прежний ряд в конце плана (файл не успел перенестись, P959) не
+    /// пропадает: он читается строками плана и пишется обратно как был.
+    func testПрежнийРядПланаНеТеряется() {
+        let день = store(0)
+        let текст = "---\ndate: \(Vault.stamp(день.date))\n---\n- [ ] Позвонить\n\n![](../../Photos/2026/a.jpg)\n"
+        XCTAssertNil(Vault.write(текст, to: vault.file(.planner, for: день.date)!))
+        let снова = store(0)
+        XCTAssertTrue(снова.photos.isEmpty)
+        XCTAssertTrue(Plan.body(from: снова.planRows).contains("![](../../Photos/2026/a.jpg)"))
     }
 
     /// Шаг назад возвращает план, каким он был; шаг вперёд — обратно (P261).

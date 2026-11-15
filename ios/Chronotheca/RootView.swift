@@ -416,7 +416,8 @@ struct RootView: View {
         // Снимок во весь экран — один на всё приложение: открывают его и
         // из плана, и из дневника (P203).
         .fullScreenCover(item: coverShown) { opened in
-            let links = store.links(opened.tab)
+            // Ряд внизу страницы один и лежит в файле дневника (P961).
+            let links = store.photos
             let link = opened.link ?? (links.indices.contains(opened.index) ? links[opened.index] : nil)
             let all = store.dayPhotos
             // Снимок — листаются все снимки дня, и из записи, и из ленты, не
@@ -425,21 +426,17 @@ struct RootView: View {
                 StripViewer(count: all.count, start: start,
                             url: { store.photoURL(all[$0]) },
                             remove: { i in
-                                let one = all[i]
-                                for tab in [Shell.Tab.diary, .plan] {
-                                    if let k = store.links(tab).firstIndex(of: one), store.canEdit(tab) {
-                                        return { delete in
-                                            shell.openedPhoto = nil
-                                            shell.say(store.removeAttachment(at: k, from: tab, delete: delete))
-                                        }
-                                    }
+                                guard let k = store.photos.firstIndex(of: all[i]), store.canEditStrip
+                                else { return nil }
+                                return { delete in
+                                    shell.openedPhoto = nil
+                                    shell.say(store.removeAttachment(at: k, delete: delete))
                                 }
-                                return nil
                             },
                             // Снимок из записи — в конец записи (P216, P620).
                             giveBack: { i in
                                 let one = all[i]
-                                guard store.canEditDiary, !store.stripLinks.contains(one) else { return nil }
+                                guard store.canEditDiary, !store.photos.contains(one) else { return nil }
                                 return {
                                     store.moveToEnd(one)
                                     shell.openedPhoto = nil
@@ -451,10 +448,10 @@ struct RootView: View {
                 StripViewer(count: links.count, start: opened.index,
                             url: { store.photoURL(links[$0]) },
                             remove: { i in
-                                guard store.canEdit(opened.tab) else { return nil }
+                                guard store.canEditStrip else { return nil }
                                 return { delete in
                                     shell.openedPhoto = nil
-                                    shell.say(store.removeAttachment(at: i, from: opened.tab, delete: delete))
+                                    shell.say(store.removeAttachment(at: i, delete: delete))
                                 }
                             },
                             close: { shell.openedPhoto = nil })
@@ -462,12 +459,12 @@ struct RootView: View {
             AttachmentViewer(
                 url: opened.url ?? (links.indices.contains(opened.index)
                     ? store.photoURL(links[opened.index]) : nil),
-                onRemove: opened.url == nil && store.canEdit(opened.tab) ? { delete in
+                onRemove: opened.url == nil && store.canEditStrip ? { delete in
                     shell.openedPhoto = nil
-                    shell.say(store.removeAttachment(at: opened.index, from: opened.tab, delete: delete))
+                    shell.say(store.removeAttachment(at: opened.index, delete: delete))
                 } : nil,
                 // Снимок из текста — в конец записи (P216, P620).
-                onReturn: opened.link != nil && store.canEdit(opened.tab) ? {
+                onReturn: opened.link != nil && store.canEditDiary ? {
                     if let link = opened.link { store.moveToEnd(link) }
                     shell.openedPhoto = nil
                 } : nil,

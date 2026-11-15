@@ -116,8 +116,7 @@ final class FormatFixtureTests: XCTestCase {
     func testПланВложенияНеТеряются() throws {
         let body = try file("Planner/2026/2026-01-05.md").body
         let rows = Plan.rows(from: body)
-        let split = Plan.splitPhotos(rows)
-        let kept = links(in: Plan.body(from: split.rows, photos: split.photos))
+        let kept = links(in: Plan.body(from: rows))
         for link in links(in: body) {
             XCTAssertTrue(kept.contains(link), "пропало вложение \(link)")
         }

@@ -169,33 +169,7 @@ enum Plan {
         return (0...23).contains(h) && (0...59).contains(m)
     }
 
-    // MARK: - Фотографии
-
-    /// Отделить фотографии, стоящие в конце плана, от строк плана.
-    ///
-    /// Фотографии плана и дневника разные: снимок, положенный в план,
-    /// лежит в файле плана и показывается на странице плана (решение P203).
-    ///
-    /// Полоска — это снимки, стоящие в самом конце **после пустой строки**
-    /// (так их всегда и пишет `body`). Снимки сразу под делом, без пустой
-    /// строки, — это снимки того дела (P358): они остаются под ним, даже
-    /// если дело последнее.
-    static func splitPhotos(_ rows: [PlanRow]) -> (rows: [PlanRow], photos: [String]) {
-        func blank(_ row: PlanRow) -> Bool {
-            row.verbatim?.trimmingCharacters(in: .whitespaces).isEmpty == true
-        }
-        var rows = rows
-        while let last = rows.last, blank(last) { rows.removeLast() }
-        var start = rows.count
-        while start > 0, let line = rows[start - 1].verbatim, Diary.stripItem(in: line) != nil {
-            start -= 1
-        }
-        guard start < rows.count, start == 0 || blank(rows[start - 1]) else { return (rows, []) }
-        let photos = rows[start...].compactMap { $0.verbatim.flatMap(Diary.stripItem(in:)) }
-        rows.removeSubrange(start...)
-        while let last = rows.last, blank(last) { rows.removeLast() }
-        return (rows, photos)
-    }
+    // MARK: - Вложения
 
     /// Строка из одних вложений — снимки, голос, файлы, точки, сколько угодно
     /// вперемешку. Такая строка стоит под делом и ходит вместе с ним (P629).
@@ -224,14 +198,6 @@ enum Plan {
     /// Предметы такого ряда по порядку: путь к снимку или строка точки.
     static func items(in line: String) -> [String] {
         Diary.objects(in: line).map(\.link)
-    }
-
-    /// План вместе с фотографиями в конце.
-    static func body(from rows: [PlanRow], photos: [String]) -> String {
-        let plan = body(from: rows)
-        guard !photos.isEmpty else { return plan }
-        let lines = photos.map(Diary.line).joined(separator: "\n")
-        return plan.isEmpty ? lines : plan + "\n\n" + lines
     }
 
     // MARK: - Сборка

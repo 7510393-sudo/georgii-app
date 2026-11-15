@@ -173,11 +173,13 @@ enum FileTrash {
         return true
     }
 
-    /// Вернуть ссылку на страницу дня: в конец полоски снимков. Файл дня
-    /// перечитывается перед записью; изменили его в другом месте — не пишем.
+    /// Вернуть ссылку на страницу дня: в конец полоски снимков — в файл
+    /// дневника, откуда бы вложение ни убрали (P961: ряда в конце плана
+    /// больше нет). Файл дня перечитывается перед записью; изменили его в
+    /// другом месте — не пишем.
     static func relink(_ e: Entry, _ vault: Vault) -> Bool {
         guard let date = Vault.date(from: e.day),
-              let url = vault.file(e.tab == "plan" ? .planner : .diary, for: date)
+              let url = vault.file(.diary, for: date)
         else { return false }
         let was = Vault.reading(at: url)
         if was == .away { return false }

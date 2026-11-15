@@ -67,6 +67,32 @@ enum StripMove {
 
     // MARK: - Правка текстов (без файлов)
 
+    /// Отделить прежний ряд вложений в конце плана от строк плана. Читается
+    /// только здесь, для переноса (P961): приложение такой ряд больше не
+    /// пишет и не показывает отдельно — оставшийся (файл был в iCloud) виден
+    /// строкой вложений под последним делом.
+    ///
+    /// Ряд — это вложения в самом конце **после пустой строки** (так его
+    /// писало приложение). Вложения сразу под делом, без пустой строки, —
+    /// вложения того дела (P358): они остаются под ним, даже если дело
+    /// последнее.
+    static func split(_ rows: [PlanRow]) -> (rows: [PlanRow], photos: [String]) {
+        func blank(_ row: PlanRow) -> Bool {
+            row.verbatim?.trimmingCharacters(in: .whitespaces).isEmpty == true
+        }
+        var rows = rows
+        while let last = rows.last, blank(last) { rows.removeLast() }
+        var start = rows.count
+        while start > 0, let line = rows[start - 1].verbatim, Diary.stripItem(in: line) != nil {
+            start -= 1
+        }
+        guard start < rows.count, start == 0 || blank(rows[start - 1]) else { return (rows, []) }
+        let photos = rows[start...].compactMap { $0.verbatim.flatMap(Diary.stripItem(in:)) }
+        rows.removeSubrange(start...)
+        while let last = rows.last, blank(last) { rows.removeLast() }
+        return (rows, photos)
+    }
+
     /// План без ряда вложений в конце. `nil` — ряда нет или файл устроен
     /// не так, как его пишет приложение (тогда его не трогаем). Меняются
     /// только последние строки файла; шапка и дела остаются байт в байт.
@@ -74,8 +100,8 @@ enum StripMove {
         // Файл из Windows-редактора не правим построчно — пусть ждёт.
         guard !raw.contains("\r") else { return nil }
         let file = DayFile(text: raw)
-        let split = Plan.splitPhotos(Plan.rows(from: file.body))
-        guard !split.photos.isEmpty else { return nil }
+        let parts = split(Plan.rows(from: file.body))
+        guard !parts.photos.isEmpty else { return nil }
 
         var lines = raw.components(separatedBy: "\n")
         func dropBlank() {
@@ -89,16 +115,16 @@ enum StripMove {
             found.insert(item, at: 0)
             lines.removeLast()
         }
-        guard found == split.photos else { return nil }
+        guard found == parts.photos else { return nil }
         dropBlank()
         let plan = lines.isEmpty ? "" : lines.joined(separator: "\n") + "\n"
 
         // Сверка: шапка та же, дела те же, ряда больше нет.
         let after = DayFile(text: plan)
-        let again = Plan.splitPhotos(Plan.rows(from: after.body))
+        let again = split(Plan.rows(from: after.body))
         guard after.meta == file.meta, again.photos.isEmpty,
-              Plan.body(from: again.rows) == Plan.body(from: split.rows) else { return nil }
-        return (plan, split.photos)
+              Plan.body(from: again.rows) == Plan.body(from: parts.rows) else { return nil }
+        return (plan, parts.photos)
     }
 
     /// Запись дневника с вложениями в конце — теми, которых в ней ещё нет.

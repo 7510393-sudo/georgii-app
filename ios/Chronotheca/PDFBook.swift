@@ -86,8 +86,7 @@ enum PDFBook {
     }
 
     private static func read(_ date: Date, vault: Vault) -> Day {
-        let (rows, planPhotos) = Plan.splitPhotos(
-            Plan.rows(from: DayFile(text: vault.read(.planner, for: date)).body))
+        let rows = Plan.rows(from: DayFile(text: vault.read(.planner, for: date)).body)
         let file = DayFile(text: vault.read(.diary, for: date))
         let diary = Diary(body: file.body, known: rows.map(\.text))
         return Day(date: date,
@@ -95,7 +94,7 @@ enum PDFBook {
                    title: file.value("title") ?? "",
                    text: diary.text,
                    answers: diary.answers,
-                   strip: diary.photos + planPhotos,
+                   strip: diary.photos,
                    weather: file.value("weather"))
     }
 

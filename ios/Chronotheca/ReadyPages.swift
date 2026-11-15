@@ -20,7 +20,6 @@ final class ReadyPages {
     /// Всё, что страница берёт из файлов дня и Календаря.
     struct Page {
         let rows: [PlanRow]
-        let planPhotos: [String]
         let title: String
         let text: String
         let answers: [String: String]
@@ -105,8 +104,7 @@ final class ReadyPages {
 
     /// Собрать страницу дня из файлов и Календаря.
     static func build(_ date: Date, vault: Vault) -> Page {
-        let (rows, planPhotos) = Plan.splitPhotos(
-            Plan.rows(from: DayFile(text: vault.read(.planner, for: date)).body))
+        let rows = Plan.rows(from: DayFile(text: vault.read(.planner, for: date)).body)
         let file = DayFile(text: vault.read(.diary, for: date))
         // Ответы «Как прошло?» — по настоящим названиям дел, как у открытой
         // страницы (P155, P441).
@@ -118,12 +116,12 @@ final class ReadyPages {
         // клеткой, что под делами (P759): прежде они читались с диска только
         // на открывшейся странице и проступали на глазах.
         let inText = ([diary.text] + Array(diary.answers.values)).flatMap { Diary.anywhere(in: $0).map(\.link) }
-        for (links, plan) in [(underTasks + inText, true), (diary.photos + planPhotos, false)] {
+        for (links, plan) in [(underTasks + inText, true), (diary.photos, false)] {
             for link in links where !Diary.isPoint(link) && Diary.kind(of: link) == .photo {
                 if let url = vault.mediaURL(link, for: date) { thumbs.append((url, plan)) }
             }
         }
-        return Page(rows: rows, planPhotos: planPhotos,
+        return Page(rows: rows,
                     title: file.value("title") ?? "", text: diary.text,
                     answers: diary.answers, photos: diary.photos,
                     weather: file.value("weather"), events: events, thumbs: thumbs)

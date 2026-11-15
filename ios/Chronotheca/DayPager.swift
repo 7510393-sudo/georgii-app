@@ -526,10 +526,6 @@ struct AttachBar: View {
     @EnvironmentObject private var store: DayStore
     @EnvironmentObject private var vault: Vault
 
-    /// Куда ложится новое: полоска одна на страницу, всё — в дневник
-    /// (P408). В будущий день дневника нет — тогда в план.
-    private var into: Shell.Tab { store.canEditDiary ? .diary : .plan }
-
     @State private var choosing = false
     @State private var recording = false
     @State private var browsing = false
@@ -577,7 +573,6 @@ struct AttachBar: View {
             CameraPicker { data in
                 shooting = false
                 guard let data else { return }
-                let tab = into
                 // Снимок с камеры приложения — ещё и в «Фото» iPhone, в полном
                 // размере (P903, автор: «класть и в галерею»): прежде
                 // единственным экземпляром был сжатый снимок в архиве. «Фото»
@@ -590,9 +585,9 @@ struct AttachBar: View {
                         }
                     }
                     DispatchQueue.main.async {
-                        if store.addPhoto(data, to: tab, camera: !allowed) {
+                        if store.addPhoto(data, camera: !allowed) {
                             shell.say(T("Снимок положен в папку «", "Photo saved to the “") + vault.name(.photos) + T("»", "” folder"))
-                        } else if store.keepForLater(data, kind: .photos, name: "", tab: tab) {
+                        } else if store.keepForLater(data, kind: .photos, name: "") {
                             // Не лёг в папку — остаётся у приложения и дойдёт сам (P904).
                             shell.say(T("Снимок пока не лёг в папку — приложение хранит его и доложит само",
                                         "The photo has not reached your folder yet — the app is keeping it and will add it"))
@@ -615,10 +610,10 @@ struct AttachBar: View {
         }
     }
 
-    /// Вложение кладётся туда, где человек стоит, — в план или в дневник
-    /// (P203). В закрытый день — нельзя, и об этом говорится.
+    /// Вложение кладётся в ряд внизу страницы, в файл дневника — и в
+    /// будущем дне тоже (P961). В закрытый день — нельзя, и об этом говорится.
     private func open(_ show: () -> Void) {
-        guard store.canEdit(into) else { return shell.say(store.closedReason) }
+        guard store.canEditStrip else { return shell.say(store.closedReason) }
         show()
     }
 
@@ -629,9 +624,9 @@ struct AttachBar: View {
         guard let data = try? Data(contentsOf: url), !data.isEmpty
         else { return shell.say(T("Запись не сохранилась.", "The recording was not saved.")) }
         let name = Vault.moment(store.date) + ".m4a"
-        guard store.addAttachment(data, to: .audio, name: name, tab: into) else {
+        guard store.addAttachment(data, to: .audio, name: name) else {
             // Не лёг в папку — голос остаётся у приложения и дойдёт сам (P904).
-            return shell.say(store.keepForLater(data, kind: .audio, name: name, tab: into)
+            return shell.say(store.keepForLater(data, kind: .audio, name: name)
                 ? T("Голос пока не лёг в папку — приложение хранит его и доложит само",
                     "The voice note has not reached your folder yet — the app is keeping it and will add it")
                 : T("Запись не сохранилась.", "The recording was not saved."))
@@ -646,20 +641,18 @@ struct AttachBar: View {
         var kept = 0
         for url in urls {
             guard let data = try? Data(contentsOf: url) else { continue }
-            if store.addAttachment(data, to: .documents, name: url.lastPathComponent,
-                                   tab: into) { kept += 1 }
+            if store.addAttachment(data, to: .documents, name: url.lastPathComponent) { kept += 1 }
         }
         shell.say(kept == urls.count ? T("Положено в папку «", "Saved to the “") + vault.name(.documents)
                                         + T("»: \(kept)", "” folder: \(kept)")
                                      : T("Не удалось положить файлов: \(urls.count - kept)", "Files not saved: \(urls.count - kept)"))
     }
 
-    /// Место, где человек сейчас, — под текстом записи (P615), а в день,
-    /// который ещё не наступил, — в ленту плана (P588). Место узнаётся только по
-    /// этому нажатию (A9).
+    /// Место, где человек сейчас, — в ряд внизу страницы, в файл дневника,
+    /// и в будущем дне тоже (P615, P961). Место узнаётся только по этому
+    /// нажатию (A9).
     private func notePlaceHere() {
-        let tab: Shell.Tab = store.canEditDiary ? .diary : .plan
-        guard store.canEdit(tab) else { return shell.say(store.closedReason) }
+        guard store.canEditStrip else { return shell.say(store.closedReason) }
         Feel.light()
         Locator.shared.current { location in
             DispatchQueue.main.async {
@@ -668,7 +661,7 @@ struct AttachBar: View {
                                        "Could not find where you are — allow location for the app in iPhone Settings."))
                 }
                 // Под последним текстом записи, как всё новое (P615).
-                if store.writePoint(GeoPoint(title: "", at: location.coordinate), to: tab) {
+                if store.writePoint(GeoPoint(title: "", at: location.coordinate)) {
                     shell.say(T("Место добавлено", "Place added"))
                 }
             }
@@ -709,7 +702,6 @@ struct AttachBar: View {
     @MainActor
     private func take(_ items: [PHPickerResult]) {
         Task {
-            let tab = into
             var added = 0
             var videos = 0
             if items.count > 3 { shell.say(T("Кладу в папку: \(items.count)…", "Saving to the folder: \(items.count)…")) }
@@ -728,15 +720,14 @@ struct AttachBar: View {
                     guard let data = try? Data(contentsOf: file, options: .mappedIfSafe)
                     else { continue }
                     if store.addAttachment(data, to: .videos,
-                                           name: Vault.moment(store.date) + "." + ext.lowercased(),
-                                           tab: tab) {
+                                           name: Vault.moment(store.date) + "." + ext.lowercased()) {
                         added += 1
                         videos += 1
                     }
                     continue
                 }
                 guard let data = await Self.loadedImage(item.itemProvider) else { continue }
-                if store.addPhoto(data, to: tab) { added += 1 }
+                if store.addPhoto(data) { added += 1 }
             }
             if added == items.count {
                 if added == 1 {
@@ -770,7 +761,6 @@ struct SideDay: View {
     @State private var text = ""
     @State private var answers: [String: String] = [:]
     @State private var photos: [String] = []
-    @State private var planPhotos: [String] = []
     @State private var weather: String?
     /// События Календаря этого дня (P376) — как на открытой странице.
     @State private var events: [DayEvents.Shown] = []
@@ -784,7 +774,6 @@ struct SideDay: View {
         self.date = date
         if let page = ReadyPages.shared.page(for: date) {
             _rows = State(initialValue: page.rows)
-            _planPhotos = State(initialValue: page.planPhotos)
             _title = State(initialValue: page.title)
             _text = State(initialValue: page.text)
             _answers = State(initialValue: page.answers)
@@ -839,9 +828,9 @@ struct SideDay: View {
                   editable: false,
                   weather: weather,
                   // Одна полоска на страницу, как у открытого дня (P408).
-                  photos: (photos + planPhotos).map { vault.mediaURL($0, for: date) },
+                  photos: photos.map { vault.mediaURL($0, for: date) },
                   // Точки ленты — тем же квадратом, что на открытой странице (P588, P114).
-                  points: (photos + planPhotos).map { Diary.isPoint($0) ? Geo.point(in: $0) : nil },
+                  points: photos.map { Diary.isPoint($0) ? Geo.point(in: $0) : nil },
                   resolve: { [vault, date] in vault.mediaURL($0, for: date) },
                   health: health)
         .task(id: date) { health = await HealthDay.summary(for: date) }
@@ -857,7 +846,6 @@ struct SideDay: View {
         guard loadedStamp != stamp else { return }
         let page = ReadyPages.shared.pageNow(for: date, vault: vault)
         rows = page.rows
-        planPhotos = page.planPhotos
         title = page.title
         text = page.text
         answers = page.answers

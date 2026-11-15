@@ -196,9 +196,9 @@ enum Repeats {
         let was = Vault.reading(at: url)
         if was == .away { return false }
         var file = DayFile(text: was.text)
-        var (rows, photos) = Plan.splitPhotos(Plan.rows(from: file.body))
+        var rows = Plan.rows(from: file.body)
         guard fix(&rows) else { return true }
-        file.body = Plan.body(from: rows, photos: photos)
+        file.body = Plan.body(from: rows)
         if file.value("date") == nil { file.set("date", Vault.stamp(date)) }
         // Ещё раз с диска: файл могли поправить, пока мы его собирали.
         guard Vault.reading(at: url, coordinated: false) == was else { return false }

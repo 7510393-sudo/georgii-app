@@ -311,8 +311,8 @@ final class StorageSafetyTests: XCTestCase {
         let день = DayStore(vault: vault, date: today)
         Vault.brokenWrites = "нет места"
         let голос = Data("надиктовано".utf8)
-        XCTAssertFalse(день.addAttachment(голос, to: .audio, name: "voice-note.m4a", tab: .diary))
-        XCTAssertTrue(день.keepForLater(голос, kind: .audio, name: "voice-note.m4a", tab: .diary),
+        XCTAssertFalse(день.addAttachment(голос, to: .audio, name: "voice-note.m4a"))
+        XCTAssertTrue(день.keepForLater(голос, kind: .audio, name: "voice-note.m4a"),
                       "голос не оставлен в страховке")
         XCTAssertNotNil(день.unsaved, "человеку не сказано, что голос не дошёл")
         XCTAssertEqual(PendingMedia.items(root: vault.root!).count, 1)
@@ -332,7 +332,7 @@ final class StorageSafetyTests: XCTestCase {
         let вчера = Calendar.current.date(byAdding: .day, value: -1, to: today)!
         let день = DayStore(vault: vault, date: вчера)
         Vault.brokenWrites = "нет места"
-        XCTAssertTrue(день.keepForLater(Data("вчерашний голос".utf8), kind: .audio, name: "yesterday-note.m4a", tab: .diary))
+        XCTAssertTrue(день.keepForLater(Data("вчерашний голос".utf8), kind: .audio, name: "yesterday-note.m4a"))
         день.go(to: today)
 
         Vault.brokenWrites = nil

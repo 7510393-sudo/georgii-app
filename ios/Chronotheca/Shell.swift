@@ -61,9 +61,9 @@ final class Shell: ObservableObject {
         let id: UUID
     }
 
-    /// Снимок, открытый во весь экран: с какой вкладки и который по счёту.
+    /// Снимок, открытый во весь экран: который по счёту в ряду внизу
+    /// страницы (ряд один и лежит в файле дневника, P961); `-1` — не из ряда.
     struct OpenedPhoto: Identifiable {
-        let tab: Tab
         let index: Int
         /// Снимок, стоящий посреди страницы, а не в полоске: открывается
         /// прямо по месту, без «убрать» (P205).
@@ -71,7 +71,7 @@ final class Shell: ObservableObject {
         /// Строка-ссылка снимка из текста: по ней он возвращается в
         /// полоску (P216).
         var link: String? = nil
-        var id: String { tab.rawValue + String(index) + (url?.path ?? "") }
+        var id: String { String(index) + (url?.path ?? "") }
     }
     @Published var openedPhoto: OpenedPhoto?
 
