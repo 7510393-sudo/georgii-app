@@ -127,7 +127,11 @@ final class Ribbon: ObservableObject {
         let full = frames[id]?.height ?? Ribbon.cardHeight
         let low: CGFloat = side < 0 ? FollowRibbon.peekTop : 8
         let high = max(low, height - FollowRibbon.peekBottom - (full - Search.overlap))
-        if let frame = frames[id], frame.minY >= low - 0.5, frame.minY <= high + 0.5 {
+        // На виду хоть частью — стоит, где стояла (P926): карточку, открытую
+        // из-под полоски «Сегодня», лента подтягивала на 36 точек, и
+        // картотека оказывалась не там, где её оставили (проверка 3 с
+        // медленной лентой).
+        if let frame = frames[id], frame.maxY > low, frame.minY < height - FollowRibbon.peekBottom {
             return (frame.minY, true)
         }
         if let from = openedFrom, from.id == id { return (min(high, max(low, from.top)), false) }
