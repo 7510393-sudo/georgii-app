@@ -636,7 +636,6 @@ struct DiaryEditor: UIViewRepresentable {
                     guard let self, let view = self.view else { return }
                     self.restyle(view)
                     self.stampDictated(view)
-                    self.raiseFirst(view)
                 }
             }
         }
@@ -693,7 +692,6 @@ struct DiaryEditor: UIViewRepresentable {
                 guard let view = self.view, self.dictatedLine != nil else { return }
                 if Self.dictating(view) { self.checkDictationSoon(); return }
                 self.stampDictated(view)
-                self.raiseFirst(view)
             }
         }
 
@@ -765,14 +763,15 @@ struct DiaryEditor: UIViewRepresentable {
         /// Строчная первая буква за отметкой времени в строке под курсором —
         /// заглавной (P815). Диктовка и набор росчерком вставляют слова
         /// сами, мимо правила для одной буквы; поэтому буква поднимается
-        /// потом, когда диктовка отпустила поле. Длина та же — курсор и всё
-        /// после буквы остаются на местах.
-        func raiseFirst(_ view: UITextView) {
+        /// потом — когда курсор ушёл со строки (`start` — её начало) или из
+        /// записи (P960). Длина та же — курсор и всё после буквы остаются
+        /// на местах.
+        func raiseFirst(_ view: UITextView, line start: Int? = nil) {
             guard parent.stamped, parent.editable, !placing, !Self.dictating(view),
                   view.markedTextRange == nil else { return }
             let storage = view.textStorage
             let ns = storage.string as NSString
-            let at = min(view.selectedRange.location, ns.length)
+            let at = min(start ?? view.selectedRange.location, ns.length)
             let line = ns.lineRange(for: NSRange(location: at, length: 0))
             guard let m = DiaryEditor.lowAfterStamp.firstMatch(in: storage.string, range: line),
                   m.numberOfRanges > 1 else { return }
@@ -1814,6 +1813,25 @@ struct DiaryEditor: UIViewRepresentable {
                 view.typingAttributes = DiaryEditor.body(parent.size, serif: parent.serif)
             }
             settleStamp(view, leaving: false)
+            raiseLeftLine(view)
+        }
+
+        /// Начало строки, где курсор стоял в прошлый раз (P960).
+        private var caretLine: Int?
+
+        /// Курсор ушёл на другую строку — первая буква за отметкой в той,
+        /// что он оставил, заглавной (P960). Прежде буква поднималась сразу
+        /// после правки, и диктовка от этого выключалась после первых слов.
+        private func raiseLeftLine(_ view: UITextView) {
+            guard !placing else { return }
+            let ns = view.textStorage.string as NSString
+            let here = ns.lineRange(for: NSRange(location: min(view.selectedRange.location, ns.length),
+                                                 length: 0)).location
+            defer { caretLine = here }
+            guard let left = caretLine, left != here, left < ns.length,
+                  left == 0 || ns.character(at: left - 1) == 10 else { return }
+            // Длина буквы та же — курсор и начало его строки на местах.
+            raiseFirst(view, line: left)
         }
 
         // MARK: - Время под курсором (P711)
@@ -2089,7 +2107,10 @@ struct DiaryEditor: UIViewRepresentable {
             } else {
                 restyle(view)
             }
-            raiseFirst(view)
+            // Букву за отметкой здесь не поднимать (P960): правка поля сразу
+            // за первыми надиктованными словами выключала диктовку — признак
+            // диктовки у нынешнего iPhone, видно, не срабатывает. Буква
+            // встаёт, когда курсор ушёл со строки или из записи.
             // Строка прибавилась — курсор мог уйти под клавиатуру.
             DispatchQueue.main.async { [weak self] in self?.showCaret(animated: false) }
         }
