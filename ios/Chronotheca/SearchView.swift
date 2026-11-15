@@ -506,11 +506,14 @@ struct SearchView: View {
 
         func alive() -> Bool { landing.run == run && shell.dayCard && ribbon.folding }
 
-        /// Над гнездом: схема шире карточки на поля по бокам; место — где
-        /// карточка видна, а не где стоит в раскладке (сближение, P909).
+        /// Над гнездом: схема шире карточки на поля по бокам. Замер рамки
+        /// карточки — уже там, где она видна, со сближением (P927): замер
+        /// идёт сквозь сдвиг `Distance`. Прежде сближение прибавлялось к
+        /// нему ещё раз (P909), и схема вставала мимо — у будущего выше
+        /// гнезда, у прошлого ниже; карточка появлялась в стороне от неё
+        /// (след автора к 292: карточка на 430, схема летела к 340 вместо 394).
         func hover(over frame: CGRect) -> CGRect {
-            let card = frame.insetBy(dx: Search.cardInset, dy: 0)
-            return card.offsetBy(dx: 0, dy: Afar.shift(card.minY, side: side, height: height) - Landing.lift)
+            frame.insetBy(dx: Search.cardInset, dy: 0).offsetBy(dx: 0, dy: -Landing.lift)
         }
 
         func finish() {
