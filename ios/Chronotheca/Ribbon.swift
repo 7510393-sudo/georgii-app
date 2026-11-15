@@ -267,6 +267,25 @@ final class Ribbon: ObservableObject {
         if abs(amount - y) > 0.25 || amount == 0 { y = amount }
     }
 
+    /// Лист «Сегодня» берут с его места у края (P926): дальше он идёт сам,
+    /// лента под ним стоит. Отвечает, где лист стоял: 1 — корешком внизу,
+    /// −1 — полоской вверху.
+    func hold(_ dir: Int) -> CGFloat {
+        interrupt()
+        driving = false
+        frozen = true
+        let from = dir > 0 ? height - FollowRibbon.peekBottom : restY(-1, stick: true)
+        y = from
+        return from
+    }
+
+    /// Ход схемы карточки к гнезду и ступени её посадки (P926).
+    let flight = Glide()
+    /// Ход листа, который несут: назад на место или «Сегодня» с края.
+    let lifting = Glide()
+    /// Ход листа «Сегодня» поверх открытого дня (P924, P926).
+    let rise = RiseMove()
+
     /// Лента уже не «только что открыта» (P898): закрытая карточка села, и
     /// перечитанная опись больше не ставит ленту в покой у дня. Прежде,
     /// если опись догоняла в первые полторы секунды (после карты — почти
@@ -730,6 +749,7 @@ final class Ribbon: ObservableObject {
         veiled = false
         done = nil
         unseat()
+        flight.stop()
     }
 
     /// Лента скрыта, пока пересобирается вокруг другого дня (P888: после
@@ -741,6 +761,57 @@ final class Ribbon: ObservableObject {
         guard link == nil else { return }
         driving = false
     }
+}
+
+/// Ход по кадрам экрана (P926): от нуля до единицы за заданное время,
+/// плавно в начале и в конце; последний шаг — ровно единица, и только за
+/// ним — «кончил». Схема карточки и лист «Сегодня» едут им, а не ходом
+/// SwiftUI с ответом «ход окончен»: на телефоне тот ответ приходил, когда
+/// схема была ещё в пути, и карточка появлялась раньше неё — прыжок в
+/// конце посадки (видео автора к 291).
+final class Glide {
+    private var link: CADisplayLink?
+    private var began: CFTimeInterval = 0
+    private var length: CFTimeInterval = 0.3
+    private var step: ((CGFloat) -> Void)?
+    private var done: (() -> Void)?
+
+    var running: Bool { link != nil }
+
+    func run(_ length: CFTimeInterval, step: ((CGFloat) -> Void)? = nil,
+             then: @escaping () -> Void) {
+        stop()
+        self.length = max(0.01, length)
+        self.step = step
+        done = then
+        began = CACurrentMediaTime()
+        let made = CADisplayLink(target: self, selector: #selector(tick))
+        made.add(to: .main, forMode: .common)
+        link = made
+    }
+
+    func stop() {
+        link?.invalidate()
+        link = nil
+        step = nil
+        done = nil
+    }
+
+    @objc private func tick() {
+        let t = CGFloat(min(1, (CACurrentMediaTime() - began) / length))
+        step?(t * t * (3 - 2 * t))
+        guard t >= 1 else { return }
+        let then = done
+        stop()
+        then?()
+    }
+}
+
+/// Насколько лист «Сегодня» лёг поверх открытого дня: от нуля до единицы.
+/// Смотрит на него только сам этот лист — экран целиком не перерисовывается.
+final class RiseMove: ObservableObject {
+    @Published var p: CGFloat = 0
+    let glide = Glide()
 }
 
 /// Посадка закрытой карточки (P895, автор по видео к 278: «совсем не

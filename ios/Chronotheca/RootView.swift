@@ -700,7 +700,7 @@ struct RootView: View {
                 .allowsHitTesting(shell.screen == .today)
             // «Сегодня» с открытого дня — сразу, поверх него (P924).
             if todayRise != 0 {
-                TodayRise(from: todayRise, size: size, risen: todayRisen)
+                TodayRise(from: todayRise, size: size, move: shell.ribbon.rise)
                     .zIndex(2)
             }
         }
@@ -775,8 +775,6 @@ struct RootView: View {
     /// Лист «Сегодня» поднимается с открытого дня (P924): 1 — снизу,
     /// −1 — сверху, 0 — нет.
     @State private var todayRise = 0
-    /// Он уже едет на место.
-    @State private var todayRisen = false
 
     private var pagingFree: Bool {
         !shell.pulling && !shell.holding && !shell.showingSettings && shell.settingsPull == nil
@@ -1193,47 +1191,56 @@ struct RootView: View {
             hideKeyboard()
             Feel.thud()
             store.save()
+            let rise = ribbon.rise
+            rise.p = 0
             withTransaction(still) { todayRise = store.isFuture ? -1 : 1 }
-            // Следующим тактом: лист уже стоит у своего края — оттуда и едет.
-            DispatchQueue.main.async {
-                withAnimation(.easeInOut(duration: 0.38)) { todayRisen = true } completion: {
-                    withTransaction(still) {
-                        ribbon.reset()
-                        store.go(to: DayStore.today())
-                        todayRise = 0
-                        todayRisen = false
-                    }
-                    archive.reloadSoon()
+            // Ход — по кадрам экрана (P926): день под листом меняется на
+            // сегодня ровно тогда, когда лист лёг.
+            rise.glide.run(0.38, step: { rise.p = $0 }) {
+                withTransaction(still) {
+                    ribbon.reset()
+                    store.go(to: DayStore.today())
+                    todayRise = 0
                 }
+                rise.p = 0
+                archive.reloadSoon()
             }
             return
         }
         guard case .file = shell.deck else { return }
         Feel.thud()
-        ribbon.felt = true
         // Со стороны будущего «Сегодня» сверху (P896).
         liftToday(top: ribbon.y < 0)
     }
 
-    /// Вторая половина `riseToday`: сегодняшний лист — корешком внизу и
-    /// плавно вверх или низом листа сверху и плавно вниз (P896).
+    /// «Сегодня» из открытой картотеки (P926, автор по 291: «сначала
+    /// появляется картотека будущего, потом скачком снова прошлого, и
+    /// наконец она закрывается экраном сегодня»). Лист «Сегодня» идёт сам —
+    /// оттуда, где торчит: корешком снизу вверх или полоской сверху вниз
+    /// (P896), — а картотека под ним стоит, где была, и тает. Прежде лента
+    /// сперва ехала к месту сегодняшнего дня (`Ribbon.settle`): далеко от
+    /// сегодня это были два её прыжка на глазах.
     private func liftToday(top: Bool) {
         let ribbon = shell.ribbon
-        let dir = top ? -1 : 1
+        guard !ribbon.frozen, !ribbon.lifting.running else { return }
         var quiet = Transaction()
         quiet.disablesAnimations = true
         let still = quiet
-        ribbon.opened()
-        ribbon.settle(dir) { [shell] in
-            let on: Bool = withTransaction(still) { shell.go(.todayAtEdge(dir)) }
-            guard on else { return }
-            ribbon.place(ribbon.restY(dir))
-            ribbon.refresh()
-            ribbon.veiled = false
-            backToDay {
-                ribbon.felt = false
-                withTransaction(still) { shell.screen = .today }
+        let from = ribbon.hold(top ? -1 : 1)
+        ribbon.lifting.run(0.38, step: { p in ribbon.carry(from * (1 - p)) }) { [shell] in
+            let on: Bool = withTransaction(still) {
+                guard shell.go(.backInDay) else { return false }
+                shell.screen = .today
+                return true
             }
+            ribbon.frozen = false
+            guard on else {
+                ribbon.refresh()
+                return
+            }
+            // Картотека закрыта — место дня под день, опись перечитать.
+            ribbon.park()
+            archive.reloadSoon()
         }
     }
 

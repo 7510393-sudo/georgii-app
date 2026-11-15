@@ -468,12 +468,13 @@ struct TodayRise: View {
     /// Откуда: 1 — снизу, корешком; −1 — сверху, низом листа.
     let from: Int
     let size: CGSize
-    /// Лист уже едет на место.
-    let risen: Bool
+    /// Насколько лист уже лёг: ход по кадрам (P926).
+    @ObservedObject var move: RiseMove
 
     var body: some View {
         let start: CGFloat = from > 0 ? size.height - FollowRibbon.peekBottom
             : FollowRibbon.topClamp(size.height)
+        let left: CGFloat = 1 - move.p
         DayPage(date: DayStore.today(), live: false)
             .frame(width: size.width, height: size.height)
             // Сверху лист выходит низом: на нём та же надпись, что была на
@@ -483,10 +484,10 @@ struct TodayRise: View {
                     TodayTop(bare: true)
                         .frame(width: size.width, height: FollowRibbon.peekTop)
                         .offset(y: size.height + DayPage.under - FollowRibbon.peekTop)
-                        .opacity(risen ? 0 : 1)
+                        .opacity(Double(left))
                 }
             }
-            .offset(y: risen ? 0 : start)
+            .offset(y: start * left)
             .frame(width: size.width, height: size.height, alignment: .topLeading)
             .allowsHitTesting(false)
             .accessibilityHidden(true)

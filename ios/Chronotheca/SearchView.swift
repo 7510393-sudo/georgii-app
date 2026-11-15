@@ -444,6 +444,7 @@ struct SearchView: View {
                 // Посадка кончена или прервана: её шаги больше не к месту.
                 ribbon.landing.clear()
                 ribbon.unseat()
+                ribbon.flight.stop()
                 ribbon.foldSide = 0
                 ribbon.foldTo = nil
                 ribbon.foldLanded = false
@@ -465,10 +466,11 @@ struct SearchView: View {
     /// открытия карточки не двигалась, — поэтому проступает сразу, вместе с
     /// тем как лист превращается в схему: пустого экрана между ними нет
     /// (`docs/71` §8). Шаги идут друг за другом по делу, а не по часам:
-    /// схема долетела — конец её хода; лента встала — замер карточки;
-    /// карточка опустилась и надпись проступила — конец этих движений.
-    /// По времени остаётся один предохранитель: если что-то из этого не
-    /// пришло, карточка считается севшей.
+    /// схема долетела — последний кадр её хода (`Glide`, P926); лента
+    /// встала — замер карточки; карточка опустилась и надпись проступила —
+    /// последний кадр этих движений. По времени остаётся один
+    /// предохранитель: если что-то из этого не пришло, карточка считается
+    /// севшей.
     private func land(_ closed: String) {
         let ribbon = shell.ribbon
         let landing = ribbon.landing
@@ -478,27 +480,28 @@ struct SearchView: View {
         var still = Transaction()
         still.disablesAnimations = true
         let quiet = still
-        let started = CACurrentMediaTime()
         let spot = ribbon.nest(for: closed, side: side)
         let known = ribbon.ids.contains(closed)
         // Рамка карточки там, куда она встанет; пока её не мерили — на глаз.
         let about = ribbon.frames[closed].map {
             CGRect(x: $0.minX, y: spot.top, width: $0.width, height: $0.height)
         } ?? CGRect(x: 10, y: spot.top, width: UIScreen.main.bounds.width - 20, height: Ribbon.cardHeight)
-        Trace.note(String(format: "лента: закрыт %@, гнездо на %.0f (%@)", closed, spot.top,
-                          spot.inPlace ? "стоит на месте" : known ? "навести" : "карточки нет"))
+        DeckTrail.mark(String(format: "закрыт %@, гнездо на %.0f — %@", closed, spot.top,
+                              spot.inPlace ? "стоит на месте" : known ? "навести" : "карточки нет"))
         // Гнездо карточки пустует, пока она летит (P895).
         withTransaction(quiet) {
             landing.id = closed
             landing.stage = .away
         }
 
-        /// Номер полёта: дальше ведёт только последний.
-        var flights = 0
         var arrived = false
         var stood = false
         /// Карточки в ленте не нашлось — схеме садиться некуда.
         var lost = false
+        /// Откуда схема летит — лист, каким его отпустили, — и куда.
+        let lead = FollowRibbon.shown(ribbon.y, height: height, stick: ribbon.stick)
+        let under: CGFloat = side < 0 ? FollowRibbon.futureTop : 0
+        var from = CGRect(x: 0, y: lead + under, width: UIScreen.main.bounds.width, height: height - under)
         var target = CGRect.zero
 
         func alive() -> Bool { landing.run == run && shell.dayCard && ribbon.folding }
@@ -513,6 +516,7 @@ struct SearchView: View {
         func finish() {
             guard alive() else { return }
             ribbon.unseat()
+            ribbon.flight.stop()
             store.save()
             // На листе снова сегодня — он у своего края, корешком или полоской.
             ribbon.stick = true
@@ -532,12 +536,13 @@ struct SearchView: View {
 
         /// Схема долетела, и лента стоит: над гнездом схема становится самой
         /// карточкой в своём ряду, та опускается под следующую, и на ней
-        /// проступает надпись (P895).
+        /// проступает надпись (P895). Ступени идут по кадрам экрана (P926).
         func sit() {
             guard alive(), arrived, stood, landing.stage == .away else { return }
             if lost {
                 // Карточки нет — схема тает у края, а не пропадает разом.
-                withAnimation(.easeOut(duration: 0.25)) { ribbon.foldLanded = true } completion: { finish() }
+                withAnimation(.easeOut(duration: 0.25)) { ribbon.foldLanded = true }
+                ribbon.flight.run(0.25, then: { finish() })
                 return
             }
             withTransaction(quiet) {
@@ -546,23 +551,31 @@ struct SearchView: View {
             }
             DispatchQueue.main.async {
                 guard alive() else { return }
-                withAnimation(.easeInOut(duration: 0.3)) { landing.stage = .down } completion: {
+                withAnimation(.easeInOut(duration: 0.3)) { landing.stage = .down }
+                ribbon.flight.run(0.3, then: {
                     guard alive() else { return }
-                    withAnimation(.easeOut(duration: 0.25)) { landing.stage = .done } completion: { finish() }
-                }
+                    withAnimation(.easeOut(duration: 0.25)) { landing.stage = .done }
+                    ribbon.flight.run(0.25, then: { finish() })
+                })
             }
         }
 
-        func fly(to place: CGRect, in time: Double) {
-            flights += 1
-            let no = flights
+        /// Схема летит от того места, где она сейчас, к гнезду. Куда — может
+        /// уточниться в пути (`target`): ход тот же, без рывка.
+        func fly(in time: Double) {
+            from = ribbon.foldTo ?? from
             arrived = false
-            target = place
-            withAnimation(.easeInOut(duration: time)) { ribbon.foldTo = place } completion: {
-                guard alive(), no == flights else { return }
+            ribbon.flight.run(time, step: { p in
+                guard alive() else { return }
+                ribbon.foldTo = CGRect(x: from.minX + (target.minX - from.minX) * p,
+                                       y: from.minY + (target.minY - from.minY) * p,
+                                       width: from.width + (target.width - from.width) * p,
+                                       height: from.height + (target.height - from.height) * p)
+            }, then: {
+                guard alive() else { return }
                 arrived = true
                 sit()
-            }
+            })
         }
 
         /// Лента встала: картотека проступает на своём месте, схема — к
@@ -575,17 +588,18 @@ struct SearchView: View {
             shell.go(.stood)
             ribbon.veiled = false
             let place = hover(over: frame ?? about)
-            if abs(place.minY - target.minY) > 0.5 || abs(place.height - target.height) > 0.5 {
-                fly(to: place, in: max(0.2, Self.flight - (CACurrentMediaTime() - started)))
-            } else {
-                sit()
-            }
+            DeckTrail.mark(String(format: "лента встала, карточка на %.0f, схема к %.0f (было %.0f)",
+                                  frame?.minY ?? -1, place.minY, target.minY))
+            let moved = abs(place.minY - target.minY) > 0.5 || abs(place.height - target.height) > 0.5
+            target = place
+            // Уже долетела до прежнего места — короткий доход до точного.
+            if moved && arrived { fly(in: 0.15) } else { sit() }
         }
 
         // Единственный шаг по времени — предохранитель.
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
             guard alive() else { return }
-            Trace.note("лента: посадка не дождалась своих событий — предохранитель")
+            DeckTrail.mark("посадка не дождалась своих событий — предохранитель")
             ribbon.veiled = false
             finish()
         }
@@ -598,7 +612,8 @@ struct SearchView: View {
         // сразу, с толчком в руку (P913).
         DispatchQueue.main.async {
             guard alive() else { return }
-            fly(to: hover(over: about), in: Self.flight)
+            target = hover(over: about)
+            fly(in: Self.flight)
             if spot.inPlace {
                 stand(ribbon.frames[closed])
             } else if known {

@@ -257,6 +257,13 @@ extension Shell {
 enum DeckTrail {
     private(set) static var lines: [String] = []
 
+    /// Заметка посадки в тот же след (P926): где гнездо и как встала лента.
+    static func mark(_ text: String) {
+        lines.append(String(format: "%.2f · ", Date().timeIntervalSince(LaunchClock.start)) + text)
+        if lines.count > 60 { lines.removeFirst(lines.count - 60) }
+        Trace.note("колода: " + text)
+    }
+
     static func note(from: Deck, event: Deck.Event, to: Deck, listed: Bool) {
         // То же состояние по таблице — не событие для следа (кнопка
         // «Дневник» ставит открытую картотеку ещё раз).

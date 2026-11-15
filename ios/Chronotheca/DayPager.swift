@@ -382,6 +382,7 @@ struct DayPage: View {
                          guard shell.screen == .today, shell.movingTask == nil, shell.pulling else {
                              if ribbon.frozen {
                                  // Лист несли рукой (P923) — он просто на место.
+                                 ribbon.lifting.stop()
                                  ribbon.carry(0)
                                  shell.go(.pullBack)
                              } else {
@@ -439,9 +440,11 @@ struct DayPage: View {
                              // Не дотянули или вернули палец — мягко назад.
                              guard shell.pulling else { return }
                              if carried {
-                                 withAnimation(.easeOut(duration: 0.25)) { ribbon.carry(0) } completion: {
-                                     // Палец мог потянуть снова — тогда не трогаем.
-                                     if ribbon.y == 0 { shell.go(.pullBack) }
+                                 // Ход по кадрам (P926); палец потянул
+                                 // снова — ход обрывается (ниже).
+                                 let from = ribbon.y
+                                 ribbon.lifting.run(0.25, step: { p in ribbon.carry(from * (1 - p)) }) {
+                                     shell.go(.pullBack)
                                  }
                                  return
                              }
@@ -469,6 +472,7 @@ struct DayPage: View {
                              shell.go(.pull(Deck.Side(dir), today: store.isToday))
                          }
                          if carried {
+                             ribbon.lifting.stop()
                              ribbon.carry(amount * CGFloat(dir))
                              return
                          }
