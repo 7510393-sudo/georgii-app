@@ -118,9 +118,13 @@ struct PlanRowLine: View {
         .padding(.top, PlanTitle.lead)
         .padding(.bottom, 2)
         .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        // Плашка — только у поднятого дела (P793).
+        // Плашка — только у поднятого дела (P793), и обводит саму запись,
+        // а не всю высоту строки (P957): строка — целое число клеток, и под
+        // записью остаётся клетка-просвет до следующего дела; рамка во всю
+        // строку стояла ниже записи — сверху впритык к номеру, снизу пусто
+        // (снимок автора к 290).
         .background { contour }
+        }
     }
 
     /// Сделанное дело (P383): текст и кнопки бледнеют, а номер остаётся
@@ -142,7 +146,8 @@ struct PlanRowLine: View {
                 .shadow(color: Look.glow.opacity(0.9), radius: 5)
                 .padding(.leading, 10)
                 .padding(.trailing, 10)
-                .padding(.vertical, 2)
+                // Поровну над номером и под буквами (P957).
+                .padding(.vertical, -5)
                 .allowsHitTesting(false)
         }
     }
