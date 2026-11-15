@@ -731,12 +731,22 @@ final class MovementTests: XCTestCase {
     func testStripCarryKeepsSheet() {
         launch("diary")
         let before = openScreen
-        // Долистать лист до полоски вложений внизу.
-        for _ in 0..<3 { app.swipeUp() }
-        sleep(1)
-        XCTAssertEqual(openScreen, before, "лист ушёл, пока его листали")
         let item = app.descendants(matching: .any).matching(identifier: "strip.item").firstMatch
         guard item.waitForExistence(timeout: 5) else { return XCTFail("вложения внизу нет") }
+        // Листать мелкими шагами, пока полоска вложений не встанет над
+        // нижней строкой: быстрые пролистывания доходили до конца листа и
+        // вытягивали картотеку будущего — это жест листа, а не перенос.
+        let bar = app.frame.height * 0.85
+        for _ in 0..<10 where !(item.isHittable && item.frame.maxY < bar) {
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.6))
+                .press(forDuration: 0.05,
+                       thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.45)),
+                       withVelocity: .slow, thenHoldForDuration: 0.3)
+            sleep(1)
+            if openScreen != before { break }
+        }
+        XCTAssertEqual(openScreen, before, "лист ушёл, пока его листали")
+        guard openScreen == before else { return }
         let from = item.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
         from.press(forDuration: 0.8,
                    thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3)),
