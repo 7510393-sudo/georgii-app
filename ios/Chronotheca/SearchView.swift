@@ -330,7 +330,6 @@ struct SearchView: View {
         // Какие карточки есть в ленте — чтобы не искать ту, которой нет (P923).
         ribbon.ids = Set(items.map(\.id))
         // Сколько стоила эта сборка — в заметки посадки (P929).
-        ribbon.builds += 1
         ribbon.built = (CACurrentMediaTime() - began, items.count)
         return ScrollViewReader { proxy in ScrollView {
             // Карточки — вид сверху: нижняя лежит поверх верхней и своим
@@ -504,10 +503,9 @@ struct SearchView: View {
         var from = CGRect(x: 0, y: lead + under, width: UIScreen.main.bounds.width, height: height - under)
         var target = CGRect.zero
         // Замер замирания в миг закрытия (P929): когда показан первый кадр
-        // хода схемы, какой кадр был самым долгим и сколько раз за это время
-        // пересобиралась лента — в след, одной заметкой.
+        // хода схемы, какой кадр был самым долгим и сколько стоила последняя
+        // сборка списка ленты — в след, одной заметкой.
         let began = CACurrentMediaTime()
-        let buildsBefore = ribbon.builds
         var firstFrame: Double?
         var lastFrame = 0.0
         var worstFrame = 0.0
@@ -597,8 +595,8 @@ struct SearchView: View {
                 if !told {
                     told = true
                     DeckTrail.mark(String(format: "схема долетела: первый кадр через %.2f с, самый долгий кадр %.2f с; "
-                                          + "лента собиралась %ld раз, последний — %.0f мс на %ld карточек",
-                                          firstFrame ?? -1, worstFrame, ribbon.builds - buildsBefore,
+                                          + "лента перед этим собиралась %.0f мс на %ld карточек",
+                                          firstFrame ?? -1, worstFrame,
                                           ribbon.built.time * 1000, ribbon.built.cards))
                 }
                 arrived = true
