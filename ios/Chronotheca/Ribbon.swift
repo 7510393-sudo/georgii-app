@@ -14,9 +14,16 @@ import UIKit
 /// листает палец, день следует за замером места.
 final class Ribbon: ObservableObject {
 
-    /// С какой стороны «Сегодня», пока закрывается не сегодняшний день
-    /// (P896): −1 — сверху (закрыт будущий), 1 — снизу (прошедший).
-    @Published var foldSide = 0
+    /// Что на экране в разделе «День» (P921, `Deck`). Меняет только
+    /// `Shell.go(_:)`. Отсюда же читается всё, что прежде держали флажки
+    /// (P928): закрывается ли день в карточку и с какой он стороны, скрыта
+    /// ли под ним картотека, ведёт ли лист рука.
+    @Published var deck: Deck = .day
+
+    /// Лист ведёт рука, а не лента (прежний флажок `frozen`): не сегодняшний
+    /// лист тянут или он складывается в карточку (P923), либо лист «Сегодня»
+    /// идёт сам от своего края (P926). Замеры места дня его не двигают.
+    var inHand: Bool { deck.isCarried || lifting.running }
 
     /// Ключ места дня в ленте.
     static let slotID = "ribbon-day"
@@ -40,9 +47,7 @@ final class Ribbon: ObservableObject {
 
     // MARK: - Лист в своё гнездо (P883)
 
-    /// Лист закрывают в карточку — он складывается, а не прячется.
-    var folding = false
-    /// Рамка его карточки на экране раздела — куда сложиться. Пока её нет,
+    /// Рамка карточки закрываемого дня на экране раздела — куда сложиться. Пока её нет,
     /// лист стоит, где его отпустили.
     @Published var foldTo: CGRect?
     /// Где на экране карточки ленты (только видимые) — по ним лента
@@ -76,6 +81,11 @@ final class Ribbon: ObservableObject {
 
     /// Какие карточки есть в ленте (ставит картотека при каждой сборке).
     var ids: Set<String> = []
+    /// Сколько раз лента собиралась и сколько стоила последняя сборка —
+    /// для заметок посадки (P929): ищем, на чём экран замирает в миг
+    /// закрытия карточки.
+    var builds = 0
+    var built: (time: Double, cards: Int) = (0, 0)
 
     /// Лист «Сегодня» — не выше своего места у края (P893): закрытая
     /// карточка рядом с сегодня, и лента вставала так, что лист торчал на
@@ -261,23 +271,22 @@ final class Ribbon: ObservableObject {
     func lift() {
         interrupt()
         driving = false
-        frozen = true
         if y != 0 { y = 0 }
     }
 
     /// Лист несут: его верх — на `amount` от своего места.
     func carry(_ amount: CGFloat) {
-        guard frozen else { return }
+        guard inHand else { return }
         if abs(amount - y) > 0.25 || amount == 0 { y = amount }
     }
 
     /// Лист «Сегодня» берут с его места у края (P926): дальше он идёт сам,
     /// лента под ним стоит. Отвечает, где лист стоял: 1 — корешком внизу,
-    /// −1 — полоской вверху.
+    /// −1 — полоской вверху. Сразу за этим — ход `lifting`: пока он идёт,
+    /// лист в руке.
     func hold(_ dir: Int) -> CGFloat {
         interrupt()
         driving = false
-        frozen = true
         let from = dir > 0 ? height - FollowRibbon.peekBottom : restY(-1, stick: true)
         y = from
         return from
@@ -297,8 +306,6 @@ final class Ribbon: ObservableObject {
     /// → убрал лист — прошлая картотека»).
     func settledHere() { openedAt = 0 }
 
-    /// Схема долетела до гнезда — дальше садится сама карточка (P895).
-    @Published var foldLanded = false
     /// Посадка закрытой карточки в своё гнездо (P895).
     let landing = Landing()
 
@@ -395,6 +402,7 @@ final class Ribbon: ObservableObject {
         guard !driving else { return }
         slotTop = top
         known = true
+        slotFresh = true
         farSide = 0
         // Замер пришёл — значит, место собрано (P894): отметку «собрано»
         // иногда снимал уход прежнего места при пересборке ленты уже после
@@ -538,7 +546,7 @@ final class Ribbon: ObservableObject {
     }
 
     private func follow(_ offset: CGFloat) {
-        guard !frozen else { return }
+        guard !inHand else { return }
         // Место дня не замерено после пересборки — лист у своего края
         // (P899), а не по старому замеру.
         let now = (!known || !seen) && farSide != 0 ? CGFloat(farSide) * (2 * height + 1) : slotTop - offset
@@ -553,12 +561,6 @@ final class Ribbon: ObservableObject {
         lastTime = t
         if abs(now - y) > 0.25 { y = now }
     }
-
-    /// Лист прошедшего дня закрыт в карточку (P859): лист стоит, где был, и
-    /// тает — место дня из ленты ушло, и замеры его больше не двигают.
-    /// Прежде лист в этот миг пропадал разом (автор по 259: «низ листа,
-    /// торчащий сверху экрана, рывком пропадает»).
-    var frozen = false
 
     /// Место дня ушло из ленты далеко за край (её стопка его разобрала).
     /// Сколько мест дня сейчас собрано в ленте (P913). Лента пересобирается
@@ -668,24 +670,121 @@ final class Ribbon: ObservableObject {
         scroll.contentOffset.y = slotTop - target
     }
 
+    // MARK: - Покой у «Сегодня» по замеру места дня (P928)
+
+    private struct Rest {
+        var dir: Int
+        /// Сколько ещё раз можно перейти к месту дня.
+        var tries: Int
+        /// Сколько ещё раз можно поправить ленту по свежему замеру.
+        var fixes = 6
+        /// Сколько кадров подряд место дня стоит в покое; пусто — не стоит.
+        var calm: Int?
+        /// Сколько кадров уже ждём — предохранитель: дольше десяти секунд
+        /// кадровый счёт не живёт.
+        var ticks = 0
+        var then: [() -> Void]
+    }
+    private var restWant: Rest?
+    private var restLink: CADisplayLink?
+    /// Кадров без места дня.
+    private var restIdle = 0
+    /// Место дня замерено после последнего перехода к нему.
+    private var slotFresh = true
+
     /// Лента в покой без хода. Место дня собрано — ставится сразу. Нет —
-    /// лента сперва подводит его своим переходом к карточке; ставим, когда
-    /// переход улёгся, и ещё раз проверяем: переход мог доводить себя сам.
+    /// лента сперва подводит его своим переходом, и дальше — по событиям
+    /// (P928; вместо двух шагов по 0,35 с): пришёл свежий замер места дня —
+    /// лента ставится в покой; два кадра ничто его не оспорило — встала.
+    /// Места нет восемь кадров — переход ещё раз (ленивая стопка ставит
+    /// дальнее со второго раза, P906). Не нашлось вовсе — `then` всё равно
+    /// выполняется: ждать его дольше некому.
     func settle(_ dir: Int, then: (() -> Void)? = nil) {
-        if seen, !driving {
+        if seen, !driving, restWant == nil {
             place(restY(dir))
             then?()
             return
         }
-        home?()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
-            guard let self else { return }
-            self.place(self.restY(dir))
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                if abs(self.y - self.restY(dir)) > 2 { self.place(self.restY(dir)) }
-                then?()
-            }
+        // Прежняя просьба ещё в пути — её «потом» не теряется.
+        var want = restWant ?? Rest(dir: dir, tries: 6, then: [])
+        want.dir = dir
+        want.tries = 6
+        want.fixes = 6
+        want.calm = nil
+        if let then { want.then.append(then) }
+        restWant = want
+        restIdle = 0
+        if !seen {
+            slotFresh = false
+            home?()
         }
+        guard restLink == nil else { return }
+        let made = CADisplayLink(target: self, selector: #selector(restTick))
+        made.add(to: .main, forMode: .common)
+        restLink = made
+    }
+
+    @objc private func restTick() {
+        guard var want = restWant, let scroll = box.view else {
+            rested()
+            return
+        }
+        want.ticks += 1
+        guard want.ticks < 600 else {
+            Trace.note("лента: покоя не дождались — по последнему замеру")
+            giveUp(want.dir)
+            return
+        }
+        // Места дня ещё нет, его замер старый или ленту ведёт ход — ждём.
+        // Пока ведёт ход, попытки не тратятся: он кончится сам.
+        guard seen, known, slotFresh, !driving else {
+            want.calm = nil
+            if !driving { restIdle += 1 }
+            if restIdle >= 8 {
+                restIdle = 0
+                guard want.tries > 0 else {
+                    Trace.note("лента: место дня так и не собралось — по последнему замеру")
+                    giveUp(want.dir)
+                    return
+                }
+                want.tries -= 1
+                if !seen || !slotFresh {
+                    Trace.note("лента: места дня нет на экране — переход")
+                    home?()
+                }
+            }
+            restWant = want
+            return
+        }
+        let goal = restY(want.dir)
+        let miss = (slotTop - scroll.contentOffset.y) - goal
+        if abs(miss) > 0.5, want.fixes > 0 {
+            want.fixes -= 1
+            want.calm = nil
+            restWant = want
+            place(goal)
+            return
+        }
+        let calm = (want.calm ?? -1) + 1
+        want.calm = calm
+        restWant = want
+        if calm >= 1 { rested() }
+    }
+
+    /// Событий не дождались: лента встаёт по тому замеру, какой есть (если
+    /// место дня собрано), и «потом» выполняется.
+    private func giveUp(_ dir: Int) {
+        place(restY(dir))
+        rested()
+    }
+
+    private func rested() {
+        restLink?.invalidate()
+        restLink = nil
+        let then = restWant?.then ?? []
+        restWant = nil
+        slotFresh = true
+        for act in then { act() }
     }
 
     /// День — заново по месту в ленте (P878): после замороженного хода.
@@ -744,21 +843,12 @@ final class Ribbon: ObservableObject {
     func reset() {
         stop()
         driving = false
-        frozen = false
-        folding = false
         foldTo = nil
-        foldLanded = false
         landing.clear()
-        foldSide = 0
-        veiled = false
         done = nil
         unseat()
         flight.stop()
     }
-
-    /// Лента скрыта, пока пересобирается вокруг другого дня (P888: после
-    /// «Дневника» на глазах мелькали 1994 год и прошлое).
-    @Published var veiled = false
 
     /// Тяга кончилась или ход прерван: замеры снова ведут день.
     func release() {
@@ -836,12 +926,23 @@ final class RiseMove: ObservableObject {
 /// карточкой (`hover`), та опускается в ряд под следующую (`down`), и на
 /// ней проступает надпись (`done`).
 final class Landing: ObservableObject {
-    enum Stage { case none, away, hover, down, done }
+    /// `lost` — карточки в ленте не нашлось: схема тает у края (P928,
+    /// прежде это был отдельный флажок ленты `foldLanded`).
+    enum Stage { case none, away, hover, down, done, lost }
     @Published var id: String?
     @Published var stage: Stage = .none
     /// Насколько над гнездом карточка ждёт, прежде чем опуститься: выше
     /// нахлёста — следующая карточка её ещё не закрывает.
     static let lift: CGFloat = Search.overlap + 4
+
+    /// Схема своё отлетала: дальше садится сама карточка в своём ряду
+    /// (P895) — или садиться некуда.
+    var flown: Bool {
+        switch stage {
+        case .none, .away: return false
+        case .hover, .down, .done, .lost: return true
+        }
+    }
 
     /// Номер посадки (P923): шаги прежней, прерванной посадки по нему
     /// узнают, что они уже не к месту.

@@ -298,8 +298,9 @@ struct RibbonFade: ViewModifier {
         let shown: Double = !live || quiet ? 0 : card ? 1 : Double(min(1, abs(ribbon.y) / 90))
         content
             .opacity(shown)
-            // Пересобирается вокруг другого дня — не видна (P888).
-            .animation(.easeInOut(duration: 0.2)) { $0.opacity(ribbon.veiled ? 0 : 1) }
+            // Под садящейся карточкой проступает, когда лента встала (P913,
+            // P923): ступени посадки «летит» и «ждёт ленту».
+            .animation(.easeInOut(duration: 0.2)) { $0.opacity(ribbon.deck.isVeiled ? 0 : 1) }
     }
 }
 
@@ -334,7 +335,7 @@ struct TodayPeek: View {
         // «Сегодня» сам по себе — когда на листе не сегодня или листа нет.
         let alone = card || !todaySheet
         // С какой стороны: будущее — сверху, прошлое — снизу.
-        let above = future || (card && ribbon.foldSide < 0)
+        let above = future || (card && ribbon.deck.folding == .future)
         let aloneTop = alone && above
         let aloneBottom = alone && !above
         let shown = FollowRibbon.shown(live ? ribbon.y : 0, height: size.height)
@@ -425,26 +426,28 @@ struct TodayTop: View {
 /// тает над ней.
 struct FoldGhost: View {
     @ObservedObject var ribbon: Ribbon
-    let on: Bool
-    let live: Bool
+    /// Ступени посадки: схема видна, пока летит.
+    @ObservedObject var landing: Landing
     let size: CGSize
 
     var body: some View {
-        let folding = on && ribbon.folding
-        let top = FollowRibbon.shown(live ? ribbon.y : 0, height: size.height, stick: ribbon.stick)
+        // День закрывается в карточку — с какой он стороны от «Сегодня».
+        let side = ribbon.deck.folding
+        let folding = side != nil
+        let top = FollowRibbon.shown(ribbon.deck.isLive ? ribbon.y : 0, height: size.height, stick: ribbon.stick)
         // Будущий лист начинается под полоской «Сегодня» — и схема с него же (P913).
-        let under: CGFloat = ribbon.foldSide < 0 ? FollowRibbon.futureTop : 0
+        let under: CGFloat = side == .future ? FollowRibbon.futureTop : 0
         let start = CGRect(x: 0, y: top + under, width: size.width, height: size.height - under)
         let r = ribbon.foldTo ?? start
         // Из листа к гнезду — одним плавным движением (P895); ход задаёт
         // посадка (P923): по его концу она и узнаёт, что схема долетела.
-        FoldSchema(aged: ribbon.foldSide > 0)
+        FoldSchema(aged: side == .past)
             .frame(width: r.width, height: r.height)
             .offset(x: r.minX, y: r.minY)
             .frame(width: size.width, height: size.height, alignment: .topLeading)
             // Долетела — дальше садится сама карточка в своём ряду (P895):
             // схема над лентой уходит в тот же кадр, без таяния поверх.
-            .opacity(folding && !ribbon.foldLanded ? 1 : 0)
+            .opacity(folding && !landing.flown ? 1 : 0)
             // В полёте схема светлеет до той же прозрачности, с какой ляжет
             // на карточку (P906).
             .animation(ribbon.foldTo == nil ? nil : .easeIn(duration: SearchView.flight)) {
