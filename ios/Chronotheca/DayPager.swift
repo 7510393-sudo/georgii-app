@@ -900,7 +900,7 @@ struct PlanPage: View {
                        ghost: !isPast && !rows.contains { $0.isTask && PlanRow.blank($0) }) { number, e, under in
                 VStack(spacing: 0) {
                     PlanRowLine(number: number, row: e.row, faded: false, bellColor: bellColor,
-                                stripe: e.color, past: isPast)
+                                stripe: e.color.map { Color(cgColor: $0) }, past: isPast)
                     if let under, let line = under.verbatim {
                         PlanExtraLine(line: line, resolve: resolve)
                     }

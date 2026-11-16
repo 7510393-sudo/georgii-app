@@ -717,7 +717,7 @@ struct PlanView: View {
                         row: e.row,
                         faded: false,
                         bellColor: Look.accent,
-                        stripe: e.color,
+                        stripe: e.color.map { Color(cgColor: $0) },
                         onTime: { open(e) },
                         onBell: { open(e) },
                         onCheck: { checkEvent(e) },

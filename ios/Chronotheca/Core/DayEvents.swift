@@ -1,7 +1,8 @@
+import Foundation
 import EventKit
-import EventKitUI
-import SwiftUI
-import UIKit
+import CoreGraphics
+
+// Нижний слой (P970): без экрана; цвет календаря — CGColor, SwiftUI-цвет делает экран (P972).
 
 /// События Календаря iPhone в плане дня (P376).
 ///
@@ -47,7 +48,7 @@ enum DayEvents {
         /// Когда напомнит Календарь.
         let bell: String?
         let repeats: Bool
-        let color: Color
+        let color: CGColor
         let start: Date
         var id: String { key }
     }
@@ -73,7 +74,7 @@ enum DayEvents {
                         time: e.isAllDay || e.startDate < start ? nil : clock(e.startDate),
                         bell: bell(of: e),
                         repeats: e.hasRecurrenceRules,
-                        color: Color(cgColor: e.calendar.cgColor),
+                        color: e.calendar.cgColor,
                         start: e.startDate)
         }
         return list.sorted { a, b in
@@ -192,7 +193,7 @@ enum DayEvents {
     struct Shown: Identifiable, Equatable {
         let key: String
         var row: PlanRow
-        var color: Color?
+        var color: CGColor?
         var id: String { key }
 
         static func == (a: Shown, b: Shown) -> Bool { a.key == b.key && a.row == b.row }
@@ -220,35 +221,5 @@ enum DayEvents {
 
     static func marks(in rows: [PlanRow]) -> [Mark] {
         rows.compactMap { $0.verbatim.flatMap(Mark.parse) }
-    }
-}
-
-/// Событие Календаря в окне Apple: посмотреть, поправить время, название,
-/// напоминание или удалить. Правит сам Календарь — мы туда не пишем.
-struct EventSheet: UIViewControllerRepresentable {
-    let event: EKEvent
-    let done: () -> Void
-
-    func makeCoordinator() -> Coordinator { Coordinator(done: done) }
-
-    func makeUIViewController(context: Context) -> UINavigationController {
-        let view = EKEventViewController()
-        view.event = event
-        view.allowsEditing = true
-        view.allowsCalendarPreview = false
-        view.delegate = context.coordinator
-        return UINavigationController(rootViewController: view)
-    }
-
-    func updateUIViewController(_ controller: UINavigationController, context: Context) {}
-
-    final class Coordinator: NSObject, EKEventViewDelegate {
-        let done: () -> Void
-        init(done: @escaping () -> Void) { self.done = done }
-
-        func eventViewController(_ controller: EKEventViewController,
-                                 didCompleteWith action: EKEventViewAction) {
-            done()
-        }
     }
 }
