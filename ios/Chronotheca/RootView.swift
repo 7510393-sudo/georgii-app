@@ -365,12 +365,8 @@ struct RootView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
                 }
             }
-            if let notice = shell.notice {
-                toast(notice)
-                    // Над клавиатурой и полоской на ней, иначе не видно.
-                    .padding(.bottom, keyboard.height > 0 ? keyboard.height + 24 : 0)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-            }
+            // Сообщение человеку — своя плашка со своим состоянием (P933).
+            Toast(notices: shell.notices, keys: keyboard.height)
             // Перенос между памятью телефона и iCloud идёт минутами. Пока он
             // идёт, трогать записи нельзя: экран закрыт, и на нём видно, что
             // происходит и сколько осталось.
@@ -1260,21 +1256,5 @@ struct RootView: View {
         shell.ribbon.release()
         shell.ribbon.park()
         archive.reloadSoon()
-    }
-
-    // MARK: - Сообщение
-
-    private func toast(_ text: String) -> some View {
-        Text(text)
-            .font(.system(size: 13))
-            .foregroundStyle(Look.planBg)
-            .multilineTextAlignment(.center)
-            .padding(.horizontal, 15)
-            .padding(.vertical, 8)
-            .background(Look.ink, in: Capsule())
-            .padding(.horizontal, 24)
-            .padding(.bottom, 80)
-            .transition(.opacity)
-            .allowsHitTesting(false)
     }
 }

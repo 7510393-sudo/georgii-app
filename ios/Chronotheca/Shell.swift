@@ -300,21 +300,13 @@ final class Shell: ObservableObject {
     }
     @Published var find: Find = .all
 
-    @Published var notice: String?
-    private var hiding: DispatchWorkItem?
+    /// Короткие сообщения человеку (P933): своё состояние — показ и уход
+    /// сообщения не пересчитывают экран.
+    let notices = Notices()
 
     /// Сказать человеку, почему ничего не произошло.
-    ///
-    /// Молчаливый отказ — худшее, что может сделать приложение: человек решает,
-    /// что сломалось оно, хотя оно просто не даёт нарушить правило.
     func say(_ text: String, for seconds: Double = 2.3) {
-        hiding?.cancel()
-        withAnimation { notice = text }
-        let item = DispatchWorkItem { [weak self] in
-            withAnimation { self?.notice = nil }
-        }
-        hiding = item
-        DispatchQueue.main.asyncAfter(deadline: .now() + seconds, execute: item)
+        notices.say(text, for: seconds)
     }
 
     /// Открыть экран, названный в переменной окружения, — для снимков.
