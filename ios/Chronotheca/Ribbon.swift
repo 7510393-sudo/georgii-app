@@ -490,9 +490,8 @@ final class Ribbon: ObservableObject {
             let t = scroll.panGestureRecognizer.location(in: scroll.window ?? scroll).y
             if inside, anchor == nil {
                 anchor = t
-                // Дошли до листа «Сегодня» — лёгкий щелчок (P891); на пороге —
-                // толчок, как прежде.
-                Feel.tick()
+                // Дошли до листа «Сегодня» — без щелчка (P977, отменяет
+                // щелчок P891): отклик один — толчок на пороге.
             }
             if let a = anchor {
                 // Прошлое: день снизу, палец идёт вверх; будущее — вниз.
