@@ -19,6 +19,10 @@ enum DayTab: String, CaseIterable, Identifiable {
 /// пишет на диск; приходя на день — читает с диска. Никакой своей копии данных.
 final class DayStore: ObservableObject {
 
+    /// Положили снимок — весть для подсказок экрана (P970: нижний слой о
+    /// подсказках не знает, он только сообщает).
+    static let photoAdded = Notification.Name("chronotheca.photoAdded")
+
     /// День в прошлом: план такого дня выцветает целиком (решение P16),
     /// а дневник остаётся контрастным в любом возрасте.
     var isPast: Bool { date < DayStore.today() }
@@ -32,17 +36,17 @@ final class DayStore: ObservableObject {
     /// пока файл плана не скачан из iCloud.
     /// Месяц прошёл без покупки — писать новое нельзя, читать можно всегда
     /// (M14, P432).
-    var canEditPlan: Bool { !away.contains(.planner) && Purchase.canWrite && !Vault.newer }
+    var canEditPlan: Bool { !away.contains(.planner) && WriteLock.open && !Vault.newer }
 
     /// Дневник живёт назад: вчерашнее дописывают и через неделю (решение P63).
     /// А вот дня, который ещё не наступил, в дневнике не бывает.
-    var canEditDiary: Bool { !isFuture && !away.contains(.diary) && Purchase.canWrite && !Vault.newer }
+    var canEditDiary: Bool { !isFuture && !away.contains(.diary) && WriteLock.open && !Vault.newer }
 
     /// Ряд вложений внизу страницы — один на день и лежит в файле дневника
     /// (P961). Правится и в день, который ещё не наступил: текста дневника
     /// там нет, а вложения уже кладутся в его файл. Прежде в будущем дне они
     /// ложились рядом в конец файла плана (P203).
-    var canEditStrip: Bool { !away.contains(.diary) && Purchase.canWrite && !Vault.newer }
+    var canEditStrip: Bool { !away.contains(.diary) && WriteLock.open && !Vault.newer }
 
     /// Файлы дня, которые лежат, но не прочитались — чаще всего ещё не
     /// скачаны из iCloud. Писать в такой день нельзя: пустая страница на
@@ -731,7 +735,7 @@ final class DayStore: ObservableObject {
         guard canEditStrip, let link = vault.addPhoto(data, for: date) else { return false }
         if camera { CameraShots.mark(link) }
         attach(link)
-        Hints.shared.photoAdded()
+        NotificationCenter.default.post(name: DayStore.photoAdded, object: nil)
         return true
     }
 

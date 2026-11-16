@@ -37,11 +37,6 @@ final class Purchase: ObservableObject {
 
     private var listening: Task<Void, Never>?
 
-    /// Можно ли писать. Пока не известно — можно.
-    nonisolated static var canWrite: Bool {
-        UserDefaults.standard.object(forKey: lockedKey) as? Bool != true
-    }
-    nonisolated private static let lockedKey = "purchase.locked"
 
     enum State: Equatable {
         case owned
@@ -102,7 +97,7 @@ final class Purchase: ObservableObject {
         trialStart = started
         // Писать нельзя и пока пробный месяц не начат (P908): прежде, не
         // нажав «Начать бесплатный месяц», можно было писать без срока.
-        UserDefaults.standard.set(state == .expired || state == .notStarted, forKey: Self.lockedKey)
+        UserDefaults.standard.set(state == .expired || state == .notStarted, forKey: WriteLock.key)
         objectWillChange.send()
     }
 

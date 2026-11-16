@@ -84,6 +84,9 @@ final class Hints: ObservableObject {
         let d = UserDefaults.standard
         seen = Set(d.stringArray(forKey: Self.seenKey) ?? [])
         off = d.bool(forKey: Self.offKey)
+        // Первый снимок — весть от хранилища дня (P970).
+        NotificationCenter.default.addObserver(forName: DayStore.photoAdded, object: nil,
+                                               queue: nil) { [weak self] _ in self?.photoAdded() }
     }
 
     /// Следующая непоказанная подсказка этого экрана.
