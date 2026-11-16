@@ -87,8 +87,39 @@ struct SearchView: View {
             .onChange(of: query) { _, now in
                 if now.isEmpty && !typing { searching = false }
             }
+            // Насколько поднять страницу над клавиатурой поиска — оболочке (P931).
+            .onChange(of: pageLift, initial: true) { _, lift in
+                if shell.searchLift != lift { shell.searchLift = lift }
+            }
+            // Ушли из картотеки — клавиатура поиска уходит тоже (P931).
+            .onChange(of: shell.screen) { _, screen in
+                if screen != .search { typing = false }
+            }
             .onAppear { shell.ribbon.height = height }
             .onChange(of: height) { _, h in shell.ribbon.height = h }
+    }
+
+    /// Верх клавиатуры на экране.
+    private var keysTop: CGFloat {
+        let safe = UIApplication.shared.connectedScenes
+            .compactMap { ($0 as? UIWindowScene)?.keyWindow?.safeAreaInsets.bottom }.first ?? 0
+        return UIScreen.main.bounds.height - safe - keyboard
+    }
+
+    /// Насколько вся страница «Дня» поднята над клавиатурой поиска (P931,
+    /// автор по 298: «если найденных карточек одна или две, они полностью
+    /// закрыты клавиатурой — можно решить, что ничего не нашлось»). В
+    /// картотеке прошлого находки стоят у низа экрана, над корешком
+    /// «Сегодня», — как раз там, где клавиатура. Пока она поднята, страница
+    /// поднимается целиком — карточки, строка поиска, корешок «Сегодня» —
+    /// и встаёт низом на верх клавиатуры: тот же вид, что без клавиатуры,
+    /// только выше. Поднимает оболочка (`RootView.dayPage`): лист «Сегодня»
+    /// лежит у неё. В картотеке будущего находки у верха экрана —
+    /// поднимается одна строка поиска, как прежде.
+    private var pageLift: CGFloat {
+        guard keyboard > 0, shell.barTop > 0, shell.screen == .search,
+              shell.deck == .file(.past) else { return 0 }
+        return max(0, shell.barTop - keysTop)
     }
 
     /// Насколько поднять строку поиска над клавиатурой (P797): строка стоит
@@ -97,12 +128,10 @@ struct SearchView: View {
         // Без клавиатуры в картотеке прошлого строка стоит над корешком
         // «Сегодня» (P930, автор по 296: «наполовину скрыта за торчащей
         // снизу карточкой „Сегодня“»).
-        guard keyboard > 0, shell.barTop > 0 else {
+        // С клавиатурой в прошлом — там же: страница поднята целиком (P931).
+        guard keyboard > 0, shell.barTop > 0, pageLift == 0 else {
             return shell.deck.side == .past ? FollowRibbon.peekBottom : 0
         }
-        let safe = UIApplication.shared.connectedScenes
-            .compactMap { ($0 as? UIWindowScene)?.keyWindow?.safeAreaInsets.bottom }.first ?? 0
-        let keysTop = UIScreen.main.bounds.height - safe - keyboard
         return max(0, shell.barTop - keysTop + 4)
     }
 

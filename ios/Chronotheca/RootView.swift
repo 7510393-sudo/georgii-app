@@ -723,6 +723,13 @@ struct RootView: View {
                       card: shell.deck.isLanding, todaySheet: store.isToday,
                       future: store.isFuture, lifting: todayRise != 0, size: size) { riseToday() }
         }
+        // Клавиатура поиска в картотеке прошлого (P931): страница поднимается
+        // над ней целиком — находки стоят у низа экрана и были бы под
+        // клавиатурой. Стол остаётся на месте. Открыли найденную карточку —
+        // день встаёт сразу на своё место, без хода вниз.
+        .animation(shell.screen == .search ? .easeOut(duration: 0.25) : nil) {
+            $0.offset(y: shell.screen == .search && shell.deck.isFile ? -shell.searchLift : 0)
+        }
         .background(Desk())
     }
 

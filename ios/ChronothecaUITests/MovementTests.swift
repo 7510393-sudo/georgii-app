@@ -724,6 +724,50 @@ final class MovementTests: XCTestCase {
         save("03-свайп-с-клавиатурой")
     }
 
+    /// Найденные карточки стоят над клавиатурой (P931, автор по 298: «если
+    /// найденных карточек одна или две, они полностью закрыты клавиатурой»):
+    /// в картотеке прошлого набирают слово — нижняя находка видна над
+    /// клавиатурой; «Отменить» — картотека встаёт, как стояла.
+    func testFoundCardsAboveKeyboard() {
+        launch()
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2))
+            .press(forDuration: 0.05,
+                   thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.6)),
+                   withVelocity: .slow, thenHoldForDuration: 0.1)
+        XCTAssertTrue(wait(4) { openScreen == "search" }, "лента прошлого не открылась: \(openScreen)")
+        sleep(2)
+        let before = cards().map(\.top).max() ?? -1
+        let loupe = app.buttons.matching(NSPredicate(format: "label IN %@", ["Поиск", "Search"])).firstMatch
+        XCTAssertTrue(loupe.waitForExistence(timeout: 5), "лупы нет")
+        loupe.tap()
+        let keys = app.keyboards.firstMatch
+        XCTAssertTrue(keys.waitForExistence(timeout: 5), "клавиатура поиска не поднялась")
+        sleep(1)
+        // «22:05» — во вчерашней записи образцов.
+        app.typeText("22")
+        sleep(2)
+        save("27-поиск-находки-над-клавиатурой")
+        let keysTop = keys.frame.minY
+        let found = app.staticTexts.matching(NSPredicate(format: "label MATCHES %@", "^[0-9]{4} .*"))
+            .allElementsBoundByIndex.map { $0.frame.minY }.filter { $0 < keysTop + 200 }
+        note("поиск с клавиатурой", "верх клавиатуры \(Int(keysTop)), корешки находок: "
+             + found.map { "\(Int($0))" }.joined(separator: " "))
+        XCTAssertFalse(found.isEmpty, "по слову «22» ничего не нашлось")
+        if let low = found.max() {
+            XCTAssertLessThan(low + 60, keysTop, "нижняя находка под клавиатурой")
+        }
+        XCTAssertTrue((probe()["deck"] ?? "").hasPrefix("картотека"), "картотека закрылась: \(probe()["deck"] ?? "?")")
+        let cancel = app.buttons.matching(NSPredicate(format: "label IN %@", ["Отменить", "Cancel"])).firstMatch
+        XCTAssertTrue(cancel.waitForExistence(timeout: 3), "кнопки «Отменить» нет")
+        cancel.tap()
+        XCTAssertTrue(wait(5) { !keys.exists }, "клавиатура осталась после «Отменить»")
+        sleep(2)
+        let after = cards().map(\.top).max() ?? -1
+        note("поиск с клавиатурой", "нижняя карточка до поиска \(Int(before)), после «Отменить» \(Int(after))")
+        XCTAssertLessThan(abs(after - before), 6, "после поиска картотека встала не там, где была")
+        save("28-поиск-после-отмены")
+    }
+
     /// Вложения в конце записи — рядом внизу страницы (P665): снимок
     /// образца стоит в ряду, справа внизу — «＋», и её меню открывается.
     /// Вложение с нижней строки несут вверх, в текст (P958): лист за ним
