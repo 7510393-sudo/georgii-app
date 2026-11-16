@@ -57,6 +57,7 @@ struct ChronothecaApp: App {
                 .environmentObject(store)
                 .environmentObject(archive)
                 .environmentObject(shell)
+                .environmentObject(shell.map)
                 // Касание по виджету: chronotheca://today/plan или /diary —
                 // открыть сегодняшний день на этой вкладке (P382).
                 // Касание по виджету (P711): приложение открывается там, где

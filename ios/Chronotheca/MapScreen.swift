@@ -19,6 +19,9 @@ struct MapScreen: View {
     @EnvironmentObject private var store: DayStore
     @EnvironmentObject private var archive: Archive
     @EnvironmentObject private var shell: Shell
+    /// Что на карте: спутник или схема, свои места или записи, просьбы к
+    /// ней (P932) — отдельно от оболочки.
+    @EnvironmentObject private var mapState: MapState
 
     @State private var places: [Place] = []
     /// Выбранная точка: поставленная долгим нажатием, нажатое место или
@@ -56,10 +59,10 @@ struct MapScreen: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            NativeMap(places: shell.mapEntries ? [] : places, days: days,
-                      entries: shell.mapEntries ? entries : [],
+            NativeMap(places: mapState.entries ? [] : places, days: days,
+                      entries: mapState.entries ? entries : [],
                       selected: selected, focus: focus,
-                      satellite: shell.mapSatellite,
+                      satellite: mapState.satellite,
                       onLongPress: longPress, onPlace: choose, onDay: openDay,
                       onEntries: openEntries,
                       onSelected: { withAnimation { panel = .naming } },
@@ -125,7 +128,7 @@ struct MapScreen: View {
         // местах — только когда её открыли, а не когда собрали.
         .onAppear { if shell.screen == .map { opened() } }
         // Снимок CI «плашка точки» (P813): записанное место с открытой плашкой.
-        .onChange(of: shell.previewMapPoint) { _, _ in
+        .onChange(of: mapState.previewPoint) { _, _ in
             choose(Place(name: "Café on the corner",
                           coordinate: CLLocationCoordinate2D(latitude: 51.50135, longitude: -0.14189),
                           text: "Coffee with Anna", file: "preview.md"))
@@ -133,13 +136,13 @@ struct MapScreen: View {
         .onChange(of: shell.screen) { _, now in if now == .map { opened() } }
         // Карта ещё не ушла с экрана, а человек уже коснулся точки в
         // тексте, — плашка открывается и тогда.
-        .onChange(of: shell.mapFocus) { _, point in
+        .onChange(of: mapState.focus) { _, point in
             if let point { show(point) }
         }
         // Из меню карты: все места разом и список мест (P249).
-        .onChange(of: shell.mapShowAll) { _, _ in showAll() }
+        .onChange(of: mapState.showAll) { _, _ in showAll() }
         // Второе нажатие на «Карту» — к тому месту, где вы сейчас (P577).
-        .onChange(of: shell.mapHome) { _, _ in
+        .onChange(of: mapState.home) { _, _ in
             hideKeyboard()
             Locator.shared.current { location in
                 guard let at = location?.coordinate else {
@@ -149,9 +152,9 @@ struct MapScreen: View {
                 focus = MapFocus(center: at, meters: 2000)
             }
         }
-        .sheet(isPresented: $shell.mapList) {
+        .sheet(isPresented: $mapState.list) {
             PlacesList(places: places) { place in
-                shell.mapList = false
+                mapState.list = false
                 choose(place)
                 focus = MapFocus(center: place.coordinate, meters: 1500)
             }
@@ -162,10 +165,6 @@ struct MapScreen: View {
                 openDay(date)
             }
         }
-        .onChange(of: selected) { _, now in
-            shell.mapPoint = now.map { GeoPoint(title: $0.name, at: $0.coordinate) }
-        }
-        .onDisappear { shell.mapPoint = nil }
     }
 
     /// Точек дней на карте больше нет (P294): на карте — только свои
@@ -210,7 +209,7 @@ struct MapScreen: View {
     /// Долгое нажатие ставит свою точку — только в «Моих местах»: на карте
     /// записей своих мест не видно, и новая булавка там сбивала бы.
     private func longPress(_ at: CLLocationCoordinate2D) {
-        guard shell.mapEntries else { return pick(at) }
+        guard mapState.entries else { return pick(at) }
         shell.say(T("Свои точки ставятся в «Моих местах» — переключатель справа сверху.",
                     "You add your own places in “My places” — the switch at the top right."))
     }
@@ -245,9 +244,9 @@ struct MapScreen: View {
 
             Button {
                 Feel.light()
-                shell.mapSatellite.toggle()
+                mapState.satellite.toggle()
             } label: {
-                Image(systemName: shell.mapSatellite ? "map" : "globe.europe.africa.fill")
+                Image(systemName: mapState.satellite ? "map" : "globe.europe.africa.fill")
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(Look.accent)
                     .frame(width: MapSide.button, height: MapSide.button)
@@ -256,15 +255,15 @@ struct MapScreen: View {
                     .shadow(color: .black.opacity(0.18), radius: 3, x: 1.5, y: 1.5)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(shell.mapSatellite ? T("Показать схему", "Show the map")
+            .accessibilityLabel(mapState.satellite ? T("Показать схему", "Show the map")
                                                    : T("Показать спутник", "Show satellite"))
 
             // Все места — кнопкой на карте (P632; прежде в меню уголка).
             Menu {
-                Button { shell.mapShowAll += 1 } label: {
+                Button { mapState.showAll += 1 } label: {
                     Label(T("Показать все мои места", "Show all my places"), systemImage: "map")
                 }
-                Button { shell.mapList = true } label: {
+                Button { mapState.list = true } label: {
                     Label(T("Все места списком", "All places as a list"), systemImage: "list.bullet")
                 }
             } label: {
@@ -283,7 +282,7 @@ struct MapScreen: View {
     }
 
     private func sideMode(entries on: Bool, icon: String, label: String) -> some View {
-        let chosen = shell.mapEntries == on
+        let chosen = mapState.entries == on
         return Button {
             guard !chosen else { return }
             Feel.light()
@@ -293,7 +292,7 @@ struct MapScreen: View {
                 withAnimation { panel = nil }
                 selected = nil
             }
-            shell.mapEntries = on
+            mapState.entries = on
             if on, archive.withPoints.isEmpty {
                 shell.say(T("На карте пока нет записей: поставьте точку в тексте дня — и день появится здесь.",
                             "No entries on the map yet: add a place to a day's text and the day will appear here."))
@@ -380,7 +379,7 @@ struct MapScreen: View {
         places = Places.known
         Places.loadSoon(vault) { places = $0 }
         if begun {
-            if let point = shell.mapFocus { show(point) }
+            if let point = mapState.focus { show(point) }
             return
         }
         begun = true
@@ -391,7 +390,7 @@ struct MapScreen: View {
     /// человек сейчас. Разрешение на место просится здесь, по его жесту.
     private func begin() {
         // Опись проверяет само нажатие на «Карту» (P579) — второй раз незачем.
-        if let point = shell.mapFocus {
+        if let point = mapState.focus {
             show(point)
         } else if Vault.isPreview {
             // Снимок карты (P534): все свои места разом, без вопроса о месте.
@@ -408,7 +407,7 @@ struct MapScreen: View {
     /// Точка из плана или дневника: карта на ней, и сразу плашка — название,
     /// что там было, координаты (P213, P352).
     private func show(_ point: GeoPoint) {
-        shell.mapFocus = nil
+        mapState.focus = nil
         let known = places.first { near($0.coordinate, point.at) }
         selected = known ?? Place(name: point.title, coordinate: point.at)
         panel = .naming

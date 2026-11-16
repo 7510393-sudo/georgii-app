@@ -987,7 +987,7 @@ struct RootView: View {
                 // Кнопки «Поиск» больше нет (P773).
                 return
             case .map:
-                shell.mapHome += 1
+                shell.map.home += 1
                 return
             }
         }

@@ -46,8 +46,6 @@ final class Shell: ObservableObject {
     /// Счётчик, а не да/нет: экран для снимка ставится трижды, и записи к
     /// первому разу могут быть ещё не прочитаны.
     @Published var previewRemember = 0
-    /// Снимок плашки точки на карте (P813): растёт — карта открывает плашку.
-    @Published var previewMapPoint = 0
 
     /// Снимки для App Store (P530): без стрелок шага над страницей — на
     /// дневнике они ложатся на строку плана.
@@ -75,29 +73,18 @@ final class Shell: ObservableObject {
     }
     @Published var openedPhoto: OpenedPhoto?
 
-    /// Точка, на которой открыть карту: её нажали в тексте дня (P213).
-    @Published var mapFocus: GeoPoint?
-    /// Точка, выбранная сейчас на карте. По ней работают «в навигатор» и
-    /// «скопировать» — и в полоске карты, и в её меню (P219).
-    @Published var mapPoint: GeoPoint?
-    /// Карта снимком со спутника, а не схемой (P222). Выбор запоминается
-    /// (P419): открыли карту снова — она такая, какой её оставили.
-    @Published var mapSatellite = UserDefaults.standard.bool(forKey: "map.satellite") {
-        didSet { UserDefaults.standard.set(mapSatellite, forKey: "map.satellite") }
-    }
     /// Показать приветствие первого запуска для пробы (P452).
     @Published var trialWelcome = false
-    /// Карта показывает записи — дни с точками, превью и числом, — а не
-    /// свои места (P451). Выбор запоминается, как спутник.
-    @Published var mapEntries = UserDefaults.standard.bool(forKey: "map.entries") {
-        didSet { UserDefaults.standard.set(mapEntries, forKey: "map.entries") }
-    }
+
+    /// Что на карте (P932): своё состояние — его смотрит одна карта, и
+    /// смена спутника или списка мест не пересчитывает «День».
+    let map = MapState()
 
     /// Открыть карту на точке из текста.
     func showPoint(_ point: GeoPoint) {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder),
                                         to: nil, from: nil, for: nil)
-        mapFocus = point
+        map.focus = point
         screen = .map
     }
     @Published var showingSettings = false
@@ -313,13 +300,6 @@ final class Shell: ObservableObject {
     }
     @Published var find: Find = .all
 
-    /// Просьбы к карте из её меню: показать все места, открыть список мест.
-    @Published var mapShowAll = 0
-    /// Второе нажатие на «Карту» — карта к тому месту, где человек сейчас
-    /// (P577).
-    @Published var mapHome = 0
-    @Published var mapList = false
-
     @Published var notice: String?
     private var hiding: DispatchWorkItem?
 
@@ -373,7 +353,7 @@ final class Shell: ObservableObject {
         case "search", "searchdeep": screen = .search
         case "settings":  showingSettings = true
         case "map":       screen = .map
-        case "mappoint":  screen = .map; previewMapPoint += 1
+        case "mappoint":  screen = .map; map.previewPoint += 1
         // Окно «Время» (P874) — у первого дела с временем, иначе у первого.
         case "roller":
             let first = store.tasks.first { $0.time != nil } ?? store.tasks.first
