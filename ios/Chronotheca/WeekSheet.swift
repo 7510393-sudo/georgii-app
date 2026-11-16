@@ -30,7 +30,7 @@ struct WeekSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(T("Закрыть", "Close")) { shell.showingWeek = false }
+                    Button(T("Закрыть", "Close")) { shell.overlays.showingWeek = false }
                 }
             }
         }
@@ -60,7 +60,7 @@ struct WeekSheet: View {
         let tasks = (day?.tasks ?? []).filter { $0.isTask }
         let done = tasks.filter(\.done).count
         return Button {
-            shell.showingWeek = false
+            shell.overlays.showingWeek = false
             store.go(to: date)
             shell.landOnDiary = false
             shell.landing += 1

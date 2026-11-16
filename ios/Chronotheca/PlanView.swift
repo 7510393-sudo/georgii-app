@@ -244,7 +244,7 @@ struct PlanView: View {
                     holdMenu = nil
                     Feel.paper()
                     withAnimation(.pull) {
-                        shell.movingTask = MovingTask(id: id, title: store.planRows[i].text)
+                        shell.overlays.movingTask = MovingTask(id: id, title: store.planRows[i].text)
                     }
                 }
                 Button(T("Удалить", "Delete"), role: .destructive) {
@@ -383,7 +383,7 @@ struct PlanView: View {
     private func extraLine(id: UUID, line: String) -> some View {
         PlanExtraLine(line: line, resolve: store.photoURL,
                       open: { url in
-                          shell.openedPhoto = .init(index: -1, url: url)
+                          shell.overlays.openedPhoto = .init(index: -1, url: url)
                       },
                       openPoint: { shell.showPoint($0) },
                       onCarry: store.canEditPlan
@@ -610,7 +610,7 @@ struct PlanView: View {
             } else if by >= Self.swipe {
                 Feel.paper()
                 withAnimation(.pull) {
-                    shell.movingTask = MovingTask(id: id, title: row.wrappedValue.text)
+                    shell.overlays.movingTask = MovingTask(id: id, title: row.wrappedValue.text)
                 }
             }
         }
@@ -1110,7 +1110,7 @@ struct PlanView: View {
         // способа ввода разом на экране не помещаются, и человеку пришлось
         // бы сперва убирать клавиатуру самому (решение P176).
         hideKeyboard()
-        shell.roller = .init(id: id)
+        shell.overlays.roller = .init(id: id)
     }
 
     private func toggle(_ row: Binding<PlanRow>) {

@@ -14,6 +14,9 @@ struct RootView: View {
     @EnvironmentObject private var store: DayStore
     @EnvironmentObject private var archive: Archive
     @EnvironmentObject private var shell: Shell
+    /// Листки поверх «Дня» (P963): их открытие пересчитывает только эту
+    /// оболочку, а не страницу и картотеку.
+    @EnvironmentObject private var overlays: Overlays
 
     /// Карта ещё на плашке, пока та уезжает (P242).
     /// Карта собрана заранее, в стороне, вскоре после запуска (P581): на
@@ -95,9 +98,9 @@ struct RootView: View {
 
     /// Снимок, видео, документ — во весь экран; голос — нет, он шторкой
     /// (P360).
-    private var coverShown: Binding<Shell.OpenedPhoto?> {
-        Binding(get: { shell.openedPhoto.flatMap { VoiceShown.isVoice($0, store) ? nil : $0 } },
-                set: { shell.openedPhoto = $0 })
+    private var coverShown: Binding<Overlays.OpenedPhoto?> {
+        Binding(get: { overlays.openedPhoto.flatMap { VoiceShown.isVoice($0, store) ? nil : $0 } },
+                set: { overlays.openedPhoto = $0 })
     }
 
     /// Имя корзины, как его видно в «Файлах»: «Trash» или прежнее
@@ -180,7 +183,7 @@ struct RootView: View {
         }
         .preferredColorScheme(scheme)
         // Проба первого запуска из настроек (P452).
-        .fullScreenCover(isPresented: $shell.trialWelcome) {
+        .fullScreenCover(isPresented: $overlays.trialWelcome) {
             WelcomeView(trial: true)
                 .environmentObject(vault)
                 .environmentObject(shell)
@@ -195,7 +198,7 @@ struct RootView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 6) { SettingsSticker.warm(vault.root) }
         }
         .sheet(isPresented: $purchase.asking) { PurchaseSheet(purchase: purchase) }
-        .fileImporter(isPresented: $shell.picking, allowedContentTypes: [.folder]) { result in
+        .fileImporter(isPresented: $overlays.picking, allowedContentTypes: [.folder]) { result in
             if case .success(let url) = result {
                 vault.adopt(url)
                 store.load()
@@ -316,11 +319,11 @@ struct RootView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .overlay(alignment: .topTrailing) {
                     ZStack(alignment: .topTrailing) {
-                        if let m = shell.movingTask {
+                        if let m = overlays.movingTask {
                             MoveDaySticker(task: m)
                                 .transition(.move(edge: .top).combined(with: .opacity))
                         }
-                        if shell.showingSettings {
+                        if overlays.showingSettings {
                             SettingsSticker().frame(maxWidth: .infinity, alignment: .topTrailing)
                         }
                     }
@@ -333,8 +336,8 @@ struct RootView: View {
             // Подсказки для первого знакомства (P427) — поверх всего, когда
             // экран спокоен.
             HintLayer(screen: shell.screen,
-                      quiet: !shell.showingSettings
-                          && shell.movingTask == nil && keyboard.height == 0
+                      quiet: !overlays.showingSettings
+                          && overlays.movingTask == nil && keyboard.height == 0
                           && vault.moving == nil)
             // Для проверок движения (P552): какой день открыт — невидимой
             // строкой, только когда приложение запустила проверка.
@@ -425,7 +428,7 @@ struct RootView: View {
                                 guard let k = store.photos.firstIndex(of: all[i]), store.canEditStrip
                                 else { return nil }
                                 return { delete in
-                                    shell.openedPhoto = nil
+                                    overlays.openedPhoto = nil
                                     shell.say(store.removeAttachment(at: k, delete: delete))
                                 }
                             },
@@ -435,10 +438,10 @@ struct RootView: View {
                                 guard store.canEditDiary, !store.photos.contains(one) else { return nil }
                                 return {
                                     store.moveToEnd(one)
-                                    shell.openedPhoto = nil
+                                    overlays.openedPhoto = nil
                                 }
                             },
-                            close: { shell.openedPhoto = nil })
+                            close: { overlays.openedPhoto = nil })
             // Видео и файл из ленты — листаются по ленте, как прежде (P278).
             } else if opened.url == nil, links.indices.contains(opened.index) {
                 StripViewer(count: links.count, start: opened.index,
@@ -446,29 +449,29 @@ struct RootView: View {
                             remove: { i in
                                 guard store.canEditStrip else { return nil }
                                 return { delete in
-                                    shell.openedPhoto = nil
+                                    overlays.openedPhoto = nil
                                     shell.say(store.removeAttachment(at: i, delete: delete))
                                 }
                             },
-                            close: { shell.openedPhoto = nil })
+                            close: { overlays.openedPhoto = nil })
             } else {
             AttachmentViewer(
                 url: opened.url ?? (links.indices.contains(opened.index)
                     ? store.photoURL(links[opened.index]) : nil),
                 onRemove: opened.url == nil && store.canEditStrip ? { delete in
-                    shell.openedPhoto = nil
+                    overlays.openedPhoto = nil
                     shell.say(store.removeAttachment(at: opened.index, delete: delete))
                 } : nil,
                 // Снимок из текста — в конец записи (P216, P620).
                 onReturn: opened.link != nil && store.canEditDiary ? {
                     if let link = opened.link { store.moveToEnd(link) }
-                    shell.openedPhoto = nil
+                    overlays.openedPhoto = nil
                 } : nil,
-                close: { shell.openedPhoto = nil })
+                close: { overlays.openedPhoto = nil })
             }
         }
-        .sheet(isPresented: $shell.showingFile) { FileSheet() }
-        .sheet(isPresented: $shell.showingWeek) { WeekSheet() }
+        .sheet(isPresented: $overlays.showingFile) { FileSheet() }
+        .sheet(isPresented: $overlays.showingWeek) { WeekSheet() }
         .confirmationDialog(trashTitle,
                             isPresented: $shell.trashAsk, titleVisibility: .visible) {
             Button(T("Убрать в корзину", "Move to trash"), role: .destructive) {
@@ -486,7 +489,7 @@ struct RootView: View {
         } message: {
             Text(trashMessage)
         }
-        .sheet(item: $shell.roller) { RollerSheet(roller: $0) }
+        .sheet(item: $overlays.roller) { RollerSheet(roller: $0) }
         // Две версии дня сложены в одну (P570) — сказать.
         .onChange(of: store.syncNotice) { _, _ in
             shell.say(T("Запись дополнена тем, что было записано на другом устройстве",
@@ -554,17 +557,16 @@ struct RootView: View {
             // корешок с его датой, как у карточек.
             Spacer(minLength: 0)
             Button {
-                if closeDrawer() { return }
                 // Открытая клавиатура и строка над ней не должны мешать
                 // листку настроек — убираются вниз, как при касании по
                 // точке на карте (P309).
                 hideKeyboard()
-                shell.pullOut()
+                overlays.pullOut()
             } label: {
                 Corner(icon: "gearshape",
-                       tint: shell.showingSettings ? Look.accent : Look.inkSoft)
+                       tint: overlays.showingSettings ? Look.accent : Look.inkSoft)
                     // Пока листок вытянут, его угол — это и есть уголок.
-                    .opacity(shell.showingSettings ? 0 : 1)
+                    .opacity(overlays.showingSettings ? 0 : 1)
             }
             .buttonStyle(.plain)
             // Уголок тянут вниз, и бумажка идёт за пальцем (P233).
@@ -576,25 +578,25 @@ struct RootView: View {
 
     /// Бумажку вытягивают за уголок: она идёт за пальцем; отпустили,
     /// протянув заметно, — доезжает сама, иначе уезжает обратно (P233).
-    private func pull(_ showing: ReferenceWritableKeyPath<Shell, Bool>,
-                      _ amount: ReferenceWritableKeyPath<Shell, CGFloat?>) -> some Gesture {
+    private func pull(_ showing: ReferenceWritableKeyPath<Overlays, Bool>,
+                      _ amount: ReferenceWritableKeyPath<Overlays, CGFloat?>) -> some Gesture {
         DragGesture(minimumDistance: 6)
             .onChanged { drag in
                 var still = Transaction()
                 still.disablesAnimations = true
                 withTransaction(still) {
-                    if !shell[keyPath: showing] {
-                        shell[keyPath: showing] = true
+                    if !overlays[keyPath: showing] {
+                        overlays[keyPath: showing] = true
                         hideKeyboard()
                     }
-                    shell[keyPath: amount] = max(0, 1 - max(0, drag.translation.height) / 420)
+                    overlays[keyPath: amount] = max(0, 1 - max(0, drag.translation.height) / 420)
                 }
             }
             .onEnded { drag in
                 if drag.translation.height > 90 || drag.predictedEndTranslation.height > 220 {
-                    shell.pullOut()
+                    overlays.pullOut()
                 } else {
-                    shell.tuckIn()
+                    overlays.tuckIn()
                 }
             }
     }
@@ -781,8 +783,8 @@ struct RootView: View {
     @State private var todayRise = 0
 
     private var pagingFree: Bool {
-        !shell.deck.isPulled && !shell.holding && !shell.showingSettings && shell.settingsPull == nil
-            && shell.movingTask == nil && shell.drawer == nil && shell.screen != .map
+        !shell.deck.isPulled && !shell.holding && !overlays.showingSettings && overlays.settingsPull == nil
+            && overlays.movingTask == nil && shell.screen != .map
             && vault.moving == nil
     }
 
@@ -933,13 +935,10 @@ struct RootView: View {
     /// Касание по разделу — внизу экрана или в строке над клавиатурой
     /// (P423): одно и то же.
     private func tapSection(_ target: Shell.Screen) {
-        // Открыта шторка «Подробности» — первое касание только убирает
-        // её, второе уже открывает раздел (P342).
-        if closeDrawer() { return }
         // Открыты настройки — касание по нижней строке только убирает их
         // (P656, P659); раздел открывает уже следующее касание.
-        if shell.showingSettings {
-            shell.tuckIn()
+        if overlays.showingSettings {
+            overlays.tuckIn()
             return
         }
         store.prune()
@@ -1049,18 +1048,6 @@ struct RootView: View {
         .accessibilityIdentifier("bottom.\(target)")
         // Долгого нажатия у кнопок нет (P492): действия дня — в меню на трёх
         // точках; системное меню задерживало и обычное касание.
-    }
-
-    /// Убрать шторку «Подробности», если открыта.
-    /// Касание мимо них — по разделам внизу или по уголкам — сперва
-    /// закрывает их, как и касание по странице (P342, P344). `true` —
-    /// что-то убрали, больше ничего делать не надо.
-    private func closeDrawer() -> Bool {
-        guard shell.drawer != nil else { return false }
-        hideKeyboard()
-        store.save()
-        withAnimation(.easeOut(duration: 0.26)) { shell.drawer = nil }
-        return true
     }
 
     /// Открыть раздел: плашка надвигается на книгу, книга остаётся на месте.

@@ -219,10 +219,10 @@ struct DayPage: View {
     }
 
     @ViewBuilder private var dayActions: some View {
-        Button { shell.showingFile = true } label: {
+        Button { shell.overlays.showingFile = true } label: {
             Label(T("Показать файл этого дня", "Show this day’s file"), systemImage: "doc.text")
         }
-        Button { shell.showingWeek = true } label: {
+        Button { shell.overlays.showingWeek = true } label: {
             Label(T("Неделя одним взглядом", "The week at a glance"), systemImage: "calendar")
         }
         Button {
@@ -379,7 +379,7 @@ struct DayPage: View {
                          // записанные дни после него. В сегодня — повторное
                          // касание «Дневника».
                          let ribbon = shell.ribbon
-                         guard shell.screen == .today, shell.movingTask == nil, shell.deck.isPulled else {
+                         guard shell.screen == .today, shell.overlays.movingTask == nil, shell.deck.isPulled else {
                              if ribbon.inHand {
                                  // Лист несли рукой (P923) — он просто на место.
                                  ribbon.lifting.stop()
@@ -443,7 +443,7 @@ struct DayPage: View {
                          }
                      },
                      onPullMove: { [shell, store] amount, dir in
-                         guard shell.screen == .today, shell.movingTask == nil else { return }
+                         guard shell.screen == .today, shell.overlays.movingTask == nil else { return }
                          let ribbon = shell.ribbon
                          // Не сегодняшний лист несут рукой (P923): он идёт
                          // за пальцем сам, ленту под собой не двигает — она

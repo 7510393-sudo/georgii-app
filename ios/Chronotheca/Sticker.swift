@@ -12,7 +12,7 @@ enum StickerSide { case leading, trailing }
 
 struct Sticker<Content: View>: View {
 
-    @EnvironmentObject private var shell: Shell
+    @EnvironmentObject private var overlays: Overlays
     /// «Ретро» выключено (P737): прежний белый листок.
     @AppStorage(Prefs.plainPast) private var plainPast = false
 
@@ -45,7 +45,7 @@ struct Sticker<Content: View>: View {
 
     /// Насколько листок ещё за краем: 1 — торчит один угол, 0 — весь виден.
     private var amount: CGFloat {
-        shell.settingsPull ?? 0
+        overlays.settingsPull ?? 0
     }
 
     private var sheet: some View {

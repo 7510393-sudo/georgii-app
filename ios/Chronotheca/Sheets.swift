@@ -105,7 +105,7 @@ struct SettingsSticker: View {
                 }
             }
         }
-        .onAppear { shell.startPull() }
+        .onAppear { shell.overlays.startPull() }
         .sheet(isPresented: $showingPDF) {
             PDFSheet(vault: vault, archive: archive)
         }
@@ -125,7 +125,7 @@ struct SettingsSticker: View {
                             titleVisibility: .visible) {
             Button(T("Начать пробу", "Start the trial")) {
                 close()
-                shell.trialWelcome = true
+                shell.overlays.trialWelcome = true
             }
             Button(T("Отмена", "Cancel"), role: .cancel) { }
         } message: {
@@ -138,7 +138,7 @@ struct SettingsSticker: View {
             // её вместе с приложением (P366).
             Button(T("Выбрать папку…", "Choose a folder…")) {
                 close()
-                shell.picking = true
+                shell.overlays.picking = true
             }
             Button(T("Отмена", "Cancel"), role: .cancel) { }
         } message: {
@@ -592,7 +592,7 @@ struct SettingsSticker: View {
     }
 
     private func close() {
-        shell.tuckIn()
+        shell.overlays.tuckIn()
     }
 }
 
@@ -693,7 +693,7 @@ enum Build {
 /// по-прежнему точным временем «(напомнить ЧЧ:ММ)».
 struct RollerSheet: View {
 
-    let roller: Shell.Roller
+    let roller: Overlays.Roller
 
     @EnvironmentObject private var store: DayStore
     @EnvironmentObject private var shell: Shell
@@ -871,7 +871,7 @@ struct RollerSheet: View {
                 }
             }
         }
-        shell.roller = nil
+        shell.overlays.roller = nil
     }
 }
 
@@ -986,7 +986,7 @@ struct FileSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(T("Закрыть", "Close")) { shell.showingFile = false }
+                    Button(T("Закрыть", "Close")) { shell.overlays.showingFile = false }
                 }
             }
         }
@@ -1060,7 +1060,7 @@ struct WelcomeView: View {
                     .multilineTextAlignment(.center)
 
                 if trial {
-                    Button(T("Отмена", "Cancel")) { shell.trialWelcome = false }
+                    Button(T("Отмена", "Cancel")) { shell.overlays.trialWelcome = false }
                         .font(.footnote)
                 } else {
                     Button(T("Выбрать папку самому", "Choose a folder myself")) {
@@ -1099,7 +1099,7 @@ struct WelcomeView: View {
         if trial {
             vault.startTrial()
             Hints.shared.startOver()
-            shell.trialWelcome = false
+            shell.overlays.trialWelcome = false
             shell.startOver(store)
             archive.reload()
             starting = false
@@ -1125,7 +1125,7 @@ struct WelcomeView: View {
             // пропали бы от одного неосторожного касания. Своя папка
             // остаётся, что бы ни случилось с приложением.
             Button {
-                shell.picking = true
+                shell.overlays.picking = true
             } label: {
                 Text(T("Папка в iCloud Drive", "A folder in iCloud Drive")).frame(maxWidth: .infinity)
             }
@@ -1140,7 +1140,7 @@ struct WelcomeView: View {
                     + "only your own devices can read it."))
 
             Button {
-                shell.picking = true
+                shell.overlays.picking = true
             } label: {
                 Text(T("Папка на этом iPhone", "A folder on this iPhone")).frame(maxWidth: .infinity)
             }

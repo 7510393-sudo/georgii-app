@@ -100,19 +100,19 @@ struct CornerShape: Shape {
 /// Голосовая запись открывается небольшой шторкой снизу: имя, ход
 /// записи, «играть» и «убрать» — весь экран ей ни к чему (P360).
 struct VoiceShown: ViewModifier {
-    @EnvironmentObject private var shell: Shell
+    @EnvironmentObject private var overlays: Overlays
     @EnvironmentObject private var store: DayStore
 
-    static func isVoice(_ opened: Shell.OpenedPhoto, _ store: DayStore) -> Bool {
+    static func isVoice(_ opened: Overlays.OpenedPhoto, _ store: DayStore) -> Bool {
         let links = store.photos
         let name = opened.url?.lastPathComponent
             ?? (links.indices.contains(opened.index) ? links[opened.index] : "")
         return Diary.kind(of: name) == .audio
     }
 
-    private var shown: Binding<Shell.OpenedPhoto?> {
-        Binding(get: { shell.openedPhoto.flatMap { Self.isVoice($0, store) ? $0 : nil } },
-                set: { shell.openedPhoto = $0 })
+    private var shown: Binding<Overlays.OpenedPhoto?> {
+        Binding(get: { overlays.openedPhoto.flatMap { Self.isVoice($0, store) ? $0 : nil } },
+                set: { overlays.openedPhoto = $0 })
     }
 
     func body(content: Content) -> some View {
@@ -125,7 +125,7 @@ struct VoiceShown: ViewModifier {
 }
 
 struct VoiceSheet: View {
-    let opened: Shell.OpenedPhoto
+    let opened: Overlays.OpenedPhoto
     @EnvironmentObject private var shell: Shell
     @EnvironmentObject private var store: DayStore
 
@@ -139,7 +139,7 @@ struct VoiceSheet: View {
         AttachmentViewer(
             url: url,
             onRemove: opened.url == nil && store.canEditStrip ? { remove($0) } : nil,
-            close: { shell.openedPhoto = nil },
+            close: { shell.overlays.openedPhoto = nil },
             // Под делом плана голос открыт по месту (`url`) — расшифровка
             // ложится в запись только у голоса из ряда или из текста.
             onTranscript: store.canEditDiary && link != nil
@@ -154,7 +154,7 @@ struct VoiceSheet: View {
     }
 
     private func remove(_ delete: Bool) {
-        shell.openedPhoto = nil
+        shell.overlays.openedPhoto = nil
         shell.say(store.removeAttachment(at: opened.index, delete: delete))
     }
 }

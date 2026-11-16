@@ -26,8 +26,6 @@ final class Shell: ObservableObject {
     @Published var holding = false
     @Published var tab: Tab = .plan
 
-    /// Дело, чья шторка «Подробности» открыта.
-    @Published var drawer: UUID?
     /// Над каким делом плана несут снимок или точку из дневника или из
     /// полоски (P409): дело обведено синим, под ним расступается место.
     struct PlanHover: Equatable {
@@ -52,29 +50,10 @@ final class Shell: ObservableObject {
     static let appStoreShots = Vault.isPreview
         && ProcessInfo.processInfo.environment["CHRONOTHECA_APPSTORE"] == "1"
 
-    /// Дело, которому выбирают время, напоминание и повтор (P872).
-    @Published var roller: Roller?
-
-    struct Roller: Identifiable {
-        let id: UUID
-    }
-
-    /// Снимок, открытый во весь экран: который по счёту в ряду внизу
-    /// страницы (ряд один и лежит в файле дневника, P961); `-1` — не из ряда.
-    struct OpenedPhoto: Identifiable {
-        let index: Int
-        /// Снимок, стоящий посреди страницы, а не в полоске: открывается
-        /// прямо по месту, без «убрать» (P205).
-        var url: URL? = nil
-        /// Строка-ссылка снимка из текста: по ней он возвращается в
-        /// полоску (P216).
-        var link: String? = nil
-        var id: String { String(index) + (url?.path ?? "") }
-    }
-    @Published var openedPhoto: OpenedPhoto?
-
-    /// Показать приветствие первого запуска для пробы (P452).
-    @Published var trialWelcome = false
+    /// Листки и окна поверх «Дня» (P963): своё состояние — открытие
+    /// настроек, недели, окна «Время» или снимка не пересчитывает ни
+    /// «День», ни картотеку; смотрит его сама оболочка экрана.
+    let overlays = Overlays()
 
     /// Что на карте (P932): своё состояние — его смотрит одна карта, и
     /// смена спутника или списка мест не пересчитывает «День».
@@ -87,68 +66,6 @@ final class Shell: ObservableObject {
         map.focus = point
         screen = .map
     }
-    @Published var showingSettings = false
-    /// Дело отвели вправо — листок «На другой день» (P383, P387).
-    @Published var movingTask: MovingTask?
-    /// Бумажку тянут за уголок: сколько её ещё за краем, 1 — вся, 0 — на
-    /// месте. Пусто — никто не тянет (P233).
-    @Published var settingsPull: CGFloat?
-
-    /// Вытянуть листок за уголок до конца: он стоит за краем экрана так,
-    /// что наружу торчит только его угол, и съезжает вниз целиком (P237).
-    func pullOut() {
-        // Толчок — сразу по нажатию, не когда бумажка уже легла на место:
-        // рука должна почувствовать отклик в момент касания (P320).
-        Feel.paper()
-        let built = showingSettings
-        var still = Transaction()
-        still.disablesAnimations = true
-        withTransaction(still) {
-            showingSettings = true
-            settingsPull = settingsPull ?? 1
-        }
-        if built {
-            // Листок уже тянули пальцем — он построен, ехать сразу.
-            DispatchQueue.main.async { withAnimation(.pull) { self.settingsPull = nil } }
-        } else {
-            // Ход — когда листок построен (P669): прежде он начинался сразу,
-            // первые кадры уходили на постройку листка, и он выпрыгивал
-            // рывком. Подстраховка — если листок не скажет, что появился.
-            pullPending = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { self.startPull() }
-        }
-    }
-
-    /// Листок ждёт своего первого кадра, чтобы поехать (P669).
-    private var pullPending = false
-
-    /// Листок появился — ехать.
-    func startPull() {
-        guard pullPending else { return }
-        pullPending = false
-        DispatchQueue.main.async { withAnimation(.pull) { self.settingsPull = nil } }
-    }
-
-    /// Задвинуть листок обратно: он уезжает вверх, пока снова не останется
-    /// один уголок.
-    func tuckIn() {
-        // Толчок — в момент нажатия, как при выезде, а не когда листок уже
-        // ушёл (P515).
-        Feel.paper()
-        withAnimation(.tuck) { settingsPull = 1 }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.34) {
-            var still = Transaction()
-            still.disablesAnimations = true
-            withTransaction(still) {
-                self.showingSettings = false
-                self.settingsPull = nil
-            }
-        }
-    }
-    @Published var showingFile = false
-    /// Неделя одним взглядом (P466).
-    @Published var showingWeek = false
-    @Published var picking = false
 
     /// Только для снимков: показать вместо открытой страницы ту же страницу,
     /// нарисованную соседским способом. Так две росписи можно сличить
@@ -199,14 +116,13 @@ final class Shell: ObservableObject {
 
     func startOver(_ store: DayStore) {
         if screen != .today { instant = true }
-        drawer = nil
-        roller = nil
-        openedPhoto = nil
+        overlays.roller = nil
+        overlays.openedPhoto = nil
         var still = Transaction()
         still.disablesAnimations = true
         withTransaction(still) {
-            showingSettings = false
-            settingsPull = nil
+            overlays.showingSettings = false
+            overlays.settingsPull = nil
             screen = .today
         }
         tab = .plan
@@ -343,13 +259,13 @@ final class Shell: ObservableObject {
         case "diary":     tab = .diary
         case "calendar":  CalendarView.previewStart = day(-7); screen = .calendar
         case "search", "searchdeep": screen = .search
-        case "settings":  showingSettings = true
+        case "settings":  overlays.showingSettings = true
         case "map":       screen = .map
         case "mappoint":  screen = .map; map.previewPoint += 1
         // Окно «Время» (P874) — у первого дела с временем, иначе у первого.
         case "roller":
             let first = store.tasks.first { $0.time != nil } ?? store.tasks.first
-            if let first, roller?.id != first.id { roller = .init(id: first.id) }
+            if let first, overlays.roller?.id != first.id { overlays.roller = .init(id: first.id) }
         case "remember":  tab = .diary; previewRemember += 1
         // Дни — от сегодняшнего, а не шагом: повтор не уводит дальше.
         case "past":      if store.date != day(-1) { store.go(to: day(-1)) }

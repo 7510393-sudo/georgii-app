@@ -58,7 +58,7 @@ struct DiaryView: View {
                 if links.indices.contains(i), Diary.isPoint(links[i]), let point = Geo.point(in: links[i]) {
                     return shell.showPoint(point)
                 }
-                shell.openedPhoto = .init(index: i)
+                shell.overlays.openedPhoto = .init(index: i)
             },
             // Брошенный в текст снимок отметку времени не ставит — это
             // знает само поле записи (P362).
@@ -66,7 +66,7 @@ struct DiaryView: View {
             peekStamp: { store.peekStamp() },
             onWrite: { store.noteWriting() },
             onOpenInline: { link in
-                shell.openedPhoto = .init(index: -1, url: store.photoURL(link), link: link)
+                shell.overlays.openedPhoto = .init(index: -1, url: store.photoURL(link), link: link)
             },
             onOpenPoint: { shell.showPoint($0) },
             onEditing: {

@@ -167,6 +167,6 @@ struct MoveDaySticker: View {
     }
 
     private func close() {
-        withAnimation(.tuck) { shell.movingTask = nil }
+        withAnimation(.tuck) { shell.overlays.movingTask = nil }
     }
 }
