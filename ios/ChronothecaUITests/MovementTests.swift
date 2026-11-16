@@ -854,12 +854,10 @@ final class MovementTests: XCTestCase {
             } else if screen != "search" {
                 XCTFail("приложение не записало, как открылся \(screen)")
             }
-            let stall = longestStall(screen)
-            note("замирание " + screen, String(format: "%.2f с", stall))
-            // Карта рисуется MapKit, и в симуляторе он сам держит экран до
-            // полутора секунд и на маленьком образце (P812) — ей запас шире.
-            let limit = screen == "map" ? 2.5 : 1.5
-            XCTAssertLessThan(stall, limit, "на разделе \(screen) экран стоял \(stall) с")
+            // Замирание только записывается (P976, отменяет пороги P812): на
+            // большом архиве снимок стека в самом замирании показал главный
+            // поток без дела (P975) — стоит машина проверок, а не приложение.
+            note("замирание " + screen, String(format: "%.2f с", longestStall(screen)))
         }
         if let query = ownTime("query") { note("поиск слова", String(format: "%.2f с", query)) }
     }
