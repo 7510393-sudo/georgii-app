@@ -1,166 +1,41 @@
-Analysis of sampling Chronotheca (pid 22878) every 1 millisecond
-Process:         Chronotheca [22878]
-Path:            /Users/USER/Library/Developer/CoreSimulator/Devices/FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC/data/Containers/Bundle/Application/92D5DF02-A27E-433D-A673-2E6BE3B368A1/Chronotheca.app/Chronotheca
-Load Address:    0x102c8c000
-Identifier:      Chronotheca
-Version:         ???
-Code Type:       ARM64
-Platform:        iOS Simulator
-Parent Process:  launchd_sim [1535]
-Target Type:     live task
-
-Date/Time:       2026-11-16 10:56:02.057 +0000
-Launch Time:     2026-11-16 10:55:58.673 +0000
-OS Version:      macOS 26.7.2 (25G332)
-Report Version:  7
-Analysis Tool:   /usr/bin/sample
-
-Physical footprint:         21.9M
-Physical footprint (peak):  21.9M
-Idle exit:                  untracked
-----
-
-Call graph:
-    441 Thread_64873   DispatchQueue_1: com.apple.main-thread  (serial)
-    + 438 start  (in dyld) + 6992  [0x102ed04e4]
-    + ! 438 start_sim  (in dyld_sim) + 20  [0x102deb0e4]
-    + !   379 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x104d34368]  ChronothecaApp.swift:0
-    + !   : 379 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x104d342bc]  /<compiler-generated>:0
-    + !   :   379 static App.main()  (in SwiftUI) + 132  [0x1d2c5f084]
-    + !   :     379 protocol witness for App.init() in conformance ChronothecaApp  (in Chronotheca.debug.dylib) + 12  [0x104d34354]  /<compiler-generated>:0
-    + !   :       379 ChronothecaApp.init()  (in Chronotheca.debug.dylib) + 224  [0x104d304b0]  ChronothecaApp.swift:23
-    + !   :         377 static Prefs.settleFont()  (in Chronotheca.debug.dylib) + 1808  [0x10511be68]  Preferences.swift:79
-    + !   :         | 376 -[NSBundle URLForResource:withExtension:subdirectory:]  (in Foundation) + 92  [0x18103bec0]
-    + !   :         | + 376 CFBundleCopyResourceURL  (in CoreFoundation) + 52  [0x1803b27b0]
-    + !   :         | +   376 _CFBundleCopyFindResources  (in CoreFoundation) + 1416  [0x1803b2d44]
-    + !   :         | +     376 _copyResourceURLsFromBundle  (in CoreFoundation) + 372  [0x1803b41dc]
-    + !   :         | +       376 _copyQueryTable  (in CoreFoundation) + 56  [0x1803b490c]
-    + !   :         | +         376 _CFBundleCopyLanguageSearchListInBundle  (in CoreFoundation) + 112  [0x1804325b8]
-    + !   :         | +           376 _CFBundleCopyPreferredLanguagesInList  (in CoreFoundation) + 140  [0x1804337ac]
-    + !   :         | +             376 _CFBundleCreateMutableArrayOfFallbackLanguages  (in CoreFoundation) + 312  [0x180434930]
-    + !   :         | +               376 ualoc_localizationsToUse  (in libicucore.A.dylib) + 192  [0x18240d230]
-    + !   :         | +                 376 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0xb92e4  [0x1824722e4]
-    + !   :         | +                   376 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0xbc810  [0x182475810]
-    + !   :         | +                     376 res_getResource  (in libicucore.A.dylib) + 32  [0x1824771c0]
-    + !   :         | +                       376 res_getTableItemByKey  (in libicucore.A.dylib) + 84  [0x182476e28]
-    + !   :         | 1 -[NSBundle URLForResource:withExtension:subdirectory:]  (in Foundation) + 44  [0x18103be90]
-    + !   :         |   1 -[NSIndirectTaggedPointerString length]  (in CoreFoundation) + 8  [0x1804438bc]
-    + !   :         1 static Prefs.settleFont()  (in Chronotheca.debug.dylib) + 292  [0x10511b87c]  Preferences.swift:74
-    + !   :         | 1 -[NSUserDefaults(NSUserDefaults) stringForKey:]  (in Foundation) + 16  [0x18116752c]
-    + !   :         |   1 -[NSUserDefaults(NSUserDefaults) objectForKey:]  (in Foundation) + 56  [0x181167208]
-    + !   :         |     1 _CFPreferencesCopyAppValueWithContainerAndConfiguration  (in CoreFoundation) + 108  [0x18052b3dc]
-    + !   :         |       1 -[_CFXPreferences copyAppValueForKey:identifier:container:configurationURL:]  (in CoreFoundation) + 128  [0x1805289f8]
-    + !   :         |         1 -[_CFXPreferences withSearchListForIdentifier:container:cloudConfigurationURL:perform:]  (in CoreFoundation) + 136  [0x18054bee4]
-    + !   :         |           1 normalizeQuintuplet  (in CoreFoundation) + 396  [0x1804ee91c]
-    + !   :         |             1 __108-[_CFXPreferences(SearchListAdditions) withSearchListForIdentifier:container:cloudConfigurationURL:perform:]_block_invoke  (in CoreFoundation) + 348  [0x1804ef088]
-    + !   :         |               1 __76-[_CFXPreferences copyAppValueForKey:identifier:container:configurationURL:]_block_invoke  (in CoreFoundation) + 28  [0x180528a70]
-    + !   :         |                 1 -[CFPrefsSource copyValueForKey:]  (in CoreFoundation) + 40  [0x18047a678]
-    + !   :         |                   1 -[CFPrefsSearchListSource alreadylocked_copyValueForKey:]  (in CoreFoundation) + 144  [0x1804ec2e8]
-    + !   :         |                     1 -[CFPrefsSearchListSource alreadylocked_getDictionary:]  (in CoreFoundation) + 384  [0x18054b7f8]
-    + !   :         |                       1 -[CFPrefsSearchListSource alreadylocked_generationCountFromListOfSources:count:]  (in CoreFoundation) + 236  [0x18054bd14]
-    + !   :         |                         1 -[CFPrefsSearchListSource synchronouslySendSystemMessage:andUserMessage:andDirectMessage:replyHandler:]  (in CoreFoundation) + 268  [0x18054b324]
-    + !   :         |                           1 CFPREFERENCES_IS_WAITING_FOR_USER_CFPREFSD  (in CoreFoundation) + 92  [0x1804ed558]
-    + !   :         |                             1 __103-[CFPrefsSearchListSource synchronouslySendSystemMessage:andUserMessage:andDirectMessage:replyHandler:]_block_invoke  (in CoreFoundation) + 112  [0x1804ed66c]
-    + !   :         |                               1 -[_CFXPreferences withConnectionForRole:andUserIdentifier:performBlock:]  (in CoreFoundation) + 44  [0x18054fe64]
-    + !   :         |                                 1 __103-[CFPrefsSearchListSource synchronouslySendSystemMessage:andUserMessage:andDirectMessage:replyHandler:]_block_invoke_2  (in CoreFoundation) + 40  [0x1804ed6bc]
-    + !   :         |                                   1 xpc_connection_send_message_with_reply_sync  (in libxpc.dylib) + 252  [0x1800cf918]
-    + !   :         |                                     1 dispatch_mach_send_with_result_and_wait_for_reply  (in libdispatch.dylib) + 56  [0x1801a2adc]
-    + !   :         |                                       1 _dispatch_mach_send_and_wait_for_reply  (in libdispatch.dylib) + 564  [0x1801a2740]
-    + !   :         |                                         1 mach_msg  (in libsystem_kernel.dylib) + 20  [0x102ca0ef0]
-    + !   :         |                                           1 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x102ca8c44]
-    + !   :         |                                             1 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x102cb1e84]
-    + !   :         |                                               1 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x102ca0b70]
-    + !   :         1 static Prefs.settleFont()  (in Chronotheca.debug.dylib) + 1636  [0x10511bdbc]  Preferences.swift:79
-    + !   :           1 +[NSBundle mainBundle]  (in Foundation) + 136  [0x18103e510]
-    + !   :             1 -[NSBundle initWithPath:]  (in Foundation) + 184  [0x18103d654]
-    + !   :               1 -[NSString(NSPathUtilities) _stringByResolvingSymlinksInPathUsingCache:]  (in Foundation) + 124  [0x1811011bc]
-    + !   :                 1 _NSResolveSymlinksInPathUsingCache  (in Foundation) + 160  [0x1810fd1f0]
-    + !   :                   1 +[NSFileManager defaultManager]  (in Foundation) + 152  [0x18107d658]
-    + !   :                     1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
-    + !   :                       1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
-    + !   :                         1 __31+[NSFileManager defaultManager]_block_invoke  (in Foundation) + 20  [0x18107d674]
-    + !   :                           1 -[NSFileManager init]  (in Foundation) + 80  [0x18107c478]
-    + !   :                             1 _objc_msgSend_uncached  (in libobjc.A.dylib) + 64  [0x18003af00]
-    + !   :                               1 lookUpImpOrForward  (in libobjc.A.dylib) + 208  [0x1800533a4]
-    + !   :                                 1 initializeAndMaybeRelock(objc_class*, objc_object*, locker_mixin<lockdebug::lock_mixin<objc_lock_base_t>>&, bool)  (in libobjc.A.dylib) + 216  [0x1800410e0]
-    + !   :                                   1 initializeNonMetaClass  (in libobjc.A.dylib) + 592  [0x18003feac]
-    + !   :                                     1 lockAndFinishInitializing(objc_class*, objc_class*)  (in libobjc.A.dylib) + 304  [0x18003f618]
-    + !   :                                       1 _finishInitializing(objc_class*, objc_class*)  (in libobjc.A.dylib) + 84  [0x18003f770]
-    + !   :                                         1 objc::Scanner::scanAddedClassImpl(objc_class*, objc::Scanner::metaclass_t)  (in libobjc.A.dylib) + 932  [0x180054098]
-    + !   :                                           1 objc::Scanner::scanMethodLists<list_array_tt<method_t, method_list_t, method_list_t_authed_ptr>::ListIterator>(list_array_tt<method_t, method_list_t, method_list_t_authed_ptr>::ListIterator, list_array_tt<method_t, method_list_t, method_list_t_authed_ptr>::ListIterator)  (in libobjc.A.dylib) + 176  [0x180054504]
-    + !   58 __debug_blank_executor_main  (in Chronotheca) + 784  [0x102c8cb20]
-    + !   : 58 dyld4::APIs::dlsym(void*, char const*)  (in dyld_sim) + 632  [0x102de43b0]
-    + !   :   58 dyld4::RuntimeLocks::withLoadersReadLock(void () block_pointer)  (in dyld_sim) + 60  [0x102df139c]
-    + !   :     58 invocation function for block in dyld4::APIs::dlsym(void*, char const*)  (in dyld_sim) + 132  [0x102de4974]
-    + !   :       58 dyld4::Loader::hasExportedSymbol(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::ExportedSymbolMode, dyld4::Loader::ResolverMode, dyld4::Loader::ResolvedSymbol*, dyld3::Array<dyld4::Loader const*>*) const  (in dyld_sim) + 376  [0x102e0185c]
-    + !   :         58 dyld3::MachOFile::trieWalk(Diagnostics&, unsigned char const*, unsigned char const*, char const*)  (in dyld_sim) + 120  [0x102e0e020]
-    + !   1 __debug_blank_executor_main  (in Chronotheca) + 64  [0x102c8c850]
-    + !     1 os_log_create  (in libsystem_trace.dylib) + 808  [0x1800b31b4]
-    + !       1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
-    + !         1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
-    + !           1 _os_trace_init_slow  (in libsystem_trace.dylib) + 212  [0x1800a76ec]
-    + !             1 voucher_activity_get_metadata_buffer  (in libdispatch.dylib) + 104  [0x1801ae4c0]
-    + !               1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
-    + !                 1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
-    + !                   1 _firehose_task_buffer_init  (in libdispatch.dylib) + 120  [0x1801af91c]
-    + !                     1 _os_trace_get_logd_port  (in libsystem_trace.dylib) + 112  [0x1800a8a20]
-    + !                       1 bootstrap_look_up2  (in libxpc.dylib) + 44  [0x1800d8228]
-    + !                         1 bootstrap_look_up3  (in libxpc.dylib) + 152  [0x1800d82e8]
-    + !                           1 _xpc_interface_routine  (in libxpc.dylib) + 168  [0x1800c39e8]
-    + !                             1 _xpc_pipe_routine  (in libxpc.dylib) + 392  [0x1800e6ff4]
-    + !                               1 _xpc_pipe_mach_msg  (in libxpc.dylib) + 52  [0x1800e7b68]
-    + !                                 1 mach_msg  (in libsystem_kernel.dylib) + 20  [0x102ca0ef0]
-    + !                                   1 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x102ca8c44]
-    + !                                     1 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x102cb1e84]
-    + !                                       1 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x102ca0b70]
-    + 3 start  (in dyld) + 6904  [0x102ed048c]
-    +   3 dyld4::start(dyld4::KernelArgs*, void*, void*, unsigned long long)::$_1::operator()() const  (in dyld) + 320  [0x102ed0b30]
-    +     3 dyld4::prepare(dyld4::APIs&, mach_o::UnsafeHeader const*)  (in dyld) + 340  [0x102ed0ca0]
-    +       3 dyld4::prepareSim(dyld4::RuntimeState&, char const*)  (in dyld) + 1300  [0x102ed2840]
-    +         3 _dyld_sim_prepare  (in dyld_sim) + 856  [0x102deb058]
-    +           3 dyld4::prepare(dyld4::APIs&, mach_o::UnsafeHeader const*)  (in dyld_sim) + 2308  [0x102deba98]
-    +             2 dyld4::Loader::runInitializersBottomUpPlusUpwardLinks(dyld4::RuntimeState&) const  (in dyld_sim) + 124  [0x102e00640]
-    +             : 2 dyld4::Loader::runInitializersBottomUp(dyld4::RuntimeState&, lsl::Vector<dyld4::Loader const*>&, lsl::Vector<dyld4::Loader const*>&) const  (in dyld_sim) + 220  [0x102e0052c]
-    +             :   2 dyld4::Loader::runInitializersBottomUp(dyld4::RuntimeState&, lsl::Vector<dyld4::Loader const*>&, lsl::Vector<dyld4::Loader const*>&) const  (in dyld_sim) + 220  [0x102e0052c]
-    +             :     2 dyld4::Loader::runInitializersBottomUp(dyld4::RuntimeState&, lsl::Vector<dyld4::Loader const*>&, lsl::Vector<dyld4::Loader const*>&) const  (in dyld_sim) + 220  [0x102e0052c]
-    +             :       2 dyld4::Loader::runInitializersBottomUp(dyld4::RuntimeState&, lsl::Vector<dyld4::Loader const*>&, lsl::Vector<dyld4::Loader const*>&) const  (in dyld_sim) + 220  [0x102e0052c]
-    +             :         2 dyld4::Loader::runInitializersBottomUp(dyld4::RuntimeState&, lsl::Vector<dyld4::Loader const*>&, lsl::Vector<dyld4::Loader const*>&) const  (in dyld_sim) + 220  [0x102e0052c]
-    +             :           2 dyld4::Loader::runInitializersBottomUp(dyld4::RuntimeState&, lsl::Vector<dyld4::Loader const*>&, lsl::Vector<dyld4::Loader const*>&) const  (in dyld_sim) + 220  [0x102e0052c]
-    +             :             2 dyld4::Loader::runInitializersBottomUp(dyld4::RuntimeState&, lsl::Vector<dyld4::Loader const*>&, lsl::Vector<dyld4::Loader const*>&) const  (in dyld_sim) + 220  [0x102e0052c]
-    +             :               2 dyld4::Loader::runInitializersBottomUp(dyld4::RuntimeState&, lsl::Vector<dyld4::Loader const*>&, lsl::Vector<dyld4::Loader const*>&) const  (in dyld_sim) + 220  [0x102e0052c]
-    +             :                 2 dyld4::Loader::runInitializersBottomUp(dyld4::RuntimeState&, lsl::Vector<dyld4::Loader const*>&, lsl::Vector<dyld4::Loader const*>&) const  (in dyld_sim) + 220  [0x102e0052c]
-    +             :                   1 dyld4::Loader::runInitializersBottomUp(dyld4::RuntimeState&, lsl::Vector<dyld4::Loader const*>&, lsl::Vector<dyld4::Loader const*>&) const  (in dyld_sim) + 220  [0x102e0052c]
-    +             :                   | 1 dyld4::Loader::runInitializersBottomUp(dyld4::RuntimeState&, lsl::Vector<dyld4::Loader const*>&, lsl::Vector<dyld4::Loader const*>&) const  (in dyld_sim) + 220  [0x102e0052c]
-    +             :                   |   1 dyld4::Loader::runInitializersBottomUp(dyld4::RuntimeState&, lsl::Vector<dyld4::Loader const*>&, lsl::Vector<dyld4::Loader const*>&) const  (in dyld_sim) + 220  [0x102e0052c]
-    +             :                   |     1 dyld4::Loader::runInitializersBottomUp(dyld4::RuntimeState&, lsl::Vector<dyld4::Loader const*>&, lsl::Vector<dyld4::Loader const*>&) const  (in dyld_sim) + 344  [0x102e005a8]
-    +             :                   |       1 dyld4::JustInTimeLoader::runInitializers(dyld4::RuntimeState&) const  (in dyld_sim) + 32  [0x102dfabb8]
-    +             :                   |         1 dyld4::Loader::findAndRunAllInitializers(dyld4::RuntimeState&) const  (in dyld_sim) + 336  [0x102e003a8]
-    +             :                   |           1 dyld3::MachOAnalyzer::forEachTerminator(Diagnostics&, dyld3::MachOAnalyzer::VMAddrConverter const&, void (unsigned int) block_pointer) const  (in dyld_sim) + 268  [0x102e0a054]
-    +             :                   |             1 mach_o::UnsafeHeader::forEachSection(void (mach_o::UnsafeHeader::SectionInfo const&, bool&) block_pointer) const  (in dyld_sim) + 96  [0x102e2005c]
-    +             :                   |               1 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x102e1ea1c]
-    +             :                   |                 1 invocation function for block in mach_o::UnsafeHeader::forEachSection(void (mach_o::UnsafeHeader::SectionInfo const&, bool&) block_pointer) const  (in dyld_sim) + 184  [0x102e217b8]
-    +             :                   |                   1 <deduplicated_symbol>  (in dyld_sim) + 20  [0x102e16e28]
-    +             :                   1 dyld4::Loader::runInitializersBottomUp(dyld4::RuntimeState&, lsl::Vector<dyld4::Loader const*>&, lsl::Vector<dyld4::Loader const*>&) const  (in dyld_sim) + 332  [0x102e0059c]
-    +             :                     1 dyld4::RuntimeState::notifyObjCInit(dyld4::Loader const*)  (in dyld_sim) + 248  [0x102df6658]
-    +             :                       1 load_images  (in libobjc.A.dylib) + 636  [0x180049f4c]
-    +             :                         1 +[BGTaskScheduler load]  (in BackgroundTasks) + 40  [0x1c31aa9e4]
-    +             :                           1 DYLD-STUB$$objc_retainAutoreleasedReturnValue  (in BackgroundTasks) + 0  [0x1c31afea4]
-    +             1 dyld4::Loader::runInitializersBottomUpPlusUpwardLinks(dyld4::RuntimeState&) const  (in dyld_sim) + 172  [0x102e00670]
-    +               1 dyld4::Loader::runInitializersBottomUp(dyld4::RuntimeState&, lsl::Vector<dyld4::Loader const*>&, lsl::Vector<dyld4::Loader const*>&) const  (in dyld_sim) + 220  [0x102e0052c]
-    +                 1 dyld4::Loader::runInitializersBottomUp(dyld4::RuntimeState&, lsl::Vector<dyld4::Loader const*>&, lsl::Vector<dyld4::Loader const*>&) const  (in dyld_sim) + 184  [0x102e00508]
-    +                   1 dyld4::JustInTimeLoader::dependent(dyld4::RuntimeState const&, unsigned int, mach_o::LinkedDylibAttributes*) const  (in dyld_sim) + 16  [0x102dfa044]
-    378 Thread_65163
-      378 start_wqthread  (in libsystem_pthread.dylib) + 8  [0x103815a28]
-        378 _pthread_wqthread  (in libsystem_pthread.dylib) + 364  [0x103816c74]
-          378 __workq_kernreturn  (in libsystem_kernel.dylib) + 8  [0x102ca2698]
-
-Total number in stack (recursive counted multiple, when >=5):
-        13       dyld4::Loader::runInitializersBottomUp(dyld4::RuntimeState&, lsl::Vector<dyld4::Loader const*>&, lsl::Vector<dyld4::Loader const*>&) const  (in dyld_sim) + 220  [0x102e0052c]
 
 Sort by top of stack, same collapsed (when >= 5):
-        __workq_kernreturn  (in libsystem_kernel.dylib)        378
-        res_getTableItemByKey  (in libicucore.A.dylib)        376
-        dyld3::MachOFile::trieWalk(Diagnostics&, unsigned char const*, unsigned char const*, char const*)  (in dyld_sim)        58
+        __workq_kernreturn  (in libsystem_kernel.dylib)        460
+        mach_msg2_trap  (in libsystem_kernel.dylib)        391
+        __semwait_signal  (in libsystem_kernel.dylib)        169
+        writev  (in libsystem_kernel.dylib)        146
+        semaphore_timedwait_trap  (in libsystem_kernel.dylib)        64
+        semaphore_wait_trap  (in libsystem_kernel.dylib)        59
 
-Binary images description not available
-
+Binary Images:
+       0x102784000 -        0x102787507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC/data/Containers/Bundle/Application/CF7A1260-D67D-4828-B045-4A4A93305783/Chronotheca.app/Chronotheca
+       0x102798000 -        0x1027d2ee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
+       0x102828000 -        0x10286b65f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x102980000 -        0x102a33523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
+       0x102ad8000 -        0x102b26e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x102b94000 -        0x102b9c3d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
+       0x102c3c000 -        0x102c4810b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
+       0x102ccc000 -        0x102d652af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x10342c000 -        0x10342edff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x103448000 -        0x10345003f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x10355c000 -        0x10355cb99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x10356c000 -        0x10357739f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x103590000 -        0x103593e5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x1035b0000 -        0x1035b949f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x1035d4000 -        0x1035dab7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x1035f4000 -        0x10360d27f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
+       0x103644000 -        0x1036486ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
+       0x103950000 -        0x1039531ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
+       0x103af0000 -        0x103af72df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
+       0x103b10000 -        0x103b15407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
+       0x103bec000 -        0x103e47bbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+       0x1044a0000 -        0x1044c2cff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
+       0x104538000 -        0x10455ef5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
+       0x104584000 -        0x1045be15f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
+       0x1047dc000 -        0x104fe5ab3 +Chronotheca.debug.dylib (0) <FA259A22-128C-39C2-B979-A6E4E81DDE64> /Users/*/Library/Developer/CoreSimulator/Devices/FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC/data/Containers/Bundle/Application/CF7A1260-D67D-4828-B045-4A4A93305783/Chronotheca.app/Chronotheca.debug.dylib
+       0x105c48000 -        0x105c9b7bf  com.apple.dt.XCTAutomationSupport (26.5 - 24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
+       0x105cfc000 -        0x105d305bf  com.apple.MTLSimDriver (373.2 - 373.2) <8339CA77-3986-3588-9DF9-8B8D511AE608> /Volumes/*/MTLSimDriver.framework/MTLSimDriver
+       0x105e80000 -        0x105eefcbf  com.apple.UIUnderstanding (1.0 - 1) <576E64EB-8AA4-3B1E-A89D-365C4DE0C7C8> /Volumes/*/UIUnderstanding.framework/UIUnderstanding
+       0x108dd0000 -        0x108dfe27f  com.apple.gpusw.MetalSerializer (1.0 - 1) <19460939-4BCE-3E8D-8868-5388DD78ACE3> /Volumes/*/MetalSerializer.framework/MetalSerializer
+       0x1099e0000 -        0x1099ef03f  com.apple.PreferencesFramework.axbundle (1.0 - 1.0) <CECA756F-AD42-3681-8023-94C05C2E12C6> /Volumes/*/PreferencesFramework
+       0x109bec000 -        0x109ddfd3f  com.apple.UIKit.axbundle (1.0.0 - 1.0) <D3D808D1-AB02-3566-B2DD-1B139F8E9569> /Volumes/*/UIKit
