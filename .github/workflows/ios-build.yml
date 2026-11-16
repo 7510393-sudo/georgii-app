@@ -6,6 +6,12 @@ name: Сборка iOS
 on:
   push:
     branches: ["**"]
+    # Отправка, где только записи и номер сборки, машину Apple не занимает:
+    # иначе доставка в TestFlight ждала свободную машину и отменялась (P974).
+    paths-ignore:
+      - 'docs/**'
+      - 'CLAUDE.md'
+      - '.github/release-trigger'
   pull_request:
   workflow_dispatch:
 
