@@ -473,7 +473,7 @@ struct RootView: View {
         .sheet(isPresented: $overlays.showingFile) { FileSheet() }
         .sheet(isPresented: $overlays.showingWeek) { WeekSheet() }
         .confirmationDialog(trashTitle,
-                            isPresented: $shell.trashAsk, titleVisibility: .visible) {
+                            isPresented: $overlays.trashAsk, titleVisibility: .visible) {
             Button(T("Убрать в корзину", "Move to trash"), role: .destructive) {
                 store.save()
                 if Trash.put(store.date, parts: [Shell.Tab.plan.vaultFolder, Shell.Tab.diary.vaultFolder],
@@ -502,7 +502,7 @@ struct RootView: View {
         }
         .onAppear {
             // Просьбы кнопок над клавиатурой — открытой странице (P279).
-            KeyboardBar.ask = { [shell] ask in shell.keyboardAsk = ask }
+            KeyboardBar.ask = { [shell] ask in shell.asks.keyboardAsk = ask }
             // Раздел, выбранный над клавиатурой (P613), — сюда, как и с
             // нижней строки.
             // Опись архива нужна не только календарю и поиску: без неё
@@ -528,7 +528,7 @@ struct RootView: View {
             shell.restoreLeft(store)
             shell.openRequestedScreen(store)
             // Первое открытие: страница сверху (P346, P607).
-            shell.freshStart += 1
+            shell.asks.freshStart += 1
         }
     }
 
@@ -972,7 +972,7 @@ struct RootView: View {
                     // Без загиба листа (P779; прежде дорога домой
                     // листалась, P164).
                     shell.say(T("Вернулись на сегодня", "Back to today"))
-                    shell.goHome = true
+                    shell.asks.goHome = true
                 }
                 return
             case .calendar:

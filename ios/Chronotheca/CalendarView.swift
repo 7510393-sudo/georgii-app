@@ -598,8 +598,8 @@ struct CalendarView: View {
         store.go(to: date)
         shell.tab = .plan
         // Из календаря — всегда на план (P424).
-        shell.landOnDiary = false
-        shell.landing += 1
+        shell.asks.landOnDiary = false
+        shell.asks.landing += 1
         shell.screen = .today
     }
 }

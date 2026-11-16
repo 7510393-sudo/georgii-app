@@ -62,8 +62,8 @@ struct WeekSheet: View {
         return Button {
             shell.overlays.showingWeek = false
             store.go(to: date)
-            shell.landOnDiary = false
-            shell.landing += 1
+            shell.asks.landOnDiary = false
+            shell.asks.landing += 1
             shell.screen = .today
         } label: {
             HStack(alignment: .firstTextBaseline, spacing: 12) {

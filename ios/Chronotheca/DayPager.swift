@@ -16,6 +16,7 @@ struct DayPages: View {
     @EnvironmentObject private var vault: Vault
     @EnvironmentObject private var store: DayStore
     @EnvironmentObject private var shell: Shell
+    @EnvironmentObject private var asks: PageAsks
     @EnvironmentObject private var archive: Archive
 
     var body: some View {
@@ -24,15 +25,16 @@ struct DayPages: View {
                 .environmentObject(vault)
                 .environmentObject(store)
                 .environmentObject(shell)
+                .environmentObject(asks)
                 .environmentObject(archive)
         }
         // Лента превью и строка вложений — одна, у низа экрана, над всеми
         // страницами (P544): не листается с днём, а с клавиатурой едет вверх.
         // Взятое из ленты превью — поверх всего (P545).
         .overlay { StripGhostLayer() }
-        .onChange(of: shell.goHome) { _, want in
+        .onChange(of: asks.goHome) { _, want in
             guard want else { return }
-            shell.goHome = false
+            asks.goHome = false
             let days = Calendar.current.dateComponents([.day], from: store.date,
                                                        to: DayStore.today()).day ?? 0
             guard days != 0 else { return }
@@ -59,6 +61,8 @@ struct DayPage: View {
     @EnvironmentObject private var vault: Vault
     @EnvironmentObject private var store: DayStore
     @EnvironmentObject private var shell: Shell
+    /// Просьбы странице (P965): на сегодня, на план или дневник, наверх.
+    @EnvironmentObject private var asks: PageAsks
     @EnvironmentObject private var archive: Archive
 
     @State private var remembering = false
@@ -247,7 +251,7 @@ struct DayPage: View {
         }
         // Корзина (P295, P300): весь день уезжает в папку «Корзина», её
         // можно вернуть из настроек.
-        Button(role: .destructive) { shell.trashAsk = true } label: {
+        Button(role: .destructive) { shell.overlays.trashAsk = true } label: {
             Label(T("Убрать день в корзину", "Move the day to the trash"), systemImage: "trash")
         }
     }
@@ -364,9 +368,9 @@ struct DayPage: View {
             SideDay(date: date)
         } else if live {
             // План сверху, дневник ниже — одним листом (P408).
-            DaySheet(date: date, home: shell.freshStart,
+            DaySheet(date: date, home: asks.freshStart,
                      diaryOpen: !store.isFuture,
-                     land: shell.landing, landDiary: shell.landOnDiary,
+                     land: asks.landing, landDiary: asks.landOnDiary,
                      onDiary: { [shell] in shell.lookingAtDiary = $0 },
                      diaryMark: AnyView(cloud),
                      strip: AnyView(AttachBar(live: live)),
@@ -536,6 +540,7 @@ struct AttachBar: View {
     var live = false
 
     @EnvironmentObject private var shell: Shell
+    @EnvironmentObject private var asks: PageAsks
     @EnvironmentObject private var store: DayStore
     @EnvironmentObject private var vault: Vault
 
@@ -555,9 +560,9 @@ struct AttachBar: View {
         // Где полоска на экране — сюда возвращают снимок из текста (P547).
         // Уходящая страница не стирает место: новая открытая уже сообщила своё.
         .reportsY { [live] y in if live, let y { KeyboardBar.pillTarget = y } }
-        .onChange(of: shell.keyboardAsk) { _, ask in
+        .onChange(of: asks.keyboardAsk) { _, ask in
             guard live, let ask else { return }
-            shell.keyboardAsk = nil
+            asks.keyboardAsk = nil
             hideKeyboard()
             switch ask {
             case .photo: open { choosing = true }

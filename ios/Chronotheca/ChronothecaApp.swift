@@ -45,8 +45,8 @@ struct ChronothecaApp: App {
         shell.screen = .today
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [store, shell] in
             store.go(to: DayStore.today())
-            shell.landOnDiary = diary
-            shell.landing += 1
+            shell.asks.landOnDiary = diary
+            shell.asks.landing += 1
         }
     }
 
@@ -60,6 +60,7 @@ struct ChronothecaApp: App {
                 .environmentObject(shell.map)
                 .environmentObject(shell.overlays)
                 .environmentObject(shell.search)
+                .environmentObject(shell.asks)
                 // Касание по виджету: chronotheca://today/plan или /diary —
                 // открыть сегодняшний день на этой вкладке (P382).
                 // Касание по виджету (P711): приложение открывается там, где

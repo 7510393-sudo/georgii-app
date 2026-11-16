@@ -100,4 +100,7 @@ final class Overlays: ObservableObject {
     @Published var showingWeek = false
     /// Выбор папки записей.
     @Published var picking = false
+
+    /// Просьба убрать открытый день в корзину — спрашивает оболочка (P295).
+    @Published var trashAsk = false
 }
