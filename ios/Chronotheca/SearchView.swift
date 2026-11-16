@@ -216,6 +216,12 @@ struct SearchView: View {
         ribbon.ids = Set(items.map(\.id))
         // Сколько стоила эта сборка — в заметки посадки (P929).
         ribbon.built = (CACurrentMediaTime() - began, items.count)
+        // Замер большого архива (P975): во что обходится каждая пересборка
+        // ленты — по следу видно, она ли держит экран.
+        if Vault.isSelfDrive {
+            Trace.note(String(format: "лента собрана: %.0f мс, %ld строк",
+                              ribbon.built.time * 1000, items.count))
+        }
         return ScrollViewReader { proxy in ScrollView {
             // Карточки — вид сверху: нижняя лежит поверх верхней и своим
             // корешком с датой закрывает её низ (P694, P695).

@@ -878,29 +878,33 @@ struct RootView: View {
                 act()
             }
         }
-        // Карта собирается при первом открытии (P814) — это её цена, а не
-        // архива: один раз до замера.
-        step(0, "карта впервые") { tapSection(.map) }
-        step(7, "дневник") { tapSection(.today) }
-        step(5, "замер") { }
-        step(1, "календарь") { tapSection(.calendar) }
-        step(7, "карта") { tapSection(.map) }
-        step(7, "дневник") { tapSection(.today) }
         // Снимок того, чем занят главный поток, — ровно на медленном шаге:
         // CI снимает его, увидев файл-просьбу рядом со следом (P808, P913).
+        // Просьба — за секунду до шага (P975): CI замечает её за полсекунды
+        // и снимает 7 с; прежде просьба шла за 6 с, и снимок кончался
+        // раньше, чем экран вставал.
         func wantSample(_ name: String) {
             guard let path = ProcessInfo.processInfo.environment["CHRONOTHECA_TRACE"], !path.isEmpty else { return }
             let url = URL(fileURLWithPath: path).deletingLastPathComponent().appendingPathComponent("want-" + name)
             try? Data().write(to: url)
         }
+        // Карта собирается при первом открытии (P814) — это её цена, а не
+        // архива: один раз до замера.
+        step(0, "карта впервые") { tapSection(.map) }
+        step(7, "дневник") { tapSection(.today) }
+        step(4, "просьба снимка календаря") { wantSample("big-calendar") }
+        step(1, "замер") { }
+        step(1, "календарь") { tapSection(.calendar) }
+        step(7, "карта") { tapSection(.map) }
+        step(7, "дневник") { tapSection(.today) }
         step(3, "просьба снимка картотеки") { wantSample("big-search") }
         step(3, "картотека прошлого") {
             let tap = Date()
             shell.screen = .search
             LaunchClock.opened("search", since: tap)
         }
-        step(8, "просьба снимка поиска") { wantSample("big-query") }
-        step(3, "поиск слова") {
+        step(10, "просьба снимка поиска") { wantSample("big-query") }
+        step(1, "поиск слова") {
             let tap = Date()
             shell.search.query = "garden"
             LaunchClock.opened("query", since: tap)

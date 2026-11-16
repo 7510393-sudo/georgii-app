@@ -342,6 +342,8 @@ final class Ribbon: ObservableObject {
     private var slotTop: CGFloat = 0
     private var watch: NSKeyValueObservation?
     private weak var watched: UIScrollView?
+    /// Сколько раз окно прокрутки ленты собиралось (для следа, P975).
+    private var windows = 0
 
     private var link: CADisplayLink?
     private var startOffset: CGFloat = 0
@@ -413,6 +415,10 @@ final class Ribbon: ObservableObject {
     /// Следить за прокруткой ленты: каждый её сдвиг — сразу сдвиг дня.
     private func watchScroll(_ scroll: UIScrollView) {
         guard watched !== scroll else { return }
+        // Окно прокрутки ленты собрано заново (P975): новое начинается с
+        // верха, и лента едет к дню через весь архив.
+        windows += 1
+        if windows > 1 { Trace.note("лента: новое окно прокрутки, \(windows)-е") }
         watched = scroll
         watch = scroll.observe(\.contentOffset, options: [.new]) { [weak self] view, _ in
             self?.scrolled(view)
