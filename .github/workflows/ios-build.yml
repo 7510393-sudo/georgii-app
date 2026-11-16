@@ -38,6 +38,12 @@ jobs:
           # показалась бы по-английски — ловим здесь, а не на телефоне.
           python3 scripts/strings.py check
 
+      - name: Проверить нижний слой
+        run: |
+          # Файлы ios/Chronotheca/Core не смотрят на экран (P970): новая
+          # ссылка наружу, которой нет в ios/core-debts.txt, — ошибка.
+          python3 scripts/core.py check
+
       - name: Проверить парность скобок
         run: |
           # Дешёвая проверка перед дорогой: срезанная скобка ловится за
@@ -45,7 +51,7 @@ jobs:
           python3 - <<'PY'
           import io, glob, re, sys
           bad = []
-          for f in sorted(glob.glob('ios/Chronotheca/*.swift') +
+          for f in sorted(glob.glob('ios/Chronotheca/**/*.swift', recursive=True) +
                           glob.glob('ios/ChronothecaTests/*.swift')):
               s = io.open(f, encoding='utf-8').read()
               s = re.sub(r'"""[\s\S]*?"""', '""', s)

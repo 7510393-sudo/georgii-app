@@ -1,6 +1,18 @@
 import Foundation
 import CoreLocation
 
+/// Половина дня: план или дневник (P970; прежде `Shell.Tab`). Лежит в
+/// нижнем слое: по ней хранилище знает, чей файл правят и куда класть в корзину.
+enum DayTab: String, CaseIterable, Identifiable {
+    case plan = "План"
+    case diary = "Дневник"
+    var id: String { rawValue }
+
+    /// Чей это файл в папке записей — для корзины (P300).
+    var vaultFolder: Vault.Folder { self == .diary ? .diary : .planner }
+}
+
+
 /// Один день: файл плана и файл дневника.
 ///
 /// Держит ровно то, что сейчас на экране, и ничего сверх того. Уходя со дня,
@@ -50,9 +62,9 @@ final class DayStore: ObservableObject {
     /// (P211). Теперь перенос, порядок, удаление и отметка «сделано» —
     /// долгим нажатием, без всякого режима (P362), и режим остался только
     /// там, где он и правда что-то открывает: в прошедшем плане.
-    @Published var editingTabs: Set<Shell.Tab> = []
+    @Published var editingTabs: Set<DayTab> = []
 
-    func setEditing(_ tab: Shell.Tab, _ on: Bool) {
+    func setEditing(_ tab: DayTab, _ on: Bool) {
         if on, tab == .plan, isPast { editingTabs.insert(tab) } else if !on { editingTabs.remove(tab) }
     }
 
@@ -114,12 +126,12 @@ final class DayStore: ObservableObject {
     /// План и дневник — одна страница: стрелка шага отменяет последнюю
     /// правку, где бы она ни была. Какая сторона правилась в каком
     /// порядке — здесь; сами прежние состояния — в своих стопках.
-    private var backOrder: [Shell.Tab] = []
-    private var aheadOrder: [Shell.Tab] = []
+    private var backOrder: [DayTab] = []
+    private var aheadOrder: [DayTab] = []
 
     /// Новая правка: шаги вперёд больше некуда делать — ни в плане, ни в
     /// дневнике.
-    private func stepped(_ tab: Shell.Tab) {
+    private func stepped(_ tab: DayTab) {
         backOrder.append(tab)
         if backOrder.count > 120 { backOrder.removeFirst() }
         planAhead = []
@@ -776,7 +788,7 @@ final class DayStore: ObservableObject {
 
     /// Что сказать, когда вложение ушло со страницы: файл остался в папке
     /// или ушёл в корзину на 30 дней (P371).
-    private func trashed(_ link: String, from tab: Shell.Tab, delete: Bool) -> String {
+    private func trashed(_ link: String, from tab: DayTab, delete: Bool) -> String {
         guard delete else {
             return T("Убрано со страницы. Сам файл остался в папке.", "Removed from the page. The file stays in the folder.")
         }

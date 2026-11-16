@@ -111,9 +111,11 @@ def calls(text):
 
 def keys():
     found = {}
-    for name in sorted(os.listdir(SRC)):
-        if name.endswith(".swift"):
-            with open(os.path.join(SRC, name), encoding="utf-8") as f:
+    # С подпапками: нижний слой лежит в Core (P970).
+    paths = sorted(os.path.join(d, n) for d, _, ns in os.walk(SRC) for n in ns)
+    for path in paths:
+        if path.endswith(".swift"):
+            with open(path, encoding="utf-8") as f:
                 for ru, en in calls(f.read()):
                     found.setdefault(en, ru)
     return found

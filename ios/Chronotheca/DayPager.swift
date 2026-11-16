@@ -44,7 +44,7 @@ struct DayPages: View {
         // Ушли со вкладки в режиме изменений — режим выключается сам, а не
         // остаётся включённым за спиной (P330).
         .onChange(of: shell.tab) { _, now in
-            for t in Shell.Tab.allCases where t != now { store.setEditing(t, false) }
+            for t in DayTab.allCases where t != now { store.setEditing(t, false) }
         }
     }
 }

@@ -685,7 +685,7 @@ struct SearchView: View {
     /// прежде она, доезжая до места дня, перестраивалась на ходу, и день
     /// мелькал вверху, пропадал и всплывал снизу (запись автора к 244).
     /// Теперь лента закрывается в том же такте, что и меняется день.
-    private func openCard(_ date: Date, tab: Shell.Tab) {
+    private func openCard(_ date: Date, tab: DayTab) {
         let ribbon = shell.ribbon
         // Соседняя карточка ещё садится — досадить её разом.
         ribbon.landing.hurry?()

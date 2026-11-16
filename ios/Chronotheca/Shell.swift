@@ -11,20 +11,11 @@ final class Shell: ObservableObject {
     enum Screen { case today, calendar, map, search }
 
 
-    enum Tab: String, CaseIterable, Identifiable {
-        case plan = "План"
-        case diary = "Дневник"
-        var id: String { rawValue }
-
-        /// Чей это файл в папке записей — для корзины (P300).
-        var vaultFolder: Vault.Folder { self == .diary ? .diary : .planner }
-    }
-
     @Published var screen: Screen = .today
 
     /// Что-то несут пальцем (P799) — разделы вбок не листаются.
     @Published var holding = false
-    @Published var tab: Tab = .plan
+    @Published var tab: DayTab = .plan
 
     /// Над каким делом плана несут снимок или точку из дневника или из
     /// полоски (P409): дело обведено синим, под ним расступается место.
@@ -143,7 +134,7 @@ final class Shell: ObservableObject {
     func restoreLeft(_ store: DayStore) {
         guard !Vault.isPreview, !newDaySinceLeft() else { return }
         let d = UserDefaults.standard
-        if let raw = d.string(forKey: "left.tab"), let t = Tab(rawValue: raw) { tab = t }
+        if let raw = d.string(forKey: "left.tab"), let t = DayTab(rawValue: raw) { tab = t }
         if let st = d.string(forKey: "left.day"), let day = Vault.date(from: st), day != store.date {
             store.go(to: day)
         }

@@ -476,7 +476,7 @@ struct RootView: View {
                             isPresented: $overlays.trashAsk, titleVisibility: .visible) {
             Button(T("Убрать в корзину", "Move to trash"), role: .destructive) {
                 store.save()
-                if Trash.put(store.date, parts: [Shell.Tab.plan.vaultFolder, Shell.Tab.diary.vaultFolder],
+                if Trash.put(store.date, parts: [DayTab.plan.vaultFolder, DayTab.diary.vaultFolder],
                              in: vault) {
                     store.load()
                     archive.reload()
