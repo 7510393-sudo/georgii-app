@@ -33,9 +33,9 @@ final class DayEventsTests: XCTestCase {
     func testСделанноеИУбранное() {
         let items = [
             DayEvents.Item(key: "aaaa1111", title: "Стоматолог", time: "10:00", bell: "09:45",
-                           repeats: true, color: .red, start: Date()),
+                           repeats: true, color: CGColor(red: 1, green: 0, blue: 0, alpha: 1), start: Date()),
             DayEvents.Item(key: "bbbb2222", title: "Звонок", time: "12:00", bell: nil,
-                           repeats: false, color: .blue, start: Date()),
+                           repeats: false, color: CGColor(red: 0, green: 0, blue: 1, alpha: 1), start: Date()),
         ]
         let marks = [
             DayEvents.Mark(key: "aaaa1111", done: true, time: "10:00", title: "Стоматолог"),
