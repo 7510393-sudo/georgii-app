@@ -20,6 +20,8 @@ struct ChronothecaApp: App {
     @Environment(\.scenePhase) private var phase
     init() {
         _ = LaunchClock.start
+        // Превью заранее читает экран, просит нижний слой (P973).
+        Photo.warmer = PhotoWarm.run
         Prefs.settleFont()
         // Напоминания видны и при открытом приложении (P260).
         if NSClassFromString("XCTestCase") == nil {
