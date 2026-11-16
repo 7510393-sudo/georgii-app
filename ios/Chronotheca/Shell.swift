@@ -188,33 +188,13 @@ final class Shell: ObservableObject {
     /// садится ли карточка — всё читается из него (P928).
     var deck: Deck { ribbon.deck }
 
-    /// Где искать: везде, только в дневнике или только в плане.
-    enum Scope { case all, diary, plan }
+    /// Строка поиска и где искать (P964): своё состояние — каждую букву
+    /// смотрит одна картотека, а не всё, что смотрит на оболочку.
+    let search = SearchState()
 
-    /// Строка поиска и где искать живут здесь, а не в самом поиске: их
-    /// меняет и меню поиска, а оно лежит поверх всего приложения.
-    @Published var query = ""
     /// Насколько страница «Дня» поднята над клавиатурой поиска (P931):
     /// считает картотека (`SearchView.pageLift`), поднимает оболочка.
     @Published var searchLift: CGFloat = 0
-    @Published var scope: Scope = .all
-
-    /// Что искать: всё или только дни со снимками, видео, голосом,
-    /// файлами, местами (P249).
-    enum Find: String, CaseIterable { case all = "Всё", photo = "Снимки", video = "Видео",
-                                          audio = "Голос", file = "Файлы", place = "Места"
-        var title: String {
-            switch self {
-            case .all: return T("Всё", "Everything")
-            case .photo: return T("Снимки", "Photos")
-            case .video: return T("Видео", "Videos")
-            case .audio: return T("Голос", "Voice")
-            case .file: return T("Файлы", "Files")
-            case .place: return T("Места", "Places")
-            }
-        }
-    }
-    @Published var find: Find = .all
 
     /// Короткие сообщения человеку (P933): своё состояние — показ и уход
     /// сообщения не пересчитывают экран.

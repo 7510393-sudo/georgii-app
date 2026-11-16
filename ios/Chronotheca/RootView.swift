@@ -898,10 +898,10 @@ struct RootView: View {
         step(8, "просьба снимка поиска") { wantSample("big-query") }
         step(3, "поиск слова") {
             let tap = Date()
-            shell.query = "garden"
+            shell.search.query = "garden"
             LaunchClock.opened("query", since: tap)
         }
-        step(7, "поиск стёрт") { shell.query = "" }
+        step(7, "поиск стёрт") { shell.search.query = "" }
         step(4, "сегодня") { tapSection(.today) }
         step(6, "конец") { }
     }

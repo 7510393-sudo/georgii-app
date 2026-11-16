@@ -12,10 +12,12 @@ struct SearchView: View {
     @EnvironmentObject private var store: DayStore
     @EnvironmentObject private var archive: Archive
     @EnvironmentObject private var shell: Shell
+    /// Слово, где и что искать (P964).
+    @EnvironmentObject private var search: SearchState
     @EnvironmentObject private var vault: Vault
 
     /// Строка поиска лежит в оболочке: её очищает и меню поиска.
-    private var query: String { shell.query }
+    private var query: String { search.query }
     @FocusState private var typing: Bool
     /// Строка поиска раскрыта (P798): иначе — только лупа в кружке.
     @State private var searching = false
@@ -162,7 +164,7 @@ struct SearchView: View {
             // Крестик в строке только стирает слово — строка остаётся для
             // уточнения.
             Button {
-                shell.query = ""
+                search.query = ""
                 typing = false
                 searching = false
             } label: {
@@ -186,11 +188,11 @@ struct SearchView: View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(Look.inkFaint)
-            TextField(prompt, text: $shell.query)
+            TextField(prompt, text: $search.query)
                 .focused($typing)
                 .submitLabel(.search)
             if !query.isEmpty {
-                Button { shell.query = "" } label: { Image(systemName: "xmark.circle.fill") }
+                Button { search.query = "" } label: { Image(systemName: "xmark.circle.fill") }
                     .foregroundStyle(Look.inkFaint)
                     .accessibilityLabel(T("Очистить", "Clear"))
             }
@@ -212,28 +214,28 @@ struct SearchView: View {
             scopeButton(T("Только в дневнике", "Only in the diary"), .diary)
             scopeButton(T("Только в плане", "Only in the plan"), .plan)
             Divider()
-            ForEach(Shell.Find.allCases, id: \.self) { kind in
+            ForEach(SearchState.Find.allCases, id: \.self) { kind in
                 Button {
-                    shell.find = kind
+                    search.find = kind
                 } label: {
                     let title = kind == .all ? T("Искать всё", "Find everything")
                                              : T("Только: ", "Only: ") + kind.title.lowercased()
-                    if shell.find == kind { Label(title, systemImage: "checkmark") } else { Text(title) }
+                    if search.find == kind { Label(title, systemImage: "checkmark") } else { Text(title) }
                 }
             }
         } label: {
             Image(systemName: "line.3.horizontal.decrease.circle")
                 .font(.system(size: 18))
-                .foregroundStyle(shell.scope != .all || shell.find != .all ? Look.accent : Look.inkFaint)
+                .foregroundStyle(search.scope != .all || search.find != .all ? Look.accent : Look.inkFaint)
         }
         .accessibilityLabel(T("Что и где искать", "What and where to search"))
     }
 
-    private func scopeButton(_ title: String, _ scope: Shell.Scope) -> some View {
+    private func scopeButton(_ title: String, _ scope: SearchState.Scope) -> some View {
         Button {
-            shell.scope = scope
+            search.scope = scope
         } label: {
-            if shell.scope == scope { Label(title, systemImage: "checkmark") } else { Text(title) }
+            if search.scope == scope { Label(title, systemImage: "checkmark") } else { Text(title) }
         }
     }
 
@@ -241,7 +243,7 @@ struct SearchView: View {
     /// выбрав «только в плане» и забыв об этом, человек решит, что запись
     /// пропала.
     private var prompt: String {
-        switch shell.scope {
+        switch search.scope {
         case .all:   return T("Поиск по словам", "Search")
         case .diary: return T("Поиск в дневнике", "Search the diary")
         case .plan:  return T("Поиск в плане", "Search the plan")
@@ -249,7 +251,7 @@ struct SearchView: View {
     }
 
     private var whereNot: String {
-        switch shell.scope {
+        switch search.scope {
         case .all:   return ""
         case .diary: return T("в дневнике ", "in the diary ")
         case .plan:  return T("в плане ", "in the plan ")
@@ -263,7 +265,7 @@ struct SearchView: View {
         // Пока ничего не набрано — все дни, и прошлые, и будущие с делами:
         // в картотеке они стоят ниже сегодняшнего (P768, отменяет P426).
         guard !needle.isEmpty else { return days }
-        let scope = shell.scope
+        let scope = search.scope
         return days.filter { day in
             if scope != .plan {
                 if day.title.lowercased().contains(needle) { return true }
@@ -311,7 +313,7 @@ struct SearchView: View {
     /// дни с делами. Когда ищут — только находки.
     private func ahead(_ days: [Archive.Day], from today: Date) -> [Archive.Day] {
         let needle = query.trimmingCharacters(in: .whitespaces)
-        guard needle.isEmpty, shell.find == .all else { return days }
+        guard needle.isEmpty, search.find == .all else { return days }
         let byStamp = Dictionary(days.map { ($0.stamp, $0) }, uniquingKeysWith: { first, _ in first })
         var out: [Archive.Day] = []
         var last = Vault.stamp(today)
@@ -366,7 +368,7 @@ struct SearchView: View {
     /// Подходит ли день под «что искать» из меню поиска (P249).
     private func kept(_ day: Archive.Day) -> Bool {
         let kinds = day.attachments.map { Diary.kind(of: $0) }
-        switch shell.find {
+        switch search.find {
         case .all:   return true
         case .photo: return kinds.contains(.photo)
         case .video: return kinds.contains(.video)
@@ -907,7 +909,7 @@ struct SearchView: View {
 
     /// Искали в плане — туда и открываем: там нашлось искомое.
     private func openPast(_ day: Archive.Day) {
-        openCard(day.date, tab: shell.scope == .plan || day.date > DayStore.today()
+        openCard(day.date, tab: search.scope == .plan || day.date > DayStore.today()
                  || (day.text.isEmpty && !day.tasks.isEmpty) ? .plan : .diary)
     }
 
