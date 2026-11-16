@@ -1,0 +1,41 @@
+    4 Thread_116048   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 4 start  (in dyld) + 6992  [0x1043bc4e4]
+    +   4 start_sim  (in dyld_sim) + 20  [0x1042e30e4]
+    +     4 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x1063f86e8]  ChronothecaApp.swift:0
+    +       4 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1063f863c]  /<compiler-generated>:0
+    +         4 static App.main()  (in SwiftUI) + 132  [0x1d2c5f084]
+    +           4 protocol witness for App.init() in conformance ChronothecaApp  (in Chronotheca.debug.dylib) + 12  [0x1063f86d4]  /<compiler-generated>:0
+    +             4 ChronothecaApp.init()  (in Chronotheca.debug.dylib) + 600  [0x1063f4674]  ChronothecaApp.swift:28
+    +               4 Vault.__allocating_init()  (in Chronotheca.debug.dylib) + 44  [0x106a0a278]  Vault.swift:0
+    +                 4 Vault.init()  (in Chronotheca.debug.dylib) + 1688  [0x106a0a91c]  Vault.swift:209
+    +                   4 Vault.usePreviewFolder()  (in Chronotheca.debug.dylib) + 904  [0x106a0b258]  Vault.swift:248
+    +                     4 Vault.seedPreview()  (in Chronotheca.debug.dylib) + 1204  [0x106a0dc50]  Vault.swift:300
+    +                       4 Vault.addPhoto(_:for:)  (in Chronotheca.debug.dylib) + 80  [0x106a0f224]  Vault.swift:1301
+    +                         4 static Photo.stored(from:)  (in Chronotheca.debug.dylib) + 1616  [0x1066c668c]  Photo.swift:38
+    +                           4 static Photo.shrunk(_:side:as:quality:)  (in Chronotheca.debug.dylib) + 1844  [0x1066c726c]  Photo.swift:70
+    +                             4 CGImageDestinationFinalize  (in ImageIO) + 192  [0x181b671e0]
+    +                               4 IIOImageDestination::finalizeDestination(unsigned long long*)  (in ImageIO) + 784  [0x181b62e60]
+    +                                 3 IIO_Writer_AppleJPEG::write(void*, void*)  (in ImageIO) + 132  [0x181b78d54]
+    +                                 ! 3 AppleJPEGWritePlugin::writeAll()  (in ImageIO) + 248  [0x181b78b08]
+    +                                 !   2 AppleJPEGWritePlugin::writeOne(IIOImagePixelDataProvider*, IIODictionary*, IIODictionary*, unsigned int)  (in ImageIO) + 1312  [0x181b7873c]
+    +                                 !   : 2 applejpeg_encode_image_row  (in AppleJPEG) + 532  [0x1c402248c]
+    +                                 !   :   2 aj_encode_row  (in AppleJPEG) + 180  [0x1c3fedd78]
+    +                                 !   :     2 aj_encode_buffers_baseline  (in AppleJPEG) + 52  [0x1c3fed918]
+    +                                 !   :       2 aj_mcu_dct  (in AppleJPEG) + 304  [0x1c40201cc]
+    +                                 !   :         2 aj_block_encode_ac  (in AppleJPEG) + 28,200  [0x1c3ff7c10,0x1c3ff7cbc]
+    +                                 !   1 AppleJPEGWritePlugin::writeOne(IIOImagePixelDataProvider*, IIODictionary*, IIODictionary*, unsigned int)  (in ImageIO) + 1252  [0x181b78700]
+    +                                 !     1 IIOImagePixelDataProvider::getBytesDataProvider(void*, unsigned long)  (in ImageIO) + 216  [0x181c1c0cc]
+    +                                 !       1 IIOImagePixelDataProvider::convertBytesWithRange(unsigned char*, unsigned char*, CGPoint, CGPoint, unsigned long)  (in ImageIO) + 336  [0x181c1b90c]
+    +                                 !         1 IIOImagePixelDataProvider::convertBytes(vImage_Buffer*, vImage_Buffer*)  (in ImageIO) + 276  [0x181c1b6c8]
+    +                                 !           1 iio_vImageConvert_AnyToAny(vImageConverter*, vImage_Buffer const*, vImage_Buffer const*, void*, unsigned int)  (in ImageIO) + 288  [0x181bdbecc]
+    +                                 !             1 vImageConvert_AnyToAny  (in vImage) + 2416  [0x194a04b84]
+    +                                 !               1 AnyToAnyBlockInternal  (in vImage) + 2060  [0x194a19218]
+    +                                 !                 1 vConvert_PermuteChannels_ARGB8888_CV_vec  (in vImage) + 188  [0x194ab18dc]
+    +                                 1 IIO_Writer_AppleJPEG::write(void*, void*)  (in ImageIO) + 144  [0x181b78d60]
+    +                                   1 <deduplicated_symbol>  (in ImageIO) + 0  [0x1819cc320]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        12
+
+Binary images description not available
+
