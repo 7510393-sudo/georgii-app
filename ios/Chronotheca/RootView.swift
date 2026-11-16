@@ -728,6 +728,10 @@ struct RootView: View {
         .animation(shell.screen == .search ? .easeOut(duration: 0.25) : nil) {
             $0.offset(y: shell.screen == .search && shell.deck.isFile ? -shell.searchLift : 0)
         }
+        // Строка поиска — поверх всей страницы, и листа «Сегодня» тоже
+        // (P969): в картотеке прошлого она стоит под корешком «Сегодня».
+        // После сдвига страницы — сама над клавиатурой, со страницей не едет.
+        .overlay(alignment: .bottom) { SearchBar() }
         .background(Desk())
     }
 

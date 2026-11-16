@@ -179,7 +179,7 @@ final class Shell: ObservableObject {
     let search = SearchState()
 
     /// Насколько страница «Дня» поднята над клавиатурой поиска (P931):
-    /// считает картотека (`SearchView.pageLift`), поднимает оболочка.
+    /// считает строка поиска (`SearchBar.pageLift`, P969), поднимает оболочка.
     @Published var searchLift: CGFloat = 0
 
     /// Короткие сообщения человеку (P933): своё состояние — показ и уход

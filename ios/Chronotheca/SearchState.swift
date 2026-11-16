@@ -13,6 +13,11 @@ final class SearchState: ObservableObject {
 
     /// Слово поиска.
     @Published var query = ""
+    /// Строка поиска раскрыта (P798): иначе — только лупа в кружке.
+    @Published var open = false
+    /// Клавиатура поиска поднята. Строка лежит в `SearchBar` (P969), а
+    /// убирает клавиатуру и картотека — открыли карточку, коснулись дня.
+    @Published var typing = false
     @Published var scope: Scope = .all
 
     /// Что искать: всё или только дни со снимками, видео, голосом,

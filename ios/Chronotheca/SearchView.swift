@@ -18,10 +18,6 @@ struct SearchView: View {
 
     /// Строка поиска лежит в оболочке: её очищает и меню поиска.
     private var query: String { search.query }
-    @FocusState private var typing: Bool
-    /// Строка поиска раскрыта (P798): иначе — только лупа в кружке.
-    @State private var searching = false
-
     /// Насколько клавиатура закрывает список находок.
     @State private var keyboard: CGFloat = 0
 
@@ -53,201 +49,11 @@ struct SearchView: View {
             // выходит за неё вниз, а не сдвигает ленту.
             .frame(maxWidth: .infinity)
             .frame(height: height, alignment: .top)
-            // Строка поиска — внизу, над нижней строкой, полупрозрачная
-            // (P797, прежде вверху — P334, P718): карточки идут от самого
-            // верха до самого низа, у будущего завтрашняя — у самого верха.
-            // Только у открытой ленты (P777). Пока набирают — над клавиатурой.
-            // Поиск — лупа в полупрозрачном кружке там же, где у дня «＋»
-            // (P798, вместо постоянной строки P797): касание — строка
-            // раскрывается и поднимается клавиатура; убрали клавиатуру с
-            // пустой строкой — снова лупа.
-            .overlay(alignment: .bottom) {
-                Group {
-                    if searching || !query.isEmpty {
-                        field.padding(.bottom, fieldLift)
-                    } else {
-                        HStack {
-                            Spacer(minLength: 0)
-                            loupe
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.bottom, 8)
-                    }
-                }
-                .opacity(shell.screen == .search ? 1 : 0)
-                .allowsHitTesting(shell.screen == .search)
-                .animation(.easeOut(duration: 0.2), value: shell.screen == .search)
-                .animation(.easeOut(duration: 0.2), value: searching)
-            }
-            .onChange(of: typing) { _, now in
-                if !now && query.isEmpty { searching = false }
-            }
-            // Слово стёрли, когда клавиатуры уже нет, — тоже снова лупа
-            // (P930): прежде строка сворачивалась, только если клавиатуру
-            // убирали при пустой строке, и после крестика оставалась пустой
-            // полосой (снимок автора к 295).
-            .onChange(of: query) { _, now in
-                if now.isEmpty && !typing { searching = false }
-            }
-            // Насколько поднять страницу над клавиатурой поиска — оболочке (P931).
-            .onChange(of: pageLift, initial: true) { _, lift in
-                if shell.searchLift != lift { shell.searchLift = lift }
-            }
-            // Ушли из картотеки — клавиатура поиска уходит тоже (P931).
-            .onChange(of: shell.screen) { _, screen in
-                if screen != .search { typing = false }
-            }
+            // Строка поиска и лупа — не здесь, а на верхнем слое страницы
+            // «Дня» (`SearchBar`, P969): картотека лежит под листом «Сегодня»,
+            // и строка под корешком пряталась бы под ним (P968).
             .onAppear { shell.ribbon.height = height }
             .onChange(of: height) { _, h in shell.ribbon.height = h }
-    }
-
-    /// Верх клавиатуры на экране.
-    private var keysTop: CGFloat {
-        let safe = UIApplication.shared.connectedScenes
-            .compactMap { ($0 as? UIWindowScene)?.keyWindow?.safeAreaInsets.bottom }.first ?? 0
-        return UIScreen.main.bounds.height - safe - keyboard
-    }
-
-    /// Насколько вся страница «Дня» поднята над клавиатурой поиска (P931,
-    /// автор по 298: «если найденных карточек одна или две, они полностью
-    /// закрыты клавиатурой — можно решить, что ничего не нашлось»). В
-    /// картотеке прошлого находки стоят у низа экрана, над корешком
-    /// «Сегодня», — как раз там, где клавиатура. Пока она поднята, страница
-    /// поднимается целиком — карточки, строка поиска, корешок «Сегодня» —
-    /// и встаёт низом на верх клавиатуры: тот же вид, что без клавиатуры,
-    /// только выше. Поднимает оболочка (`RootView.dayPage`): лист «Сегодня»
-    /// лежит у неё. В картотеке будущего находки у верха экрана —
-    /// поднимается одна строка поиска, как прежде.
-    private var pageLift: CGFloat {
-        guard keyboard > 0, shell.barTop > 0, shell.screen == .search,
-              shell.deck == .file(.past) else { return 0 }
-        return max(0, shell.barTop - keysTop)
-    }
-
-    /// Насколько поднять строку поиска над клавиатурой (P797): строка стоит
-    /// над нижней строкой разделов, клавиатура поднимается от низа экрана.
-    private var fieldLift: CGFloat {
-        // Без клавиатуры в картотеке прошлого строка стоит над корешком
-        // «Сегодня» (P930, автор по 296: «наполовину скрыта за торчащей
-        // снизу карточкой „Сегодня“»).
-        // С клавиатурой в прошлом — там же: страница поднята целиком (P931).
-        guard keyboard > 0, shell.barTop > 0, pageLift == 0 else {
-            return shell.deck.side == .past ? FollowRibbon.peekBottom : 0
-        }
-        return max(0, shell.barTop - keysTop + 4)
-    }
-
-    /// Лупа в стеклянном кружке, размером с «＋» дня (P798).
-    private var loupe: some View {
-        Button {
-            searching = true
-            DispatchQueue.main.async { typing = true }
-        } label: {
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(Look.inkSoft)
-                .frame(width: 44, height: 44)
-                .background(.ultraThinMaterial, in: Circle())
-                .overlay(Circle().strokeBorder(Look.inkFaint.opacity(0.5), lineWidth: 1))
-                .shadow(color: .black.opacity(0.15), radius: 3, x: 1.5, y: 1.5)
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(T("Поиск", "Search"))
-    }
-
-    /// Строка поиска — внизу ленты (P797).
-    private var field: some View {
-        HStack(spacing: 8) {
-            fieldBox
-            // Закончить поиск одним касанием (P930), как «Отменить» в Почте
-            // и Заметках: слово стёрто, клавиатура убрана, снова лупа.
-            // Крестик в строке только стирает слово — строка остаётся для
-            // уточнения.
-            Button {
-                search.query = ""
-                typing = false
-                searching = false
-            } label: {
-                Text(T("Отменить", "Cancel"))
-                    .font(.system(size: 15))
-                    .foregroundStyle(Look.accent)
-                    .lineLimit(1)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 9)
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
-                    .background(Look.fieldBg.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(.horizontal, 16)
-        .padding(.top, 6)
-        .padding(.bottom, 8)
-    }
-
-    private var fieldBox: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "magnifyingglass")
-                .foregroundStyle(Look.inkFaint)
-            TextField(prompt, text: $search.query)
-                .focused($typing)
-                .submitLabel(.search)
-            if !query.isEmpty {
-                Button { search.query = "" } label: { Image(systemName: "xmark.circle.fill") }
-                    .foregroundStyle(Look.inkFaint)
-                    .accessibilityLabel(T("Очистить", "Clear"))
-            }
-            filterMenu
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 9)
-        // Полупрозрачная, как стекло (P797): карточки под ней видны, но
-        // размыто — иначе их текст спорил со словом «Поиск».
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
-        .background(Look.fieldBg.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
-    }
-
-    /// Где и что искать — меню в самой строке поиска (P632; прежде в меню
-    /// уголка). Горит, когда ищем не по всему архиву.
-    private var filterMenu: some View {
-        Menu {
-            scopeButton(T("Искать везде", "Search everywhere"), .all)
-            scopeButton(T("Только в дневнике", "Only in the diary"), .diary)
-            scopeButton(T("Только в плане", "Only in the plan"), .plan)
-            Divider()
-            ForEach(SearchState.Find.allCases, id: \.self) { kind in
-                Button {
-                    search.find = kind
-                } label: {
-                    let title = kind == .all ? T("Искать всё", "Find everything")
-                                             : T("Только: ", "Only: ") + kind.title.lowercased()
-                    if search.find == kind { Label(title, systemImage: "checkmark") } else { Text(title) }
-                }
-            }
-        } label: {
-            Image(systemName: "line.3.horizontal.decrease.circle")
-                .font(.system(size: 18))
-                .foregroundStyle(search.scope != .all || search.find != .all ? Look.accent : Look.inkFaint)
-        }
-        .accessibilityLabel(T("Что и где искать", "What and where to search"))
-    }
-
-    private func scopeButton(_ title: String, _ scope: SearchState.Scope) -> some View {
-        Button {
-            search.scope = scope
-        } label: {
-            if search.scope == scope { Label(title, systemImage: "checkmark") } else { Text(title) }
-        }
-    }
-
-    /// Где ищем — видно прямо в строке поиска, а не только в меню: иначе,
-    /// выбрав «только в плане» и забыв об этом, человек решит, что запись
-    /// пропала.
-    private var prompt: String {
-        switch search.scope {
-        case .all:   return T("Поиск по словам", "Search")
-        case .diary: return T("Поиск в дневнике", "Search the diary")
-        case .plan:  return T("Поиск в плане", "Search the plan")
-        }
     }
 
     private var whereNot: String {
@@ -796,7 +602,7 @@ struct SearchView: View {
             .contentShape(Rectangle())
             .onTapGesture {
                 guard shell.screen == .search else { return }
-                typing = false
+                search.typing = false
                 shell.screen = .today
             }
             .onGeometryChange(for: CGFloat.self) { proxy in
@@ -899,7 +705,7 @@ struct SearchView: View {
             return true
         }
         guard opened else { return }
-        typing = false
+        search.typing = false
         Feel.thud()
         ribbon.reset()
         ribbon.openedFrom = from
@@ -1464,5 +1270,247 @@ private struct TopCut: Shape {
     let cut: CGFloat
     func path(in r: CGRect) -> Path {
         Path(CGRect(x: r.minX, y: r.minY + cut, width: r.width, height: max(0, r.height - cut)))
+    }
+}
+
+/// Строка поиска и лупа картотеки — на верхнем слое страницы «Дня» (P969).
+///
+/// Прежде они лежали в самой картотеке (`SearchView`), а картотека — под
+/// листом «Сегодня». В картотеке прошлого находки стоят вплотную над
+/// корешком «Сегодня»; строка над корешком закрывала нижнюю находку (автор
+/// по 302), а строка под корешком уходила под лист (P966, отменено P968).
+/// Теперь строка рисуется поверх всей страницы и стоит у самого низа: снизу
+/// вверх — клавиатура (или нижняя строка разделов), строка поиска, корешок
+/// «Сегодня», находки. Для этого страница поднимается ещё на высоту строки,
+/// а строка лежит на столе и закрывает открывшийся низ листа «Сегодня».
+/// Не поднимается вместе со страницей: стоит над клавиатурой сама.
+struct SearchBar: View {
+
+    @EnvironmentObject private var shell: Shell
+    @EnvironmentObject private var search: SearchState
+    @FocusState private var typing: Bool
+
+    /// Насколько клавиатура закрывает экран снизу.
+    @State private var keyboard: CGFloat = 0
+    /// Высота строки поиска с отступами — на столько поднимается страница.
+    @State private var fieldHeight: CGFloat = 52
+
+    var body: some View {
+        // Строка поиска — внизу, над нижней строкой, полупрозрачная
+        // (P797, прежде вверху — P334, P718): карточки идут от самого
+        // верха до самого низа, у будущего завтрашняя — у самого верха.
+        // Только у открытой ленты (P777). Пока набирают — над клавиатурой.
+        // Поиск — лупа в полупрозрачном кружке там же, где у дня «＋»
+        // (P798, вместо постоянной строки P797): касание — строка
+        // раскрывается и поднимается клавиатура; убрали клавиатуру с
+        // пустой строкой — снова лупа.
+        Group {
+            if shown {
+                field
+                    .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { h in
+                        if abs(h - fieldHeight) > 0.5 { fieldHeight = h }
+                    }
+                    // Под корешком строка лежит на столе (P969): иначе сквозь
+                    // неё был бы виден поднятый низ листа «Сегодня».
+                    .background { if underSpine { Desk() } }
+                    .padding(.bottom, fieldLift)
+            } else {
+                HStack {
+                    Spacer(minLength: 0)
+                    loupe
+                }
+                .padding(.horizontal, 12)
+                .padding(.bottom, 8)
+            }
+        }
+        .opacity(shell.screen == .search ? 1 : 0)
+        .allowsHitTesting(shell.screen == .search)
+        .accessibilityHidden(shell.screen != .search)
+        .animation(.easeOut(duration: 0.2), value: shell.screen == .search)
+        // Тем же ходом, каким поднимается страница (P931).
+        .animation(.easeOut(duration: 0.25), value: shown)
+        .keyboardHeight($keyboard)
+        .onChange(of: typing) { _, now in
+            if search.typing != now { search.typing = now }
+            if !now && search.query.isEmpty { search.open = false }
+        }
+        // Клавиатуру убирает и картотека: открыли карточку, коснулись дня.
+        .onChange(of: search.typing) { _, now in
+            if typing != now { typing = now }
+        }
+        // Слово стёрли, когда клавиатуры уже нет, — тоже снова лупа
+        // (P930): прежде строка сворачивалась, только если клавиатуру
+        // убирали при пустой строке, и после крестика оставалась пустой
+        // полосой (снимок автора к 295).
+        .onChange(of: search.query) { _, now in
+            if now.isEmpty && !typing { search.open = false }
+        }
+        // Насколько поднять страницу над клавиатурой поиска — оболочке (P931).
+        .onChange(of: pageLift, initial: true) { _, lift in
+            if shell.searchLift != lift { shell.searchLift = lift }
+        }
+        // Ушли из картотеки — клавиатура поиска уходит тоже (P931).
+        .onChange(of: shell.screen) { _, screen in
+            if screen != .search { typing = false }
+        }
+    }
+
+    /// Строка поиска раскрыта: набирают или слово осталось.
+    private var shown: Bool { search.open || !search.query.isEmpty }
+
+    /// Строка стоит под корешком «Сегодня», у самого низа (P969): в
+    /// картотеке прошлого, пока строка раскрыта.
+    private var underSpine: Bool {
+        shown && shell.screen == .search && shell.deck == .file(.past)
+    }
+
+    /// Верх клавиатуры на экране.
+    private var keysTop: CGFloat {
+        let safe = UIApplication.shared.connectedScenes
+            .compactMap { ($0 as? UIWindowScene)?.keyWindow?.safeAreaInsets.bottom }.first ?? 0
+        return UIScreen.main.bounds.height - safe - keyboard
+    }
+
+    /// Сколько клавиатура закрывает над нижней строкой разделов.
+    private var keys: CGFloat {
+        keyboard > 0 && shell.barTop > 0 ? max(0, shell.barTop - keysTop) : 0
+    }
+
+    /// Насколько вся страница «Дня» поднята (P931, автор по 298: «если
+    /// найденных карточек одна или две, они полностью закрыты клавиатурой»;
+    /// P969, автор по 302: «её полностью закрывает строка поиска»). В
+    /// картотеке прошлого находки стоят у низа экрана, над корешком
+    /// «Сегодня». Пока строка раскрыта, страница поднимается целиком —
+    /// карточки, корешок «Сегодня» — на высоту клавиатуры и строки поиска.
+    /// Поднимает оболочка (`RootView.dayPage`): лист «Сегодня» лежит у неё.
+    /// В картотеке будущего находки у верха экрана — поднимается одна строка
+    /// поиска, как прежде.
+    private var pageLift: CGFloat {
+        underSpine ? keys + fieldHeight : 0
+    }
+
+    /// Насколько поднять строку поиска над нижней строкой разделов (P797).
+    private var fieldLift: CGFloat {
+        // В картотеке прошлого — вплотную над клавиатурой, под корешком (P969).
+        if underSpine { return keys }
+        // Без клавиатуры у прошлого строка — над корешком «Сегодня» (P930):
+        // так она стоит, пока картотеку тянут или карточка садится.
+        guard keyboard > 0, shell.barTop > 0 else {
+            return shell.deck.side == .past ? FollowRibbon.peekBottom : 0
+        }
+        return keys + 4
+    }
+
+    /// Лупа в стеклянном кружке, размером с «＋» дня (P798).
+    private var loupe: some View {
+        Button {
+            search.open = true
+            DispatchQueue.main.async { typing = true }
+        } label: {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundStyle(Look.inkSoft)
+                .frame(width: 44, height: 44)
+                .background(.ultraThinMaterial, in: Circle())
+                .overlay(Circle().strokeBorder(Look.inkFaint.opacity(0.5), lineWidth: 1))
+                .shadow(color: .black.opacity(0.15), radius: 3, x: 1.5, y: 1.5)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(T("Поиск", "Search"))
+    }
+
+    /// Строка поиска — внизу ленты (P797).
+    private var field: some View {
+        HStack(spacing: 8) {
+            fieldBox
+            // Закончить поиск одним касанием (P930), как «Отменить» в Почте
+            // и Заметках: слово стёрто, клавиатура убрана, снова лупа.
+            // Крестик в строке только стирает слово — строка остаётся для
+            // уточнения.
+            Button {
+                search.query = ""
+                typing = false
+                search.open = false
+            } label: {
+                Text(T("Отменить", "Cancel"))
+                    .font(.system(size: 15))
+                    .foregroundStyle(Look.accent)
+                    .lineLimit(1)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 9)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
+                    .background(Look.fieldBg.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 6)
+        .padding(.bottom, 8)
+    }
+
+    private var fieldBox: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(Look.inkFaint)
+            TextField(prompt, text: $search.query)
+                .focused($typing)
+                .submitLabel(.search)
+            if !query.isEmpty {
+                Button { search.query = "" } label: { Image(systemName: "xmark.circle.fill") }
+                    .foregroundStyle(Look.inkFaint)
+                    .accessibilityLabel(T("Очистить", "Clear"))
+            }
+            filterMenu
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 9)
+        // Полупрозрачная, как стекло (P797): карточки под ней видны, но
+        // размыто — иначе их текст спорил со словом «Поиск».
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
+        .background(Look.fieldBg.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
+    }
+
+    /// Где и что искать — меню в самой строке поиска (P632; прежде в меню
+    /// уголка). Горит, когда ищем не по всему архиву.
+    private var filterMenu: some View {
+        Menu {
+            scopeButton(T("Искать везде", "Search everywhere"), .all)
+            scopeButton(T("Только в дневнике", "Only in the diary"), .diary)
+            scopeButton(T("Только в плане", "Only in the plan"), .plan)
+            Divider()
+            ForEach(SearchState.Find.allCases, id: \.self) { kind in
+                Button {
+                    search.find = kind
+                } label: {
+                    let title = kind == .all ? T("Искать всё", "Find everything")
+                                             : T("Только: ", "Only: ") + kind.title.lowercased()
+                    if search.find == kind { Label(title, systemImage: "checkmark") } else { Text(title) }
+                }
+            }
+        } label: {
+            Image(systemName: "line.3.horizontal.decrease.circle")
+                .font(.system(size: 18))
+                .foregroundStyle(search.scope != .all || search.find != .all ? Look.accent : Look.inkFaint)
+        }
+        .accessibilityLabel(T("Что и где искать", "What and where to search"))
+    }
+
+    private func scopeButton(_ title: String, _ scope: SearchState.Scope) -> some View {
+        Button {
+            search.scope = scope
+        } label: {
+            if search.scope == scope { Label(title, systemImage: "checkmark") } else { Text(title) }
+        }
+    }
+
+    /// Где ищем — видно прямо в строке поиска, а не только в меню: иначе,
+    /// выбрав «только в плане» и забыв об этом, человек решит, что запись
+    /// пропала.
+    private var prompt: String {
+        switch search.scope {
+        case .all:   return T("Поиск по словам", "Search")
+        case .diary: return T("Поиск в дневнике", "Search the diary")
+        case .plan:  return T("Поиск в плане", "Search the plan")
+        }
     }
 }
