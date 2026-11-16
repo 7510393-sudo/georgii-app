@@ -285,6 +285,8 @@ struct SearchView: View {
         enum Kind {
             case pad(CGFloat)
             case note
+            /// С этой стороны от «Сегодня» не нашлось, а с другой — есть (P934).
+            case hint(Deck.Side)
             case past(Archive.Day)
             case slot
             case future(Archive.Day)
@@ -334,8 +336,14 @@ struct SearchView: View {
         // стол до верха экрана, чтобы лента могла встать вчерашним днём
         // над нижней строкой.
         out.append(Entry(id: "lead", kind: .pad(max(8, height - CGFloat(past.count) * 60))))
-        if !query.trimmingCharacters(in: .whitespaces).isEmpty && past.isEmpty && future.isEmpty {
-            out.append(Entry(id: "note", kind: .note))
+        // Слово есть только с другой стороны от «Сегодня» — подсказка на
+        // пустой стороне (P934, ответ автора: «писать подсказку, но не
+        // переходить без пользователя»): прежде экран был пуст, будто не
+        // нашлось ничего.
+        let asked = !query.trimmingCharacters(in: .whitespaces).isEmpty
+        if asked && past.isEmpty {
+            out.append(future.isEmpty ? Entry(id: "note", kind: .note)
+                                      : Entry(id: "hint-past", kind: .hint(.past)))
         }
         for (i, day) in past.enumerated() {
             out.append(Entry(id: Search.deep ? "p\(i)" : day.id, kind: .past(day), over: i > 0))
@@ -343,6 +351,9 @@ struct SearchView: View {
         // Место дня заходит на нижний край вчерашней карточки, как
         // следующая карточка; завтрашняя лежит под днём своим корешком.
         out.append(Entry(id: Ribbon.slotID, kind: .slot, over: !past.isEmpty))
+        if asked && future.isEmpty && !past.isEmpty {
+            out.append(Entry(id: "hint-future", kind: .hint(.future)))
+        }
         for (i, day) in future.enumerated() {
             out.append(Entry(id: day.id, kind: .future(day), over: i > 0))
         }
@@ -738,6 +749,12 @@ struct SearchView: View {
                     T("По запросу «\(query)» \(whereNot)записей нет.",
                       "No entries \(whereNot)match “\(query)”."))
                 .frame(height: 160)
+        case .hint(let side):
+            message(side == .past ? T("В прошлом не нашлось.", "Nothing in the past.")
+                                  : T("В будущих днях не нашлось.", "Nothing in the days ahead."),
+                    side == .past ? T("Есть находки в будущих днях.", "There are matches in the days ahead.")
+                                  : T("Есть находки в прошлом.", "There are matches in the past."))
+                .frame(height: 120)
         case .past(let day):
             // Карточки уже дня (P780): по бокам виден стол, день — во всю
             // ширину, и его не спутать с карточкой.
