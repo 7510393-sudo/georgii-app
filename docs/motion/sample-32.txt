@@ -1,0 +1,113 @@
+    112 Thread_164048   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 112 start  (in dyld) + 6992  [0x104bd84e4]
+    +   112 start_sim  (in dyld_sim) + 20  [0x10495f0e4]
+    +     112 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x1068e81f4]  ChronothecaApp.swift:0
+    +       112 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1068e8148]  /<compiler-generated>:0
+    +         112 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           112 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             112 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               112 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 112 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   112 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     112 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       101 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    +                       ! 101 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    +                       !   101 mach_msg  (in libsystem_kernel.dylib) + 20  [0x104814ef0]
+    +                       !     101 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x10481cc44]
+    +                       !       101 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x104825e84]
+    +                       !         101 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x104814b70]
+    +                       11 __CFRunLoopRun  (in CoreFoundation) + 1884  [0x180421c6c]
+    +                         11 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__  (in CoreFoundation) + 12  [0x180422a94]
+    +                           11 _dispatch_main_queue_callback_4CF  (in libdispatch.dylib) + 40  [0x180195890]
+    +                             10 _dispatch_main_queue_drain  (in libdispatch.dylib) + 644  [0x180195b24]
+    +                             : 10 _dispatch_source_invoke  (in libdispatch.dylib) + 1800  [0x18019df44]
+    +                             :   10 _dispatch_continuation_pop  (in libdispatch.dylib) + 776  [0x18018b068]
+    +                             :     10 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                             :       10 thunk for @escaping @callee_guaranteed () -> ()  (in Chronotheca.debug.dylib) + 48  [0x10681ff90]  /<compiler-generated>:0
+    +                             :         5 closure #1 in closure #2 in ChronothecaApp.body.getter  (in Chronotheca.debug.dylib) + 292  [0x1068e7e80]  ChronothecaApp.swift:115
+    +                             :         | 5 DayStore.fetchWeatherIfNeeded()  (in Chronotheca.debug.dylib) + 436  [0x106985c34]  <stdin>:0
+    +                             :         |   5 ???  (in CoreLocation)  load address 0x184a65000 + 0x1744c  [0x184a7c44c]
+    +                             :         |     5 _os_activity_create_addr  (in libsystem_trace.dylib) + 1480  [0x1800a5e90]
+    +                             :         |       5 _os_activity_stream_reflect  (in libsystem_trace.dylib) + 336  [0x1800a605c]
+    +                             :         |         5 dyld4::APIs::dyld_image_path_containing_address(void const*)  (in dyld_sim) + 68  [0x104957184]
+    +                             :         |           5 dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 528  [0x104956ec0]
+    +                             :         |             5 dyld4::RuntimeLocks::withLoadersReadLock(void () block_pointer)  (in dyld_sim) + 48  [0x104965390]
+    +                             :         |               5 _os_unfair_lock_lock_slow  (in libsystem_platform.dylib) + 168  [0x104895258]
+    +                             :         |                 5 __ulock_wait2  (in libsystem_kernel.dylib) + 8  [0x104821b04]
+    +                             :         4 closure #1 in closure #2 in ChronothecaApp.body.getter  (in Chronotheca.debug.dylib) + 284  [0x1068e7e78]  ChronothecaApp.swift:114
+    +                             :         | 4 DayStore.syncUpcomingReminders()  (in Chronotheca.debug.dylib) + 2092  [0x106976ad4]  DayStore.swift:1390
+    +                             :         |   4 static Reminders.sync(day:rows:)  (in Chronotheca.debug.dylib) + 1124  [0x106cf2ed4]  Reminders.swift:59
+    +                             :         |     4 -[UNUserNotificationCenter getPendingNotificationRequestsWithCompletionHandler:]  (in UserNotifications) + 72  [0x18da8c178]
+    +                             :         |       4 -[UNUserNotificationServiceConnection getPendingNotificationRequestsForBundleIdentifier:withCompletionHandler:]  (in UserNotifications) + 136  [0x18da90a80]
+    +                             :         |         4 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                             :         |           4 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                             :         |             4 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9820  [0x1800b68f4]
+    +                             :         |               4 _os_log_impl_stream  (in libsystem_trace.dylib) + 524  [0x1800b6e94]
+    +                             :         |                 4 _os_activity_stream_reflect  (in libsystem_trace.dylib) + 336  [0x1800a605c]
+    +                             :         |                   4 dyld4::APIs::dyld_image_path_containing_address(void const*)  (in dyld_sim) + 68  [0x104957184]
+    +                             :         |                     4 dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 528  [0x104956ec0]
+    +                             :         |                       4 dyld4::RuntimeLocks::withLoadersReadLock(void () block_pointer)  (in dyld_sim) + 48  [0x104965390]
+    +                             :         |                         4 _os_unfair_lock_lock_slow  (in libsystem_platform.dylib) + 168  [0x104895258]
+    +                             :         |                           4 __ulock_wait2  (in libsystem_kernel.dylib) + 8  [0x104821b04]
+    +                             :         1 closure #1 in closure #6 in RootView.body.getter  (in Chronotheca.debug.dylib) + 172  [0x106d50658]  RootView.swift:195
+    +                             :           1 Vault.root.getter  (in Chronotheca.debug.dylib) + 60  [0x106eed834]  Vault.swift:0
+    +                             :             1 swift_getKeyPathImpl  (in libswiftCore.dylib) + 0  [0x19836e770]
+    +                             1 _dispatch_main_queue_drain  (in libdispatch.dylib) + 1172  [0x180195d34]
+    +                               1 <deduplicated_symbol>  (in libdispatch.dylib) + 24  [0x1801bd748]
+    +                                 1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                                   1 _dispatch_call_block_and_release  (in libdispatch.dylib) + 24  [0x1801866a0]
+    +                                     1 __104+[UIAccessibilityLoader _performInitialAccessibilityBundleLoad:monitorForFutureLoadEvents:trackingMode:]_block_invoke_3  (in UIAccessibility) + 168  [0x195264a5c]
+    +                                       1 +[AXSearchFoundationGlue accessibilityInitializeBundle]  (in SearchFoundation) + 92  [0x11f180d2c]
+    +                                         1 -[AXValidationManager performValidations:withPreValidationHandler:postValidationHandler:safeCategoryInstallationHandler:]  (in AXCoreUtilities) + 280  [0x192ac0a10]
+    +                                           1 -[AXAccessQueue performSynchronousWritingBlock:]  (in AXCoreUtilities) + 48  [0x192acfc90]
+    +                                             1 AXPerformBlockSynchronouslyOnMainThread  (in AXCoreUtilities) + 56  [0x192ac8b90]
+    +                                               1 __121-[AXValidationManager performValidations:withPreValidationHandler:postValidationHandler:safeCategoryInstallationHandler:]_block_invoke  (in AXCoreUtilities) + 612  [0x192ac0cc4]
+    +                                                 1 __55+[AXSearchFoundationGlue accessibilityInitializeBundle]_block_invoke_3  (in SearchFoundation) + 44  [0x11f180dc8]
+    +                                                   1 -[AXValidationManager installSafeCategory:canInteractWithTargetClass:]  (in AXCoreUtilities) + 164  [0x192ac4f88]
+    +                                                     1 NSClassFromString  (in Foundation) + 152  [0x1810eef20]
+    +                                                       1 look_up_class  (in libobjc.A.dylib) + 100  [0x180049030]
+    +                                                         1 realizeClassMaybeSwiftMaybeRelock(objc_class*, locker_mixin<lockdebug::lock_mixin<objc_lock_base_t>>&, bool)  (in libobjc.A.dylib) + 56  [0x180040f00]
+    +                                                           1 realizeClassWithoutSwift(objc_class*, objc_class*)  (in libobjc.A.dylib) + 364  [0x180041e5c]
+    +                                                             1 realizeClassWithoutSwift(objc_class*, objc_class*)  (in libobjc.A.dylib) + 1828  [0x180042414]
+    +                                                               1 prepareMethodLists(objc_class*, method_list_t**, int, bool, bool, char const*)  (in libobjc.A.dylib) + 76  [0x180043338]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        442
+        mach_msg2_trap  (in libsystem_kernel.dylib)        213
+        __semwait_signal  (in libsystem_kernel.dylib)        102
+        __ulock_wait2  (in libsystem_kernel.dylib)        97
+        mach_msg2_trap  (in dyld)        85
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        81
+        __getdirentries64  (in libsystem_kernel.dylib)        22
+        start_wqthread  (in libsystem_pthread.dylib)        21
+        _dyld_image_count  (in libdyld.dylib)        13
+        semaphore_wait_trap  (in libsystem_kernel.dylib)        9
+        Substring.subscript.getter  (in libswiftCore.dylib)        6
+        specialized BidirectionalCollection._range<A>(of:anchored:backwards:)  (in Foundation)        6
+
+Binary Images:
+       0x104800000 -        0x104803507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC/data/Containers/Bundle/Application/2E6B981A-8373-406B-A583-B07DD517D68A/Chronotheca.app/Chronotheca
+       0x104814000 -        0x10484eee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
+       0x104894000 -        0x10489c3d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
+       0x104954000 -        0x1049a2e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x104a10000 -        0x104a5365f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x104b64000 -        0x104b7010b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
+       0x104bb8000 -        0x104c6b523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
+       0x104d10000 -        0x104da92af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x1054a0000 -        0x1054a0b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x1054b4000 -        0x1054bc03f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x1055c8000 -        0x1055d339f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x1055ec000 -        0x1055eedff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x10560c000 -        0x10561549f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x105630000 -        0x105636b7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x105660000 -        0x10567927f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
+       0x1056b0000 -        0x1056b72df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
+       0x105aa8000 -        0x105aabe5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x105ac0000 -        0x105ac5407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
+       0x105bb8000 -        0x105bbc6ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
+       0x105c08000 -        0x105c0b1ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
+       0x105c30000 -        0x105e8bbbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+       0x10651c000 -        0x10653ecff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
+       0x1065b4000 -        0x1065daf5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
+       0x106600000 -        0x10663a15f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
+       0x106814000 -        0x10701ace3 +Chronotheca.debug.dylib (0) <951F256B-1B02-30B4-BD29-A8DF18924880> /Users/*/Library/Developer/CoreSimulator/Devices/FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC/data/Containers/Bundle/Application/2E6B981A-8373-406B-A583-B07DD517D68A/Chronotheca.app/Chronotheca.debug.dylib

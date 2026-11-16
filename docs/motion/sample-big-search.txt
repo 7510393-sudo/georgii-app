@@ -1,0 +1,72 @@
+    2623 Thread_50885   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 2623 start  (in dyld) + 6992  [0x102dc84e4]
+    +   2623 start_sim  (in dyld_sim) + 20  [0x10304f0e4]
+    +     2623 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x104e2c1f4]  ChronothecaApp.swift:0
+    +       2623 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x104e2c148]  /<compiler-generated>:0
+    +         2623 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           2623 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             2623 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               2623 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 2623 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   2623 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     2623 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       2621 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    +                       ! 2621 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    +                       !   2621 mach_msg  (in libsystem_kernel.dylib) + 20  [0x102f00ef0]
+    +                       !     2621 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x102f08c44]
+    +                       !       2621 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x102f11e84]
+    +                       !         2621 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x102f00b70]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 1884  [0x180421c6c]
+    +                       ! 1 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__  (in CoreFoundation) + 12  [0x180422a94]
+    +                       !   1 _dispatch_main_queue_callback_4CF  (in libdispatch.dylib) + 40  [0x180195890]
+    +                       !     1 _dispatch_main_queue_drain  (in libdispatch.dylib) + 1172  [0x180195d34]
+    +                       !       1 <deduplicated_symbol>  (in libdispatch.dylib) + 24  [0x1801bd748]
+    +                       !         1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                       !           1 _dispatch_call_block_and_release  (in libdispatch.dylib) + 24  [0x1801866a0]
+    +                       !             1 thunk for @escaping @callee_guaranteed () -> ()  (in Chronotheca.debug.dylib) + 48  [0x104d63f90]  /<compiler-generated>:0
+    +                       !               1 closure #1 in closure #1 in static LagWatch.start()  (in Chronotheca.debug.dylib) + 188  [0x1053cf3d8]  Shell.swift:399
+    +                       !                 1 _dispatch_semaphore_signal_slow  (in libdispatch.dylib) + 48  [0x1801882f4]
+    +                       !                   1 _dispatch_sema4_signal  (in libdispatch.dylib) + 28  [0x180187d14]
+    +                       !                     1 semaphore_signal_trap  (in libsystem_kernel.dylib) + 8  [0x102f00ac8]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 884  [0x180421884]
+
+Sort by top of stack, same collapsed (when >= 5):
+        mach_msg2_trap  (in libsystem_kernel.dylib)        5249
+        __workq_kernreturn  (in libsystem_kernel.dylib)        5246
+        __semwait_signal  (in libsystem_kernel.dylib)        2611
+        generationCountFromListOfSources  (in CoreFoundation)        178
+        pthread_getspecific  (in libsystem_pthread.dylib)        107
+        objc_msgSend  (in libobjc.A.dylib)        87
+        __CF_IS_OBJC  (in CoreFoundation)        76
+        static PageTexture.smooth(_:_:_:_:_:)  (in Chronotheca.debug.dylib)        66
+        pthread_setspecific  (in libsystem_pthread.dylib)        56
+        -[__NSDictionaryM objectForKey:]  (in CoreFoundation)        49
+        _CFStringGetCStringPtrInternal  (in CoreFoundation)        48
+        _swift_isClassOrObjCExistentialType  (in libswiftCore.dylib)        47
+        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        41
+        static PageTexture.grey.getter  (in Chronotheca.debug.dylib)        41
+        min<A>(_:_:)  (in libswiftCore.dylib)        39
+        at #1 (_:_:) in static PageTexture.edgeDistance(_:width:height:)  (in Chronotheca.debug.dylib)        38
+        objc_retain_x8  (in libobjc.A.dylib)        38
+        __CFStringHash  (in CoreFoundation)        32
+        os_unfair_lock_lock  (in libsystem_platform.dylib)        32
+        os_unfair_lock_unlock  (in libsystem_platform.dylib)        31
+        Array.subscript.getter  (in libswiftCore.dylib)        30
+        Array._checkSubscript(_:wasNativeTypeChecked:)  (in libswiftCore.dylib)        29
+        CFEqual  (in CoreFoundation)        28
+        static PageTexture.makeAgedFolder(size:band:seed:tab:share:light:)  (in Chronotheca.debug.dylib)        28
+        CFStringHashCString  (in CoreFoundation)        27
+        protocol witness for Collection.formIndex(after:) in conformance <> Range<A>  (in libswiftCore.dylib)        27
+        normalizeQuintuplet  (in CoreFoundation)        26
+        -[__NSArrayM getObjects:range:]  (in CoreFoundation)        23
+        objc_release  (in libobjc.A.dylib)        23
+        CFStringGetLength  (in CoreFoundation)        22
+        objc_autorelease  (in libobjc.A.dylib)        22
+        os_unfair_lock_assert_not_owner  (in libsystem_platform.dylib)        22
+        swift::metadataimpl::ValueWitnesses<swift::metadataimpl::NativeBox<unsigned int, 4ul, 4ul, 4ul>>::initializeWithCopy(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        22
+        -[CFPrefsSearchListSource alreadylocked_getDictionary:]  (in CoreFoundation)        21
+        String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:)  (in libswiftCore.dylib)        21
+        swift::LockingConcurrentMap<(anonymous namespace)::TupleCacheEntry, (anonymous namespace)::TupleCacheStorage>::getOrInsert<(anonymous namespace)::TupleCacheEntry::Key, swift::MetadataRequest&, swift::TargetValueWitnessTable<swift::InProcess> const*&>((anonymous namespace)::TupleCacheEntry::Key, swift::MetadataRequest&, swift::TargetValueWitnessTable<swift::InProcess> const*&)  (in libswiftCore.dylib)        21
+        os_log_type_enabled  (in libsystem_trace.dylib)        20
+        swift_endAccess  (in libswiftCore.dylib)        20
+        String._bridgeToObjectiveCImpl()  (in libswiftCore.dylib)        18
