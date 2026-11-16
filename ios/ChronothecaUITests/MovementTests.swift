@@ -868,10 +868,12 @@ final class MovementTests: XCTestCase {
 
     private func traceText() -> String {
         guard let dir = ProcessInfo.processInfo.environment["MOTION_DIR"], !dir.isEmpty,
-              let text = try? String(contentsOf: URL(fileURLWithPath: dir).appendingPathComponent("замирания.txt"),
-                                     encoding: .utf8)
+              let data = try? Data(contentsOf: URL(fileURLWithPath: dir).appendingPathComponent("замирания.txt"))
         else { return "" }
-        return text
+        // Два потока пишут в след вперемешку, и строка бывает разорвана
+        // посреди буквы (P975): строгое чтение тогда отдавало пустоту, и
+        // проверка не видела ни одного шага. Битые буквы — заменить.
+        return String(decoding: data, as: UTF8.self)
     }
 
     /// Сколько, по часам приложения, открывался раздел последний раз
