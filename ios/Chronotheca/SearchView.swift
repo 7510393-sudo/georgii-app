@@ -1455,7 +1455,7 @@ struct SearchBar: View {
             TextField(prompt, text: $search.query)
                 .focused($typing)
                 .submitLabel(.search)
-            if !query.isEmpty {
+            if !search.query.isEmpty {
                 Button { search.query = "" } label: { Image(systemName: "xmark.circle.fill") }
                     .foregroundStyle(Look.inkFaint)
                     .accessibilityLabel(T("Очистить", "Clear"))
