@@ -195,6 +195,7 @@ struct DiaryEditor: UIViewRepresentable {
             // и она продолжит писать с прежнего места, слово ляжет вокруг
             // другого слова.
         } else if DiaryEditor.plain(view.attributedText) != text || view.attributedText.length == 0 {
+            if view.isFirstResponder { StampTrace.note("поле переписано из записи") }
             let selection = view.selectedRange
             view.attributedText = Self.styled(text, size: size, serif: serif, stamped: stamped,
                                               resolve: resolve)
@@ -780,6 +781,7 @@ struct DiaryEditor: UIViewRepresentable {
             let up = low.uppercased()
             guard up != low, (up as NSString).length == r.length else { return }
             let sel = view.selectedRange
+            StampTrace.note("буква за отметкой поднята")
             placing = true
             storage.replaceCharacters(in: r, with: up)
             view.selectedRange = sel
@@ -1863,6 +1865,7 @@ struct DiaryEditor: UIViewRepresentable {
                 // За отметкой на той же строке что-то есть — написали (или
                 // надиктовали): отметка остаётся насовсем, час — от этого.
                 if Self.lineHasText(ns, from: NSMaxRange(p)) {
+                    StampTrace.note("отметка осталась: за ней написали")
                     parent.onWrite?()
                     return
                 }
@@ -2033,6 +2036,7 @@ struct DiaryEditor: UIViewRepresentable {
                              - страница.bounds.height)
             let куда = min(страница.contentOffset.y + ниже, предел)
             guard куда > страница.contentOffset.y else { return }
+            StampTrace.note("страница подвинута к курсору")
             страница.setContentOffset(CGPoint(x: страница.contentOffset.x, y: куда),
                                       animated: animated)
         }
@@ -2070,6 +2074,12 @@ struct DiaryEditor: UIViewRepresentable {
         }
 
         func textViewDidChange(_ view: UITextView) {
+            // Что поле видит на каждой правке (P967): признак диктовки на
+            // телефоне автора не срабатывает — по следу видно, что именно
+            // поле делает в миг, когда диктовка выключается.
+            StampTrace.note("правка: " + (Self.dictating(view) ? "диктовка" : "не диктовка")
+                            + (view.markedTextRange != nil ? " · временный текст" : "")
+                            + " · ввод " + (view.textInputMode?.primaryLanguage ?? "—"))
             // Диктовка пишет — запомнить её строку; отпустила — время в
             // начало строки, если его там нет (P869).
             if Self.dictating(view), !placing {
@@ -2096,6 +2106,7 @@ struct DiaryEditor: UIViewRepresentable {
             if resolve != nil, DiaryEditor.hasLoosePicture(view.text) {
                 // Строку-ссылку только что бросили или вписали — рисуем её
                 // картинкой. Курсор остаётся примерно там, где был.
+                StampTrace.note("поле переписано: ссылка стала картинкой")
                 let at = view.selectedRange.location
                 view.attributedText = DiaryEditor.styled(now, size: parent.size,
                                                          serif: parent.serif,
@@ -2355,6 +2366,7 @@ struct DiaryEditor: UIViewRepresentable {
                 start = line.location + line.length
             }
             if !stale.isEmpty {
+                StampTrace.note("краска: строк \(stale.count)")
                 storage.beginEditing()
                 for item in stale {
                     storage.addAttributes(body, range: item.line)
@@ -2376,6 +2388,7 @@ struct DiaryEditor: UIViewRepresentable {
         func setTyping(_ view: UITextView) {
             let body = DiaryEditor.body(parent.size, serif: parent.serif)
             if view.typingAttributes[DiaryEditor.paintKey] as? String != body[DiaryEditor.paintKey] as? String {
+                StampTrace.note("шрифт набора сменён")
                 view.typingAttributes = body
             }
         }

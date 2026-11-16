@@ -63,8 +63,17 @@ struct SearchView: View {
             // пустой строкой — снова лупа.
             .overlay(alignment: .bottom) {
                 Group {
-                    if searching || !query.isEmpty {
-                        field.padding(.bottom, fieldLift)
+                    if fieldShown {
+                        field
+                            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { h in
+                                if abs(h - fieldHeight) > 0.5 { fieldHeight = h }
+                            }
+                            .padding(.bottom, fieldLift)
+                            // Под корешок «Сегодня» — тем же ходом, каким
+                            // поднимается страница (P966).
+                            .animation(.easeOut(duration: 0.25)) {
+                                $0.offset(y: underSpine ? fieldHeight : 0)
+                            }
                     } else {
                         HStack {
                             Spacer(minLength: 0)
@@ -119,19 +128,36 @@ struct SearchView: View {
     /// лежит у неё. В картотеке будущего находки у верха экрана —
     /// поднимается одна строка поиска, как прежде.
     private var pageLift: CGFloat {
-        guard keyboard > 0, shell.barTop > 0, shell.screen == .search,
-              shell.deck == .file(.past) else { return 0 }
-        return max(0, shell.barTop - keysTop)
+        guard underSpine else { return 0 }
+        let keys = keyboard > 0 && shell.barTop > 0 ? max(0, shell.barTop - keysTop) : 0
+        return keys + fieldHeight
     }
+
+    /// Строка поиска раскрыта: набирают или слово осталось.
+    private var fieldShown: Bool { searching || !query.isEmpty }
+
+    /// Строка поиска стоит под корешком «Сегодня», у самого низа (P966,
+    /// автор по 302: «найденная одна карточка выше клавиатуры, но её
+    /// полностью закрывает строка поиска»). В картотеке прошлого находки
+    /// лежат вплотную над корешком — строка над корешком закрывала нижнюю.
+    /// Теперь страница поднимается ещё на высоту строки, а строка встаёт
+    /// на освободившееся место: снизу вверх — клавиатура (или нижняя строка
+    /// разделов), строка поиска, корешок «Сегодня», находки.
+    private var underSpine: Bool {
+        fieldShown && shell.screen == .search && shell.deck == .file(.past)
+    }
+
+    /// Высота строки поиска вместе с отступами — на столько поднимается
+    /// страница (P966).
+    @State private var fieldHeight: CGFloat = 52
 
     /// Насколько поднять строку поиска над клавиатурой (P797): строка стоит
     /// над нижней строкой разделов, клавиатура поднимается от низа экрана.
     private var fieldLift: CGFloat {
-        // Без клавиатуры в картотеке прошлого строка стоит над корешком
-        // «Сегодня» (P930, автор по 296: «наполовину скрыта за торчащей
-        // снизу карточкой „Сегодня“»).
-        // С клавиатурой в прошлом — там же: страница поднята целиком (P931).
-        guard keyboard > 0, shell.barTop > 0, pageLift == 0 else {
+        // В картотеке прошлого строка — у низа поднятой страницы, под
+        // корешком «Сегодня» (P966; отменяет P930 п. 4 — строку над корешком).
+        if underSpine { return 0 }
+        guard keyboard > 0, shell.barTop > 0 else {
             return shell.deck.side == .past ? FollowRibbon.peekBottom : 0
         }
         return max(0, shell.barTop - keysTop + 4)
