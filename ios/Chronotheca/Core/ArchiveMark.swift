@@ -44,7 +44,7 @@ enum ArchiveMark {
     }
 
     /// Текст метки с английскими ключами.
-    static func text(app: String = "Graphomanus", format: Int = ArchiveMark.format, created: String) -> String {
+    static func text(app: String = "RollDiary", format: Int = ArchiveMark.format, created: String) -> String {
         """
         {
           "app": "\(app.replacingOccurrences(of: "\"", with: "'"))",
@@ -64,7 +64,7 @@ enum ArchiveMark {
         let url = Vault.folder(.service, in: root).appendingPathComponent(Vault.markerName)
         guard case .text(let text) = Vault.reading(at: url), var mark = parse(text) else { return nil }
         if mark.russian, (mark.format ?? format) <= format {
-            let fresh = Self.text(app: mark.app ?? "Graphomanus", format: mark.format ?? format,
+            let fresh = Self.text(app: mark.app ?? "RollDiary", format: mark.format ?? format,
                                   created: mark.created ?? Vault.stamp(Date()))
             if Vault.write(fresh, to: url) == nil { mark.russian = false }
         }

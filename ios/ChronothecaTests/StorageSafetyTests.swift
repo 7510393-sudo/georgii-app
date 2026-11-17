@@ -363,7 +363,7 @@ final class StorageSafetyTests: XCTestCase {
         let mark = try XCTUnwrap(ArchiveMark.parse(text))
         XCTAssertFalse(mark.russian)
         XCTAssertEqual(mark.format, ArchiveMark.format)
-        XCTAssertEqual(mark.app, "Graphomanus")
+        XCTAssertEqual(mark.app, "RollDiary")
         XCTAssertFalse(text.contains("версия формата"))
         XCTAssertFalse(Vault.newer)
     }

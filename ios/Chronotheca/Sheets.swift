@@ -160,8 +160,8 @@ struct SettingsSticker: View {
         // Язык — в Настройках iPhone, как у всех приложений (P633): там
         // у приложения с переводами стоит своя строка «Язык».
         NoteRow(title: T("Язык приложения", "App language"),
-                info: T("Язык приложения выбирается в Настройках iPhone: Приложения → Graphomanus → Язык.",
-                          "The app’s language is chosen in iPhone Settings: Apps → Graphomanus → Language.")) {
+                info: T("Язык приложения выбирается в Настройках iPhone: Приложения → RollDiary → Язык.",
+                          "The app’s language is chosen in iPhone Settings: Apps → RollDiary → Language.")) {
             NoteButton(title: T("Открыть ›", "iPhone Settings ›")) {
                 if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
             }
@@ -231,8 +231,8 @@ struct SettingsSticker: View {
         // Чужая клавиатура с «полным доступом» видит всё набранное (P633, по
         // docs/50): выключатель, как у банковских приложений.
         NoteRow(title: T("Без чужих клавиатур", "No third-party keyboards"),
-                info: T("Клавиатуры из App Store (например, Gboard или SwiftKey) могут видеть всё, что вы набираете, если у них включён «полный доступ». Когда выключатель включён, в Graphomanus работает только обычная клавиатура iPhone. Может понадобиться перезапуск приложения.",
-                          "Keyboards from the App Store (such as Gboard or SwiftKey) can see everything you type if they have “Full Access”. When this is on, only the standard iPhone keyboard works in Graphomanus. You may need to restart the app.")) {
+                info: T("Клавиатуры из App Store (например, Gboard или SwiftKey) могут видеть всё, что вы набираете, если у них включён «полный доступ». Когда выключатель включён, в RollDiary работает только обычная клавиатура iPhone. Может понадобиться перезапуск приложения.",
+                          "Keyboards from the App Store (such as Gboard or SwiftKey) can see everything you type if they have “Full Access”. When this is on, only the standard iPhone keyboard works in RollDiary. You may need to restart the app.")) {
             Lever(isOn: $ownKeyboardOnly)
         }
     }
@@ -377,7 +377,7 @@ struct SettingsSticker: View {
     @ViewBuilder private var aboutPart: some View {
         NoteSection(title: T("О приложении", "About"))
         // Покупка: месяц пробы, потом разовая (M14, P432).
-        NoteRow(title: T("Graphomanus навсегда", "Graphomanus for good"), detail: Purchase.shared.summary) {
+        NoteRow(title: T("RollDiary навсегда", "RollDiary for good"), detail: Purchase.shared.summary) {
             // Листок покупки — поверх настроек; закрыли — снова настройки
             // (P458): прежде настройки закрывались, и человек терялся.
             NoteButton(title: T("Открыть ›", "Open ›")) {
@@ -456,8 +456,8 @@ struct SettingsSticker: View {
     /// Путь, который помог автору (24.10): шагов не было с весны — iPhone
     /// их не считал, а не прятал.
     private var healthHint: String {
-        T("Шаги, сон и тренировки берутся из «Здоровья» iPhone и показываются в шапке дня; iPhone спросит разрешение один раз. Нет строки? Шаги считает iPhone: Настройки → Конфиденциальность и безопасность → Движение и фитнес → «Отслеживание фитнеса». Доступ: «Здоровье» → ваш значок → Приложения → Graphomanus.",
-          "Steps, sleep and workouts come from iPhone Health and show at the top of a day; iPhone asks for permission once. No line? iPhone counts steps: Settings → Privacy & Security → Motion & Fitness → Fitness Tracking. Access: Health → your picture → Apps → Graphomanus.")
+        T("Шаги, сон и тренировки берутся из «Здоровья» iPhone и показываются в шапке дня; iPhone спросит разрешение один раз. Нет строки? Шаги считает iPhone: Настройки → Конфиденциальность и безопасность → Движение и фитнес → «Отслеживание фитнеса». Доступ: «Здоровье» → ваш значок → Приложения → RollDiary.",
+          "Steps, sleep and workouts come from iPhone Health and show at the top of a day; iPhone asks for permission once. No line? iPhone counts steps: Settings → Privacy & Security → Motion & Fitness → Fitness Tracking. Access: Health → your picture → Apps → RollDiary.")
     }
     @AppStorage(DayEvents.holidaysKey) private var calendarHolidays = false
     @AppStorage(Prefs.calendarTint) private var calendarTint = "distance"
@@ -531,7 +531,7 @@ struct SettingsSticker: View {
 
     /// «Данные в сохранности?» — сразу под строкой хранилища: да, если папка
     /// не в самом приложении, и заметное «нет», если записи живут только
-    /// внутри «Graphomanus» и пропадут вместе с ней (P326).
+    /// внутри «RollDiary» и пропадут вместе с ней (P326).
     private var safety: some View {
         NoteRow(title: T("Данные в сохранности?", "Is my data safe?")) {
             Button {
@@ -627,9 +627,9 @@ struct SafetySheet: View {
                     .font(.title2)
 
                 Text(onPhone
-                     ? T("Записи лежат внутри самой «Graphomanus», на этом iPhone. ", "Your entries are inside Graphomanus itself, on this iPhone. ")
+                     ? T("Записи лежат внутри самой «RollDiary», на этом iPhone. ", "Your entries are inside RollDiary itself, on this iPhone. ")
                        + T("Если приложение удалить, iPhone сотрёт их вместе с ним, без возврата.", "If the app is deleted, the iPhone erases them with it, for good.")
-                     : T("Записи лежат вне приложения, в вашей папке. Если «Graphomanus» удалить, ", "Your entries are outside the app, in your own folder. If Graphomanus is deleted, ")
+                     : T("Записи лежат вне приложения, в вашей папке. Если «RollDiary» удалить, ", "Your entries are outside the app, in your own folder. If RollDiary is deleted, ")
                        + T("они останутся на месте: в «Файлах», в облаке, на других устройствах.", "they stay where they are: in Files, in the cloud, on other devices."))
                     .font(.callout)
                     .foregroundStyle(.secondary)
@@ -874,7 +874,7 @@ struct RollerSheet: View {
             let shell = shell
             Reminders.ask { ok in
                 if !ok {
-                    shell.say(T("Напоминания выключены: Настройки iPhone → Graphomanus → Уведомления", "Reminders are off: iPhone Settings → Graphomanus → Notifications"))
+                    shell.say(T("Напоминания выключены: Настройки iPhone → RollDiary → Уведомления", "Reminders are off: iPhone Settings → RollDiary → Notifications"))
                 }
             }
         }
@@ -957,7 +957,7 @@ struct WelcomeView: View {
                 .foregroundStyle(.secondary)
                 .padding(.top, 24)
 
-            Text(T("Graphomanus", "Graphomanus")).font(.largeTitle.weight(.semibold))
+            Text(T("RollDiary", "RollDiary")).font(.largeTitle.weight(.semibold))
 
             Text(T("Тетрадь дня: утром — план, вечером — итоги. Записи — ваши файлы.",
                    "A notebook for your day: a plan in the morning, the outcome in the evening. Your entries are your files."))
@@ -982,8 +982,8 @@ struct WelcomeView: View {
                 Text(trial
                      ? T("Проба: записи лягут в отдельную пробную папку. Ваши настоящие записи останутся на месте.",
                          "A trial: entries go into a separate trial folder. Your real entries stay where they are.")
-                     : T("Записи лягут в iCloud Drive › Graphomanus. Их видно в «Файлах», они есть на iPad и Mac и остаются, даже если удалить приложение.",
-                         "Entries go to iCloud Drive › Graphomanus. You can see them in Files, they are on your iPad and Mac, and they stay even if you delete the app."))
+                     : T("Записи лягут в iCloud Drive › RollDiary. Их видно в «Файлах», они есть на iPad и Mac и остаются, даже если удалить приложение.",
+                         "Entries go to iCloud Drive › RollDiary. You can see them in Files, they are on your iPad and Mac, and they stay even if you delete the app."))
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)

@@ -198,7 +198,7 @@ struct PurchaseSheet: View {
                 .font(Look.sans(15))
                 .padding(20)
             }
-            .navigationTitle(T("Graphomanus", "Graphomanus"))
+            .navigationTitle(T("RollDiary", "RollDiary"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
