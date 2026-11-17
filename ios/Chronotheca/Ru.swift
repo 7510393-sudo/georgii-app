@@ -172,7 +172,6 @@ enum Look {
     /// верхнего угла — свет падает оттуда.
     static let plateLight  = Color(light: 0xFFF9E3, dark: 0x3A3426)
     static let stickerEdge = Color(light: 0xE8DCAE, dark: 0x3D3520)
-    static let note        = Color(light: 0xE9F1F8, dark: 0x1A2430)
     /// Выбранный вариант в настройках (P600) — чуть тронут чернилами, а не
     /// голубой цвет iPhone (P670).
     static let noteChosen  = Color(light: 0xDDE2EC, dark: 0x2A3850)

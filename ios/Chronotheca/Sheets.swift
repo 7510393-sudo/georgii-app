@@ -187,7 +187,7 @@ struct SettingsSticker: View {
         NoteRow(title: T("Резервная копия", "Backup"), detail: Backup.detail(size: storageBytes),
                 detailColor: Backup.healthy ? Look.inkSoft : .orange, pinned: true) {
             if Backup.healthy {
-                // Как прочие кнопки раздела (P914): надпись со стрелкой.
+                // Как прочие кнопки настроек (P979): ярлычок одной ширины.
                 NoteButton(title: T("Сделать ›", "Make ›")) { showingBackup = true }
             } else {
                 DueButton(title: T("Пора сделать", "Time to make one")) { showingBackup = true }
@@ -537,16 +537,23 @@ struct SettingsSticker: View {
             Button {
                 showingSafety = true
             } label: {
-                if vault.onPhone {
-                    HStack(spacing: 4) {
-                        Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.yellow)
-                        Text(T("НЕТ ›", "NO ›")).font(Look.sans(13.5, weight: .bold)).foregroundStyle(.red)
+                // Ярлычок той же ширины, что прочие кнопки (P979).
+                Group {
+                    if vault.onPhone {
+                        HStack(spacing: 4) {
+                            Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.yellow)
+                            Text(T("НЕТ ›", "NO ›")).font(Look.sans(13.5, weight: .bold)).foregroundStyle(.red)
+                        }
+                    } else {
+                        Text(T("✓ да ›", "✓ yes ›"))
+                            .font(Look.sans(13.5, weight: .semibold))
+                            .foregroundStyle(Color(red: 0.23, green: 0.6, blue: 0.35))
                     }
-                } else {
-                    Text(T("✓ да ›", "✓ yes ›"))
-                        .font(Look.sans(13.5, weight: .semibold))
-                        .foregroundStyle(Color(red: 0.23, green: 0.6, blue: 0.35))
                 }
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .frame(width: NoteButton.width - 22)
+                .modifier(Tag(look: .plain))
             }
             .buttonStyle(.plain)
         }

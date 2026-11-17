@@ -4,8 +4,8 @@ import SwiftUI
 //
 // Кнопок три вида, и они различаются на глаз:
 // — кружки-выбор: видны все варианты, выбранный закрашен синим;
-// — «Открыть ›»: открывает окно или листок, сама ничего не меняет;
-// — одна главная кнопка (резервная копия): закрашена целиком.
+// — кнопка действия в рамке, у всех одна ширина (P979): открывает окно
+//   или листок, сама ничего не меняет.
 // Нажимается только кнопка — название строки не меняет ничего. Прежде
 // касание по строке молча перебирало варианты по кругу, и не было видно,
 // что ещё бывает и что сейчас изменится.
@@ -227,32 +227,27 @@ struct SchemeChoice: View {
     }
 }
 
-/// «Открыть ›» и главная кнопка.
+/// Кнопка действия — ярлычок в рамке. В настройках у всех одна ширина
+/// (P979, автор: «не просто слова, на которые нажимают, а кнопки,
+/// одинаковые на всей рубрике»; отменяет надпись со стрелкой без рамки
+/// P600/P914). `width: nil` — по надписи (листок переноса дела).
 struct NoteButton: View {
+    /// Ширина кнопок настроек, с полями ярлычка.
+    static let width: CGFloat = 124
+
     let title: String
-    var main = false
-    /// В рамке, как ярлычок (листок переноса дела). В настройках «Открыть ›»
-    /// — просто надпись со стрелкой, как в меню страницы (P600).
-    var framed = false
+    var width: CGFloat? = NoteButton.width
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            if main || framed {
-                Text(title)
-                    .font(Look.sans(13.5, weight: .semibold))
-                    .lineLimit(1)
-                    .fixedSize()
-                    .modifier(Tag(look: main ? .main : .plain))
-            } else {
-                Text(title)
-                    .font(Look.sans(14.5, weight: .semibold))
-                    .foregroundStyle(Look.accent)
-                    .lineLimit(1)
-                    .fixedSize()
-                    .padding(.vertical, 6)
-                    .contentShape(Rectangle())
-            }
+            Text(title)
+                .font(Look.sans(13.5, weight: .semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .frame(width: width.map { $0 - 22 })
+                .fixedSize(horizontal: width == nil, vertical: false)
+                .modifier(Tag(look: .plain))
         }
         .buttonStyle(.plain)
     }
@@ -333,17 +328,16 @@ struct Flow: Layout {
 /// колокольчик у дела в плане (P364, P374), — вместо капсул обычного
 /// приложения. Главная (или выбранный вариант) — залита синим.
 struct Tag: ViewModifier {
-    /// Ярлычок бумажный; выбранный — голубой стикер (P600: прежде тёмно-синий,
-    /// как главная кнопка, и выбор путали с действием); главная кнопка —
-    /// залитая, одна на листок.
-    enum Kind { case plain, chosen, main }
+    /// Ярлычок бумажный; выбранный — стикер, тронутый чернилами (P600, P670).
+    /// Залитой «главной» кнопки больше нет (P914, P979).
+    enum Kind { case plain, chosen }
     var look: Kind = .plain
 
     func body(content: Content) -> some View {
-        let fill: Color = look == .main ? Look.accent : look == .chosen ? Look.noteChosen : Look.planBg
+        let fill: Color = look == .chosen ? Look.noteChosen : Look.planBg
         let edge: Color = look == .plain ? Look.inkFaint.opacity(0.7) : Look.accent
         content
-            .foregroundStyle(look == .main ? Look.note : Look.accent)
+            .foregroundStyle(Look.accent)
             .padding(.horizontal, 11)
             .padding(.vertical, 5)
             .background(fill, in: RoundedRectangle(cornerRadius: 6))
@@ -367,11 +361,13 @@ struct DueButton: View {
             Text(title)
                 .font(Look.sans(13.5, weight: .semibold))
                 .lineLimit(1)
-                .fixedSize()
+                .minimumScaleFactor(0.75)
+                .frame(width: NoteButton.width - 22)
                 .foregroundStyle(.white)
-                .padding(.horizontal, 10)
+                .padding(.horizontal, 11)
                 .padding(.vertical, 5)
-                .background(Capsule().fill(Color.red.opacity(dim ? 0.45 : 0.9)))
+                // Того же размера, что прочие кнопки настроек (P979).
+                .background(RoundedRectangle(cornerRadius: 6).fill(Color.red.opacity(dim ? 0.45 : 0.9)))
         }
         .buttonStyle(.plain)
         .onAppear {
