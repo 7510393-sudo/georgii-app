@@ -53,12 +53,14 @@ final class Vault: ObservableObject {
         self.folder(folder)?.lastPathComponent ?? folder.rawValue
     }
 
-    /// Имя папки, которую приложение заводит себе само.
-    static let folderName = "Graphomanus"
+    /// Имя папки, которую приложение заводит себе само (P980: «RollingDays»;
+    /// прежние архивы в «Chronotheca» и «Graphomanus» читаются по закладке
+    /// и не переименовываются).
+    static let folderName = "RollingDays"
 
     /// Видимое имя приложения (`CFBundleDisplayName` в project.yml): под ним
     /// «Файлы» показывают собственную папку приложения на телефоне (P530).
-    static let shownName = "Graphomanus"
+    static let shownName = "RollingDays"
 
     /// Метка, по которой приложение узнаёт свои архивы.
     ///
@@ -161,7 +163,7 @@ final class Vault: ObservableObject {
         if path.contains("/Data/Application/"), let r = path.range(of: "/Documents") {
             let tail = path[r.upperBound...].split(separator: "/").map(String.init)
             // Своя папка приложения в «Файлах» — под видимым именем
-            // приложения, Graphomanus, а не под внутренним (P530).
+            // приложения, RollingDays, а не под внутренним (P530).
             return ([T("На iPhone", "On My iPhone"), Vault.shownName] + tail).joined(separator: " › ")
         }
         // Своя папка приложения в iCloud: в «Файлах» — «iCloud Drive ›
@@ -169,7 +171,7 @@ final class Vault: ObservableObject {
         if let r = path.range(of: "/Mobile Documents/iCloud~com~kobiashvili~diary/Documents") {
             let tail = path[r.upperBound...].split(separator: "/").map(String.init)
             // Первая часть пути — сама папка архива, какой бы ни была: у прежних
-            // людей она «Chronotheca», у новых — «Graphomanus».
+            // людей она «Chronotheca» или «Graphomanus», у новых — «RollingDays» (P980).
             return (["iCloud Drive"] + tail).joined(separator: " › ")
         }
         if path.contains("/Application Support/Chronotheca trial") {
@@ -997,7 +999,7 @@ final class Vault: ObservableObject {
     Photos, videos, audio and documents are kept as they are, in their own
     folders.
 
-    The app that wrote them is called Graphomanus. It hides nothing and owns
+    The app that wrote them is called RollingDays. It hides nothing and owns
     nothing: delete it, and all of this stays.
 
     The folder can be moved, copied and renamed. To let the app find it
@@ -1012,7 +1014,7 @@ final class Vault: ObservableObject {
     текстовым редактором, на любом устройстве, без всякой программы.
     Фотографии, видео, аудио и документы лежат как есть, в своих папках.
 
-    Приложение, которое их писало, называется Graphomanus. Оно ничего
+    Приложение, которое их писало, называется RollingDays. Оно ничего
     не прячет и ничем не владеет: удалите его — всё это останется.
 
     Папку можно переносить, копировать и переименовывать. Чтобы
