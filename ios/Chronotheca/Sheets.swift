@@ -187,7 +187,7 @@ struct SettingsSticker: View {
         NoteRow(title: T("Резервная копия", "Backup"), detail: Backup.detail(size: storageBytes),
                 detailColor: Backup.healthy ? Look.inkSoft : .orange, pinned: true) {
             if Backup.healthy {
-                // Как прочие кнопки настроек (P979): ярлычок одной ширины.
+                // Как прочие кнопки настроек (P979, P982).
                 NoteButton(title: T("Сделать ›", "Make ›")) { showingBackup = true }
             } else {
                 DueButton(title: T("Пора сделать", "Time to make one")) { showingBackup = true }
@@ -537,7 +537,7 @@ struct SettingsSticker: View {
             Button {
                 showingSafety = true
             } label: {
-                // Ярлычок той же ширины, что прочие кнопки (P979).
+                // Ярлычок не уже прочих кнопок (P979, P982).
                 Group {
                     if vault.onPhone {
                         HStack(spacing: 4) {
@@ -551,8 +551,8 @@ struct SettingsSticker: View {
                     }
                 }
                 .lineLimit(1)
-                .minimumScaleFactor(0.75)
-                .frame(width: NoteButton.width - 22)
+                .fixedSize()
+                .frame(minWidth: NoteButton.width - 22)
                 .modifier(Tag(look: .plain))
             }
             .buttonStyle(.plain)

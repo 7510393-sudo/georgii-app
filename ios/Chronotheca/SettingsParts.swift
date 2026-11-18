@@ -230,10 +230,14 @@ struct SchemeChoice: View {
 /// Кнопка действия — ярлычок в рамке. В настройках у всех одна ширина
 /// (P979, автор: «не просто слова, на которые нажимают, а кнопки,
 /// одинаковые на всей рубрике»; отменяет надпись со стрелкой без рамки
-/// P600/P914). `width: nil` — по надписи (листок переноса дела).
+/// P600/P914). Ширина — не меньше общей, а длинная надпись раздвигает
+/// кнопку по себе (P982, автор: «чтобы помещались в одну строку с названием,
+/// когда это возможно; лишние поля по бокам»; отменяет одну ширину 124 для
+/// всех P979). `width: nil` — по надписи (листок переноса дела).
 struct NoteButton: View {
-    /// Ширина кнопок настроек, с полями ярлычка.
-    static let width: CGFloat = 124
+    /// Наименьшая ширина кнопок настроек, с полями ярлычка: короткие
+    /// «Выбрать ›», «Make ›» одинаковы, длинные — по надписи.
+    static let width: CGFloat = 90
 
     let title: String
     var width: CGFloat? = NoteButton.width
@@ -244,9 +248,8 @@ struct NoteButton: View {
             Text(title)
                 .font(Look.sans(13.5, weight: .semibold))
                 .lineLimit(1)
-                .minimumScaleFactor(0.75)
-                .frame(width: width.map { $0 - 22 })
-                .fixedSize(horizontal: width == nil, vertical: false)
+                .fixedSize()
+                .frame(minWidth: width.map { $0 - 22 })
                 .modifier(Tag(look: .plain))
         }
         .buttonStyle(.plain)
@@ -361,12 +364,12 @@ struct DueButton: View {
             Text(title)
                 .font(Look.sans(13.5, weight: .semibold))
                 .lineLimit(1)
-                .minimumScaleFactor(0.75)
-                .frame(width: NoteButton.width - 22)
+                .fixedSize()
+                .frame(minWidth: NoteButton.width - 22)
                 .foregroundStyle(.white)
                 .padding(.horizontal, 11)
                 .padding(.vertical, 5)
-                // Того же размера, что прочие кнопки настроек (P979).
+                // Не уже прочих кнопок настроек (P979, P982).
                 .background(RoundedRectangle(cornerRadius: 6).fill(Color.red.opacity(dim ? 0.45 : 0.9)))
         }
         .buttonStyle(.plain)
