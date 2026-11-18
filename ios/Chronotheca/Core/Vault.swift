@@ -340,6 +340,27 @@ final class Vault: ObservableObject {
         pastDiary.set("title", T("Справка и книги", "The letter and the books"))
         write(pastDiary.text, to: .diary, for: yesterday)
 
+        // Будущие дни с делами (P983): пустые дни ленты — корешками, а
+        // проверкам и снимкам нужны и полные будущие карточки.
+        let ahead: [(Int, String, String)] = [
+            (1, "- [ ] 10:00 Стоматолог", "- [ ] 10:00 Dentist"),
+            (2, "- [ ] Купить подарок Анне", "- [ ] Buy a present for Anna"),
+            (4, "- [ ] 18:30 Бассейн", "- [ ] 18:30 Swimming pool"),
+            (5, "- [ ] Заплатить за телефон", "- [ ] Pay the phone bill"),
+            (7, "- [ ] 09:00 Поезд в Йорк", "- [ ] 09:00 Train to York"),
+            (8, "- [ ] Вернуть книги в библиотеку", "- [ ] Return the library books"),
+            (11, "- [ ] 19:00 Ужин у Петровых", "- [ ] 19:00 Dinner at the Petrovs’"),
+            (15, "- [ ] Продлить страховку", "- [ ] Renew the insurance"),
+            (24, "- [ ] 12:00 Обед с Олей", "- [ ] 12:00 Lunch with Olga"),
+            (45, "- [ ] Оплатить домен", "- [ ] Pay for the domain"),
+        ]
+        for (offset, ru, en) in ahead {
+            guard let date = Calendar.current.date(byAdding: .day, value: offset, to: today) else { continue }
+            var plan = DayFile(body: T(ru, en))
+            plan.set("date", Vault.stamp(date))
+            write(plan.text, to: .planner, for: date)
+        }
+
         // Тот же день год назад — чтобы облачко «…помнишь?» было видно
         // в работе, а не только на словах.
         let lastYear = Calendar.current.date(byAdding: .year, value: -1, to: today) ?? today

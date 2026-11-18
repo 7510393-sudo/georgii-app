@@ -98,6 +98,8 @@ struct SearchView: View {
             case past(Archive.Day)
             case slot
             case future(Archive.Day)
+            /// Пустой будущий день — корешок закрытой карточки (P983).
+            case empty(Date)
         }
         let id: String
         let kind: Kind
@@ -109,23 +111,26 @@ struct SearchView: View {
         var depth: Int {
             switch kind {
             case .past: return 1
-            case .future: return -1
+            case .future, .empty: return -1
             default: return 0
             }
         }
     }
 
-    /// Будущее ленты (P771): месяц подряд, и пустые дни тоже, потом только
-    /// дни с делами. Когда ищут — только находки.
+    /// Будущее ленты (P771, P983): все дни подряд — месяц и дальше, до
+    /// последнего дня с делами (не дальше `Search.horizon`); пустые потом
+    /// лягут корешками. Когда ищут — только находки.
     private func ahead(_ days: [Archive.Day], from today: Date) -> [Archive.Day] {
         let needle = query.trimmingCharacters(in: .whitespaces)
         guard needle.isEmpty, search.find == .all else { return days }
         let byStamp = Dictionary(days.map { ($0.stamp, $0) }, uniquingKeysWith: { first, _ in first })
+        let lastPlanned = days.map(\.stamp).max() ?? ""
         var out: [Archive.Day] = []
         var last = Vault.stamp(today)
-        for offset in 1...Search.ahead {
+        for offset in 1...Search.horizon {
             guard let date = Calendar.current.date(byAdding: .day, value: offset, to: today) else { continue }
             let stamp = Vault.stamp(date)
+            if offset > Search.ahead && stamp > lastPlanned { break }
             out.append(byStamp[stamp] ?? Archive.Day(stamp: stamp, date: date))
             last = stamp
         }
@@ -162,8 +167,16 @@ struct SearchView: View {
         if asked && future.isEmpty && !past.isEmpty {
             out.append(Entry(id: "hint-future", kind: .hint(.future)))
         }
+        // Пустой будущий день — корешок закрытой карточки (P983, автор:
+        // «10 пустых дней — 10 закрытых вкладок, чтобы видно было, сколько
+        // дней между карточками»; вместо полной карточки «Пусто — можно
+        // вписать дела» P771). Когда ищут, пустых нет — только находки.
         for (i, day) in future.enumerated() {
-            out.append(Entry(id: day.id, kind: .future(day), over: i > 0))
+            if !asked && plan(day).isEmpty {
+                out.append(Entry(id: "e" + day.stamp, kind: .empty(day.date), over: i > 0))
+            } else {
+                out.append(Entry(id: day.id, kind: .future(day), over: i > 0))
+            }
         }
         // Под последней — место под строку поиска внизу (P797).
         out.append(Entry(id: "tail", kind: .pad(max(Search.fieldHeight + 8,
@@ -596,6 +609,14 @@ struct SearchView: View {
             .contentShape(FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare))
             .onTapGesture { openCard(day.date, tab: .plan) }
             .padding(.horizontal, Search.cardInset)
+        case .empty(let date):
+            EmptyTab()
+                .contentShape(Rectangle())
+                .onTapGesture { openCard(date, tab: .plan) }
+                .padding(.horizontal, Search.cardInset)
+                .accessibilityElement()
+                .accessibilityLabel(Search.stamp(date) + " " + Search.weekday(date))
+                .accessibilityAddTraits(.isButton)
         }
     }
 
@@ -643,11 +664,6 @@ struct SearchView: View {
             openCard(day.date, tab: .plan)
         } label: {
             VStack(alignment: .leading, spacing: Search.futureGap) {
-                if tasks.isEmpty {
-                    Text(T("Пусто — можно вписать дела", "Empty — room to plan"))
-                        .font(Look.sans(12))
-                        .foregroundStyle(Look.inkFaint)
-                }
                 ForEach(shown) { task in
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
                         if let sample {
@@ -814,9 +830,14 @@ enum Search {
 
     static let lineGap: CGFloat = 3
 
-    /// Сколько дней подряд идёт картотека будущего, пустые тоже (P771);
-    /// дальше — только дни с делами.
+    /// Сколько дней подряд идёт картотека будущего в любом случае (P771);
+    /// дальше — до последнего дня с делами (P983).
     static let ahead = 30
+    /// Дальше всего вперёд лента идёт подряд — год (P983).
+    static let horizon = 366
+    /// Сколько видно от пустой карточки (P983, автор: «толщина линии плюс
+    /// две толщины линии»): линия края и два раза по столько бумаги.
+    static let emptyPitch: CGFloat = 3
 
     /// Высота четырёх строк будущей карточки (P771).
     static var futureBody: CGFloat {
@@ -934,6 +955,32 @@ private struct SearchCard<Content: View>: View {
                 CardPaper(seed: seed, past: past, fresh: fresh)
             }
         }
+    }
+}
+
+/// Пустой будущий день (P983): закрытая карточка, от которой видна только
+/// линия края и полоска бумаги — `Search.emptyPitch`. Остальное лежит под
+/// следующей карточкой, как у полной (`Search.overlap`). Десять пустых дней —
+/// десять линий: на глаз видно, сколько дней между делами.
+private struct EmptyTab: View {
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        ZStack(alignment: .top) {
+            Scheme.current.past
+            Image(uiImage: PageTexture.paper)
+                .resizable(resizingMode: .tile)
+                .opacity(scheme == .dark ? 0.2 : 0.3)
+            Rectangle()
+                .fill(Scheme.current.kraftEdge.opacity(0.5))
+                .frame(height: 0.8)
+        }
+        .overlay {
+            Rectangle().stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
+        }
+        .frame(height: Search.emptyPitch + Search.overlap)
+        .frame(maxWidth: .infinity)
+        .allowsHitTesting(true)
     }
 }
 
