@@ -237,7 +237,7 @@ struct SchemeChoice: View {
 struct NoteButton: View {
     /// Наименьшая ширина кнопок настроек, с полями ярлычка: короткие
     /// «Выбрать ›», «Make ›» одинаковы, длинные — по надписи.
-    static let width: CGFloat = 90
+    static let width: CGFloat = 80
 
     let title: String
     var width: CGFloat? = NoteButton.width
