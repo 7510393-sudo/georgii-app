@@ -198,7 +198,7 @@ struct TodayView: View {
     }
 
     private var summary: String {
-        guard let tasks = entry.shared?.tasks else { return "Chronotheca" }
+        guard let tasks = entry.shared?.tasks else { return "RollingDays" }
         guard !tasks.isEmpty else { return Words.empty }
         let done = tasks.filter(\.done).count
         return "\(done)/\(tasks.count) · " + (tasks.first { !$0.done }?.text ?? tasks[0].text)

@@ -1,4 +1,4 @@
-# Graphomanus в App Store — тексты и порядок (17.10, сверено 14.11)
+# RollingDays в App Store — тексты и порядок (17.10, сверено 14.11)
 
 **Сверено 14.11 с приложением после сборки 289** (P950): цена по P908
 (£14,99 — цена первого года, £24,99 с iPad; одна покупка на все
@@ -21,7 +21,7 @@
 
 | Поле | Значение |
 |---|---|
-| Name | `Graphomanus` — имя должно быть свободно в магазине; если занято, Apple скажет сразу, тогда `Graphomanus Diary` |
+| Name | `RollingDays: Diary & Day Planner` (до 30 знаков; P980, `docs/85`) |
 | Subtitle (EN) | `Plan, diary, your own files` (27) |
 | Подзаголовок (RU) | `План, дневник, ваши файлы` (24) |
 | Bundle ID | не менять: `com.kobiashvili.diary` |
@@ -43,7 +43,7 @@ Plan the morning. Remember the evening. One page a day in your own files — no 
 
 **Description:**
 
-Graphomanus is a diary and a day planner on one page.
+RollingDays is a diary and a day planner on one page.
 
 Plan the day in the morning. Answer “How did it go?” in the evening. Write, add a photo, a voice note or a place. Turn the page.
 
@@ -94,7 +94,7 @@ First release.
 
 **Описание:**
 
-Graphomanus — дневник и планировщик дня на одной странице.
+RollingDays — дневник и планировщик дня на одной странице.
 
 Утром — план. Вечером — «Как прошло?». Запись, снимок, голос, место. Страница перевёрнута.
 
@@ -147,18 +147,18 @@ Graphomanus — дневник и планировщик дня на одной 
    - Display Name: `30-day Trial` / «Пробный месяц»
    - Description: `A month of the whole app for free.` / «Месяц всего приложения бесплатно.»
 2. **Полная версия** — Non-Consumable
-   - Reference Name: `Graphomanus Full`
+   - Reference Name: `RollingDays Full`
    - Product ID: `com.kobiashvili.diary.full`
    - Price: £14.99 (Tier по сетке Apple) — цена первого года (P908); с
      выходом iPad поднять до £24.99 в той же покупке, код не меняется
-   - Display Name: `Graphomanus for good` / «Graphomanus навсегда»
+   - Display Name: `RollingDays for good` / «RollingDays навсегда»
    - Description: `One purchase for all your Apple devices.` / «Одна покупка на все устройства Apple.» (до 55 знаков)
    - Одна покупка на iPhone, iPad и Mac получается сама: покупка привязана
      к приложению и учётной записи Apple, а iPad и Mac будут тем же
      приложением (тот же Bundle ID). Отдельное приложение для iPad её бы
      не унаследовало — так не делать.
 3. Каждой нужен **Review Screenshot** — снимок листка покупки из приложения
-   (Настройки → «Graphomanus навсегда»).
+   (Настройки → «RollingDays навсегда»).
 
 Цены по странам Apple переводит сама; править по каждой стране можно потом.
 
@@ -188,12 +188,12 @@ Graphomanus — дневник и планировщик дня на одной 
 ## 7. Заметки для проверяющих Apple (App Review → Notes)
 
 ```
-Graphomanus is a diary and day planner. No account is needed.
+RollingDays is a diary and day planner. No account is needed.
 On first launch tap "Start" to create a folder (iCloud Drive or On My iPhone).
 Sample days are added so every screen can be seen.
 To write, tap "Start the free month" on the first sheet
 (non-consumable "30-day Trial", free). After 30 days a one-time
-purchase "Graphomanus for good" keeps writing open.
+purchase "RollingDays for good" keeps writing open.
 Reading, search, import and moving the folder never need a purchase.
 Permissions (camera, adding to Photos, microphone, speech recognition,
 location, calendar, Health, notifications, Face ID) are optional and
