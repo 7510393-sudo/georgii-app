@@ -27,10 +27,10 @@
 | Bundle ID | не менять: `com.kobiashvili.diary` |
 | Primary category | Lifestyle |
 | Secondary category | Productivity |
-| Support URL | `https://graphomanus.com/` |
-| Marketing URL | `https://graphomanus.com/` |
-| Privacy Policy URL | `https://graphomanus.com/privacy/` |
-| Contact e-mail | `support@graphomanus.com` |
+| Support URL | `https://rollingdays.app/` |
+| Marketing URL | `https://rollingdays.app/` |
+| Privacy Policy URL | `https://rollingdays.app/privacy/` |
+| Contact e-mail | `support@rollingdays.app` |
 | Copyright | `2026 Georgii Kobiashvili` |
 
 ## 2. Тексты (English — основной)
@@ -171,7 +171,7 @@ RollingDays — дневник и планировщик дня на одной 
 голоса). Если форма начнёт спрашивать про это отдельно, отвечайте по правде и
 сверяйте со справкой «App Privacy Details» — я не могу проверить это отсюда.
 
-Страницы политики — `https://graphomanus.com/privacy/` (две языковые версии).
+Страницы политики — `https://rollingdays.app/privacy/` (две языковые версии).
 
 ## 6. Возрастной рейтинг и прочее
 
@@ -201,7 +201,7 @@ asked only when the feature is used. A photo taken with the in-app
 camera is also added to Photos; the app never reads the Photos library
 except for pictures the user picks.
 Entries are plain files in the user's own folder; the app has no server.
-Contact: support@graphomanus.com
+Contact: support@rollingdays.app
 ```
 
 ## 8. Снимки экрана (Screenshots)
