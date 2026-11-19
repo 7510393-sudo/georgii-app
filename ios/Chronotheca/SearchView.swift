@@ -98,8 +98,9 @@ struct SearchView: View {
             case past(Archive.Day)
             case slot
             case future(Archive.Day)
-            /// Пустой будущий день — корешок закрытой карточки (P983).
-            case empty(Date)
+            /// Пустые будущие дни подряд — стопка корешков закрытых
+            /// карточек одной строкой ленты (P983).
+            case empty([Date])
         }
         let id: String
         let kind: Kind
@@ -171,13 +172,32 @@ struct SearchView: View {
         // «10 пустых дней — 10 закрытых вкладок, чтобы видно было, сколько
         // дней между карточками»; вместо полной карточки «Пусто — можно
         // вписать дела» P771). Когда ищут, пустых нет — только находки.
-        for (i, day) in future.enumerated() {
+        // Пустые дни подряд — одной строкой: стопка из десятков строк по 3
+        // точки держала ленивую стопку в непрерывной пересборке, экран
+        // замирал (проверки движения на P983).
+        var empties: [Archive.Day] = []
+        // Первая под днём лежит своим корешком, остальные заходят на прежнюю.
+        func overPrevious() -> Bool {
+            guard let last = out.last else { return false }
+            if case .slot = last.kind { return false }
+            return true
+        }
+        func flush() {
+            guard let first = empties.first else { return }
+            out.append(Entry(id: "e" + first.stamp, kind: .empty(empties.map(\.date)),
+                             over: overPrevious()))
+            empties = []
+        }
+        for day in future {
             if !asked && plan(day).isEmpty {
-                out.append(Entry(id: "e" + day.stamp, kind: .empty(day.date), over: i > 0))
+                empties.append(day)
             } else {
-                out.append(Entry(id: day.id, kind: .future(day), over: i > 0))
+                flush()
+                out.append(Entry(id: day.id, kind: .future(day),
+                                 over: overPrevious()))
             }
         }
+        flush()
         // Под последней — место под строку поиска внизу (P797).
         out.append(Entry(id: "tail", kind: .pad(max(Search.fieldHeight + 8,
                                                     height - CGFloat(future.count) * 60))))
@@ -609,14 +629,17 @@ struct SearchView: View {
             .contentShape(FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare))
             .onTapGesture { openCard(day.date, tab: .plan) }
             .padding(.horizontal, Search.cardInset)
-        case .empty(let date):
-            EmptyTab()
+        case .empty(let dates):
+            // Касание — день под пальцем: линии идут через `emptyPitch`.
+            EmptyTabs(count: dates.count)
                 .contentShape(Rectangle())
-                .onTapGesture { openCard(date, tab: .plan) }
+                .gesture(SpatialTapGesture().onEnded { tap in
+                    let i = min(dates.count - 1, max(0, Int(tap.location.y / Search.emptyPitch)))
+                    openCard(dates[i], tab: .plan)
+                })
                 .padding(.horizontal, Search.cardInset)
                 .accessibilityElement()
-                .accessibilityLabel(Search.stamp(date) + " " + Search.weekday(date))
-                .accessibilityAddTraits(.isButton)
+                .accessibilityLabel(Search.stamp(dates[0]) + " – " + Search.stamp(dates[dates.count - 1]))
         }
     }
 
@@ -958,29 +981,36 @@ private struct SearchCard<Content: View>: View {
     }
 }
 
-/// Пустой будущий день (P983): закрытая карточка, от которой видна только
-/// линия края и полоска бумаги — `Search.emptyPitch`. Остальное лежит под
-/// следующей карточкой, как у полной (`Search.overlap`). Десять пустых дней —
-/// десять линий: на глаз видно, сколько дней между делами.
-private struct EmptyTab: View {
+/// Пустые будущие дни подряд (P983): стопка закрытых карточек, от каждой
+/// видна линия края и полоска бумаги — `Search.emptyPitch`. Низ последней
+/// лежит под следующей карточкой, как у полной (`Search.overlap`). Десять
+/// пустых дней — десять линий: на глаз видно, сколько дней между делами.
+private struct EmptyTabs: View {
+    let count: Int
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         ZStack(alignment: .top) {
-            Scheme.current.past
-            Image(uiImage: PageTexture.paper)
-                .resizable(resizingMode: .tile)
-                .opacity(scheme == .dark ? 0.2 : 0.3)
-            Rectangle()
-                .fill(Scheme.current.kraftEdge.opacity(0.5))
-                .frame(height: 0.8)
+            ZStack {
+                Scheme.current.past
+                Image(uiImage: PageTexture.paper)
+                    .resizable(resizingMode: .tile)
+                    .opacity(scheme == .dark ? 0.2 : 0.3)
+            }
+            // Края карточек — линиями, одна под другой.
+            Canvas { context, size in
+                let ink = Scheme.current.kraftEdge.opacity(0.5)
+                for i in 0..<count {
+                    let y = CGFloat(i) * Search.emptyPitch
+                    context.fill(Path(CGRect(x: 0, y: y, width: size.width, height: 0.8)), with: .color(ink))
+                }
+            }
         }
         .overlay {
             Rectangle().stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
         }
-        .frame(height: Search.emptyPitch + Search.overlap)
+        .frame(height: CGFloat(count) * Search.emptyPitch + Search.overlap)
         .frame(maxWidth: .infinity)
-        .allowsHitTesting(true)
     }
 }
 
