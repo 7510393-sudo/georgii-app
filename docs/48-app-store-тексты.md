@@ -41,7 +41,7 @@ Plan the morning. Remember the evening. One page a day in your own files — no 
 **Keywords (100):**
 `diary,journal,planner,day planner,notebook,notes,markdown,habit,to do,private,photo journal,files`
 
-**Description:** (App Store Connect не принял «“ ”» и названия языков на их письме — 19.11: только прямые кавычки и латиница)
+**Description:** (19.11: App Store Connect не принял названия языков на их письме; принят вариант только из простых знаков — дефисы вместо «•» и «—», «...» вместо «…», языки латиницей. Рекламный текст с “ ” и — принят.)
 
 RollingDays is a diary and a day planner on one page.
 
