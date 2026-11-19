@@ -97,9 +97,11 @@ struct SearchView: View {
             case hint(Deck.Side)
             case past(Archive.Day)
             case slot
-            case future(Archive.Day)
-            /// Пустые будущие дни подряд — стопка корешков закрытых
-            /// карточек одной строкой ленты (P983).
+            /// Будущий день с делами и пустые дни сразу за ним — корешками
+            /// под ним (P983).
+            case future(Archive.Day, [Date])
+            /// Пустые дни сразу за сегодняшним, до первого дня с делами —
+            /// одни корешки (P983).
             case empty([Date])
         }
         let id: String
@@ -172,32 +174,26 @@ struct SearchView: View {
         // «10 пустых дней — 10 закрытых вкладок, чтобы видно было, сколько
         // дней между карточками»; вместо полной карточки «Пусто — можно
         // вписать дела» P771). Когда ищут, пустых нет — только находки.
-        // Пустые дни подряд — одной строкой: стопка из десятков строк по 3
-        // точки держала ленивую стопку в непрерывной пересборке, экран
-        // замирал (проверки движения на P983).
-        var empties: [Archive.Day] = []
-        // Первая под днём лежит своим корешком, остальные заходят на прежнюю.
-        func overPrevious() -> Bool {
-            guard let last = out.last else { return false }
-            if case .slot = last.kind { return false }
-            return true
-        }
-        func flush() {
-            guard let first = empties.first else { return }
-            out.append(Entry(id: "e" + first.stamp, kind: .empty(empties.map(\.date)),
-                             over: overPrevious()))
-            empties = []
-        }
+        // Корешки — в одной строке ленты с карточкой над ними: отдельные
+        // строки в несколько точек держали ленивую стопку в непрерывной
+        // перекладке, экран замирал (проверки движения на P983). Отдельной
+        // строкой — только пустые дни сразу за сегодняшним.
+        var groups: [(day: Archive.Day?, after: [Date])] = []
         for day in future {
             if !asked && plan(day).isEmpty {
-                empties.append(day)
+                if groups.isEmpty { groups.append((nil, [])) }
+                groups[groups.count - 1].after.append(day.date)
             } else {
-                flush()
-                out.append(Entry(id: day.id, kind: .future(day),
-                                 over: overPrevious()))
+                groups.append((day, []))
             }
         }
-        flush()
+        for (i, group) in groups.enumerated() {
+            if let day = group.day {
+                out.append(Entry(id: day.id, kind: .future(day, group.after), over: i > 0))
+            } else if let first = group.after.first {
+                out.append(Entry(id: "e" + Vault.stamp(first), kind: .empty(group.after)))
+            }
+        }
         // Под последней — место под строку поиска внизу (P797).
         out.append(Entry(id: "tail", kind: .pad(max(Search.fieldHeight + 8,
                                                     height - CGFloat(future.count) * 60))))
@@ -617,30 +613,39 @@ struct SearchView: View {
             .padding(.horizontal, Search.cardInset)
         case .slot:
             daySlot
-        case .future(let day):
-            SearchCard(stamp: Search.stamp(day.date), weekday: Search.weekday(day.date),
-                       weekend: Calendar.current.isDateInWeekend(day.date), past: false, fresh: true,
-                       seed: PageTexture.seed(day.date), tight: true) {
-                futureRow(day, sample: sample)
+        case .future(let day, let after):
+            VStack(spacing: -Search.overlap) {
+                SearchCard(stamp: Search.stamp(day.date), weekday: Search.weekday(day.date),
+                           weekend: Calendar.current.isDateInWeekend(day.date), past: false, fresh: true,
+                           seed: PageTexture.seed(day.date), tight: true) {
+                    futureRow(day, sample: sample)
+                }
+                .modifier(Landed(landing: shell.ribbon.landing, id: entry.id))
+                // Касание по всей карточке, а не только по буквам (P866, автор:
+                // «будущие открываются, только когда нажимаешь на текст»).
+                .contentShape(FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare))
+                .onTapGesture { openCard(day.date, tab: .plan) }
+                // Пустые дни за ним — корешками поверх его низа (P983).
+                if !after.isEmpty { emptyTabs(after) }
             }
-            .modifier(Landed(landing: shell.ribbon.landing, id: entry.id))
-            // Касание по всей карточке, а не только по буквам (P866, автор:
-            // «будущие открываются, только когда нажимаешь на текст»).
-            .contentShape(FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare))
-            .onTapGesture { openCard(day.date, tab: .plan) }
             .padding(.horizontal, Search.cardInset)
         case .empty(let dates):
-            // Касание — день под пальцем: линии идут через `emptyPitch`.
-            EmptyTabs(count: dates.count)
-                .contentShape(Rectangle())
-                .gesture(SpatialTapGesture().onEnded { tap in
-                    let i = min(dates.count - 1, max(0, Int(tap.location.y / Search.emptyPitch)))
-                    openCard(dates[i], tab: .plan)
-                })
+            emptyTabs(dates)
                 .padding(.horizontal, Search.cardInset)
-                .accessibilityElement()
-                .accessibilityLabel(Search.stamp(dates[0]) + " – " + Search.stamp(dates[dates.count - 1]))
         }
+    }
+
+    /// Стопка корешков пустых дней (P983). Касание — день под пальцем:
+    /// линии идут через `emptyPitch`.
+    private func emptyTabs(_ dates: [Date]) -> some View {
+        EmptyTabs(count: dates.count)
+            .contentShape(Rectangle())
+            .gesture(SpatialTapGesture().onEnded { tap in
+                let i = min(dates.count - 1, max(0, Int(tap.location.y / Search.emptyPitch)))
+                openCard(dates[i], tab: .plan)
+            })
+            .accessibilityElement()
+            .accessibilityLabel(Search.stamp(dates[0]) + " – " + Search.stamp(dates[dates.count - 1]))
     }
 
     /// Место сегодняшнего дня в ленте (P777): пустое, высотой с экран; живой
