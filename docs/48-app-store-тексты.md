@@ -71,7 +71,7 @@ FIND AND REMEMBER
 
 SAFE BY DESIGN
 • Backup with byte-for-byte check — once you pick the place, it updates itself every week.
-• A 30-day trash for days, photos, files and places.
+• A 30-day trash for days, photos and files.
 • A photo you take in the app also goes to your Photos at full size.
 • Your entries are never overwritten: if a file was changed elsewhere, both versions are kept.
 • Face ID / passcode lock.
@@ -80,7 +80,7 @@ MOVE IN, MOVE OUT
 Import from Day One, Diarium, Journey, Markdown and text files. Because your entries are files, leaving is as easy.
 
 FAIR PRICE
-Start a free month — the whole app, from the day you choose. After that, one purchase, like a notebook. No subscription. One purchase for all your Apple devices: when the iPad version comes, it is included. This is the launch price; it will go up with the iPad version. Without the purchase you can always read, search and take your entries with you.
+Start a free month — the whole app, from the day you choose. After that, one purchase, like a notebook. No subscription. One purchase for all your Apple devices: when the iPad version comes, it is included. Without the purchase you can always read, search and take your entries with you.
 
 Eleven languages: English, Русский, Українська, Deutsch, Français, Español, Italiano, Português, Nederlands, 日本語, ქართული.
 
