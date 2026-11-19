@@ -41,11 +41,11 @@ Plan the morning. Remember the evening. One page a day in your own files — no 
 **Keywords (100):**
 `diary,journal,planner,day planner,notebook,notes,markdown,habit,to do,private,photo journal,files`
 
-**Description:**
+**Description:** (App Store Connect не принял «“ ”» и названия языков на их письме — 19.11: только прямые кавычки и латиница)
 
 RollingDays is a diary and a day planner on one page.
 
-Plan the day in the morning. Answer “How did it go?” in the evening. Write, add a photo, a voice note or a place. Turn the page.
+Plan the day in the morning. Answer "How did it go?" in the evening. Write, add a photo, a voice note or a place. Turn the page.
 
 YOUR ENTRIES ARE YOUR FILES
 Every day is a plain text file in a folder you choose — iCloud Drive or On My iPhone. No account, no server of ours, no special format. Delete the app and your entries stay. Open them in any text editor, on a Mac, in Obsidian — in twenty years.
@@ -53,7 +53,7 @@ Every day is a plain text file in a folder you choose — iCloud Drive or On My 
 ONE PAGE FOR THE WHOLE DAY
 • A plan with numbered tasks: tap the number to mark done, swipe to move to another day, long-press to reorder.
 • Time and a reminder for a task.
-• “How did it go?” — a short answer under every task.
+• "How did it go?" — a short answer under every task.
 • Repeating tasks and habits.
 • Your iPhone Calendar events shown in the plan.
 • Below the plan — the diary of the day.
@@ -66,7 +66,7 @@ WHAT GOES INTO A DAY
 FIND AND REMEMBER
 • Search across everything — only plans, only diary, only photos, only places.
 • Calendar by year, month and list.
-• “Back then…” — what happened on this day in earlier years.
+• "Back then…" — what happened on this day in earlier years.
 • A PDF book of any period.
 
 SAFE BY DESIGN
@@ -82,7 +82,7 @@ Import from Day One, Diarium, Journey, Markdown and text files. Because your ent
 FAIR PRICE
 Start a free month — the whole app, from the day you choose. After that, one purchase, like a notebook. No subscription. One purchase for all your Apple devices: when the iPad version comes, it is included. Without the purchase you can always read, search and take your entries with you.
 
-Eleven languages: English, Русский, Українська, Deutsch, Français, Español, Italiano, Português, Nederlands, 日本語, ქართული.
+Eleven languages: English, Russian, Ukrainian, German, French, Spanish, Italian, Portuguese, Dutch, Japanese, Georgian.
 
 **What’s New (первый выпуск):**
 First release.
