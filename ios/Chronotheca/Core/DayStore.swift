@@ -840,6 +840,76 @@ final class DayStore: ObservableObject {
         return true
     }
 
+    /// Подправить точку, только что отправленную с карты (P985): название
+    /// и что здесь было вписали уже после «В дневник». Строка точки ищется
+    /// целиком — в ленте, в тексте, в рядах плана; `false` — не нашлась.
+    @discardableResult
+    func replacePoint(_ old: GeoPoint, with new: GeoPoint) -> Bool {
+        let was = Geo.pointLine(old), now = Geo.pointLine(new)
+        guard was != now else { return true }
+        if canEditStrip, let i = photos.firstIndex(of: was) {
+            photos[i] = now
+        } else if canEditDiary, diaryText.contains(was) {
+            diaryText = diaryText.replacingOccurrences(of: was, with: now)
+        } else if canEditPlan,
+                  let r = planRows.firstIndex(where: { $0.verbatim?.contains(was) == true }),
+                  let line = planRows[r].verbatim {
+            planRows[r].verbatim = line.replacingOccurrences(of: was, with: now)
+        } else {
+            return false
+        }
+        save()
+        return true
+    }
+
+    /// Убрать из открытого дня все точки в этом месте (P985: своё место
+    /// удаляют «и из дневника») — из ленты, из текста, из рядов плана.
+    /// Сколько убрано.
+    @discardableResult
+    func removePoints(at spot: CLLocationCoordinate2D) -> Int {
+        let here: (GeoPoint) -> Bool = { Geo.same($0.at, spot) }
+        var count = 0
+        if canEditStrip {
+            let kept = photos.filter { link in
+                guard Diary.isPoint(link), let point = Geo.point(in: link) else { return true }
+                return !here(point)
+            }
+            if kept.count != photos.count {
+                count += photos.count - kept.count
+                photos = kept
+            }
+        }
+        if canEditDiary {
+            let (text, n) = Geo.removing(here, from: diaryText)
+            if n > 0 {
+                diaryText = text
+                count += n
+            }
+        }
+        if canEditPlan {
+            var rows = planRows
+            var emptied: Set<Int> = []
+            var n = 0
+            for r in rows.indices {
+                guard let line = rows[r].verbatim else { continue }
+                let (text, got) = Geo.removing(here, from: line)
+                guard got > 0 else { continue }
+                n += got
+                if text.trimmingCharacters(in: .whitespaces).isEmpty {
+                    emptied.insert(r)
+                } else {
+                    rows[r].verbatim = text
+                }
+            }
+            if n > 0 {
+                planRows = rows.enumerated().filter { !emptied.contains($0.offset) }.map(\.element)
+                count += n
+            }
+        }
+        if count > 0 { save() }
+        return count
+    }
+
     /// Снимок в ряду под делом — на другое место в том же ряду (P409).
     /// `slot` — перед каким снимком встать (по ряду до переноса).
     func reorderPlanPhoto(_ link: String, in row: UUID, to slot: Int) {

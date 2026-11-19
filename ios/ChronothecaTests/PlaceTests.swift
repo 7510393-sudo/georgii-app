@@ -187,4 +187,23 @@ final class PlaceTests: XCTestCase {
         XCTAssertTrue(DiaryEditor.Coordinator.mixed(
             typed, objects: [6], in: typed.paragraphRange(for: NSRange(location: 6, length: 0))))
     }
+
+    // P985: точка с карты — название и через « — » что здесь было, одной
+    // строкой; удаление «и из дневника» убирает точку из текста, не трогая
+    // соседний текст и отступ.
+    func testТочкаСОписаниемИУдаление() {
+        let at = CLLocationCoordinate2D(latitude: 51.50135, longitude: -0.14189)
+        let кафе = Place(name: "Кафе", coordinate: at, text: "Кофе\nс Анной")
+        XCTAssertEqual(MapScreen.title(of: кафе), "Кафе — Кофе с Анной")
+        let line = Geo.pointLine(GeoPoint(title: MapScreen.title(of: кафе) ?? "", at: at))
+        let back = Geo.point(in: line)
+        XCTAssertEqual(back?.name, "Кафе")
+        XCTAssertEqual(back?.about, "Кофе с Анной")
+        XCTAssertNil(MapScreen.title(of: Place(name: Geo.text(at), coordinate: at)))
+
+        let text = "Утро.\n" + line + "\n  дело " + line + " потом\nВечер."
+        let (left, n) = Geo.removing({ Geo.same($0.at, at) }, from: text)
+        XCTAssertEqual(n, 2)
+        XCTAssertEqual(left, "Утро.\n  дело потом\nВечер.")
+    }
 }

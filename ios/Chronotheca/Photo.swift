@@ -955,15 +955,17 @@ struct PlanPhotoGrid: Layout {
     }
 }
 
-/// Точка на карте квадратом (P587, P588): булавка и название, без названия —
-/// «Место» и сколько до своего места. Один вид в ленте, в плане и в записи.
+/// Точка на карте квадратом (P587, P588): булавка и название, под ним — что
+/// здесь было (P985); без названия — «Место» и сколько до своего места. Один вид в ленте, в плане и в записи.
 struct PointSquare: View {
     let point: GeoPoint
 
     var body: some View {
-        let given = point.title.trimmingCharacters(in: .whitespaces)
+        // Название сверху, ниже мельче — что здесь было (P985); без
+        // описания — подпись своего места (P559, P984).
+        let given = point.name
         Image(uiImage: PointChip.square(given.isEmpty ? T("Место", "Place") : given,
-                                        note: Places.note(for: point),
+                                        note: point.about ?? Places.note(for: point),
                                         glowing: false))
             .resizable()
             .scaledToFit()

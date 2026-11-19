@@ -136,6 +136,22 @@ struct GeoPoint {
 
     /// Надпись на кнопочке: название, затем координаты.
     var label: String { title.isEmpty ? Geo.text(at) : title + " · " + Geo.text(at) }
+
+    /// Название без описания (P985): в строке точки с карты после « — »
+    /// идёт «что здесь было».
+    var name: String {
+        guard let cut = title.range(of: Self.dash) else { return title }
+        return String(title[..<cut.lowerBound]).trimmingCharacters(in: .whitespaces)
+    }
+
+    /// Что здесь было — то, что после « — » (P985); нет — `nil`.
+    var about: String? {
+        guard let cut = title.range(of: Self.dash) else { return nil }
+        let rest = String(title[cut.upperBound...]).trimmingCharacters(in: .whitespaces)
+        return rest.isEmpty ? nil : rest
+    }
+
+    static let dash = " — "
 }
 
 extension GeoPoint: Equatable {
@@ -192,6 +208,38 @@ extension Geo {
         return (out as String)
             .replacingOccurrences(of: #"\s{2,}"#, with: " ", options: .regularExpression)
             .trimmingCharacters(in: .whitespaces)
+    }
+
+    /// Одно и то же место (P985): точка в дне и своё место на карте —
+    /// в пределах пары метров.
+    static func same(_ a: CLLocationCoordinate2D, _ b: CLLocationCoordinate2D) -> Bool {
+        abs(a.latitude - b.latitude) < 0.00002 && abs(a.longitude - b.longitude) < 0.00002
+    }
+
+    /// Убрать из текста точки, которые подходят (P985), — сколько убрано.
+    /// Строка, где кроме точки ничего не было, уходит целиком; отступ в
+    /// начале строки остаётся (продолжение под делом, P652).
+    static func removing(_ match: (GeoPoint) -> Bool, from s: String) -> (String, Int) {
+        var count = 0
+        var lines: [String] = []
+        for line in s.components(separatedBy: "\n") {
+            let found = points(inText: line).filter { match($0.point) }
+            guard !found.isEmpty else {
+                lines.append(line)
+                continue
+            }
+            count += found.count
+            var out = line as NSString
+            for f in found.reversed() {
+                out = out.replacingCharacters(in: f.range, with: "") as NSString
+            }
+            let rest = out as String
+            let body = rest.trimmingCharacters(in: .whitespaces)
+            guard !body.isEmpty else { continue }
+            let indent = String(rest.prefix { $0 == " " || $0 == "\t" })
+            lines.append(indent + body.replacingOccurrences(of: #" {2,}"#, with: " ", options: .regularExpression))
+        }
+        return (lines.joined(separator: "\n"), count)
     }
 
     /// Строка точки для файла.
@@ -267,7 +315,7 @@ enum Places {
     /// места; с названием своего места и на его месте (до 30 м) — «из Моих
     /// мест». Считается при показе, в файл не пишется.
     static func note(for point: GeoPoint) -> String? {
-        let given = point.title.trimmingCharacters(in: .whitespaces)
+        let given = point.name
         guard !given.isEmpty else { return caption(for: point.at) }
         let here = CLLocation(latitude: point.at.latitude, longitude: point.at.longitude)
         let mine = known.contains { place in

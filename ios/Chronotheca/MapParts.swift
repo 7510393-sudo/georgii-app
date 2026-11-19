@@ -35,7 +35,12 @@ struct PointPanel: View {
             // вокруг них (P340).
             // В пустом поле — «Название», а не координаты: они внизу
             // плашки (P404).
-            TextField(T("Название", "Name"), text: $place.name)
+            // У места без названия в файле названием лежат координаты
+            // (P228) — в поле их не показывать (P985): там пусто и бледное
+            // «Название», координаты — у «Копировать».
+            TextField(T("Название", "Name"), text: Binding(
+                get: { place.name == Geo.text(place.coordinate) ? "" : place.name },
+                set: { place.name = $0 }))
                 .focused($focused, equals: .name)
                 .submitLabel(.next)
                 .onSubmit { focused = .text }

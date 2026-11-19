@@ -35,6 +35,12 @@ struct MapScreen: View {
     /// Плашка открыта на синей точке «я здесь» (P804): сохранить — с погодой.
     @State private var me: CLLocation?
     @State private var asking = false
+    /// Дни дневника, где лежит удаляемое место (P985): есть — спросить,
+    /// убрать ли точку и оттуда.
+    @State private var linked: [Date] = []
+    /// Что отправили «В дневник» с открытой плашки (P985): пока она
+    /// открыта, «Готово» дописывает туда название и что здесь было.
+    @State private var sent: Sent?
     @State private var searching = false
     /// Что сейчас видно на карте — поиск ищет рядом. Не состояние экрана:
     /// карта двигается часто, перерисовывать всё незачем.
@@ -53,6 +59,11 @@ struct MapScreen: View {
     @State private var picked = Date.distantPast
 
     enum Panel { case naming }
+
+    struct Sent {
+        var day: Date
+        var point: GeoPoint
+    }
 
     /// Несколько записей под одним кружком — их список (P451).
     @State private var entryList: MapEntryGroup?
@@ -86,7 +97,7 @@ struct MapScreen: View {
                 // остаться от прежней точки.
                 PointPanel(place: selected, typeAtOnce: selected.file == nil && me == nil,
                            cancel: cancel, done: name,
-                           remove: selected.file == nil ? nil : { asking = true },
+                           remove: selected.file == nil ? nil : { ask(selected) },
                            navigate: { MapActions.navigate($0) },
                            save: { save($0, to: $1) })
                     .id(selected.id)
@@ -96,6 +107,10 @@ struct MapScreen: View {
             // прежде вверху между уголками, P283).
         }
         .animation(.easeOut(duration: 0.15), value: panel)
+        // Другая точка или плашка закрыта — отправленное остаётся в дневнике
+        // как есть (P985).
+        .onChange(of: selected?.id) { _, _ in sent = nil }
+        .onChange(of: panel) { _, now in if now == nil { sent = nil } }
         .overlay(alignment: .bottom) { bar }
         // Вкладка у правого края посередине (P855): подсказывает, что
         // экран смахивается к «Дневнику». Касаний не берёт — край
@@ -117,12 +132,21 @@ struct MapScreen: View {
         // края — на нижней строке разделов; её высота вычитается (P340).
         .keyboardHeight($keyboard, toScreenEdge: true)
         .confirmationDialog(T("Удалить точку?", "Delete the place?"), isPresented: $asking, titleVisibility: .visible) {
-            Button(T("Удалить точку", "Delete place"), role: .destructive) { remove() }
+            // Точка есть и в дневнике — спросить, убрать ли её и оттуда (P985).
+            if linked.isEmpty {
+                Button(T("Удалить точку", "Delete place"), role: .destructive) { remove(diary: false) }
+            } else {
+                Button(T("Удалить только точку", "Delete the place only"), role: .destructive) { remove(diary: false) }
+                Button(T("Удалить и из дневника", "Delete from the diary too"), role: .destructive) { remove(diary: true) }
+            }
             Button(T("Оставить точку", "Keep place"), role: .cancel) { }
         } message: {
             Text(selected?.file == nil ? T("Булавка уйдёт с карты.", "The pin will leave the map.")
                  : T("Файл этой точки будет удалён из папки «", "The file of this place will be deleted from the “")
-                   + vault.name(.places) + T("».", "” folder."))
+                   + vault.name(.places) + T("».", "” folder.")
+                   + (linked.isEmpty ? ""
+                      : T(" Эта точка есть в дневнике — дней: \(linked.count).",
+                          " This place is also in the diary — days: \(linked.count).")))
         }
         // Карта собрана заранее и ждёт на плашке (P581): о месте и о своих
         // местах — только когда её открыли, а не когда собрали.
@@ -409,7 +433,9 @@ struct MapScreen: View {
     private func show(_ point: GeoPoint) {
         mapState.focus = nil
         let known = places.first { near($0.coordinate, point.at) }
-        selected = known ?? Place(name: point.title, coordinate: point.at)
+        // Точка с описанием (P985): название — в поле названия, что здесь
+        // было — ниже.
+        selected = known ?? Place(name: point.name, coordinate: point.at, text: point.about ?? "")
         panel = .naming
         focus = MapFocus(center: point.at, meters: 1500)
     }
@@ -493,12 +519,17 @@ struct MapScreen: View {
     /// один значок (P404).
     private func name(_ given: Place) {
         hideKeyboard()
+        // Отправленное «В дневник» с этой плашки — получает название и что
+        // здесь было (P985).
+        if let sent { follow(sent, with: given) }
+        sent = nil
         withAnimation { panel = nil }
-        // Записанное место не меняли — файл не трогать.
-        if given.file != nil && given == selected { return }
         var place = given
         let unnamed = place.name.trimmingCharacters(in: .whitespaces).isEmpty
         if unnamed { place.name = Geo.text(place.coordinate) }
+        // Записанное место не меняли — файл не трогать. Поле названия у
+        // места без названия пустое, а в файле — координаты (P985).
+        if place.file != nil && place == selected { return }
         // Сохраняется и совсем пустая точка — белый кружок без названия
         // (P404; прежде такая не сохранялась и пропадала с карты, P284).
         guard let stored = Places.save(place, in: vault) else {
@@ -510,9 +541,19 @@ struct MapScreen: View {
         selected = stored
     }
 
-    private func remove() {
+    /// «Удалить» на плашке: сперва — в каких днях дневника эта точка (P985).
+    private func ask(_ place: Place) {
+        linked = archive.withPoints
+            .filter { day in day.points.contains { Geo.same($0, place.coordinate) } }
+            .map(\.date)
+        asking = true
+    }
+
+    private func remove(diary: Bool) {
         guard let place = selected else { return }
         if place.file != nil { Places.delete(place, in: vault) }
+        if diary { forget(place.coordinate, in: linked) }
+        linked = []
         places.removeAll { $0.id == place.id }
         selected = nil
         withAnimation { panel = nil }
@@ -527,32 +568,87 @@ struct MapScreen: View {
         withAnimation { panel = .naming }
     }
 
-    /// «В дневник» (P984, вместо «в сегодня» P804): точка ложится в ленту
-    /// внизу страницы выбранного дня (P588) — сегодня или день из
-    /// календаря; будущий день — в ленту плана. День человек выбирает сам,
-    /// а не берётся открытый в «Дне», как путало в P587/P590.
+    /// «В дневник» (P984, P985): точка ложится в ленту внизу страницы
+    /// выбранного дня (P588) — сегодня или день из календаря; будущий день —
+    /// в ленту плана. Карта остаётся как была, с открытой плашкой: к дню не
+    /// переходим (P985, отменяет переход P984), только тающая надпись. Дальше
+    /// можно вписать название и что здесь было — «Готово» допишет их в
+    /// дневник; не вписали — в дневнике «Сохранено 19 ноября».
     private func save(_ place: Place, to day: Date) {
         hideKeyboard()
+        let point = GeoPoint(title: Self.title(of: place) ?? Self.savedTitle(), at: place.coordinate)
         let today = Calendar.current.isDate(day, inSameDayAs: DayStore.today())
-        // Погода — только когда пишут «я здесь» в сегодня.
-        let mine = today && (me.map { near($0.coordinate, place.coordinate) } ?? false)
-        let weather = mine ? me : nil
-        // Названием остались координаты — в текст они ляжут один раз.
-        let title = place.name == Geo.text(place.coordinate) ? "" : place.name
-        store.go(to: day)
-        guard store.writePoint(GeoPoint(title: title, at: place.coordinate)) else {
-            return shell.say(store.closedReason)
+        let (written, reason) = inDay(day) { () -> (Bool, String) in
+            let ok = store.writePoint(point)
+            // Погода — только «я здесь» в сегодня, и только когда сегодня
+            // открыт и в «Дне»: ответ погоды пишется в открытый день.
+            if ok, today, store.isToday, let me, near(me.coordinate, place.coordinate) {
+                store.noteWeather(at: me)
+            }
+            return (ok, store.closedReason)
         }
-        if let weather { store.noteWeather(at: weather) }
-        shell.say(T("Точка в ленте — ", "Place added to the strip — ")
-                  + (today ? T("сегодня", "today") : Ru.shortDate(day)))
+        guard written else { return shell.say(reason) }
+        sent = Sent(day: day, point: point)
         Feel.light()
-        if place.file == nil { selected = nil }
-        me = nil
-        withAnimation { panel = nil }
-        // Записали — к этому дню, где точка теперь видна.
-        shell.tab = .diary
-        shell.screen = .today
+        shell.say(T("Отправлено в дневник", "Sent to the diary"), for: 2)
+    }
+
+    /// «Готово» после «В дневник» (P985): точка в дне получает название и
+    /// что здесь было. Ничего не вписали — остаётся как была.
+    private func follow(_ sent: Sent, with place: Place) {
+        guard let title = Self.title(of: place) else { return }
+        let now = GeoPoint(title: title, at: sent.point.at)
+        guard now != sent.point else { return }
+        let ok = inDay(sent.day) { store.replacePoint(sent.point, with: now) }
+        if !ok {
+            shell.say(T("Точку в дневнике поправить не вышло — там она прежняя.",
+                        "Could not update the place in the diary — it stays as it was."))
+        }
+    }
+
+    /// Убрать точку из дней дневника (P985) — каждый день сперва читается,
+    /// потом правится, как всякая запись.
+    private func forget(_ spot: CLLocationCoordinate2D, in days: [Date]) {
+        var left = 0
+        for day in days {
+            let gone = inDay(day) { store.removePoints(at: spot) }
+            if gone == 0 { left += 1 }
+        }
+        if left > 0 {
+            shell.say(T("Из дневника убрано не всё: дней осталось — \(left).",
+                        "Not everything left the diary: days kept — \(left)."))
+        }
+    }
+
+    /// Сделать что-то в другом дне и вернуться (P985): дневник остаётся на
+    /// том дне, где был.
+    private func inDay<R>(_ day: Date, _ work: () -> R) -> R {
+        let back = store.date
+        let away = !Calendar.current.isDate(back, inSameDayAs: day)
+        if away { store.go(to: day) }
+        let result = work()
+        if away { store.go(to: back) }
+        return result
+    }
+
+    /// Подпись точки в дневнике (P985): название и через « — » что здесь
+    /// было — одной строкой. Ничего не вписано — `nil`.
+    static func title(of place: Place) -> String? {
+        let name = place.name.trimmingCharacters(in: .whitespaces)
+        let named = name == Geo.text(place.coordinate) ? "" : name
+        let about = place.text
+            .split(whereSeparator: \.isNewline)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+        if about.isEmpty { return named.isEmpty ? nil : named }
+        return (named.isEmpty ? savedTitle() : named) + GeoPoint.dash + about
+    }
+
+    /// Точка без названия в дневнике (P985): «Сохранено 19 ноября».
+    static func savedTitle() -> String {
+        let day = Ru.shortDate(Date())
+        return T("Сохранено \(day)", "Saved \(day)")
     }
 
     private func openDay(_ date: Date) {
