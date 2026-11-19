@@ -1123,6 +1123,13 @@ private struct SpeedSheet: View {
         if !DeckTrail.lines.isEmpty {
             out += "\n\n" + DeckTrail.lines.joined(separator: "\n")
         }
+        // След поля дневника и диктовки (P967): что поле сделало перед тем,
+        // как диктовка выключилась. Записывался, но с 309 сюда не выводился
+        // (P987) — снимок автора после обрыва был без него.
+        if !StampTrace.lines.isEmpty {
+            out += "\n\n" + T("Поле дневника:", "Diary field:") + "\n"
+                + StampTrace.lines.joined(separator: "\n")
+        }
         return out
     }
 
