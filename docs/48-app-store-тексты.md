@@ -36,7 +36,7 @@
 ## 2. Тексты (English — основной)
 
 **Promotional Text (170):**
-Plan the morning. Remember the evening. One page a day in your own files — no account, no subscription. Launch price for the first year.
+Plan the morning. Remember the evening. One page a day in your own files — no account, no subscription.
 
 **Keywords (100):**
 `diary,journal,planner,day planner,notebook,notes,markdown,habit,to do,private,photo journal,files`
