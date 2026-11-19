@@ -16,6 +16,7 @@ enum Prefs {
     static let calendarTint = "prefs.calendarTint" // "distance", "weekday", "none"
     /// true — прошедшие дни без старой бумаги: просто цвет прошлого (P730).
     static let plainPast = "prefs.plainPast"
+    static let stackHints = "prefs.stackHints"  // сколько раз подсказали раскрыть стопку пустых дней (P988)
 
     static var weatherOn: Bool { !UserDefaults.standard.bool(forKey: noWeather) }
     static var askOn: Bool { !UserDefaults.standard.bool(forKey: noAsk) }

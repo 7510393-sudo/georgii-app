@@ -20,6 +20,14 @@ struct SearchView: View {
     private var query: String { search.query }
     /// Насколько клавиатура закрывает список находок.
     @State private var keyboard: CGFloat = 0
+    /// Какая стопка пустых дней раскрыта (P988): число её первого дня.
+    /// Раскрыта всегда одна — раскрыли другую, прежняя сложилась.
+    @State private var unfolded: String?
+    /// Сколько раз уже подсказали, что стопку раскрывают долгим нажатием
+    /// (P988, автор: «на первые два-три раза — напоминание»).
+    @AppStorage(Prefs.stackHints) private var stackHints = 0
+    /// Сама подсказка — не чаще раза за запуск.
+    private static var hintedThisRun = false
 
     /// Высота экрана раздела — высота места дня в ленте (P777).
     let height: CGFloat
@@ -103,6 +111,8 @@ struct SearchView: View {
             /// Пустые дни сразу за сегодняшним, до первого дня с делами —
             /// одни корешки (P983).
             case empty([Date])
+            /// Пустой день раскрытой стопки — пустая карточка (P988).
+            case blank(Date)
         }
         let id: String
         let kind: Kind
@@ -114,7 +124,7 @@ struct SearchView: View {
         var depth: Int {
             switch kind {
             case .past: return 1
-            case .future, .empty: return -1
+            case .future, .empty, .blank: return -1
             default: return 0
             }
         }
@@ -187,11 +197,23 @@ struct SearchView: View {
                 groups.append((day, []))
             }
         }
+        // Раскрытая стопка (P988) — пустыми карточками, каждая своей строкой
+        // ленты высотой с карточку (не строки в несколько точек, P983).
+        // Для снимка CI — раскрыта первая стопка (P988).
+        let firstStack = groups.first { !$0.after.isEmpty }?.after.first.map { Vault.stamp($0) }
+        let shown = unfolded ?? (shell.unfoldFirst ? firstStack : nil)
         for (i, group) in groups.enumerated() {
+            let open = group.after.first.map { Vault.stamp($0) == shown } ?? false
             if let day = group.day {
-                out.append(Entry(id: day.id, kind: .future(day, group.after), over: i > 0))
-            } else if let first = group.after.first {
+                out.append(Entry(id: day.id, kind: .future(day, open ? [] : group.after), over: i > 0))
+            } else if let first = group.after.first, !open {
                 out.append(Entry(id: "e" + Vault.stamp(first), kind: .empty(group.after)))
+            }
+            if open {
+                for (j, date) in group.after.enumerated() {
+                    out.append(Entry(id: Vault.stamp(date), kind: .blank(date),
+                                     over: group.day != nil || i > 0 || j > 0))
+                }
             }
         }
         // Под последней — место под строку поиска внизу (P797).
@@ -632,20 +654,68 @@ struct SearchView: View {
         case .empty(let dates):
             emptyTabs(dates)
                 .padding(.horizontal, Search.cardInset)
+        case .blank(let date):
+            // Пустой день раскрытой стопки (P988): та же будущая карточка,
+            // без дел. Короткое нажатие открывает день, долгое складывает
+            // стопку обратно.
+            SearchCard(stamp: Search.stamp(date), weekday: Search.weekday(date),
+                       weekend: Calendar.current.isDateInWeekend(date), past: false, fresh: true,
+                       seed: PageTexture.seed(date), tight: true) {
+                Color.clear
+                    .frame(height: Search.futureBody)
+                    .frame(maxWidth: .infinity)
+            }
+            .modifier(Landed(landing: shell.ribbon.landing, id: entry.id))
+            .contentShape(FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare))
+            .onTapGesture { openCard(date, tab: .plan) }
+            .onLongPressGesture(minimumDuration: Search.holdTime) { unfold(nil) }
+            .accessibilityElement()
+            .accessibilityLabel(Search.stamp(date) + " " + Search.weekday(date))
+            .accessibilityAddTraits(.isButton)
+            .padding(.horizontal, Search.cardInset)
+            .transition(.opacity)
         }
     }
 
-    /// Стопка корешков пустых дней (P983). Касание — день под пальцем:
-    /// линии идут через `emptyPitch`.
+    /// Раскрыть стопку пустых дней или сложить раскрытую (P988) — плавно:
+    /// карточки ниже отъезжают, а не прыгают (P893).
+    private func unfold(_ key: String?) {
+        guard unfolded != key else { return }
+        Feel.light()
+        withAnimation(.easeInOut(duration: 0.3)) { unfolded = key }
+    }
+
+    /// Мягкая подсказка, как раскрыть стопку (P988, тон P482).
+    private func hintStack() {
+        shell.say(T("Подержите палец на стопке — пустые дни раскроются",
+                    "Touch and hold the stack to unfold the empty days"), for: 2.5)
+    }
+
+    /// Стопка закрытых карточек пустых дней (P983, P988). Долгое нажатие
+    /// раскрывает её в пустые карточки (прежняя раскрытая складывается);
+    /// короткое — подсказывает, как раскрыть (прежде открывало день под
+    /// пальцем — в линиях через 3 точки не попасть, отменено P988).
     private func emptyTabs(_ dates: [Date]) -> some View {
-        EmptyTabs(count: dates.count)
+        let key = Vault.stamp(dates[0])
+        return EmptyTabs(count: dates.count)
             .contentShape(Rectangle())
-            .gesture(SpatialTapGesture().onEnded { tap in
-                let i = min(dates.count - 1, max(0, Int(tap.location.y / Search.emptyPitch)))
-                openCard(dates[i], tab: .plan)
-            })
+            .onTapGesture { hintStack() }
+            .onLongPressGesture(minimumDuration: Search.holdTime) { unfold(key) }
+            .onAppear {
+                // Первые три раза подсказка приходит сама — движение
+                // неочевидное (P988); в снимках и проверках — нет.
+                guard stackHints < 3, !Self.hintedThisRun, shell.screen == .search,
+                      !Vault.isPreview, !Vault.isSelfDrive else { return }
+                Self.hintedThisRun = true
+                stackHints += 1
+                hintStack()
+            }
             .accessibilityElement()
             .accessibilityLabel(Search.stamp(dates[0]) + " – " + Search.stamp(dates[dates.count - 1]))
+            .accessibilityHint(T("Подержите палец на стопке — пустые дни раскроются",
+                                 "Touch and hold the stack to unfold the empty days"))
+            .accessibilityAction(named: T("Раскрыть", "Unfold")) { unfold(key) }
+            .transition(.opacity)
     }
 
     /// Место сегодняшнего дня в ленте (P777): пустое, высотой с экран; живой
@@ -866,6 +936,8 @@ enum Search {
     /// Сколько видно от пустой карточки (P983, автор: «толщина линии плюс
     /// две толщины линии»): линия края и два раза по столько бумаги.
     static let emptyPitch: CGFloat = 3
+    /// Сколько держать палец на стопке пустых дней, чтобы она раскрылась (P988).
+    static let holdTime: Double = 0.35
 
     /// Высота четырёх строк будущей карточки (P771).
     static var futureBody: CGFloat {
@@ -986,35 +1058,35 @@ private struct SearchCard<Content: View>: View {
     }
 }
 
-/// Пустые будущие дни подряд (P983): стопка закрытых карточек, от каждой
-/// видна линия края и полоска бумаги — `Search.emptyPitch`. Низ последней
-/// лежит под следующей карточкой, как у полной (`Search.overlap`). Десять
-/// пустых дней — десять линий: на глаз видно, сколько дней между делами.
+/// Пустые будущие дни подряд (P983, P988): стопка закрытых карточек. Каждая
+/// — контур настоящей карточки с корешком (автор по 313: «должны полностью
+/// повторять очертания карточки, за которой лежат, с корешками»; вместо
+/// полос), следующая лежит на предыдущей на `Search.emptyPitch` ниже: видны
+/// верхние края корешков и плечи лесенкой. Низ последней уходит под
+/// следующую карточку, как у полной (`Search.overlap`). Десять пустых дней —
+/// десять карточек: на глаз видно, сколько дней между делами. Одним
+/// рисунком, без строк ленты на каждую (замирание P983).
 private struct EmptyTabs: View {
     let count: Int
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        ZStack(alignment: .top) {
-            ZStack {
-                Scheme.current.past
-                Image(uiImage: PageTexture.paper)
-                    .resizable(resizingMode: .tile)
-                    .opacity(scheme == .dark ? 0.2 : 0.3)
-            }
-            // Края карточек — линиями, одна под другой.
-            Canvas { context, size in
-                let ink = Scheme.current.kraftEdge.opacity(0.5)
-                for i in 0..<count {
-                    let y = CGFloat(i) * Search.emptyPitch
-                    context.fill(Path(CGRect(x: 0, y: y, width: size.width, height: 0.8)), with: .color(ink))
-                }
+        Canvas { context, size in
+            let shape = FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare)
+            let tall = Search.tabHeight + Search.overlap
+            let paper = Image(uiImage: PageTexture.paper)
+            let edge = Scheme.current.kraftEdge.opacity(0.5)
+            for i in 0..<count {
+                let rect = CGRect(x: 0, y: CGFloat(i) * Search.emptyPitch, width: size.width, height: tall)
+                let path = shape.path(in: rect)
+                context.fill(path, with: .color(Scheme.current.past))
+                var grain = context
+                grain.opacity = scheme == .dark ? 0.2 : 0.3
+                grain.fill(path, with: .tiledImage(paper))
+                context.stroke(path, with: .color(edge), lineWidth: 0.8)
             }
         }
-        .overlay {
-            Rectangle().stroke(Scheme.current.kraftEdge.opacity(0.5), lineWidth: 0.8)
-        }
-        .frame(height: CGFloat(count) * Search.emptyPitch + Search.overlap)
+        .frame(height: CGFloat(max(0, count - 1)) * Search.emptyPitch + Search.tabHeight + Search.overlap)
         .frame(maxWidth: .infinity)
     }
 }

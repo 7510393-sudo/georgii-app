@@ -61,6 +61,9 @@ final class Shell: ObservableObject {
     /// Только для снимков: показать вместо открытой страницы ту же страницу,
     /// нарисованную соседским способом. Так две росписи можно сличить
     /// пиксель в пиксель, а не рассуждать о них по памяти.
+    /// Снимок CI «картотека раскрыта» (P988): первая стопка пустых дней —
+    /// пустыми карточками.
+    var unfoldFirst = false
     @Published var probingSide = false
 
 
@@ -238,11 +241,15 @@ final class Shell: ObservableObject {
             // Картотека будущего (P771, P773): вместо снимка «Списка»
             // календаря, которого больше нет.
             screen = .search
+        case "fileunfold":
+            // Та же картотека, первая стопка пустых дней раскрыта (P988).
+            unfoldFirst = true
+            screen = .search
         default: break
         }
         // Для снимков — сразу, без хода (P799: разделы — лента вбок).
         instant = true
-        go(.place(open: screen == .search, name == "filefuture" ? .future : .past))
+        go(.place(open: screen == .search, name == "filefuture" || name == "fileunfold" ? .future : .past))
     }
 
 }
