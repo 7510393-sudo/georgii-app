@@ -263,6 +263,20 @@ enum Places {
         return T("\(shown) м до «\(name)»", "\(shown) m from “\(name)”")
     }
 
+    /// Подпись точки в дне (P559, P984): без названия — сколько до своего
+    /// места; с названием своего места и на его месте (до 30 м) — «из Моих
+    /// мест». Считается при показе, в файл не пишется.
+    static func note(for point: GeoPoint) -> String? {
+        let given = point.title.trimmingCharacters(in: .whitespaces)
+        guard !given.isEmpty else { return caption(for: point.at) }
+        let here = CLLocation(latitude: point.at.latitude, longitude: point.at.longitude)
+        let mine = known.contains { place in
+            place.name.trimmingCharacters(in: .whitespaces).caseInsensitiveCompare(given) == .orderedSame
+                && here.distance(from: CLLocation(latitude: place.latitude, longitude: place.longitude)) <= 30
+        }
+        return mine ? T("из Моих мест", "from My places") : nil
+    }
+
     /// Записать место. Файл с таким названием уже есть и он не этого
     /// места — к имени прибавляется номер: чужое не затирается никогда.
     /// Переименованное место переезжает в новый файл, старый убирается.

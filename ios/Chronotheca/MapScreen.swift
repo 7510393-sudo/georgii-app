@@ -88,7 +88,7 @@ struct MapScreen: View {
                            cancel: cancel, done: name,
                            remove: selected.file == nil ? nil : { asking = true },
                            navigate: { MapActions.navigate($0) },
-                           save: save)
+                           save: { save($0, to: $1) })
                     .id(selected.id)
                     .transition(.move(edge: .top).combined(with: .opacity))
             }
@@ -527,27 +527,30 @@ struct MapScreen: View {
         withAnimation { panel = .naming }
     }
 
-    /// «Сохранить в сегодня» (P804): точка всегда ложится в сегодняшний
-    /// дневник, в ленту внизу страницы (P588). В прошлый день — скопировать
-    /// координаты кнопкой на плашке и вставить (прежде кнопка писала в
-    /// открытый день и его вкладку, P358, P587, P590).
-    private func save(_ place: Place) {
+    /// «В дневник» (P984, вместо «в сегодня» P804): точка ложится в ленту
+    /// внизу страницы выбранного дня (P588) — сегодня или день из
+    /// календаря; будущий день — в ленту плана. День человек выбирает сам,
+    /// а не берётся открытый в «Дне», как путало в P587/P590.
+    private func save(_ place: Place, to day: Date) {
         hideKeyboard()
-        let mine = me.map { near($0.coordinate, place.coordinate) } ?? false
+        let today = Calendar.current.isDate(day, inSameDayAs: DayStore.today())
+        // Погода — только когда пишут «я здесь» в сегодня.
+        let mine = today && (me.map { near($0.coordinate, place.coordinate) } ?? false)
         let weather = mine ? me : nil
         // Названием остались координаты — в текст они ляжут один раз.
         let title = place.name == Geo.text(place.coordinate) ? "" : place.name
-        store.go(to: DayStore.today())
+        store.go(to: day)
         guard store.writePoint(GeoPoint(title: title, at: place.coordinate)) else {
             return shell.say(store.closedReason)
         }
         if let weather { store.noteWeather(at: weather) }
-        shell.say(T("Точка в ленте — ", "Place added to the strip — ") + T("сегодня", "today"))
+        shell.say(T("Точка в ленте — ", "Place added to the strip — ")
+                  + (today ? T("сегодня", "today") : Ru.shortDate(day)))
         Feel.light()
         if place.file == nil { selected = nil }
         me = nil
         withAnimation { panel = nil }
-        // Записали — к сегодняшнему дневнику, где точка теперь видна.
+        // Записали — к этому дню, где точка теперь видна.
         shell.tab = .diary
         shell.screen = .today
     }

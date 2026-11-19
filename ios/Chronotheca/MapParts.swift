@@ -17,12 +17,16 @@ struct PointPanel: View {
     /// Удалить записанное место; у новой булавки — нет.
     let remove: (() -> Void)?
     let navigate: (Place) -> Void
-    /// Сохранить в сегодняшний дневник (P804).
-    let save: (Place) -> Void
+    /// Записать точку в дневник выбранного дня (P984, вместо «в сегодня»
+    /// P804): сегодня или другой день по выбору.
+    let save: (Place, Date) -> Void
 
     private enum Field { case name, text }
     @FocusState private var focused: Field?
     @State private var copied = false
+    /// Открыт выбор дня для «В дневник» (P984).
+    @State private var choosing = false
+    @State private var day = DayStore.today()
 
     var body: some View {
         VStack(spacing: 8) {
@@ -55,7 +59,19 @@ struct PointPanel: View {
             // равной ширины в ряду. Вверху — куда деть точку (P804).
             HStack(spacing: 6) {
                 key(T("В навигатор", "Directions")) { navigate(place) }
-                key(T("В сегодня", "To today")) { save(place) }
+                // «В дневник» (P984): точка — в сегодняшний день или в
+                // другой; своё место связывается с днём только по желанию.
+                Menu {
+                    Button(T("В сегодня", "To today")) { save(place, DayStore.today()) }
+                    Button(T("В другой день…", "To another day…")) {
+                        day = DayStore.today()
+                        choosing = true
+                    }
+                } label: {
+                    label(T("В дневник", "To diary"))
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(Look.accent)
                 key(T("Поделиться", "Share")) {
                     MapActions.share(GeoPoint(title: place.name, at: place.coordinate))
                 }
@@ -89,6 +105,7 @@ struct PointPanel: View {
         // Плашка — у самого верха (P851, вместо «под уголком» —
         // шестерёнка заходит на поле названия, так решил автор).
         .padding(.top, 4)
+        .sheet(isPresented: $choosing) { dayPicker }
         .onAppear {
             // Клавиатура — только у новой точки: записанное место сперва
             // смотрят (P803).
@@ -101,15 +118,45 @@ struct PointPanel: View {
     /// высота, равная ширина в ряду; «Готово» — окантовкой плотнее.
     private func key(_ name: String, strong: Bool = false, run: @escaping () -> Void) -> some View {
         Button(action: run) {
-            Text(name)
-                .font(Look.sans(14, weight: strong ? .semibold : .regular))
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-                .frame(maxWidth: .infinity, minHeight: 24)
-                .modifier(Outlined(strong: strong, narrow: true))
+            label(name, strong: strong)
         }
         .buttonStyle(.plain)
         .foregroundStyle(Look.accent)
+    }
+
+    private func label(_ name: String, strong: Bool = false) -> some View {
+        Text(name)
+            .font(Look.sans(14, weight: strong ? .semibold : .regular))
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .frame(maxWidth: .infinity, minHeight: 24)
+            .modifier(Outlined(strong: strong, narrow: true))
+    }
+
+    /// Выбор дня для «В дневник» (P984): календарь и «Записать». Будущий
+    /// день — точка ляжет в его план (P588).
+    private var dayPicker: some View {
+        NavigationStack {
+            DatePicker(T("День", "Day"), selection: $day, displayedComponents: .date)
+                .datePickerStyle(.graphical)
+                .tint(Look.accent)
+                .padding(.horizontal, 12)
+                .frame(maxHeight: .infinity, alignment: .top)
+                .navigationTitle(T("В какой день", "Which day"))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(T("Отмена", "Cancel")) { choosing = false }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(T("Записать", "Save")) {
+                            choosing = false
+                            save(place, day)
+                        }
+                    }
+                }
+        }
+        .presentationDetents([.medium, .large])
     }
 }
 

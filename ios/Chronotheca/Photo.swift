@@ -963,7 +963,7 @@ struct PointSquare: View {
     var body: some View {
         let given = point.title.trimmingCharacters(in: .whitespaces)
         Image(uiImage: PointChip.square(given.isEmpty ? T("Место", "Place") : given,
-                                        note: given.isEmpty ? Places.caption(for: point.at) : nil,
+                                        note: Places.note(for: point),
                                         glowing: false))
             .resizable()
             .scaledToFit()

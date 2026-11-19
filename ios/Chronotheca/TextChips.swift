@@ -12,7 +12,7 @@ final class PointChip: NSTextAttachment {
         super.init(data: nil, ofType: nil)
         let given = point.title.trimmingCharacters(in: .whitespaces)
         let name = given.isEmpty ? T("Место", "Place") : given
-        let note = given.isEmpty ? Places.caption(for: point.at) : nil
+        let note = Places.note(for: point)
         let picture = PointChip.square(name, note: note, glowing: glowing)
         image = picture
         bounds = CGRect(origin: CGPoint(x: 0, y: -4), size: picture.size)
