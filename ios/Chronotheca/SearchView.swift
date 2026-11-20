@@ -107,13 +107,13 @@ struct SearchView: View {
             case hint(Deck.Side)
             case past(Archive.Day)
             case slot
-            /// Будущий день с делами и пустые дни сразу за ним — корешками
-            /// под ним (P983).
+            /// Будущий день с делами и пустые дни перед ним — стопкой над его
+            /// корешком (P990).
             case future(Archive.Day, [Date])
-            /// Пустые дни сразу за сегодняшним, до первого дня с делами —
-            /// одни корешки (P983).
+            /// Пустые дни после последней карточки — одна стопка (P983).
             case empty([Date])
-            /// Пустой день раскрытой стопки — пустая карточка (P988).
+            /// Пустой день: в ближайший месяц (P990) или раскрытой стопки
+            /// (P988) — пустая карточка.
             case blank(Date)
         }
         let id: String
@@ -182,42 +182,51 @@ struct SearchView: View {
         if asked && future.isEmpty && !past.isEmpty {
             out.append(Entry(id: "hint-future", kind: .hint(.future)))
         }
-        // Пустой будущий день — корешок закрытой карточки (P983, автор:
-        // «10 пустых дней — 10 закрытых вкладок, чтобы видно было, сколько
-        // дней между карточками»; вместо полной карточки «Пусто — можно
-        // вписать дела» P771). Когда ищут, пустых нет — только находки.
-        // Корешки — в одной строке ленты с карточкой над ними: отдельные
-        // строки в несколько точек держали ленивую стопку в непрерывной
-        // перекладке, экран замирал (проверки движения на P983). Отдельной
-        // строкой — только пустые дни сразу за сегодняшним.
-        var groups: [(day: Archive.Day?, after: [Date])] = []
+        // Пустой будущий день (P990, автор по 314: «карточки ближайшего
+        // месяца всегда должны быть открыты, чтобы у человека было
+        // визуальное представление о ближайшем месяце»): в ближайший месяц —
+        // пустая карточка, дальше — стопкой закрытых карточек (P983). Когда
+        // ищут, пустых нет — только находки. Стопка лежит в одной строке
+        // ленты с карточкой под ней, а не с карточкой над ней (P990): при
+        // движении к середине экрана строки ленты сближаются по-разному
+        // (P909), и карточка под стопкой то закрывала, то открывала её
+        // линии — стопка раздвигалась, как открытые карточки (автор по 314:
+        // «лишнее»). Теперь линии и карточка под ними едут вместе.
+        let month = Calendar.current.date(byAdding: .day, value: Search.ahead, to: DayStore.today()) ?? .distantPast
+        var stack: [Date] = []
+        var cards = 0
+        func add(_ id: String, _ kind: Entry.Kind) {
+            out.append(Entry(id: id, kind: kind, over: cards > 0))
+            cards += 1
+        }
+        // Накопленные пустые дни: раскрытая стопка (P988) — пустыми
+        // карточками; сложенная — отдаётся карточке под ней, а если её нет,
+        // встаёт отдельной строкой.
+        func folded(under card: Bool) -> [Date] {
+            defer { stack = [] }
+            guard let first = stack.first else { return [] }
+            let key = Vault.stamp(first)
+            if unfolded == key {
+                for date in stack { add(Vault.stamp(date), .blank(date)) }
+                return []
+            }
+            if card { return stack }
+            add("e" + key, .empty(stack))
+            return []
+        }
         for day in future {
             if !asked && plan(day).isEmpty {
-                if groups.isEmpty { groups.append((nil, [])) }
-                groups[groups.count - 1].after.append(day.date)
-            } else {
-                groups.append((day, []))
-            }
-        }
-        // Раскрытая стопка (P988) — пустыми карточками, каждая своей строкой
-        // ленты высотой с карточку (не строки в несколько точек, P983).
-        // Для снимка CI — раскрыта первая стопка (P988).
-        let firstStack = groups.first { !$0.after.isEmpty }?.after.first.map { Vault.stamp($0) }
-        let shown = unfolded ?? (shell.unfoldFirst ? firstStack : nil)
-        for (i, group) in groups.enumerated() {
-            let open = group.after.first.map { Vault.stamp($0) == shown } ?? false
-            if let day = group.day {
-                out.append(Entry(id: day.id, kind: .future(day, open ? [] : group.after), over: i > 0))
-            } else if let first = group.after.first, !open {
-                out.append(Entry(id: "e" + Vault.stamp(first), kind: .empty(group.after)))
-            }
-            if open {
-                for (j, date) in group.after.enumerated() {
-                    out.append(Entry(id: Vault.stamp(date), kind: .blank(date),
-                                     over: group.day != nil || i > 0 || j > 0))
+                if day.date <= month {
+                    _ = folded(under: false)
+                    add(Vault.stamp(day.date), .blank(day.date))
+                } else {
+                    stack.append(day.date)
                 }
+            } else {
+                add(day.id, .future(day, folded(under: true)))
             }
         }
+        _ = folded(under: false)
         // Под последней — место под строку поиска внизу (P797).
         out.append(Entry(id: "tail", kind: .pad(max(Search.fieldHeight + 8,
                                                     height - CGFloat(future.count) * 60))))
@@ -637,8 +646,11 @@ struct SearchView: View {
             .padding(.horizontal, Search.cardInset)
         case .slot:
             daySlot
-        case .future(let day, let after):
+        case .future(let day, let above):
             VStack(spacing: -Search.overlap) {
+                // Пустые дни перед ним — стопкой над его корешком (P990,
+                // вместо стопки под карточкой дня перед ними P983).
+                if !above.isEmpty { emptyTabs(above) }
                 SearchCard(stamp: Search.stamp(day.date), weekday: Search.weekday(day.date),
                            weekend: Calendar.current.isDateInWeekend(day.date), past: false, fresh: true,
                            seed: PageTexture.seed(day.date), tight: true) {
@@ -649,17 +661,15 @@ struct SearchView: View {
                 // «будущие открываются, только когда нажимаешь на текст»).
                 .contentShape(FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare))
                 .onTapGesture { openCard(day.date, tab: .plan) }
-                // Пустые дни за ним — корешками поверх его низа (P983).
-                if !after.isEmpty { emptyTabs(after) }
             }
             .padding(.horizontal, Search.cardInset)
         case .empty(let dates):
             emptyTabs(dates)
                 .padding(.horizontal, Search.cardInset)
         case .blank(let date):
-            // Пустой день раскрытой стопки (P988): та же будущая карточка,
-            // без дел. Короткое нажатие открывает день, долгое складывает
-            // стопку обратно.
+            // Пустой день ближайшего месяца (P990) или раскрытой стопки
+            // (P988): та же будущая карточка, без дел. Короткое нажатие
+            // открывает день, долгое складывает раскрытую стопку обратно.
             SearchCard(stamp: Search.stamp(date), weekday: Search.weekday(date),
                        weekend: Calendar.current.isDateInWeekend(date), past: false, fresh: true,
                        seed: PageTexture.seed(date), tight: true) {
@@ -932,13 +942,15 @@ enum Search {
     static let lineGap: CGFloat = 3
 
     /// Сколько дней подряд идёт картотека будущего в любом случае (P771);
-    /// дальше — до последнего дня с делами (P983).
+    /// пустые дни в нём — открытыми карточками (P990); дальше — до
+    /// последнего дня с делами, пустые стопками (P983).
     static let ahead = 30
     /// Дальше всего вперёд лента идёт подряд — год (P983).
     static let horizon = 366
-    /// Сколько видно от пустой карточки (P983, автор: «толщина линии плюс
-    /// две толщины линии»): линия края и два раза по столько бумаги.
-    static let emptyPitch: CGFloat = 3
+    /// Сколько видно от пустой карточки (P990, автор по 314: «торчит не на
+    /// две ширины линии, а на три»; вместо 3 точек P983): линия края и три
+    /// раза по столько бумаги.
+    static let emptyPitch: CGFloat = 4
     /// Сколько держать палец на стопке пустых дней, чтобы она раскрылась (P988).
     static let holdTime: Double = 0.35
 
