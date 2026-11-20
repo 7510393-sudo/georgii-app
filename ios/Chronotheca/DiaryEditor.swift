@@ -195,7 +195,12 @@ struct DiaryEditor: UIViewRepresentable {
             // и она продолжит писать с прежнего места, слово ляжет вокруг
             // другого слова.
         } else if DiaryEditor.plain(view.attributedText) != text || view.attributedText.length == 0 {
-            if view.isFirstResponder { StampTrace.note("поле переписано из записи") }
+            if view.isFirstResponder {
+                // Сколько знаков в поле и в записи (P991): видно, старее ли
+                // запись набранного или просто другая.
+                StampTrace.note("поле переписано из записи · поле \((view.text as NSString).length)"
+                                + " · запись \((text as NSString).length)")
+            }
             let selection = view.selectedRange
             view.attributedText = Self.styled(text, size: size, serif: serif, stamped: stamped,
                                               resolve: resolve)
@@ -2385,9 +2390,14 @@ struct DiaryEditor: UIViewRepresentable {
         /// Шрифт набора — только если он не тот (P881). Прежде он ставился
         /// заново после каждой буквы, и клавиатура иногда теряла заглавную
         /// после точки: смена шрифта набора сбрасывает ей подсказку регистра.
+        /// Сличается сам шрифт, а не метка `paintKey` (P991): свою метку
+        /// iPhone в шрифт набора не переносит, и по замерам автора шрифт
+        /// набора сменялся после каждой буквы — сбивал набор и диктовку.
         func setTyping(_ view: UITextView) {
             let body = DiaryEditor.body(parent.size, serif: parent.serif)
-            if view.typingAttributes[DiaryEditor.paintKey] as? String != body[DiaryEditor.paintKey] as? String {
+            let now = (view.typingAttributes[.font] as? UIFont).map(DiaryEditor.paint)
+            let want = (body[.font] as? UIFont).map(DiaryEditor.paint)
+            if now != want {
                 StampTrace.note("шрифт набора сменён")
                 view.typingAttributes = body
             }

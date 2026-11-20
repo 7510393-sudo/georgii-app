@@ -1285,6 +1285,10 @@ final class DayStore: ObservableObject {
     // как приложение тогда же видело этот день. По первому узнаётся чужая
     // правка, по второму — своя (решения P182, P183).
     private var seen: [Vault.Folder: String] = [:]
+    /// Какой день прочитан последним (P991): свой файл того же дня
+    /// перечитывать в поле не надо.
+    private var loadedDate: Date?
+    private var loadedRoot: URL?
     private var mine: [Vault.Folder: String] = [:]
     private var retries = 0
 
@@ -1326,31 +1330,57 @@ final class DayStore: ObservableObject {
         // Другие дни — заодно.
         settleOthers()
 
-        quietPlan = true
-        planRows = Plan.rows(from: DayFile(text: shown[.planner] ?? "").body)
-        quietPlan = false
+        // Файл тот же, что приложение само последний раз записало или
+        // прочло (P991): чужой правки нет, а на экране — то же или новее
+        // (набранное после записи). Перечитывать его в поле нельзя: поле
+        // переписывалось поверх набора, и пропадали буквы, пробелы и
+        // диктовка (замеры автора по 315: «поле переписано из записи»
+        // посреди набора). Чужую правку и другой день — читаем как прежде.
+        func own(_ folder: Vault.Folder, _ reading: String) -> Bool {
+            loadedDate == date && loadedRoot == vault.root && !gone.contains(folder) && !owed.contains(folder)
+                && reading == seen[folder] && shown[folder] == reading
+        }
+        let ownPlan = own(.planner, plan.text)
+        let ownDiary = own(.diary, diaryFile.text)
+        loadedDate = date
+        loadedRoot = vault.root
+        StampTrace.note("день перечитан" + (merge ? " (вторая версия)" : "")
+                        + (ownDiary ? " · запись своя, поле не трогали" : " · запись из файла"))
+
+        if !ownPlan {
+            quietPlan = true
+            planRows = Plan.rows(from: DayFile(text: shown[.planner] ?? "").body)
+            quietPlan = false
+        }
         noteSeries()
 
-        let file = DayFile(text: shown[.diary] ?? "")
-        // План читается первым, поэтому названия дел уже известны — по ним
-        // ответы «Как прошло?» разбираются без догадок (P155).
-        let diary = Diary(body: file.body, known: planRows.map(\.text))
-        diaryTitle = file.value("title") ?? ""
-        // Загрузка с диска — не правка человека: как и план строкой выше,
-        // в историю шага назад/вперёд не попадает (P327). Без этого первое
-        // открытие дня (пустая запись до чтения файла) само вставало в
-        // историю, и один шаг назад стирал всё написанное.
-        quietDiary = true
-        diaryText = Diary.rows(diary.text)
-        answers = diary.answers
-        quietDiary = false
-        photos = diary.photos
-        place = file.value("place")
-        weather = file.value("weather")
-        lastEdit = file.value("edited").flatMap(DayStore.moment(from:))
+        if !ownDiary {
+            let file = DayFile(text: shown[.diary] ?? "")
+            // План читается первым, поэтому названия дел уже известны — по ним
+            // ответы «Как прошло?» разбираются без догадок (P155).
+            let diary = Diary(body: file.body, known: planRows.map(\.text))
+            diaryTitle = file.value("title") ?? ""
+            // Загрузка с диска — не правка человека: как и план строкой выше,
+            // в историю шага назад/вперёд не попадает (P327). Без этого первое
+            // открытие дня (пустая запись до чтения файла) само вставало в
+            // историю, и один шаг назад стирал всё написанное.
+            quietDiary = true
+            diaryText = Diary.rows(diary.text)
+            answers = diary.answers
+            quietDiary = false
+            photos = diary.photos
+            place = file.value("place")
+            weather = file.value("weather")
+            lastEdit = file.value("edited").flatMap(DayStore.moment(from:))
+        }
 
         seen = [.planner: plan.text, .diary: diaryFile.text]
+        // Свой файл не перечитан — «своим» остаётся то, что и правда легло
+        // на диск: набранное после записи ещё должно записаться (P991).
+        let wrote = mine
         mine = [.planner: planFile().text, .diary: diaryFileNow().text]
+        if ownPlan { mine[.planner] = wrote[.planner] }
+        if ownDiary { mine[.diary] = wrote[.diary] }
         // Недописанное — ещё не на диске: «своим» его не считаем, и запись
         // пойдёт сразу.
         if !owed.isEmpty {
