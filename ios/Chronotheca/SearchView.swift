@@ -23,9 +23,11 @@ struct SearchView: View {
     /// Какая стопка пустых дней раскрыта (P988): число её первого дня.
     /// Раскрыта всегда одна — раскрыли другую, прежняя сложилась.
     @State private var unfolded: String?
-    /// Сколько раз уже подсказали, что стопку раскрывают долгим нажатием
-    /// (P988, автор: «на первые два-три раза — напоминание»).
-    @AppStorage(Prefs.stackHints) private var stackHints = 0
+    /// Когда последний раз сама пришла подсказка, что стопку раскрывают
+    /// долгим нажатием (P989, автор по 314: «подсказка хорошая, пусть будет
+    /// периодически вылезать»; вместо «первые три раза» P988): не чаще раза
+    /// в сутки.
+    @AppStorage(Prefs.stackHintAt) private var stackHintAt: Double = 0
     /// Сама подсказка — не чаще раза за запуск.
     private static var hintedThisRun = false
 
@@ -702,12 +704,13 @@ struct SearchView: View {
             .onTapGesture { hintStack() }
             .onLongPressGesture(minimumDuration: Search.holdTime) { unfold(key) }
             .onAppear {
-                // Первые три раза подсказка приходит сама — движение
-                // неочевидное (P988); в снимках и проверках — нет.
-                guard stackHints < 3, !Self.hintedThisRun, shell.screen == .search,
-                      !Vault.isPreview, !Vault.isSelfDrive else { return }
+                // Подсказка приходит сама время от времени — не чаще раза в
+                // сутки и раза за запуск (P989); в снимках и проверках — нет.
+                let now = Date().timeIntervalSince1970
+                guard now - stackHintAt > 20 * 3600, !Self.hintedThisRun,
+                      shell.screen == .search, !Vault.isPreview, !Vault.isSelfDrive else { return }
                 Self.hintedThisRun = true
-                stackHints += 1
+                stackHintAt = now
                 hintStack()
             }
             .accessibilityElement()

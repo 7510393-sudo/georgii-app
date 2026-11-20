@@ -4,7 +4,7 @@ import MapKit
 
 /// Плашка точки сверху карты — новой и записанной, одна (P803, вместо
 /// облачка с «Изменить» перед ней): название, что здесь было, координаты
-/// кнопкой, «Удалить», «Отмена», «Готово» (P213, P228). Полупрозрачная —
+/// кнопкой, «Удалить», «Отмена», «Отметить» (P213, P228). Полупрозрачная —
 /// под ней видно булавку. Клавиатура открывается сразу только у новой.
 struct PointPanel: View {
 
@@ -81,7 +81,7 @@ struct PointPanel: View {
                     MapActions.share(GeoPoint(title: place.name, at: place.coordinate))
                 }
             }
-            // Внизу — «Копировать» в одном ряду с «Отмена» и «Готово»;
+            // Внизу — «Копировать» в одном ряду с «Отмена» и «Отметить»;
             // «Удалить» — у записанной точки (P803), у новой булавки её
             // убирает «Отмена».
             HStack(spacing: 6) {
@@ -96,7 +96,10 @@ struct PointPanel: View {
                 }
                 .accessibilityLabel(T("Скопировать координаты ", "Copy coordinates ") + Geo.text(place.coordinate))
                 key(T("Отмена", "Cancel"), run: cancel)
-                key(T("Готово", "Done"), strong: true) { done(place) }
+                // «Отметить» со стрелкой точки карты (P989, автор по 314:
+                // «переименовать Готово в Отметить и нарисовать стрелочку —
+                // копию той, что ставится на карту»; вместо «Готово» P813).
+                key(T("Отметить", "Mark"), strong: true, mark: true) { done(place) }
             }
         }
         .font(Look.sans(15))
@@ -120,20 +123,30 @@ struct PointPanel: View {
     }
 
     /// Кнопка плашки (P813): у всех один вид — надпись в окантовке, одна
-    /// высота, равная ширина в ряду; «Готово» — окантовкой плотнее.
-    private func key(_ name: String, strong: Bool = false, run: @escaping () -> Void) -> some View {
+    /// высота, равная ширина в ряду; «Отметить» — окантовкой плотнее.
+    private func key(_ name: String, strong: Bool = false, mark: Bool = false,
+                     run: @escaping () -> Void) -> some View {
         Button(action: run) {
-            label(name, strong: strong)
+            label(name, strong: strong, mark: mark)
         }
         .buttonStyle(.plain)
         .foregroundStyle(Look.accent)
     }
 
-    private func label(_ name: String, strong: Bool = false) -> some View {
-        Text(name)
-            .font(Look.sans(14, weight: strong ? .semibold : .regular))
-            .lineLimit(1)
-            .minimumScaleFactor(0.7)
+    private func label(_ name: String, strong: Bool = false, mark: Bool = false) -> some View {
+        HStack(spacing: 3) {
+            // Та же стрелка, что встаёт на карту (`GlyphArt`, P989).
+            if mark {
+                Image(uiImage: GlyphArt.image)
+                    .resizable()
+                    .frame(width: 16, height: 16)
+                    .accessibilityHidden(true)
+            }
+            Text(name)
+                .font(Look.sans(14, weight: strong ? .semibold : .regular))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+        }
             .frame(maxWidth: .infinity, minHeight: 24)
             .modifier(Outlined(strong: strong, narrow: true))
     }
