@@ -2324,6 +2324,15 @@ struct DiaryEditor: UIViewRepresentable {
                     } else {
                         want = body
                     }
+                    // Новая буква приходит без метки: свою метку iPhone в
+                    // шрифт набора не переносит (P991). Шрифт у неё тот же,
+                    // что у записи, — значит, окрашена верно. Прежде строку
+                    // под курсором перекрашивали после каждой буквы, и
+                    // клавиатура теряла буквы (замеры автора по 316:
+                    // «краска: строк 1» после каждой правки).
+                    if have == nil, want != nil,
+                       let font = storage.attribute(.font, at: range.location, effectiveRange: nil) as? UIFont,
+                       DiaryEditor.paint(font) == want { return }
                     if have == nil || have != want { right = false; stop.pointee = true }
                 }
                 return right

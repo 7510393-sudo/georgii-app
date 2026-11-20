@@ -664,7 +664,7 @@ struct SearchView: View {
             }
             .padding(.horizontal, Search.cardInset)
         case .empty(let dates):
-            emptyTabs(dates)
+            emptyTabs(dates, over: false)
                 .padding(.horizontal, Search.cardInset)
         case .blank(let date):
             // Пустой день ближайшего месяца (P990) или раскрытой стопки
@@ -707,9 +707,9 @@ struct SearchView: View {
     /// раскрывает её в пустые карточки (прежняя раскрытая складывается);
     /// короткое — подсказывает, как раскрыть (прежде открывало день под
     /// пальцем — в линиях через 3 точки не попасть, отменено P988).
-    private func emptyTabs(_ dates: [Date]) -> some View {
+    private func emptyTabs(_ dates: [Date], over: Bool = true) -> some View {
         let key = Vault.stamp(dates[0])
-        return EmptyTabs(count: dates.count)
+        return EmptyTabs(count: dates.count, over: over)
             .contentShape(Rectangle())
             .onTapGesture { hintStack() }
             .onLongPressGesture(minimumDuration: Search.holdTime) { unfold(key) }
@@ -1083,6 +1083,12 @@ private struct SearchCard<Content: View>: View {
 /// рисунком, без строк ленты на каждую (замирание P983).
 private struct EmptyTabs: View {
     let count: Int
+    /// Под стопкой лежит карточка (P992): ближняя закрытая выглядывает из-за
+    /// неё на тот же шаг, что и остальные. Прежде карточка вставала на
+    /// корешок ниже, и ближняя закрытая торчала на целый корешок (автор по
+    /// 316: «все карточки должны выглядывать одинаково»). Без карточки под
+    /// ней — последняя рисуется целиком.
+    var over = true
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
@@ -1101,7 +1107,8 @@ private struct EmptyTabs: View {
                 context.stroke(path, with: .color(edge), lineWidth: 0.8)
             }
         }
-        .frame(height: CGFloat(max(0, count - 1)) * Search.emptyPitch + Search.tabHeight + Search.overlap)
+        .frame(height: over ? CGFloat(count) * Search.emptyPitch + Search.overlap
+                            : CGFloat(max(0, count - 1)) * Search.emptyPitch + Search.tabHeight + Search.overlap)
         .frame(maxWidth: .infinity)
     }
 }
