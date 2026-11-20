@@ -1288,6 +1288,9 @@ final class DayStore: ObservableObject {
     /// Какой день прочитан последним (P991): свой файл того же дня
     /// перечитывать в поле не надо.
     private var loadedDate: Date?
+    /// Куда писать след перечитывания (P991): «Замеры» живут в верхнем слое,
+    /// нижний на них не смотрит (P970) — приложение подставляет сюда своё.
+    static var trace: (String) -> Void = { _ in }
     private var loadedRoot: URL?
     private var mine: [Vault.Folder: String] = [:]
     private var retries = 0
@@ -1344,7 +1347,7 @@ final class DayStore: ObservableObject {
         let ownDiary = own(.diary, diaryFile.text)
         loadedDate = date
         loadedRoot = vault.root
-        StampTrace.note("день перечитан" + (merge ? " (вторая версия)" : "")
+        DayStore.trace("день перечитан" + (merge ? " (вторая версия)" : "")
                         + (ownDiary ? " · запись своя, поле не трогали" : " · запись из файла"))
 
         if !ownPlan {

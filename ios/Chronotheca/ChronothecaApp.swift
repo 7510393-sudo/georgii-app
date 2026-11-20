@@ -19,6 +19,8 @@ struct ChronothecaApp: App {
     @StateObject private var shell = Shell()
     @Environment(\.scenePhase) private var phase
     init() {
+        // След перечитывания дня — в «Замеры» (P991).
+        DayStore.trace = { StampTrace.note($0) }
         _ = LaunchClock.start
         // Превью заранее читает экран, просит нижний слой (P973).
         Photo.warmer = PhotoWarm.run
