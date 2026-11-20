@@ -194,6 +194,26 @@ struct DiaryEditor: UIViewRepresentable {
             // Идёт диктовка (P815): поле сейчас её. Переписать его целиком —
             // и она продолжит писать с прежнего места, слово ляжет вокруг
             // другого слова.
+        } else if view.isFirstResponder, view.attributedText.length > 0,
+                  let pushed = context.coordinator.pushed, pushed == text,
+                  DiaryEditor.plain(view.attributedText) != text {
+            // Запись та же, что поле само отдало последний раз, — значит,
+            // впереди поле (P993): диктовка вписала слова, не сказав полю
+            // (признак диктовки у нынешнего iPhone не срабатывает). Прежде
+            // поле переписывалось этой старой записью — пропадали буквы и
+            // обрывалась диктовка (замеры автора по 316: «поле 442 · запись
+            // 434»). Теперь поле догоняет запись, а не наоборот.
+            let now = DiaryEditor.plain(view.attributedText)
+            StampTrace.note("запись догнала поле · поле \((now as NSString).length)"
+                            + " · запись \((text as NSString).length)")
+            let coordinator = context.coordinator
+            coordinator.pushed = now
+            let record = $text
+            DispatchQueue.main.async {
+                // Поле с тех пор отдало новее — не перебивать.
+                guard coordinator.pushed == now else { return }
+                record.wrappedValue = now
+            }
         } else if DiaryEditor.plain(view.attributedText) != text || view.attributedText.length == 0 {
             if view.isFirstResponder {
                 // Сколько знаков в поле и в записи (P991): видно, старее ли
@@ -201,6 +221,7 @@ struct DiaryEditor: UIViewRepresentable {
                 StampTrace.note("поле переписано из записи · поле \((view.text as NSString).length)"
                                 + " · запись \((text as NSString).length)")
             }
+            context.coordinator.pushed = text
             let selection = view.selectedRange
             view.attributedText = Self.styled(text, size: size, serif: serif, stamped: stamped,
                                               resolve: resolve)
@@ -791,7 +812,9 @@ struct DiaryEditor: UIViewRepresentable {
             storage.replaceCharacters(in: r, with: up)
             view.selectedRange = sel
             placing = false
-            parent.text = DiaryEditor.plain(view.attributedText)
+            let pushedText = DiaryEditor.plain(view.attributedText)
+            pushed = pushedText
+            parent.text = pushedText
         }
 
         func textViewDidBeginEditing(_ view: UITextView) {
@@ -847,7 +870,9 @@ struct DiaryEditor: UIViewRepresentable {
             guard changed else { return }
             view.selectedRange = NSRange(
                 location: min(курсор.location, storage.length), length: 0)
-            parent.text = DiaryEditor.plain(storage)
+            let pushedText = DiaryEditor.plain(storage)
+            pushed = pushedText
+            parent.text = pushedText
             restyle(view)
         }
 
@@ -1136,6 +1161,9 @@ struct DiaryEditor: UIViewRepresentable {
         /// тот же, оформление не перекладывается — лишняя перекладка
         /// перерисовывает картинки.
         var styledKey = ""
+        /// Что поле последний раз отдало в запись или взяло из неё (P993):
+        /// запись, равная этому, не новее поля.
+        var pushed: String?
         /// Поле до переноса — чтобы вернуть его, если перенос отменили.
         private var before: NSAttributedString?
         /// Запись, как она станет после переноса.
@@ -1326,7 +1354,9 @@ struct DiaryEditor: UIViewRepresentable {
                 if let done {
                     Feel.light()
                     show(done, in: view)
-                    parent.text = done
+                    let pushedText = done
+                    pushed = pushedText
+                    parent.text = pushedText
                 }
             default:
                 stopPump()
@@ -1507,7 +1537,9 @@ struct DiaryEditor: UIViewRepresentable {
             }
             restore(view)
             show(done, in: view)
-            parent.text = done
+            let pushedText = done
+            pushed = pushedText
+            parent.text = pushedText
             return true
         }
 
@@ -1671,7 +1703,9 @@ struct DiaryEditor: UIViewRepresentable {
                                                      stamped: parent.stamped, resolve: resolve)
             view.typingAttributes = DiaryEditor.body(parent.size, serif: parent.serif)
             loadPhotos()
-            parent.text = result
+            let pushedText = result
+            pushed = pushedText
+            parent.text = pushedText
         }
 
         /// Куда ляжет снимок или точка, если отпустить их здесь: запись после
@@ -2102,6 +2136,7 @@ struct DiaryEditor: UIViewRepresentable {
             // или ушли из записи (P881): правка поля посреди фразы
             // выключала диктовку.
             let now = DiaryEditor.plain(view.attributedText)
+            pushed = now
             parent.text = now
             if typedLetters, view.isFirstResponder,
                Self.atEnd(view.textStorage, from: view.selectedRange.location) {
@@ -2199,7 +2234,9 @@ struct DiaryEditor: UIViewRepresentable {
             view.textStorage.replaceCharacters(in: range, with: upper)
             let after = range.location + (upper as NSString).length
             view.selectedRange = NSRange(location: after, length: 0)
-            parent.text = DiaryEditor.plain(view.attributedText)
+            let now = DiaryEditor.plain(view.attributedText)
+            pushed = now
+            parent.text = now
             restyle(view)
             return false
         }
