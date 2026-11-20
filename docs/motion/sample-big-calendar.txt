@@ -1,0 +1,92 @@
+    1622 Thread_57779   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 1622 start  (in dyld) + 6992  [0x1008084e4]
+    +   1622 start_sim  (in dyld_sim) + 20  [0x10094b0e4]
+    +     1622 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x1027abe24]  ChronothecaApp.swift:0
+    +       1622 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1027abd78]  /<compiler-generated>:0
+    +         1622 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           1622 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             1622 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               1622 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 1622 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   1622 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     1622 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       1621 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    +                       ! 1621 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    +                       !   1621 mach_msg  (in libsystem_kernel.dylib) + 20  [0x10065cef0]
+    +                       !     1621 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x100664c44]
+    +                       !       1621 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x10066de84]
+    +                       !         1621 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x10065cb70]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 760  [0x180421808]
+    +                         1 __CFRunLoopDoSources0  (in CoreFoundation) + 220  [0x180422634]
+    +                           1 __CFRunLoopDoSource0  (in CoreFoundation) + 168  [0x180422ea4]
+    +                             1 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__  (in CoreFoundation) + 24  [0x180422f5c]
+    +                               1 UC::DriverCore::continueProcessing()  (in UpdateCycle) + 80  [0x2343d22c0]
+    +                                 1 schedulerStepScheduledMainSectionContinue  (in UIKitCore) + 56  [0x1863b6064]
+    +                                   1 _UIUpdateSequenceRunNext  (in UIKitCore) + 120  [0x18590339c]
+    +                                     1 ???  (in UIKitCore)  load address 0x185289000 + 0x169788  [0x1853f2788]
+    +                                       1 ???  (in UIKitCore)  load address 0x185289000 + 0x169c88  [0x1853f2c88]
+    +                                         1 static ViewGraphHostUpdate.dispatchImmediately<A>(_:)  (in SwiftUICore) + 40  [0x1d3a49218]
+    +                                           1 static Update.dispatchImmediately<A>(reason:_:)  (in SwiftUICore) + 332  [0x1d3d0a8c4]
+    +                                             1 ???  (in UIKitCore)  load address 0x185289000 + 0x1ea30  [0x1852a7a30]
+    +                                               1 ???  (in UIKitCore)  load address 0x185289000 + 0x169994  [0x1853f2994]
+    +                                                 1 ???  (in UIKitCore)  load address 0x185289000 + 0xac264  [0x185335264]
+    +                                                   1 partial apply for closure #1 in closure #1 in _UIHostingView.beginTransaction()  (in SwiftUI) + 64  [0x1d295e28c]
+    +                                                     1 static Update.ensure<A>(_:)  (in SwiftUICore) + 96  [0x1d3d0a2f0]
+    +                                                       1 closure #1 in static Update.ensure<A>(_:)  (in SwiftUICore) + 48  [0x1d3d0b718]
+    +                                                         1 partial apply for closure #1 in closure #1 in closure #1 in _UIHostingView.beginTransaction()  (in SwiftUI) + 20  [0x1d295e2b0]
+    +                                                           1 closure #1 in closure #1 in closure #1 in _UIHostingView.beginTransaction()  (in SwiftUI) + 144  [0x1d2954830]
+    +                                                             1 ViewGraphRootValueUpdater.updateGraph<A>(body:)  (in SwiftUICore) + 136  [0x1d43bf084]
+    +                                                               1 ViewGraphRootValueUpdater._updateViewGraph<A>(body:)  (in SwiftUICore) + 200  [0x1d43c079c]
+    +                                                                 1 <deduplicated_symbol>  (in SwiftUICore) + 20  [0x1d41904c0]
+    +                                                                   1 <deduplicated_symbol>  (in SwiftUI) + 20  [0x1d2954860]
+    +                                                                     1 GraphHost.flushTransactions()  (in SwiftUICore) + 176  [0x1d3f322dc]
+    +                                                                       1 specialized GraphHost.runTransaction(_:do:id:)  (in SwiftUICore) + 352  [0x1d3f4ca50]
+    +                                                                         1 AG::Subgraph::update(unsigned int)  (in AttributeGraph) + 952  [0x1c42da590]
+    +                                                                           1 AG::Graph::UpdateStack::update()  (in AttributeGraph) + 488  [0x1c42cb6c0]
+    +                                                                             1 partial apply for implicit closure #1 in closure #1 in closure #1 in Attribute.init<A>(_:)  (in SwiftUICore) + 28  [0x1d3a882d4]
+    +                                                                               1 DynamicBody.updateValue()  (in SwiftUICore) + 840  [0x1d3d0744c]
+    +                                                                                 1 closure #1 in DynamicBody.updateValue()  (in SwiftUICore) + 180  [0x1d3d07800]
+    +                                                                                   1 _swift_getGenericMetadata(swift::MetadataRequest, void const* const*, swift::TargetTypeContextDescriptor<swift::InProcess> const*)  (in libswiftCore.dylib) + 260  [0x198198e88]
+    +                                                                                     1 swift::LockingConcurrentMap<swift::GenericCacheEntry, swift::LockingConcurrentMapStorage<swift::GenericCacheEntry, (unsigned short)14>>::getOrInsert<swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)  (in libswiftCore.dylib) + 84  [0x1981a97ac]
+    +                                                                                       1 swift::StableAddressConcurrentReadableHashMap<swift::GenericCacheEntry, swift::TaggedMetadataAllocator<(unsigned short)14>, swift::Mutex>::getOrInsert<swift::MetadataCacheKey, swift::MetadataWaitQueue::Worker&, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataWaitQueue::Worker&, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)  (in libswiftCore.dylib) + 68  [0x1981a9a80]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        5390
+        mach_msg2_trap  (in libsystem_kernel.dylib)        3243
+        __semwait_signal  (in libsystem_kernel.dylib)        1619
+        pthread_getspecific  (in libsystem_pthread.dylib)        94
+        generationCountFromListOfSources  (in CoreFoundation)        81
+        _swift_isClassOrObjCExistentialType  (in libswiftCore.dylib)        43
+        objc_msgSend  (in libobjc.A.dylib)        43
+        at #1 (_:_:) in static PageTexture.edgeDistance(_:width:height:)  (in Chronotheca.debug.dylib)        42
+        static PageTexture.edgeDistance(_:width:height:)  (in Chronotheca.debug.dylib)        40
+        static PageTexture.smooth(_:_:_:_:_:)  (in Chronotheca.debug.dylib)        40
+        _xzm_free  (in libsystem_malloc.dylib)        37
+        Array._checkSubscript(_:wasNativeTypeChecked:)  (in libswiftCore.dylib)        35
+        Array.subscript.getter  (in libswiftCore.dylib)        35
+        static PageTexture.makeAgedFolder(size:band:seed:tab:share:light:)  (in Chronotheca.debug.dylib)        32
+        min<A>(_:_:)  (in libswiftCore.dylib)        29
+        protocol witness for Collection.formIndex(after:) in conformance <> Range<A>  (in libswiftCore.dylib)        28
+        __CF_IS_OBJC  (in CoreFoundation)        24
+        swift::LockingConcurrentMap<(anonymous namespace)::TupleCacheEntry, (anonymous namespace)::TupleCacheStorage>::getOrInsert<(anonymous namespace)::TupleCacheEntry::Key, swift::MetadataRequest&, swift::TargetValueWitnessTable<swift::InProcess> const*&>((anonymous namespace)::TupleCacheEntry::Key, swift::MetadataRequest&, swift::TargetValueWitnessTable<swift::InProcess> const*&)  (in libswiftCore.dylib)        24
+        swift::runtime::AccessSet::insert(swift::runtime::Access*, void*, void*, swift::ExclusivityFlags)  (in libswiftCore.dylib)        23
+        specialized Collection._failEarlyRangeCheck(_:bounds:)  (in libswiftCore.dylib)        20
+        swift_endAccess  (in libswiftCore.dylib)        19
+        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        18
+        <deduplicated_symbol>  (in libswiftCore.dylib)        17
+        _xzm_xzone_malloc  (in libsystem_malloc.dylib)        17
+        swift_getTupleTypeMetadata  (in libswiftCore.dylib)        17
+        -[__NSDictionaryM objectForKey:]  (in CoreFoundation)        16
+        CFStringHashCString  (in CoreFoundation)        16
+        _platform_memmove  (in libsystem_platform.dylib)        16
+        swift::StableAddressConcurrentReadableHashMap<swift::GenericCacheEntry, swift::TaggedMetadataAllocator<(unsigned short)14>, swift::Mutex>::getOrInsert<swift::MetadataCacheKey, swift::MetadataWaitQueue::Worker&, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataWaitQueue::Worker&, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)  (in libswiftCore.dylib)        16
+        pthread_setspecific  (in libsystem_pthread.dylib)        15
+        static PageTexture.grey.getter  (in Chronotheca.debug.dylib)        15
+        swift::metadataimpl::ValueWitnesses<swift::metadataimpl::NativeBox<unsigned int, 4ul, 4ul, 4ul>>::initializeWithCopy(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        15
+        swift_bridgeObjectRelease  (in libswiftCore.dylib)        14
+        _CFStringGetCStringPtrInternal  (in CoreFoundation)        13
+        objc_retain_x8  (in libobjc.A.dylib)        13
+        swift_getAssociatedTypeWitness  (in libswiftCore.dylib)        13
+        <deduplicated_symbol>  (in libsystem_malloc.dylib)        12
+        IndexingIterator.next()  (in libswiftCore.dylib)        12
+        swift_beginAccess  (in libswiftCore.dylib)        12
