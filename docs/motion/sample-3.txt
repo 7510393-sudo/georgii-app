@@ -1,59 +1,154 @@
-    477 Thread_53875   DispatchQueue_1: com.apple.main-thread  (serial)
-    + 477 start  (in dyld) + 6992  [0x102ddc4e4]
-    +   477 start_sim  (in dyld_sim) + 20  [0x102f1f0e4]
-    +     477 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x104d93e28]  ChronothecaApp.swift:0
-    +       477 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x104d93d7c]  /<compiler-generated>:0
-    +         477 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
-    +           477 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
-    +             477 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
-    +               477 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
-    +                 477 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
-    +                   477 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
-    +                     477 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
-    +                       477 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
-    +                         477 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
-    +                           477 mach_msg  (in libsystem_kernel.dylib) + 20  [0x102c1cef0]
-    +                             477 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x102c24c44]
-    +                               477 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x102c2de84]
-    +                                 477 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x102c1cb70]
+    36 Thread_45362   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 36 start  (in dyld) + 6992  [0x1042244e4]
+    +   36 start_sim  (in dyld_sim) + 20  [0x1043670e4]
+    +     36 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x1061c3e24]  ChronothecaApp.swift:0
+    +       36 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1061c3d78]  /<compiler-generated>:0
+    +         36 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           36 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             36 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               36 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 36 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   36 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     36 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       36 __CFRunLoopRun  (in CoreFoundation) + 760  [0x180421808]
+    +                         36 __CFRunLoopDoSources0  (in CoreFoundation) + 220  [0x180422634]
+    +                           36 __CFRunLoopDoSource0  (in CoreFoundation) + 168  [0x180422ea4]
+    +                             36 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__  (in CoreFoundation) + 24  [0x180422f5c]
+    +                               36 UC::DriverCore::continueProcessing()  (in UpdateCycle) + 80  [0x2343d22c0]
+    +                                 36 schedulerStepScheduledMainSectionContinue  (in UIKitCore) + 56  [0x1863b6064]
+    +                                   36 _UIUpdateSequenceRunNext  (in UIKitCore) + 120  [0x18590339c]
+    +                                     36 ???  (in UIKitCore)  load address 0x185289000 + 0x169788  [0x1853f2788]
+    +                                       36 ???  (in UIKitCore)  load address 0x185289000 + 0x169c88  [0x1853f2c88]
+    +                                         36 static ViewGraphHostUpdate.dispatchImmediately<A>(_:)  (in SwiftUICore) + 40  [0x1d3a49218]
+    +                                           36 static Update.dispatchImmediately<A>(reason:_:)  (in SwiftUICore) + 352  [0x1d3d0a8d8]
+    +                                             36 static Update.end()  (in SwiftUICore) + 120  [0x1d3d0a474]
+    +                                               36 static Update.dispatchActions()  (in SwiftUICore) + 1492  [0x1d3d0b3a0]
+    +                                                 36 closure #1 in FocusBridge.moveFocus(to:designatedPlatformResponder:)  (in SwiftUI) + 60  [0x1d2b25724]
+    +                                                   36 -[UITextField becomeFirstResponder]  (in UIKitCore) + 168  [0x18684f4e4]
+    +                                                     36 -[UIView(Hierarchy) becomeFirstResponder]  (in UIKitCore) + 104  [0x186a9e8b8]
+    +                                                       36 -[UIResponder becomeFirstResponder]  (in UIKitCore) + 944  [0x1864d289c]
+    +                                                         36 -[UIResponder(UIResponderInputViewAdditions) _reloadInputViewsFromFirstResponder:]  (in UIKitCore) + 96  [0x1864d890c]
+    +                                                           36 -[UIKeyboardSceneDelegate _reloadInputViewsForResponder:force:fromBecomeFirstResponder:]  (in UIKitCore) + 336  [0x185dd4df8]
+    +                                                             36 -[UIKeyboardSceneDelegate _reloadInputViewsForKeyWindowSceneResponder:force:fromBecomeFirstResponder:]  (in UIKitCore) + 3356  [0x185dd6070]
+    +                                                               36 -[_UIKeyboardStateManager setDelegate:force:delayEndInputSession:]  (in UIKitCore) + 648  [0x185a1f8a0]
+    +                                                                 36 -[_UIKeyboardStateManager _setupDelegate:delegateSame:hardwareKeyboardStateChanged:endingInputSessionIdentifier:force:delayEndInputSession:]  (in UIKitCore) + 6120  [0x185a22c10]
+    +                                                                   36 -[UIKeyboardImpl updateLayout]  (in UIKitCore) + 1688  [0x18625cfc4]
+    +                                                                     36 -[UIKeyboardImpl finishLayoutChangeWithArguments:]  (in UIKitCore) + 880  [0x18625c854]
+    +                                                                       26 -[UIKeyboardLayoutStar showKeyboardWithInputMode:renderConfig:inputTraits:screenTraits:splitTraits:reload:]  (in UIKitCore) + 420  [0x18615cbac]
+    +                                                                       ! 26 -[UIKeyboardLayoutStar setKeyboardName:appearance:]  (in UIKitCore) + 152  [0x18614e038]
+    +                                                                       !   25 +[UIKeyboardLayoutStar keyboardWithName:screenTraits:]  (in UIKitCore) + 72  [0x18614c9d8]
+    +                                                                       !   : 25 +[UIKeyboardLayoutStar keyboardFromFactoryWithName:screenTraits:]  (in UIKitCore) + 476  [0x18614c92c]
+    +                                                                       !   :   25 -[TUIKeyboardLayoutFactory keyboardWithName:inCache:]  (in TextInputUI) + 240  [0x1a2e89a44]
+    +                                                                       !   :     16 -[TUIKBGraphSerialization keyboardForName:]  (in TextInputUI) + 140  [0x1a2edc284]
+    +                                                                       !   :     | 16 _CFPropertyListCreateFiltered  (in CoreFoundation) + 156  [0x1804138d4]
+    +                                                                       !   :     |   16 __CFDataGetBinaryPlistTopLevelInfo  (in CoreFoundation) + 76  [0x1803cc918]
+    +                                                                       !   :     |     16 __CFBinaryPlistGetTopLevelInfo  (in CoreFoundation) + 72  [0x1803a8f78]
+    +                                                                       !   :     9 -[TUIKBGraphSerialization keyboardForName:]  (in TextInputUI) + 68  [0x1a2edc23c]
+    +                                                                       !   :       8 -[TUIKBGraphSerialization objectForOffset:]  (in TextInputUI) + 240  [0x1a2edcd80]
+    +                                                                       !   :       + 8 -[TUIKBGraphSerialization UIKBTreeForOffset:withFlags:]  (in TextInputUI) + 52  [0x1a2edcb50]
+    +                                                                       !   :       +   7 -[TUIKBGraphSerialization _UIKBTreeForOffset:withFlags:]  (in TextInputUI) + 80  [0x1a2edcbc4]
+    +                                                                       !   :       +   ! 7 -[TUIKBGraphSerialization objectForOffset:]  (in TextInputUI) + 368  [0x1a2edce00]
+    +                                                                       !   :       +   !   7 -[TUIKBGraphSerialization dictionaryForOffset:nonEmpty:]  (in TextInputUI) + 32  [0x1a2edc72c]
+    +                                                                       !   :       +   !     7 -[TUIKBGraphSerialization objectForOffset:]  (in TextInputUI) + 444  [0x1a2edce4c]
+    +                                                                       !   :       +   !       7 -[TUIKBGraphSerialization relativeRefArrayForOffset:withCount:]  (in TextInputUI) + 116  [0x1a2edc6a8]
+    +                                                                       !   :       +   !         7 -[TUIKBGraphSerialization objectForOffset:]  (in TextInputUI) + 116  [0x1a2edcd04]
+    +                                                                       !   :       +   1 -[TUIKBGraphSerialization _UIKBTreeForOffset:withFlags:]  (in TextInputUI) + 164  [0x1a2edcc18]
+    +                                                                       !   :       +     1 -[TUIKBGraphSerialization objectForOffset:]  (in TextInputUI) + 444  [0x1a2edce4c]
+    +                                                                       !   :       +       1 -[TUIKBGraphSerialization relativeRefArrayForOffset:withCount:]  (in TextInputUI) + 116  [0x1a2edc6a8]
+    +                                                                       !   :       +         1 -[TUIKBGraphSerialization objectForOffset:]  (in TextInputUI) + 116  [0x1a2edcd04]
+    +                                                                       !   :       1 -[TUIKBGraphSerialization objectForOffset:]  (in TextInputUI) + 116  [0x1a2edcd04]
+    +                                                                       !   1 +[UIKeyboardLayoutStar keyboardWithName:screenTraits:]  (in UIKitCore) + 296  [0x18614cab8]
+    +                                                                       !     1 _Block_copy  (in libsystem_blocks.dylib) + 48  [0x1801068ac]
+    +                                                                       7 -[UIKeyboardLayoutStar showKeyboardWithInputMode:renderConfig:inputTraits:screenTraits:splitTraits:reload:]  (in UIKitCore) + 684  [0x18615ccb4]
+    +                                                                       ! 7 -[UIKeyboardLayoutStar setToInitialKeyplane]  (in UIKitCore) + 84  [0x18615cddc]
+    +                                                                       !   2 -[UIKeyboardLayoutStarAccessibility setKeyplaneName:]  (in UIKit) + 92  [0x10b48fa24]
+    +                                                                       !   : 2 -[UIKeyboardLayoutStarAccessibility _accessibilityKeys]  (in UIKit) + 76  [0x10b48e174]
+    +                                                                       !   :   1 -[UIKeyboardLayoutStarAccessibility _accessibilitySortedUnstoredKeys]  (in UIKit) + 68  [0x10b48eafc]
+    +                                                                       !   :   | 1 -[NSObject(UIAccessibilitySafeCategory) safeValueForKey:]  (in AXCoreUtilities) + 188  [0x192abbecc]
+    +                                                                       !   :   |   1 -[NSObject(UIAccessibilitySafeCategory) _accessibilityPerformSafeValueKeyBlock:withKey:onClass:]  (in AXCoreUtilities) + 76  [0x192abc4e8]
+    +                                                                       !   :   |     1 __57-[NSObject(UIAccessibilitySafeCategory) safeValueForKey:]_block_invoke  (in AXCoreUtilities) + 28  [0x192abc208]
+    +                                                                       !   :   |       1 -[NSObject(NSKeyValueCoding) valueForKey:]  (in Foundation) + 60  [0x1810aacb0]
+    +                                                                       !   :   |         1 DYLD-STUB$$object_getClass  (in Foundation) + 0  [0x18123fbb4]
+    +                                                                       !   :   1 -[UIKeyboardLayoutStarAccessibility _accessibilitySortedUnstoredKeys]  (in UIKit) + 640  [0x10b48ed38]
+    +                                                                       !   :     1 _objc_msgSend_uncached  (in libobjc.A.dylib) + 64  [0x18003af00]
+    +                                                                       !   :       1 lookUpImpOrForward  (in libobjc.A.dylib) + 560  [0x180053504]
+    +                                                                       !   :         1 dataSegmentsContain(objc_class*)  (in libobjc.A.dylib) + 76  [0x18004587c]
+    +                                                                       !   2 -[UIKeyboardLayoutStarAccessibility setKeyplaneName:]  (in UIKit) + 236  [0x10b48fab4]
+    +                                                                       !   : 2 -[NSObject(UIAccessibilitySafeCategory) safeValueForKey:]  (in AXCoreUtilities) + 188  [0x192abbecc]
+    +                                                                       !   :   2 -[NSObject(UIAccessibilitySafeCategory) _accessibilityPerformSafeValueKeyBlock:withKey:onClass:]  (in AXCoreUtilities) + 76  [0x192abc4e8]
+    +                                                                       !   :     2 __57-[NSObject(UIAccessibilitySafeCategory) safeValueForKey:]_block_invoke  (in AXCoreUtilities) + 28  [0x192abc208]
+    +                                                                       !   :       2 -[NSObject(NSKeyValueCoding) valueForKey:]  (in Foundation) + 216  [0x1810aad4c]
+    +                                                                       !   :         2 +[NSObject(NSKeyValueCodingPrivate) _createValueGetterWithContainerClassID:key:]  (in Foundation) + 1112  [0x1810ae9f4]
+    +                                                                       !   :           2 NSKeyValueIvarForPattern  (in Foundation) + 140  [0x1810aeb30]
+    +                                                                       !   :             2 _class_getVariable  (in libobjc.A.dylib) + 72  [0x180054e1c]
+    +                                                                       !   :               2 getIvar(objc_class*, char const*)  (in libobjc.A.dylib) + 104  [0x180054ed4]
+    +                                                                       !   :                 2 _platform_strcmp$VARIANT$Base  (in libsystem_platform.dylib) + 68  [0x10441c4d4]
+    +                                                                       !   2 -[UIKeyboardLayoutStarAccessibility setKeyplaneName:]  (in UIKit) + 344  [0x10b48fb20]
+    +                                                                       !   : 2 -[UIKeyboardLayoutStar setKeyplaneName:]  (in UIKitCore) + 120  [0x186155064]
+    +                                                                       !   :   1 -[UIKeyboardLayoutStar(ContinuousPath) transitionToPunctuationKeysVisible:]  (in UIKitCore) + 108  [0x18617b244]
+    +                                                                       !   :   | 1 -[UIView initWithFrame:]  (in UIKitCore) + 124  [0x186a811f0]
+    +                                                                       !   :   |   1 UIViewCommonInitWithFrame  (in UIKitCore) + 1288  [0x186a8174c]
+    +                                                                       !   :   |     1 _UIViewSetLayer  (in UIKitCore) + 348  [0x186a80afc]
+    +                                                                       !   :   |       1 CA::Layer::set_delegate(objc_object*, bool)  (in QuartzCore) + 172  [0x18cfaac08]
+    +                                                                       !   :   |         1 CA::Layer::State::set_delegate(CA::Transaction*, objc_object*, bool)  (in QuartzCore) + 80  [0x18cfa6180]
+    +                                                                       !   :   |           1 lookup_delegate_methods(CA::Transaction*, objc_object*)  (in QuartzCore) + 212  [0x18cfa62d4]
+    +                                                                       !   :   |             1 x_hash_table_lookup  (in QuartzCore) + 60  [0x18ce455d0]
+    +                                                                       !   :   1 -[UIKeyboardLayoutStar(ContinuousPath) transitionToPunctuationKeysVisible:]  (in UIKitCore) + 676  [0x18617b47c]
+    +                                                                       !   :     1 +[UIView(UIViewAnimationWithBlocks) animateWithDuration:delay:options:animations:completion:]  (in UIKitCore) + 44  [0x186aa7b54]
+    +                                                                       !   :       1 +[UIView(UIViewAnimationWithBlocks) _setupAnimationWithDuration:delay:view:options:factory:animations:start:animationStateGenerator:completion:]  (in UIKitCore) + 480  [0x186aa752c]
+    +                                                                       !   :         1 -[UIViewAnimationState setupWithDuration:delay:view:options:factory:parentState:start:completion:]  (in UIKitCore) + 472  [0x186a7848c]
+    +                                                                       !   :           1 objc_autoreleaseReturnValue  (in libobjc.A.dylib) + 32  [0x1800624cc]
+    +                                                                       !   :             1 pthread_getspecific  (in libsystem_pthread.dylib) + 0  [0x1044c1aa4]
+    +                                                                       !   1 -[UIKeyboardLayoutStarAccessibility setKeyplaneName:]  (in UIKit) + 0  [0x10b48f9c8]
+    +                                                                       1 -[UIKeyboardLayoutStar showKeyboardWithInputMode:renderConfig:inputTraits:screenTraits:splitTraits:reload:]  (in UIKitCore) + 448  [0x18615cbc8]
+    +                                                                       ! 1 -[UIKeyboardLayoutStar stretchFactor]  (in UIKitCore) + 40  [0x1861530a8]
+    +                                                                       !   1 -[UIKeyboardLayoutStar stretchKeyboardToFitKeyplane:]  (in UIKitCore) + 172  [0x186152f48]
+    +                                                                       !     1 -[UIKeyboardLayoutStar _shouldAttemptToAddSupplementaryControlKeys]  (in UIKitCore) + 0  [0x18615ab08]
+    +                                                                       1 -[UIKeyboardLayoutStar showKeyboardWithInputMode:renderConfig:inputTraits:screenTraits:splitTraits:reload:]  (in UIKitCore) + 556  [0x18615cc34]
+    +                                                                       ! 1 -[UIKeyboardLayoutStar setRenderConfig:updateKeyplane:]  (in UIKitCore) + 676  [0x186151534]
+    +                                                                       !   1 _objc_msgSend_uncached  (in libobjc.A.dylib) + 64  [0x18003af00]
+    +                                                                       !     1 lookUpImpOrForward  (in libobjc.A.dylib) + 56  [0x18005330c]
+    +                                                                       1 -[UIKeyboardLayoutStar showKeyboardWithInputMode:renderConfig:inputTraits:screenTraits:splitTraits:reload:]  (in UIKitCore) + 656  [0x18615cc98]
+    +                                                                         1 -[UIKeyboardLayoutStar setLayoutTag:]  (in UIKitCore) + 52  [0x18615fcbc]
+    +                                                                           1 -[UIKeyboardLayoutStar updateLayoutTags]  (in UIKitCore) + 976  [0x18616009c]
 
 Sort by top of stack, same collapsed (when >= 5):
-        __workq_kernreturn  (in libsystem_kernel.dylib)        954
-        mach_msg2_trap  (in libsystem_kernel.dylib)        954
-        __semwait_signal  (in libsystem_kernel.dylib)        477
-        __CF_IS_OBJC  (in CoreFoundation)        26
-        generationCountFromListOfSources  (in CoreFoundation)        26
-        pthread_getspecific  (in libsystem_pthread.dylib)        25
-        -[__NSDictionaryM objectForKey:]  (in CoreFoundation)        16
-        at #1 (_:_:) in static PageTexture.edgeDistance(_:width:height:)  (in Chronotheca.debug.dylib)        16
-        objc_msgSend  (in libobjc.A.dylib)        16
-        pthread_setspecific  (in libsystem_pthread.dylib)        11
-        Array.subscript.getter  (in libswiftCore.dylib)        10
-        Array._checkSubscript(_:wasNativeTypeChecked:)  (in libswiftCore.dylib)        8
-        CFStringGetLength  (in CoreFoundation)        8
-        _CFStringGetCStringPtrInternal  (in CoreFoundation)        8
-        _swift_isClassOrObjCExistentialType  (in libswiftCore.dylib)        8
-        static PageTexture.edgeDistance(_:width:height:)  (in Chronotheca.debug.dylib)        7
-        swift::LockingConcurrentMap<(anonymous namespace)::TupleCacheEntry, (anonymous namespace)::TupleCacheStorage>::getOrInsert<(anonymous namespace)::TupleCacheEntry::Key, swift::MetadataRequest&, swift::TargetValueWitnessTable<swift::InProcess> const*&>((anonymous namespace)::TupleCacheEntry::Key, swift::MetadataRequest&, swift::TargetValueWitnessTable<swift::InProcess> const*&)  (in libswiftCore.dylib)        7
-        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        6
-        normalizeQuintuplet  (in CoreFoundation)        6
-        objc_release  (in libobjc.A.dylib)        6
-        String._bridgeToObjectiveCImpl()  (in libswiftCore.dylib)        5
-        __CFStringEqual  (in CoreFoundation)        5
-        os_unfair_lock_unlock  (in libsystem_platform.dylib)        5
-        swift::metadataimpl::ValueWitnesses<swift::metadataimpl::NativeBox<unsigned int, 4ul, 4ul, 4ul>>::initializeWithCopy(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        5
-        swift::metadataimpl::ValueWitnesses<swift::metadataimpl::NativeBox<unsigned long long, 8ul, 8ul, 8ul>>::initializeWithCopy(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        5
+        __workq_kernreturn  (in libsystem_kernel.dylib)        107
+        mach_msg2_trap  (in libsystem_kernel.dylib)        36
+        __CFBinaryPlistGetTopLevelInfo  (in CoreFoundation)        16
+        -[TUIKBGraphSerialization objectForOffset:]  (in TextInputUI)        9
 
 Binary Images:
-       0x102c08000 -        0x102c0b507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/D5D2BFBA-77E9-41A3-BE91-B44DEAA2B8F9/Chronotheca.app/Chronotheca
-       0x102c1c000 -        0x102c56ee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
-       0x102c9c000 -        0x102ca43d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
-       0x102d44000 -        0x102d5010b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
-       0x102dbc000 -        0x102e6f523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
-       0x102f14000 -        0x102f62e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
-       0x102fd0000 -        0x10301365f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
-       0x103124000 -        0x1031bd2af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
-       0x1038e4000 -        0x1038eab7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
-       0x103904000 -        0x10390c03f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
-       0x103a18000 -        0x103a18b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
-       0x103a28000 -        0x103a3339f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x10400c000 -        0x10400f507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/22B70C22-D60E-4288-BFDC-2645921BA277/Chronotheca.app/Chronotheca
+       0x104020000 -        0x10405aee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
+       0x1040b0000 -        0x1040f365f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x104204000 -        0x1042b7523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
+       0x10435c000 -        0x1043aae9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x104418000 -        0x1044203d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
+       0x1044c0000 -        0x1044cc10b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
+       0x104550000 -        0x1045e92af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x104cec000 -        0x104ceedff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x104d08000 -        0x104d1003f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x104e1c000 -        0x104e1cb99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x104e2c000 -        0x104e3739f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x104e50000 -        0x104e53e5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x104e70000 -        0x104e7949f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x104e94000 -        0x104e9ab7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x104eb4000 -        0x104ebb2df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
+       0x105080000 -        0x1050831ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
+       0x105388000 -        0x1053a127f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
+       0x1053d8000 -        0x1053dd407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
+       0x1053f4000 -        0x1053f86ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
+       0x105470000 -        0x1056cbbbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+       0x105da0000 -        0x105dc2cff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
+       0x105e38000 -        0x105e5ef5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
+       0x105e84000 -        0x105ebe15f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
+       0x106010000 -        0x1060637bf  com.apple.dt.XCTAutomationSupport (26.5 - 24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
+       0x1060f0000 -        0x10692ac3b +Chronotheca.debug.dylib (0) <BF1FFAE1-2F5A-3198-839B-710D7F093DD9> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/22B70C22-D60E-4288-BFDC-2645921BA277/Chronotheca.app/Chronotheca.debug.dylib
+       0x10a5d0000 -        0x10a63fcbf  com.apple.UIUnderstanding (1.0 - 1) <576E64EB-8AA4-3B1E-A89D-365C4DE0C7C8> /Volumes/*/UIUnderstanding.framework/UIUnderstanding
+       0x10a714000 -        0x10a7485bf  com.apple.MTLSimDriver (373.2 - 373.2) <8339CA77-3986-3588-9DF9-8B8D511AE608> /Volumes/*/MTLSimDriver.framework/MTLSimDriver
+       0x10ae10000 -        0x10ae3e27f  com.apple.gpusw.MetalSerializer (1.0 - 1) <19460939-4BCE-3E8D-8868-5388DD78ACE3> /Volumes/*/MetalSerializer.framework/MetalSerializer
+       0x10b3ec000 -        0x10b5dfd3f  com.apple.UIKit.axbundle (1.0.0 - 1.0) <D3D808D1-AB02-3566-B2DD-1B139F8E9569> /Volumes/*/UIKit
+       0x11ae00000 -        0x11ae02bdf  com.apple.GeoServices.axbundle (1.0 - 1.0) <69D2FB7A-6D7C-3EDE-9495-629B7904ED32> /Volumes/*/GeoServices
+       0x11af3c000 -        0x11af4b03f  com.apple.PreferencesFramework.axbundle (1.0 - 1.0) <CECA756F-AD42-3681-8023-94C05C2E12C6> /Volumes/*/PreferencesFramework
+       0x11da7c000 -        0x11da9041f  com.apple.AVKit.axbundle (1.0 - 1.0) <C5AC1369-B745-33DD-9237-CBAAD541CBE3> /Volumes/*/AVKit
