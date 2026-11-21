@@ -10,17 +10,72 @@ final class PointChip: NSTextAttachment {
     /// сколько до него. Как голос и файл, все вложения — одного вида.
     init(tile point: GeoPoint, glowing: Bool = false) {
         super.init(data: nil, ofType: nil)
-        let given = point.title.trimmingCharacters(in: .whitespaces)
-        let name = given.isEmpty ? T("Место", "Place") : given
-        let note = Places.note(for: point)
-        let picture = PointChip.square(name, note: note, glowing: glowing)
+        // Кусочек карты и подпись (P999) — те же, что в ленте и в плане.
+        let dark = UITraitCollection.current.userInterfaceStyle == .dark
+        PointTiles.want(point.at, dark: dark)
+        let picture = PointChip.square(PointTiles.name(for: point),
+                                       note: point.about ?? Places.note(for: point),
+                                       glowing: glowing, map: PointTiles.map(point.at, dark: dark))
         image = picture
         bounds = CGRect(origin: CGPoint(x: 0, y: -4), size: picture.size)
         accessibilityLabel = T("Точка на карте: ", "Place on the map: ") + point.label
     }
 
-    static func square(_ name: String, note: String?, glowing: Bool) -> UIImage {
+    /// Квадратик с картой (P999): сверху — кусочек карты с булавкой
+    /// посередине, снизу на бумаге — подпись в строку и, мельче, что здесь
+    /// было.
+    private static func tile(_ name: String, note: String?, glowing: Bool, map: UIImage,
+                             size: CGSize) -> UIImage {
+        let red = UIColor(Look.pin)
+        return UIGraphicsImageRenderer(size: size).image { ctx in
+            let box = CGRect(origin: .zero, size: size).insetBy(dx: 0.75, dy: 0.75)
+            let shape = UIBezierPath(roundedRect: box, cornerRadius: 6)
+            UIColor(Look.planBg).setFill()
+            shape.fill()
+            let mapBox = CGRect(x: 0, y: 0, width: size.width, height: floor(size.height * PointTiles.mapShare))
+            ctx.cgContext.saveGState()
+            shape.addClip()
+            map.draw(in: mapBox)
+            ctx.cgContext.restoreGState()
+            if let pin = UIImage(systemName: "mappin.circle.fill",
+                                 withConfiguration: UIImage.SymbolConfiguration(pointSize: size.width * 0.17,
+                                                                                weight: .semibold))?
+                .withTintColor(red, renderingMode: .alwaysOriginal) {
+                pin.draw(at: CGPoint(x: mapBox.midX - pin.size.width / 2, y: mapBox.midY - pin.size.height / 2))
+            }
+            UIColor(Look.inkFaint).withAlphaComponent(0.5).setFill()
+            ctx.fill(CGRect(x: 0, y: mapBox.maxY, width: size.width, height: 0.5))
+            (glowing ? UIColor(Look.glow) : red.withAlphaComponent(0.6)).setStroke()
+            shape.lineWidth = glowing ? 2.2 : 1.2
+            shape.stroke()
+            let style = NSMutableParagraphStyle()
+            style.alignment = .center
+            style.lineBreakMode = .byTruncatingTail
+            let titleFont = UIFont.systemFont(ofSize: max(10.5, size.width * 0.118), weight: .semibold)
+            let smallFont = UIFont.systemFont(ofSize: 9.5)
+            let lineCount: CGFloat = note == nil ? 2 : 1
+            let room = size.height - mapBox.maxY
+            let used = titleFont.lineHeight * lineCount + (note == nil ? 0 : smallFont.lineHeight)
+            let top = mapBox.maxY + max(1, (room - used) / 2)
+            (name as NSString).draw(
+                with: CGRect(x: 4, y: top, width: size.width - 8, height: titleFont.lineHeight * lineCount),
+                options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine],
+                attributes: [.font: titleFont, .foregroundColor: UIColor(Look.ink), .paragraphStyle: style],
+                context: nil)
+            if let note {
+                (note as NSString).draw(
+                    with: CGRect(x: 4, y: top + titleFont.lineHeight, width: size.width - 8,
+                                 height: smallFont.lineHeight),
+                    options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine],
+                    attributes: [.font: smallFont, .foregroundColor: UIColor(Look.inkSoft), .paragraphStyle: style],
+                    context: nil)
+            }
+        }
+    }
+
+    static func square(_ name: String, note: String?, glowing: Bool, map: UIImage? = nil) -> UIImage {
         let size = DiaryEditor.photoSize
+        if let map { return tile(name, note: note, glowing: glowing, map: map, size: size) }
         let red = UIColor(Look.pin)
         return UIGraphicsImageRenderer(size: size).image { _ in
             let box = CGRect(origin: .zero, size: size).insetBy(dx: 0.75, dy: 0.75)

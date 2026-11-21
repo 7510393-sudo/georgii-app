@@ -959,16 +959,29 @@ struct PlanPhotoGrid: Layout {
 /// здесь было (P985); без названия — «Место» и сколько до своего места. Один вид в ленте, в плане и в записи.
 struct PointSquare: View {
     let point: GeoPoint
+    @Environment(\.colorScheme) private var scheme
+    /// Пришли снимок карты или подпись (P999) — квадратик рисуется заново.
+    @State private var fresh = 0
 
     var body: some View {
-        // Название сверху, ниже мельче — что здесь было (P985); без
+        let dark = scheme == .dark
+        // Сверху кусочек карты, снизу подпись: название — или что знают о
+        // месте Карты (P999); ниже мельче — что здесь было (P985); без
         // описания — подпись своего места (P559, P984).
-        let given = point.name
-        Image(uiImage: PointChip.square(given.isEmpty ? T("Место", "Place") : given,
+        Image(uiImage: PointChip.square(PointTiles.name(for: point),
                                         note: point.about ?? Places.note(for: point),
-                                        glowing: false))
+                                        glowing: false, map: PointTiles.map(point.at, dark: dark)))
             .resizable()
             .scaledToFit()
+            // Карта проступает, а не появляется разом (P893).
+            .id(fresh)
+            .transition(.opacity)
+            .onAppear { PointTiles.want(point.at, dark: dark) }
+            .onChange(of: dark) { _, now in PointTiles.want(point.at, dark: now) }
+            .onReceive(NotificationCenter.default.publisher(for: PointTiles.ready)) { note in
+                guard note.object as? String == PointTiles.key(point.at) else { return }
+                withAnimation(.easeOut(duration: 0.3)) { fresh += 1 }
+            }
     }
 }
 

@@ -555,7 +555,7 @@ struct MapScreen: View {
     /// «В дневник» (P984, P985, P996): точка ложится в ленту внизу страницы
     /// выбранного дня (P588) — сегодня или день из календаря — с тем
     /// названием и «что здесь было», что вписаны сейчас; не вписали — в
-    /// дневнике «Сохранено 19 ноября». К дню не переходим (P985), и это
+    /// дневнике точка без подписи — её подпишут Карты (P999). К дню не переходим (P985), и это
     /// законченное действие (P996, автор: «казалось бы, действие уже
     /// сделано, а плашка не растворяется — снова решать, оставлять ли точку
     /// на карте»): плашка тает, как от «Отмены»; новая булавка своим местом
@@ -563,7 +563,8 @@ struct MapScreen: View {
     /// «Отметить», по желанию.
     private func save(_ place: Place, to day: Date) {
         hideKeyboard()
-        let point = GeoPoint(title: Self.title(of: place) ?? Self.savedTitle(), at: place.coordinate)
+        // Без названия — точка без подписи: квадратик подпишут Карты (P999).
+        let point = GeoPoint(title: Self.title(of: place) ?? "", at: place.coordinate)
         let today = Calendar.current.isDate(day, inSameDayAs: DayStore.today())
         let (written, reason) = inDay(day) { () -> (Bool, String) in
             let ok = store.writePoint(point)
@@ -619,13 +620,7 @@ struct MapScreen: View {
             .filter { !$0.isEmpty }
             .joined(separator: " ")
         if about.isEmpty { return named.isEmpty ? nil : named }
-        return (named.isEmpty ? savedTitle() : named) + GeoPoint.dash + about
-    }
-
-    /// Точка без названия в дневнике (P985): «Сохранено 19 ноября».
-    static func savedTitle() -> String {
-        let day = Ru.shortDate(Date())
-        return T("Сохранено \(day)", "Saved \(day)")
+        return named.isEmpty ? about : named + GeoPoint.dash + about
     }
 
     private func openDay(_ date: Date) {
