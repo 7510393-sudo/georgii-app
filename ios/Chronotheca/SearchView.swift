@@ -268,8 +268,8 @@ struct SearchView: View {
         // Столбец времени у будущих карточек один на всю стопку, как в
         // «Списке» календаря (P756): по самому длинному виду времени.
         let times = future.flatMap { plan($0).compactMap(\.time) }
-        // Время — как у телефона, тем же `Clock.show`, что в плане (P1006).
-        let sample: String? = times.isEmpty ? nil : Clock.twelve ? "00:00 PM" : "00:00"
+        let sample: String? = times.isEmpty ? nil
+            : times.contains { $0.contains(where: \.isLetter) } ? "00:00 PM" : "00:00"
         let items = entries(past, future)
         // Запас над экраном (P861) — поле сверху, за верхним краем.
         let above = Afar.above(height)
@@ -780,7 +780,7 @@ struct SearchView: View {
                         if let sample {
                             ZStack(alignment: .leading) {
                                 Text(sample).hidden()
-                                Text(task.time.map(Clock.show) ?? "")
+                                Text(task.time ?? "")
                             }
                             .font(Look.sans(12).monospacedDigit())
                             .lineLimit(1)

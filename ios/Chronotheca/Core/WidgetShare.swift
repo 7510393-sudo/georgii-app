@@ -18,9 +18,8 @@ enum WidgetShare {
     static func publish(day: Date, rows: [PlanRow]) {
         guard let dir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group)
         else { return }
-        // Пустые дела (только начатые) виджету не нужны (P470). Время — как
-        // у телефона, «9:30 PM» или «21:30» (P1006): виджет его только показывает.
-        let tasks = rows.filter { $0.isTask && !$0.text.trimmingCharacters(in: .whitespaces).isEmpty }.map { Shared.Task(text: $0.text, time: $0.time.map(Clock.show), done: $0.done) }
+        // Пустые дела (только начатые) виджету не нужны (P470).
+        let tasks = rows.filter { $0.isTask && !$0.text.trimmingCharacters(in: .whitespaces).isEmpty }.map { Shared.Task(text: $0.text, time: $0.time, done: $0.done) }
         let shared = Shared(day: Vault.stamp(day), tasks: tasks)
         guard let data = try? JSONEncoder().encode(shared) else { return }
         try? data.write(to: dir.appendingPathComponent("today.json"), options: .atomic)

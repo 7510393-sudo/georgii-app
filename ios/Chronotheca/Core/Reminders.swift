@@ -46,7 +46,7 @@ enum Reminders {
             let content = UNMutableNotificationContent()
             let title = Geo.stripped(row.text)
             content.title = title.isEmpty ? T("Дело без названия", "Untitled task") : title
-            content.body = row.time.map(Clock.show).map { T("Дело на \($0)", "Task at \($0)") }
+            content.body = row.time.map { T("Дело на \($0)", "Task at \($0)") }
                 ?? T("Напоминание из плана", "Reminder from your plan")
             // Свой колокольчик вместо обычного звука iPhone (P267).
             content.sound = UNNotificationSound(named: UNNotificationSoundName("bell.wav"))
