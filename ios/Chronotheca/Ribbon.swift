@@ -938,7 +938,13 @@ final class Unfold: ObservableObject {
 
     /// Вся дорога схемы, с подскоком; и сколько проступает лист.
     static let grow: Double = 0.38
-    static let show: Double = 0.15
+    /// Лист проступает дольше (P1004): текст появляется постепенно, а не
+    /// скачком поверх пустой схемы (было 0,15 с).
+    static let show: Double = 0.28
+    /// Поле схемы: в начале хода — почти одна рамка, к концу — полупрозрачное
+    /// поле, сквозь которое ещё видны карточки (P1004).
+    static let fillFrom: Double = 0.08
+    static let fillTo: Double = 0.6
 
     /// Раскрыть: схема растёт, пока картотека ещё стоит, и только выросшая —
     /// под ней открывается день (`open`) — P998, автор по 319: «в прошлом
@@ -976,7 +982,7 @@ final class Unfold: ObservableObject {
             DispatchQueue.main.async { [weak self] in
                 guard let self, self.from != nil else { return }
                 DeckTrail.mark(String(format: "день под схемой построен за %.2f с", CACurrentMediaTime() - opened))
-                withAnimation(.easeOut(duration: Unfold.show)) { self.veiled = false }
+                withAnimation(.easeInOut(duration: Unfold.show)) { self.veiled = false }
                 self.move.glide.run(Unfold.show, then: { [weak self] in
                     self?.from = nil
                     Trace.note("карточка раскрылась")

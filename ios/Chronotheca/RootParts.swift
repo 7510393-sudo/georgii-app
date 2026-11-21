@@ -489,7 +489,18 @@ struct UnfoldGhost: View {
                            y: raised.minY + (sheet.minY - raised.minY) * grow,
                            width: raised.width + (sheet.width - raised.width) * grow,
                            height: raised.height + (sheet.height - raised.height) * grow)
-            FoldSchema(aged: unfold.aged)
+            // Сперва пустая рамка, по ходу роста она заполняется полем
+            // (P1004, автор по 323: «лист разворачивается пустой и
+            // загораживает карточки с информацией — подспудно раздражает»;
+            // вместо сплошной схемы с первого кадра P995). Сквозь поле
+            // видны карточки до тех пор, пока не проступит сам лист.
+            let fill = Unfold.fillFrom + (Unfold.fillTo - Unfold.fillFrom) * Double(grow)
+            ZStack {
+                FoldSchema(aged: unfold.aged)
+                    .opacity(fill)
+                FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare)
+                    .stroke(Scheme.current.kraftEdge.opacity(0.7), lineWidth: 1)
+            }
                 .frame(width: r.width, height: r.height)
                 .shadow(color: .black.opacity(0.12 * Double(up) * Double(1 - grow)), radius: 6, y: 3)
                 .offset(x: r.minX, y: r.minY)
