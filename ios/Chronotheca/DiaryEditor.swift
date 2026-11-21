@@ -972,6 +972,26 @@ struct DiaryEditor: UIViewRepresentable {
         /// Картинка взятого, которая идёт за пальцем.
         private var ghost: UIView?
 
+        /// Взлёт несомого (P1009, автор по видео 21.11: «тянешь — ничего,
+        /// потом резкий прыжок»): прежде оно в первый же миг оказывалось на
+        /// 70 точек выше пальца, оторвавшись от своего места. Теперь
+        /// начинает ровно там, где стояло, и за 0,22 с плавно поднимается
+        /// над пальцем. `liftFrom` — где был его центр от пальца в миг
+        /// взлёта.
+        private var liftFrom = CGPoint(x: 0, y: -70)
+        private var liftBegan: CFTimeInterval = 0
+        private static let liftTime: CFTimeInterval = 0.22
+
+        /// Где центр несомого от пальца сейчас: от места, где оно стояло, к
+        /// месту над пальцем.
+        private func carryOffset() -> CGPoint {
+            let t = min(1, max(0, (CACurrentMediaTime() - liftBegan) / Self.liftTime))
+            let e = 1 - pow(1 - t, 3)
+            return CGPoint(x: liftFrom.x * (1 - e), y: liftFrom.y * (1 - e) - Self.lift * e)
+        }
+
+        private var lifting: Bool { CACurrentMediaTime() - liftBegan < Self.liftTime + 0.05 }
+
         /// Снимок или точка под пальцем — их место в тексте поля.
         private func attachment(at at: CGPoint, in view: UITextView) -> Int? {
             guard let position = view.closestPosition(to: at) else { return nil }
@@ -1266,7 +1286,8 @@ struct DiaryEditor: UIViewRepresentable {
                     lift(i, g, in: view)
                 }
                 let local = g.location(in: ghost?.superview ?? view)
-                ghost?.center = CGPoint(x: local.x, y: local.y - Self.lift)
+                let off = carryOffset()
+                ghost?.center = CGPoint(x: local.x + off.x, y: local.y + off.y)
                 // Над полоской снимок бледнеет — видно, что отпустить здесь
                 // значит вернуть его вниз; над заголовком — то же для точки.
                 // Над делом плана — встанет под него (P409): план подсвечивает
@@ -1389,13 +1410,29 @@ struct DiaryEditor: UIViewRepresentable {
             // крупнее, чтобы её было видно (P349). Едет только она сама —
             // строки целиком в синей рамке больше нет (P561, прежде P380).
             let small = (picture?.size.height ?? 0) < 40
-            shadow.transform = CGAffineTransform(scaleX: small ? 1.8 : 1.1, y: small ? 1.8 : 1.1)
+            let grown = CGAffineTransform(scaleX: small ? 1.8 : 1.1, y: small ? 1.8 : 1.1)
             // Тень снимка — поверх всего окна: её можно донести и до
             // полоски внизу, за край страницы (P272).
             let host: UIView = view.window ?? view
             let spot = g.location(in: host)
-            shadow.center = CGPoint(x: spot.x, y: spot.y - Self.lift)
+            // Взлёт с места (P1009): несомое начинает там, где стояло, и
+            // плавно поднимается над пальцем, вырастая.
+            liftFrom = CGPoint(x: 0, y: -Self.lift)
+            if let start = view.position(from: view.beginningOfDocument, offset: i),
+               let end = view.position(from: start, offset: 1),
+               let range = view.textRange(from: start, to: end) {
+                let rect = view.convert(view.firstRect(for: range), to: host)
+                if !rect.isNull, !rect.isInfinite, rect.width > 0 {
+                    liftFrom = CGPoint(x: rect.midX - spot.x, y: rect.midY - spot.y)
+                }
+            }
+            liftBegan = CACurrentMediaTime()
+            shadow.center = CGPoint(x: spot.x + liftFrom.x, y: spot.y + liftFrom.y)
             host.addSubview(shadow)
+            UIView.animate(withDuration: Self.liftTime, delay: 0,
+                           options: [.curveEaseOut, .allowUserInteraction]) {
+                shadow.transform = grown
+            }
             ghost = shadow
             before = view.attributedText.copy() as? NSAttributedString
             measureParagraphs(view)
@@ -1545,6 +1582,7 @@ struct DiaryEditor: UIViewRepresentable {
 
         /// Вернуть поле, каким оно было до переноса.
         private func restore(_ view: UITextView) {
+            endSlide(view)
             if let before, result != nil {
                 view.attributedText = before
                 view.typingAttributes = DiaryEditor.body(parent.size, serif: parent.serif)
@@ -1630,7 +1668,8 @@ struct DiaryEditor: UIViewRepresentable {
                 return
             }
             guard ghost != nil, taken != nil else { return }
-            if scrollTowardFinger(view) { ghostFollows() }
+            // Пока взлетает — каждый кадр, даже если палец стоит (P1009).
+            if scrollTowardFinger(view) || lifting { ghostFollows() }
             previewSoon(view)
         }
 
@@ -1661,11 +1700,15 @@ struct DiaryEditor: UIViewRepresentable {
         private func ghostFollows() {
             guard let ghost, let host = ghost.superview else { return }
             let local = host.convert(finger, from: nil)
-            ghost.center = CGPoint(x: local.x, y: local.y - Self.lift)
+            let off = carryOffset()
+            ghost.center = CGPoint(x: local.x + off.x, y: local.y + off.y)
         }
 
         /// Показать, как ляжет взятое, — но не чаще раза в 0,16 секунды и
-        /// только если палец сдвинулся заметно; сама смена — наплывом.
+        /// только если палец сдвинулся заметно. Пустое место переехало на
+        /// другую строку — строки между старым и новым местом плавно
+        /// съезжают, а пустая рамка едет видимым ходом (P1014, вместо
+        /// наплыва всего поля разом); прочие смены (ряд снимков) — наплывом.
         private func previewSoon(_ view: UITextView) {
             guard previewing || ghost != nil else { return }
             let local = view.convert(finger, from: nil)
@@ -1674,9 +1717,139 @@ struct DiaryEditor: UIViewRepresentable {
             guard Date().timeIntervalSince(shownAt) > 0.16 else { return }
             shownAt = Date()
             shownSpot = at
-            UIView.transition(with: view, duration: 0.18,
-                              options: [.transitionCrossDissolve, .allowUserInteraction]) {
-                self.preview(at, in: view)
+            endSlide(view)
+            let seen = visiblePart(of: view)
+            let oldGap = gapBand(view)
+            // Две картинки поля, как оно есть, — до смены: строки и рамка.
+            let shots = [0, 1].compactMap { _ in
+                seen.isEmpty ? nil : view.resizableSnapshotView(from: seen, afterScreenUpdates: false,
+                                                                 withCapInsets: .zero)
+            }
+            let was = result
+            preview(at, in: view)
+            guard result != was, shots.count == 2, let host = view.superview else { return }
+            if let old = oldGap, let new = gapBand(view), abs(new.top - old.top) > 2, old.height > 10 {
+                slide(from: old, to: new.top, shots: shots, seen: seen, in: view, host: host)
+            } else {
+                // Наплыв: прежнее поле поверх нового тает.
+                let shot = shots[0]
+                shot.frame = view.convert(seen, to: host)
+                host.addSubview(shot)
+                slideShots = [shot]
+                let mark = slideMark
+                UIView.animate(withDuration: 0.18, delay: 0, options: [.allowUserInteraction]) {
+                    shot.alpha = 0
+                } completion: { [weak self, weak view] _ in
+                    guard let self, let view, mark == self.slideMark else { return }
+                    self.endSlide(view)
+                }
+            }
+        }
+
+        // MARK: - Строки съезжают (P1014)
+
+        /// Картинки прежнего поля, что сейчас едут, и счёт ходов: конец
+        /// прежнего хода не трогает новый.
+        private var slideShots: [UIView] = []
+        private var slideMark = 0
+
+        /// Ход кончился или прерван: картинок нет, поле видно целиком.
+        private func endSlide(_ view: UITextView) {
+            slideMark += 1
+            slideShots.forEach { $0.removeFromSuperview() }
+            slideShots = []
+            view.layer.mask = nil
+        }
+
+        /// Видимая часть поля — в его же координатах.
+        private func visiblePart(of view: UITextView) -> CGRect {
+            guard let page = page(over: view) else { return view.bounds }
+            return view.convert(page.bounds, from: page).intersection(view.bounds)
+        }
+
+        /// Где пустое место (рамка будущего места или само взятое на своём
+        /// месте): верх его строки и сколько она занимает вместе с отступом
+        /// до следующей. Только вложение своей строкой — в ряду или посреди
+        /// текста строки не съезжают, там наплыв.
+        private func gapBand(_ view: UITextView) -> (top: CGFloat, height: CGFloat)? {
+            let storage = view.textStorage
+            var found: Int?
+            storage.enumerateAttribute(.attachment, in: NSRange(location: 0, length: storage.length)) { value, range, stop in
+                if value is AwaitingSlot {
+                    found = range.location
+                    stop.pointee = true
+                }
+            }
+            if found == nil, let i = taken, i < storage.length,
+               storage.attribute(.attachment, at: i, effectiveRange: nil) != nil {
+                found = i
+            }
+            guard let k = found else { return nil }
+            let ns = storage.string as NSString
+            let para = ns.paragraphRange(for: NSRange(location: k, length: 0))
+            var end = NSMaxRange(para)
+            if end > para.location, ns.character(at: end - 1) == 10 { end -= 1 }
+            guard end - para.location == 1 else { return nil }
+            func top(_ at: Int) -> CGRect? {
+                guard let s = view.position(from: view.beginningOfDocument, offset: at),
+                      let e = view.position(from: s, offset: 1),
+                      let range = view.textRange(from: s, to: e) else { return nil }
+                let r = view.firstRect(for: range)
+                return r.isNull || r.isInfinite ? nil : r
+            }
+            guard let own = top(k) else { return nil }
+            let next = NSMaxRange(para) < ns.length ? top(NSMaxRange(para))?.minY : nil
+            return (own.minY, max(own.height, (next ?? own.maxY + 8) - own.minY))
+        }
+
+        /// Строки между прежним и новым пустым местом едут на высоту рамки,
+        /// рамка — с прежнего места на новое. Само поле уже новое, но эта
+        /// полоса в нём скрыта, пока едут картинки прежнего.
+        private func slide(from old: (top: CGFloat, height: CGFloat), to newTop: CGFloat,
+                           shots: [UIView], seen: CGRect, in view: UITextView, host: UIView) {
+            let d = old.height
+            let down = newTop > old.top
+            // Что едет: строки — и куда; рамка — с прежнего места на новое.
+            let lines = down
+                ? CGRect(x: view.bounds.minX, y: old.top + d, width: view.bounds.width, height: newTop - old.top)
+                : CGRect(x: view.bounds.minX, y: newTop, width: view.bounds.width, height: old.top - newTop)
+            let linesTo = down ? old.top : newTop + d
+            let slot = CGRect(x: view.bounds.minX, y: old.top, width: view.bounds.width, height: d)
+            let band = down
+                ? CGRect(x: view.bounds.minX, y: old.top, width: view.bounds.width, height: newTop + d - old.top)
+                : CGRect(x: view.bounds.minX, y: newTop, width: view.bounds.width, height: old.top + d - newTop)
+            func piece(_ shot: UIView, _ rect: CGRect) -> UIView {
+                let clip = UIView(frame: view.convert(rect, to: host))
+                clip.clipsToBounds = true
+                clip.isUserInteractionEnabled = false
+                shot.frame = CGRect(x: seen.minX - rect.minX, y: seen.minY - rect.minY,
+                                    width: seen.width, height: seen.height)
+                clip.addSubview(shot)
+                host.addSubview(clip)
+                return clip
+            }
+            let movingLines = piece(shots[0], lines)
+            let movingSlot = piece(shots[1], slot)
+            slideShots = [movingLines, movingSlot]
+            // Новое поле в этой полосе скрыто, пока едет прежнее.
+            let mask = CAShapeLayer()
+            mask.frame = view.bounds
+            let path = UIBezierPath(rect: CGRect(x: view.bounds.minX - 50, y: view.bounds.minY - 2000,
+                                                 width: view.bounds.width + 100,
+                                                 height: view.bounds.height + 4000))
+            path.append(UIBezierPath(rect: band.offsetBy(dx: -view.bounds.minX, dy: -view.bounds.minY)))
+            mask.path = path.cgPath
+            mask.fillRule = .evenOdd
+            view.layer.mask = mask
+            let mark = slideMark
+            let linesShift = linesTo - lines.minY
+            let slotShift = newTop - old.top
+            UIView.animate(withDuration: 0.22, delay: 0, options: [.curveEaseInOut, .allowUserInteraction]) {
+                movingLines.frame.origin.y += linesShift
+                movingSlot.frame.origin.y += slotShift
+            } completion: { [weak self, weak view] _ in
+                guard let self, let view, mark == self.slideMark else { return }
+                self.endSlide(view)
             }
         }
 
