@@ -166,16 +166,14 @@ struct CalendarView: View {
         return (-back...ahead).compactMap { cal.date(byAdding: unit, value: $0, to: home) }
     }
 
-    /// Один месяц или год ленты — ровно на экран (P792): своё название,
-    /// сетка, под ней дела выбранного дня. Высота у всех страниц одна, и
-    /// ленте не приходится угадывать её на ходу — не дёргается.
+    /// Один месяц или год ленты — ровно на экран (P792): сетка, под ней
+    /// дела выбранного дня. Высота у всех страниц одна, и ленте не
+    /// приходится угадывать её на ходу — не дёргается. Своего названия у
+    /// страницы нет (P1007): месяц или год уже написан в шапке со
+    /// стрелками, вторая такая же строка под «Год / Месяц» была повтором.
     private func section(_ p: Date) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(kind == .year ? String(cal.component(.year, from: p)) : Ru.monthTitle(p))
-                .font(Look.sans(15, weight: .semibold))
-                .foregroundStyle(period(p) == period(DayStore.today()) ? Look.accent : Look.ink)
-                .padding(.horizontal, 16)
-                .padding(.top, 10)
+            Color.clear.frame(height: 4)
             switch kind {
             case .year:
                 yearGrid(of: p)
