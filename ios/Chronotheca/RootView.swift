@@ -657,7 +657,8 @@ struct RootView: View {
                 .frame(width: size.width, height: size.height)
                 // Картотека проступает плавно, по мере того как лист уходит
                 // (P858): прежде появлялась разом с первым движением.
-                .modifier(RibbonFade(ribbon: shell.ribbon, live: shell.deck.isLive,
+                .modifier(RibbonFade(ribbon: shell.ribbon, unfold: shell.ribbon.unfold,
+                                     live: shell.deck.isLive,
                                      card: shell.deck.isLanding,
                                      quiet: shell.deck.isPulled && !store.isToday))
                 // Пока карточка садится, картотеку не листают (P923, `docs/71`
@@ -673,6 +674,9 @@ struct RootView: View {
             // Будущий день — под низом листа «Сегодня» (P896, вместо кольца
             // P876): лист начинается на 8 точек под полоской и заходит под неё.
             // Схема карточки, в которую складывается закрытый день (P886).
+            // Карточка раскрывается в лист (P995): над лентой, под листом —
+            // лист проступает поверх выросшей схемы.
+            UnfoldGhost(unfold: shell.ribbon.unfold, move: shell.ribbon.unfold.move, size: size)
             FoldGhost(ribbon: shell.ribbon, landing: shell.ribbon.landing, size: size)
                 .zIndex(0.5)
             DayPages()
@@ -697,6 +701,7 @@ struct RootView: View {
                     $0.opacity(shell.deck.isLanding ? 0 : 1)
                 }
                 .allowsHitTesting(shell.screen == .today)
+                .modifier(UnfoldVeil(unfold: shell.ribbon.unfold))
             // «Сегодня» с открытого дня — сразу, поверх него (P924).
             if todayRise != 0 {
                 TodayRise(from: todayRise, size: size, move: shell.ribbon.rise)

@@ -288,6 +288,9 @@ struct PullShift: ViewModifier {
 /// плавно рассеивается и из него выходят карточки.
 struct RibbonFade: ViewModifier {
     @ObservedObject var ribbon: Ribbon
+    /// Карточка раскрывается (P995): лента стоит под растущей схемой, пока
+    /// та не закроет её целиком.
+    @ObservedObject var unfold: Unfold
     let live: Bool
     let card: Bool
     /// Тянут не сегодняшний лист (P907): картотека под ним не проступает и
@@ -297,7 +300,7 @@ struct RibbonFade: ViewModifier {
     var quiet = false
 
     func body(content: Content) -> some View {
-        let shown: Double = !live || quiet ? 0 : card ? 1 : Double(min(1, abs(ribbon.y) / 90))
+        let shown: Double = unfold.from != nil ? 1 : !live || quiet ? 0 : card ? 1 : Double(min(1, abs(ribbon.y) / 90))
         content
             .opacity(shown)
             // Под садящейся карточкой проступает, когда лента встала (P913,
@@ -457,6 +460,48 @@ struct FoldGhost: View {
             }
             .allowsHitTesting(false)
             .accessibilityHidden(true)
+    }
+}
+
+/// Схема раскрываемой карточки (P995): от рамки карточки — чуть вверх, как
+/// карточку вынимают из ряда, — и до целого листа. Та же схема, в которую
+/// лист складывается при закрытии (P886).
+struct UnfoldGhost: View {
+    @ObservedObject var unfold: Unfold
+    @ObservedObject var move: RiseMove
+    let size: CGSize
+
+    var body: some View {
+        if let card = unfold.from {
+            let p = move.p
+            // Первая четверть хода — подскок на высоту, с какой карточка
+            // при посадке ждёт над гнездом; дальше — рост до листа.
+            let up = min(1, p / 0.25)
+            let grow = max(0, (p - 0.25) / 0.75)
+            let raised = card.offsetBy(dx: 0, dy: -Landing.lift * up)
+            let sheet = CGRect(x: 0, y: unfold.top, width: size.width, height: size.height - unfold.top)
+            let r = CGRect(x: raised.minX + (sheet.minX - raised.minX) * grow,
+                           y: raised.minY + (sheet.minY - raised.minY) * grow,
+                           width: raised.width + (sheet.width - raised.width) * grow,
+                           height: raised.height + (sheet.height - raised.height) * grow)
+            FoldSchema(aged: unfold.aged)
+                .frame(width: r.width, height: r.height)
+                .shadow(color: .black.opacity(0.12 * Double(up) * Double(1 - grow)), radius: 6, y: 3)
+                .offset(x: r.minX, y: r.minY)
+                .frame(width: size.width, height: size.height, alignment: .topLeading)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+        }
+    }
+}
+
+/// Лист дня не виден, пока растёт схема раскрываемой карточки (P995), и
+/// проступает поверх неё, когда она выросла.
+struct UnfoldVeil: ViewModifier {
+    @ObservedObject var unfold: Unfold
+
+    func body(content: Content) -> some View {
+        content.opacity(unfold.veiled ? 0 : 1)
     }
 }
 

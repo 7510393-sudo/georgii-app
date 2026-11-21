@@ -828,6 +828,7 @@ struct SearchView: View {
         // (P893). Лента при этом стоит, где была (P923): прежде она
         // пересобиралась вокруг открытого дня и уходила к его месту.
         let id = Vault.stamp(date)
+        let card = shell.screen == .search ? ribbon.frames[id] : nil
         let from = ribbon.frames[id].map { (id: id, top: $0.minY) }
         let opened: Bool = withTransaction(still) {
             guard shell.go(.openCard) else { return false }
@@ -842,6 +843,11 @@ struct SearchView: View {
         Feel.thud()
         ribbon.reset()
         ribbon.openedFrom = from
+        // Карточка раскрывается в лист, а не сменяется им разом (P995).
+        if let card {
+            let future = date > DayStore.today()
+            ribbon.unfold.start(from: card, top: future ? FollowRibbon.futureTop : 0, aged: !future)
+        }
         Trace.note(String(format: "лента: открыт %@ с места %.0f", id, from?.top ?? -1))
         archive.reloadSoon()
     }

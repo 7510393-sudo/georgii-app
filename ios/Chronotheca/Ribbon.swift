@@ -296,6 +296,8 @@ final class Ribbon: ObservableObject {
     let lifting = Glide()
     /// Ход листа «Сегодня» поверх открытого дня (P924, P926).
     let rise = RiseMove()
+    /// Карточка раскрывается в лист (P995).
+    let unfold = Unfold()
 
     /// Лента уже не «только что открыта» (P898): закрытая карточка села, и
     /// перечитанная опись больше не ставит ленту в покой у дня. Прежде,
@@ -844,6 +846,7 @@ final class Ribbon: ObservableObject {
     /// после складывания лента иногда оставалась «замороженной» или в ходу,
     /// и открытую карточку было не закрыть ни вверх, ни вниз (видео автора).
     func reset() {
+        unfold.stop()
         stop()
         driving = false
         foldTo = nil
@@ -912,6 +915,55 @@ final class Glide {
         let then = done
         stop()
         then?()
+    }
+}
+
+/// Карточка раскрывается в лист (P995, автор по 317: «карточка закрывается
+/// плавно, а открывается скачком; обратная анимация — как она собирается и
+/// вставляется в картотеку: подскакивает и раскрывается; не трудоёмко для
+/// процессора»). Закрытие задом наперёд: над карточкой — её схема, та
+/// приподнимается и по кадрам экрана растёт до целого листа; лента под ней
+/// стоит, как стояла; выросла — поверх неё проступает лист дня, и схема
+/// убирается. Движется одна простая картинка: меняются только её рамка и
+/// прозрачность. День сменился сразу, в миг касания (P796) — лента не
+/// пересобирается на ходу.
+final class Unfold: ObservableObject {
+    /// Рамка карточки, с которой раскрывают; `nil` — ничего не раскрывается.
+    @Published private(set) var from: CGRect?
+    /// Лист дня ещё не виден: растёт схема.
+    @Published private(set) var veiled = false
+    /// Где верх листа: у будущего — под полоской «Сегодня» (P913).
+    private(set) var top: CGFloat = 0
+    private(set) var aged = false
+    let move = RiseMove()
+
+    /// Вся дорога схемы, с подскоком; и сколько проступает лист.
+    static let grow: Double = 0.38
+    static let show: Double = 0.15
+
+    func start(from card: CGRect, top: CGFloat, aged: Bool) {
+        stop()
+        self.top = top
+        self.aged = aged
+        move.p = 0
+        from = card
+        veiled = true
+        Trace.note(String(format: "карточка раскрывается с %.0f", card.minY))
+        move.glide.run(Unfold.grow, step: { [weak self] p in self?.move.p = p }, then: { [weak self] in
+            guard let self else { return }
+            withAnimation(.easeOut(duration: Unfold.show)) { self.veiled = false }
+            self.move.glide.run(Unfold.show, then: { [weak self] in
+                self?.from = nil
+                Trace.note("карточка раскрылась")
+            })
+        })
+    }
+
+    /// Прервать: лист — сразу, схемы нет.
+    func stop() {
+        move.glide.stop()
+        if veiled { veiled = false }
+        if from != nil { from = nil }
     }
 }
 
