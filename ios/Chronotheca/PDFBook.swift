@@ -179,7 +179,7 @@ enum PDFBook {
             add(T("ПЛАН", "PLAN"), .systemFont(ofSize: 10, weight: .semibold), soft, after: 4)
             for task in day.tasks {
                 let mark = task.done ? "☑" : "☐"
-                let time = task.time.map { $0 + "  " } ?? ""
+                let time = task.time.map { Clock.show($0) + "  " } ?? ""
                 add(mark + "  " + time + Geo.stripped(task.text), .systemFont(ofSize: 12.5), after: 3)
             }
             add("", .systemFont(ofSize: 6), after: 8)
