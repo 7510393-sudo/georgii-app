@@ -296,27 +296,13 @@ enum Places {
     /// новая, удалили — подписи нет.
     static var known: [Place] = []
 
-    /// Подпись точки без названия (P559): «120 м до «Дом»» — до ближайшего
-    /// своего места не дальше километра. Дальше — `nil`.
-    static func caption(for at: CLLocationCoordinate2D) -> String? {
-        let here = CLLocation(latitude: at.latitude, longitude: at.longitude)
-        let near = known.map { place -> (Place, Double) in
-            (place, here.distance(from: CLLocation(latitude: place.latitude, longitude: place.longitude)))
-        }.min { $0.1 < $1.1 }
-        guard let (place, meters) = near, meters <= 1000 else { return nil }
-        let step: Double = meters < 100 ? 10 : 50
-        let shown = String(Int(max(step, (meters / step).rounded() * step)))
-        let name = place.name.trimmingCharacters(in: .whitespaces)
-        guard !name.isEmpty else { return nil }
-        return T("\(shown) м до «\(name)»", "\(shown) m from “\(name)”")
-    }
-
-    /// Подпись точки в дне (P559, P984): без названия — сколько до своего
-    /// места; с названием своего места и на его месте (до 30 м) — «из Моих
-    /// мест». Считается при показе, в файл не пишется.
+    /// Подпись точки в дне (P984): с названием своего места и на его месте
+    /// (до 30 м) — «из Моих мест». Считается при показе, в файл не пишется.
+    /// «120 м до «Дом»» у точки без названия убрано (P1008): в квадратике
+    /// оставалось «около …» и две буквы, а целиком её не прочесть нигде.
     static func note(for point: GeoPoint) -> String? {
         let given = point.name
-        guard !given.isEmpty else { return caption(for: point.at) }
+        guard !given.isEmpty else { return nil }
         let here = CLLocation(latitude: point.at.latitude, longitude: point.at.longitude)
         let mine = known.contains { place in
             place.name.trimmingCharacters(in: .whitespaces).caseInsensitiveCompare(given) == .orderedSame
