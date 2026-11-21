@@ -977,6 +977,13 @@ struct DayCloud: View {
                 .offset(x: -18, y: -0.2)
                 .allowsHitTesting(live)
                 .transition(.opacity)
+                // Показалось облачко «месяц или неделю назад» — следующее
+                // такое через неделю (P1013).
+                .onAppear {
+                    guard live, date == today, let found = archive.remembered(for: date) else { return }
+                    if case .years = found.ago { return }
+                    NearMemory.shown(date)
+                }
         }
     }
 }
