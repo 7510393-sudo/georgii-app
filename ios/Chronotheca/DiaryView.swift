@@ -21,20 +21,7 @@ struct DiaryView: View {
     static let leading: CGFloat = size * 0.24
 
     var body: some View {
-        if store.isFuture {
-            // Будущий день: дневника ещё нет — касание говорит почему, а не
-            // молчит (P424).
-            page.overlay {
-                // Поверх — чтобы касание не съело поле записи под ним.
-                Color.black.opacity(0.001)
-                    .onTapGesture {
-                        shell.say(T("Этот день ещё не наступил — дневник откроется в свой день",
-                                    "This day hasn't come yet — the diary opens on the day itself"))
-                    }
-            }
-        } else {
-            page
-        }
+        page
     }
 
     private var page: some View {
@@ -45,6 +32,15 @@ struct DiaryView: View {
             title: $store.diaryTitle,
             text: $store.diaryText,
             editable: store.canEditDiary,
+            // Будущий день: текста дневника ещё нет, а нижняя строка живёт —
+            // вложения с неё несут в план (P994).
+            stripEditable: store.canEditStrip,
+            // Касание по тексту будущего дня говорит почему, а не молчит
+            // (P424); нижнюю строку оно не закрывает (P994).
+            onClosedTap: store.isFuture ? {
+                shell.say(T("Этот день ещё не наступил — дневник откроется в свой день",
+                            "This day hasn't come yet — the diary opens on the day itself"))
+            } : nil,
             inCloud: store.away.contains(.diary),
             weather: store.weather,
             // Полоска одна на всю страницу (P408) и лежит в файле дневника
@@ -133,7 +129,10 @@ extension DiaryView {
     /// там, куда оно ляжет; над полоской — встанет на место соседа.
     fileprivate func carryStrip(_ i: Int, _ phase: Lift, _ spot: CGPoint) {
         let links = store.photos
-        guard store.canEditDiary, links.indices.contains(i) else { return }
+        // В будущем дне текст дневника закрыт, но вложение с нижней строки
+        // можно унести под дело или событие плана (P994).
+        guard store.canEditStrip, links.indices.contains(i) else { return }
+        let intoText = store.canEditDiary
         let link = links[i]
         let line = Diary.line(link)
         let overStrip = StripZones.strip.map { spot.y >= $0.minY - 8 } ?? false
@@ -150,7 +149,7 @@ extension DiaryView {
         // длинной записи страница уезжала от одного долгого нажатия,
         // унося превью под нижнюю строку.
         func follow() {
-            guard !overStrip else {
+            guard !overStrip, intoText else {
                 DiaryEditor.active?.stopFollowingStrip()
                 return
             }
@@ -177,7 +176,7 @@ extension DiaryView {
             if shell.eventHover != overEvent?.key { shell.eventHover = overEvent?.key }
             if overTask != nil || overEvent != nil {
                 DiaryEditor.active?.carryOut()
-            } else if overStrip {
+            } else if overStrip || !intoText {
                 DiaryEditor.active?.carryOut()
             } else {
                 DiaryEditor.active?.carryIn(line, at: CGPoint(x: spot.x, y: spot.y))
@@ -205,7 +204,7 @@ extension DiaryView {
                     store.movePhoto(from: i, to: to)
                     Feel.light()
                 }
-            } else if DiaryEditor.active?.carryEnd() == true {
+            } else if intoText, DiaryEditor.active?.carryEnd() == true {
                 Feel.thud()
             }
             stripCarry = nil
@@ -253,6 +252,13 @@ struct DiaryPage: View {
     @Binding var title: String
     @Binding var text: String
     var editable = true
+    /// Нижнюю строку можно править и там, где текст закрыт, — в будущем
+    /// дне (P994). У соседних страниц — нет.
+    var stripEditable = false
+    /// Касание по закрытому тексту будущего дня (P424) — только над
+    /// текстом, не над нижней строкой (P994).
+    var onClosedTap: (() -> Void)? = nil
+    private var stripOn: Bool { editable || stripEditable }
     /// Файл дневника лежит в iCloud и ещё не скачан: страница пуста не
     /// потому, что день пуст (решение P182).
     var inCloud = false
@@ -382,6 +388,12 @@ struct DiaryPage: View {
             }
             .padding(.horizontal, 16)
             .padding(.top, 4)
+            // Поверх — чтобы касание не съело поле записи под ним (P424).
+            .overlay {
+                if let onClosedTap {
+                    Color.black.opacity(0.001).onTapGesture(perform: onClosedTap)
+                }
+            }
             // Погода и лента превью — всегда видны внизу экрана, над строкой
             // кнопок, как в Diarium (P574): пока между последними словами
             // записи и лентой есть пять строк, лента стоит внизу; запись
@@ -398,9 +410,9 @@ struct DiaryPage: View {
             // строка, текст выталкивает их вниз. Полосы под погодой нет (P640).
             if !photos.isEmpty {
                 PhotoStrip(photos: photos, points: points, onOpen: onOpenPhoto,
-                           onCarry: editable ? onStripCarry : nil,
+                           onCarry: stripOn ? onStripCarry : nil,
                            carried: stripCarried,
-                           onRemove: editable && onRemovePhoto != nil ? { removing = $0 } : nil)
+                           onRemove: stripOn && onRemovePhoto != nil ? { removing = $0 } : nil)
                     .modifier(RemoveQuestion(
                         asking: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } }),
                         act: { delete in
@@ -413,12 +425,12 @@ struct DiaryPage: View {
                         // на каждом кадре свайпа вбок (P833). Ленты нет — нет
                         // и места, куда возвращать (P547).
                         .trackFrame(appear: { frame in
-                                        if editable { StripZones.strip = frame; PlanZones.strip = frame }
+                                        if stripOn { StripZones.strip = frame; PlanZones.strip = frame }
                                     },
                                     change: { now in
-                                        if editable { StripZones.strip = now; PlanZones.strip = now }
+                                        if stripOn { StripZones.strip = now; PlanZones.strip = now }
                                     },
-                                    gone: { if editable { StripZones.strip = nil; PlanZones.strip = nil } })
+                                    gone: { if stripOn { StripZones.strip = nil; PlanZones.strip = nil } })
                     )
             }
             footer
