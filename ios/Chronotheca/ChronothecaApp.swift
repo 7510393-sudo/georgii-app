@@ -25,7 +25,6 @@ struct ChronothecaApp: App {
         // Превью заранее читает экран, просит нижний слой (P973).
         Photo.warmer = PhotoWarm.run
         Prefs.settleFont()
-        Prefs.settleLook()
         // Напоминания видны и при открытом приложении (P260).
         if NSClassFromString("XCTestCase") == nil {
             UNUserNotificationCenter.current().delegate = BellDelegate.shared
