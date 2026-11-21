@@ -582,7 +582,7 @@ final class DayStore: ObservableObject {
         let plan = tasks.filter { !$0.text.isEmpty }
         if !plan.isEmpty {
             out += T("\n\nПлан:\n", "\n\nPlan:\n") + plan.map { row in
-                (row.done ? "✓ " : "• ") + (row.time.map { $0 + " " } ?? "") + row.text
+                (row.done ? "✓ " : "• ") + (row.time.map { Clock.show($0) + " " } ?? "") + row.text
             }.joined(separator: "\n")
         }
         let lines = diaryText.components(separatedBy: "\n").compactMap { line -> String? in
