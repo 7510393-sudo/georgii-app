@@ -1,41 +1,441 @@
+    1469 Thread_106463   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 1469 start  (in dyld) + 6992  [0x1040f04e4]
+    +   1469 start_sim  (in dyld_sim) + 20  [0x1043770e4]
+    +     1469 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x1061e7e24]  ChronothecaApp.swift:0
+    +       1469 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1061e7d78]  /<compiler-generated>:0
+    +         1469 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           1469 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             1469 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               1469 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 1469 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   1469 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     1469 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       805 __CFRunLoopRun  (in CoreFoundation) + 1884  [0x180421c6c]
+    +                       ! 805 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__  (in CoreFoundation) + 12  [0x180422a94]
+    +                       !   805 _dispatch_main_queue_callback_4CF  (in libdispatch.dylib) + 40  [0x180195890]
+    +                       !     805 _dispatch_main_queue_drain  (in libdispatch.dylib) + 1172  [0x180195d34]
+    +                       !       805 <deduplicated_symbol>  (in libdispatch.dylib) + 24  [0x1801bd748]
+    +                       !         805 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                       !           805 _dispatch_call_block_and_release  (in libdispatch.dylib) + 24  [0x1801866a0]
+    +                       !             805 thunk for @escaping @callee_guaranteed () -> ()  (in Chronotheca.debug.dylib) + 48  [0x10611ff90]  /<compiler-generated>:0
+    +                       !               805 partial apply for closure #1 in closure #1 in Archive.reloadSoon()  (in Chronotheca.debug.dylib) + 100  [0x10612c524]  /<compiler-generated>:0
+    +                       !                 805 closure #1 in closure #1 in Archive.reloadSoon()  (in Chronotheca.debug.dylib) + 460  [0x10611fe90]  Archive.swift:129
+    +                       !                   800 Archive.publish(_:root:)  (in Chronotheca.debug.dylib) + 2388  [0x10611e68c]  Archive.swift:150
+    +                       !                   : 800 Archive.days.setter  (in Chronotheca.debug.dylib) + 128  [0x1061184cc]  Archive.swift:0
+    +                       !                   :   722 Archive.days.didset  (in Chronotheca.debug.dylib) + 256  [0x1061185e0]  Archive.swift:70
+    +                       !                   :   | 722 Sequence.sorted(by:)  (in libswiftCore.dylib) + 260  [0x1983d4104]
+    +                       !                   :   |   721 UnsafeMutableBufferPointer._stableSortImpl(by:)  (in libswiftCore.dylib) + 152  [0x1983d42fc]
+    +                       !                   :   |   + 721 specialized ContiguousArray.init<A>(unsafeUninitializedCapacity:initializingWith:)  (in libswiftCore.dylib) + 88  [0x198265200]
+    +                       !                   :   |   +   721 partial apply for closure #1 in UnsafeMutableBufferPointer._stableSortImpl(by:)  (in libswiftCore.dylib) + 28  [0x1984fad28]
+    +                       !                   :   |   +     511 closure #1 in UnsafeMutableBufferPointer._stableSortImpl(by:)  (in libswiftCore.dylib) + 600  [0x1983d7040]
+    +                       !                   :   |   +     ! 83 MutableCollection<>._insertionSort(within:sortedEnd:by:)  (in libswiftCore.dylib) + 508  [0x1983d5594]
+    +                       !                   :   |   +     ! : 64 protocol witness for Collection.subscript.read in conformance UnsafeMutableBufferPointer<A>  (in libswiftCore.dylib) + 68  [0x19848f4c4]
+    +                       !                   :   |   +     ! : | 52 UnsafeMutableBufferPointer.subscript.read  (in libswiftCore.dylib) + 108  [0x19848f550]
+    +                       !                   :   |   +     ! : | + 12 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 260,576,...  [0x106127db8,0x106127ef4,...]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + 10 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 156  [0x106127d50]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 9 swift_retain  (in libswiftCore.dylib) + 4,56,...  [0x19818cae8,0x19818cb1c,...]
+    +                       !                   :   |   +     ! : | + ! 1 DYLD-STUB$$swift_bridgeObjectRetain  (in Chronotheca.debug.dylib) + 4  [0x10685306c]
+    +                       !                   :   |   +     ! : | + 9 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 332  [0x106127e00]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 4 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 8  [0x1981dc780]
+    +                       !                   :   |   +     ! : | + ! 4 swift_retain  (in libswiftCore.dylib) + 56,4,...  [0x19818cb1c,0x19818cae8,...]
+    +                       !                   :   |   +     ! : | + ! 1 DYLD-STUB$$swift_bridgeObjectRetain  (in Chronotheca.debug.dylib) + 4  [0x10685306c]
+    +                       !                   :   |   +     ! : | + 5 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 376  [0x106127e2c]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 2 DYLD-STUB$$swift_bridgeObjectRetain  (in Chronotheca.debug.dylib) + 4  [0x10685306c]
+    +                       !                   :   |   +     ! : | + ! 2 swift_retain  (in libswiftCore.dylib) + 4  [0x19818cae8]
+    +                       !                   :   |   +     ! : | + ! 1 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 0  [0x1981dc778]
+    +                       !                   :   |   +     ! : | + 4 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 84  [0x106127d08]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 2 DYLD-STUB$$type metadata accessor for Date  (in Chronotheca.debug.dylib) + 4  [0x10684f4a8]
+    +                       !                   :   |   +     ! : | + ! 2 type metadata accessor for Date  (in Foundation) + 0  [0x180f0d89c]
+    +                       !                   :   |   +     ! : | + 4 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 204  [0x106127d80]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 2 DYLD-STUB$$swift_bridgeObjectRetain  (in Chronotheca.debug.dylib) + 4  [0x10685306c]
+    +                       !                   :   |   +     ! : | + ! 2 swift_retain  (in libswiftCore.dylib) + 16,80  [0x19818caf4,0x19818cb34]
+    +                       !                   :   |   +     ! : | + 3 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 44  [0x106127ce0]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 3 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 0  [0x1981dc778]
+    +                       !                   :   |   +     ! : | + 3 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 476  [0x106127e90]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 1 DYLD-STUB$$swift_bridgeObjectRetain  (in Chronotheca.debug.dylib) + 4  [0x10685306c]
+    +                       !                   :   |   +     ! : | + ! 1 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 8  [0x1981dc780]
+    +                       !                   :   |   +     ! : | + ! 1 swift_retain  (in libswiftCore.dylib) + 48  [0x19818cb14]
+    +                       !                   :   |   +     ! : | + 1 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 268  [0x106127dc0]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 1 DYLD-STUB$$swift_bridgeObjectRetain  (in Chronotheca.debug.dylib) + 4  [0x10685306c]
+    +                       !                   :   |   +     ! : | + 1 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 524  [0x106127ec0]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | +   1 swift_retain  (in libswiftCore.dylib) + 56  [0x19818cb1c]
+    +                       !                   :   |   +     ! : | 12 UnsafeMutableBufferPointer.subscript.read  (in libswiftCore.dylib) + 68  [0x19848f528]
+    +                       !                   :   |   +     ! : |   4 _xzm_xzone_malloc  (in libsystem_malloc.dylib) + 68  [0x1801e9c24]
+    +                       !                   :   |   +     ! : |   ! 3 DYLD-STUB$$pthread_getspecific  (in libsystem_malloc.dylib) + 4  [0x180206e48]
+    +                       !                   :   |   +     ! : |   ! 1 pthread_getspecific  (in libsystem_pthread.dylib) + 0  [0x104c35aa4]
+    +                       !                   :   |   +     ! : |   3 _xzm_xzone_malloc  (in libsystem_malloc.dylib) + 48,24  [0x1801e9c10,0x1801e9bf8]
+    +                       !                   :   |   +     ! : |   3 malloc_type_malloc  (in libsystem_malloc.dylib) + 16,72  [0x1801da254,0x1801da28c]
+    +                       !                   :   |   +     ! : |   2 <deduplicated_symbol>  (in libsystem_malloc.dylib) + 0,212  [0x1801e93ac,0x1801e9480]
+    +                       !                   :   |   +     ! : 17 protocol witness for Collection.subscript.read in conformance UnsafeMutableBufferPointer<A>  (in libswiftCore.dylib) + 44  [0x19848f4ac]
+    +                       !                   :   |   +     ! : | 6 _xzm_xzone_malloc  (in libsystem_malloc.dylib) + 68  [0x1801e9c24]
+    +                       !                   :   |   +     ! : | + 4 pthread_getspecific  (in libsystem_pthread.dylib) + 0  [0x104c35aa4]
+    +                       !                   :   |   +     ! : | + 2 DYLD-STUB$$pthread_getspecific  (in libsystem_malloc.dylib) + 4  [0x180206e48]
+    +                       !                   :   |   +     ! : | 5 <deduplicated_symbol>  (in libsystem_malloc.dylib) + 112,168,...  [0x1801e941c,0x1801e9454,...]
+    +                       !                   :   |   +     ! : | 4 malloc_type_malloc  (in libsystem_malloc.dylib) + 28,44,...  [0x1801da260,0x1801da270,...]
+    +                       !                   :   |   +     ! : | 2 _xzm_xzone_malloc  (in libsystem_malloc.dylib) + 0,60  [0x1801e9be0,0x1801e9c1c]
+    +                       !                   :   |   +     ! : 1 UnsafeMutableBufferPointer.subscript.read  (in libswiftCore.dylib) + 136  [0x19848f56c]
+    +                       !                   :   |   +     ! : 1 protocol witness for Collection.subscript.read in conformance UnsafeMutableBufferPointer<A>  (in libswiftCore.dylib) + 52  [0x19848f4b4]
+    +                       !                   :   |   +     ! 71 MutableCollection<>._insertionSort(within:sortedEnd:by:)  (in libswiftCore.dylib) + 552  [0x1983d55c0]
+    +                       !                   :   |   +     ! : 56 <deduplicated_symbol>  (in libswiftCore.dylib) + 28  [0x198491b4c]
+    +                       !                   :   |   +     ! : | 45 <deduplicated_symbol>  (in libswiftCore.dylib) + 32  [0x1982fe380]
+    +                       !                   :   |   +     ! : | + 8 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 28,36,...  [0x106127be4,0x106127bec,...]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + 7 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 96  [0x106127c28]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 4 swift_release  (in libswiftCore.dylib) + 56,4,...  [0x19818c844,0x19818c810,...]
+    +                       !                   :   |   +     ! : | + ! 2 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 0  [0x1981dcc54]
+    +                       !                   :   |   +     ! : | + ! 1 DYLD-STUB$$swift_bridgeObjectRelease  (in Chronotheca.debug.dylib) + 8  [0x106853064]
+    +                       !                   :   |   +     ! : | + 7 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 164  [0x106127c6c]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 4 swift_release  (in libswiftCore.dylib) + 4,56,...  [0x19818c810,0x19818c844,...]
+    +                       !                   :   |   +     ! : | + ! 2 DYLD-STUB$$swift_bridgeObjectRelease  (in Chronotheca.debug.dylib) + 4  [0x106853060]
+    +                       !                   :   |   +     ! : | + ! 1 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 8  [0x1981dcc5c]
+    +                       !                   :   |   +     ! : | + 5 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 48  [0x106127bf8]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 4 type metadata accessor for Date  (in Foundation) + 0  [0x180f0d89c]
+    +                       !                   :   |   +     ! : | + ! 1 DYLD-STUB$$type metadata accessor for Date  (in Chronotheca.debug.dylib) + 4  [0x10684f4a8]
+    +                       !                   :   |   +     ! : | + 4 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 28  [0x106127be4]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 3 DYLD-STUB$$swift_bridgeObjectRelease  (in Chronotheca.debug.dylib) + 4,8  [0x106853060,0x106853064]
+    +                       !                   :   |   +     ! : | + ! 1 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 0  [0x1981dcc54]
+    +                       !                   :   |   +     ! : | + 4 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 140  [0x106127c54]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 2 DYLD-STUB$$swift_bridgeObjectRelease  (in Chronotheca.debug.dylib) + 4,8  [0x106853060,0x106853064]
+    +                       !                   :   |   +     ! : | + ! 2 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 0,4  [0x1981dcc54,0x1981dcc58]
+    +                       !                   :   |   +     ! : | + 3 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 204  [0x106127c94]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 2 DYLD-STUB$$swift_bridgeObjectRelease  (in Chronotheca.debug.dylib) + 4  [0x106853060]
+    +                       !                   :   |   +     ! : | + ! 1 swift_release  (in libswiftCore.dylib) + 4  [0x19818c810]
+    +                       !                   :   |   +     ! : | + 3 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 224  [0x106127ca8]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 2 swift_release  (in libswiftCore.dylib) + 92  [0x19818c868]
+    +                       !                   :   |   +     ! : | + ! 1 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 8  [0x1981dcc5c]
+    +                       !                   :   |   +     ! : | + 2 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 76  [0x106127c14]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 2 __swift_noop_void_return  (in Foundation) + 0  [0x180843890]
+    +                       !                   :   |   +     ! : | + 2 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 116  [0x106127c3c]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | +   2 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 8,28  [0x1981dcc5c,0x1981dcc70]
+    +                       !                   :   |   +     ! : | 4 _xzm_free  (in libsystem_malloc.dylib) + 36,244,...  [0x1801ea434,0x1801ea504,...]
+    +                       !                   :   |   +     ! : | 3 <deduplicated_symbol>  (in libswiftCore.dylib) + 20  [0x1982fe374]
+    +                       !                   :   |   +     ! : | 3 _free  (in libsystem_malloc.dylib) + 0,36  [0x1801f9da8,0x1801f9dcc]
+    +                       !                   :   |   +     ! : | 1 _xzm_free  (in libsystem_malloc.dylib) + 336  [0x1801ea560]
+    +                       !                   :   |   +     ! : |   1 _platform_memset  (in libsystem_platform.dylib) + 140  [0x1042aae4c]
+    +                       !                   :   |   +     ! : 6 _xzm_free  (in libsystem_malloc.dylib) + 108,116,...  [0x1801ea47c,0x1801ea484,...]
+    +                       !                   :   |   +     ! : 4 _xzm_free  (in libsystem_malloc.dylib) + 592  [0x1801ea660]
+    +                       !                   :   |   +     ! : | 3 pthread_getspecific  (in libsystem_pthread.dylib) + 0  [0x104c35aa4]
+    +                       !                   :   |   +     ! : | 1 DYLD-STUB$$pthread_getspecific  (in libsystem_malloc.dylib) + 4  [0x180206e48]
+    +                       !                   :   |   +     ! : 3 _xzm_free  (in libsystem_malloc.dylib) + 336  [0x1801ea560]
+    +                       !                   :   |   +     ! : | 2 DYLD-STUB$$_platform_bzero  (in libsystem_malloc.dylib) + 4  [0x180206a94]
+    +                       !                   :   |   +     ! : | 1 _platform_memset  (in libsystem_platform.dylib) + 224  [0x1042aaea0]
+    +                       !                   :   |   +     ! : 1 DYLD-STUB$$free  (in libswiftCore.dylib) + 4  [0x19852e018]
+    +                       !                   :   |   +     ! : 1 _free  (in libsystem_malloc.dylib) + 36  [0x1801f9dcc]
+    +                       !                   :   |   +     ! 70 MutableCollection<>._insertionSort(within:sortedEnd:by:)  (in libswiftCore.dylib) + 580  [0x1983d55dc]
+    +                       !                   :   |   +     ! : 56 protocol witness for Collection.subscript.read in conformance UnsafeMutableBufferPointer<A>  (in libswiftCore.dylib) + 68  [0x19848f4c4]
+    +                       !                   :   |   +     ! : | 47 UnsafeMutableBufferPointer.subscript.read  (in libswiftCore.dylib) + 108  [0x19848f550]
+    +                       !                   :   |   +     ! : | + 10 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 28,468,...  [0x106127cd0,0x106127e88,...]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + 9 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 476  [0x106127e90]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 9 swift_retain  (in libswiftCore.dylib) + 48,56,...  [0x19818cb14,0x19818cb1c,...]
+    +                       !                   :   |   +     ! : | + 8 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 156  [0x106127d50]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 6 swift_retain  (in libswiftCore.dylib) + 48,4,...  [0x19818cb14,0x19818cae8,...]
+    +                       !                   :   |   +     ! : | + ! 1 DYLD-STUB$$swift_bridgeObjectRetain  (in Chronotheca.debug.dylib) + 8  [0x106853070]
+    +                       !                   :   |   +     ! : | + ! 1 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 0  [0x1981dc778]
+    +                       !                   :   |   +     ! : | + 7 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 332  [0x106127e00]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 7 swift_retain  (in libswiftCore.dylib) + 16,48,...  [0x19818caf4,0x19818cb14,...]
+    +                       !                   :   |   +     ! : | + 4 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 84  [0x106127d08]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 4 type metadata accessor for Date  (in Foundation) + 0  [0x180f0d89c]
+    +                       !                   :   |   +     ! : | + 4 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 376  [0x106127e2c]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 3 swift_retain  (in libswiftCore.dylib) + 16,96  [0x19818caf4,0x19818cb44]
+    +                       !                   :   |   +     ! : | + ! 1 DYLD-STUB$$swift_bridgeObjectRetain  (in Chronotheca.debug.dylib) + 4  [0x10685306c]
+    +                       !                   :   |   +     ! : | + 3 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 524  [0x106127ec0]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 2 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 8  [0x1981dc780]
+    +                       !                   :   |   +     ! : | + ! 1 swift_retain  (in libswiftCore.dylib) + 4  [0x19818cae8]
+    +                       !                   :   |   +     ! : | + 2 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 124  [0x106127d30]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | +   2 __swift_memcpy8_8  (in Foundation) + 0,4  [0x180881320,0x180881324]
+    +                       !                   :   |   +     ! : | 8 UnsafeMutableBufferPointer.subscript.read  (in libswiftCore.dylib) + 68  [0x19848f528]
+    +                       !                   :   |   +     ! : | + 5 <deduplicated_symbol>  (in libsystem_malloc.dylib) + 112,136,...  [0x1801e941c,0x1801e9434,...]
+    +                       !                   :   |   +     ! : | + 1 _xzm_xzone_malloc  (in libsystem_malloc.dylib) + 68  [0x1801e9c24]
+    +                       !                   :   |   +     ! : | + ! 1 pthread_getspecific  (in libsystem_pthread.dylib) + 0  [0x104c35aa4]
+    +                       !                   :   |   +     ! : | + 1 _xzm_xzone_malloc  (in libsystem_malloc.dylib) + 24  [0x1801e9bf8]
+    +                       !                   :   |   +     ! : | + 1 malloc_type_malloc  (in libsystem_malloc.dylib) + 24  [0x1801da25c]
+    +                       !                   :   |   +     ! : | 1 UnsafeMutableBufferPointer.subscript.read  (in libswiftCore.dylib) + 48  [0x19848f514]
+    +                       !                   :   |   +     ! : 14 protocol witness for Collection.subscript.read in conformance UnsafeMutableBufferPointer<A>  (in libswiftCore.dylib) + 44  [0x19848f4ac]
+    +                       !                   :   |   +     ! :   5 <deduplicated_symbol>  (in libsystem_malloc.dylib) + 212,0,...  [0x1801e9480,0x1801e93ac,...]
+    +                       !                   :   |   +     ! :   4 _xzm_xzone_malloc  (in libsystem_malloc.dylib) + 68  [0x1801e9c24]
+    +                       !                   :   |   +     ! :   + 3 pthread_getspecific  (in libsystem_pthread.dylib) + 0  [0x104c35aa4]
+    +                       !                   :   |   +     ! :   + 1 DYLD-STUB$$pthread_getspecific  (in libsystem_malloc.dylib) + 4  [0x180206e48]
+    +                       !                   :   |   +     ! :   3 malloc_type_malloc  (in libsystem_malloc.dylib) + 16,44,...  [0x1801da254,0x1801da270,...]
+    +                       !                   :   |   +     ! :   1 DYLD-STUB$$malloc_type_malloc  (in libswiftCore.dylib) + 4  [0x19852e120]
+    +                       !                   :   |   +     ! :   1 _xzm_xzone_malloc  (in libsystem_malloc.dylib) + 140  [0x1801e9c6c]
+    +                       !                   :   |   +     ! 63 MutableCollection<>._insertionSort(within:sortedEnd:by:)  (in libswiftCore.dylib) + 612  [0x1983d55fc]
+    +                       !                   :   |   +     ! : 57 <deduplicated_symbol>  (in libswiftCore.dylib) + 28  [0x198491b4c]
+    +                       !                   :   |   +     ! : | 37 <deduplicated_symbol>  (in libswiftCore.dylib) + 32  [0x1982fe380]
+    +                       !                   :   |   +     ! : | + 7 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 224  [0x106127ca8]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 6 swift_release  (in libswiftCore.dylib) + 4  [0x19818c810]
+    +                       !                   :   |   +     ! : | + ! 1 DYLD-STUB$$swift_bridgeObjectRelease  (in Chronotheca.debug.dylib) + 4  [0x106853060]
+    +                       !                   :   |   +     ! : | + 6 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 204  [0x106127c94]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 3 swift_release  (in libswiftCore.dylib) + 4,16,...  [0x19818c810,0x19818c81c,...]
+    +                       !                   :   |   +     ! : | + ! 2 DYLD-STUB$$swift_bridgeObjectRelease  (in Chronotheca.debug.dylib) + 4  [0x106853060]
+    +                       !                   :   |   +     ! : | + ! 1 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 8  [0x1981dcc5c]
+    +                       !                   :   |   +     ! : | + 5 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 96  [0x106127c28]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 2 DYLD-STUB$$swift_bridgeObjectRelease  (in Chronotheca.debug.dylib) + 4,8  [0x106853060,0x106853064]
+    +                       !                   :   |   +     ! : | + ! 2 swift_release  (in libswiftCore.dylib) + 4,56  [0x19818c810,0x19818c844]
+    +                       !                   :   |   +     ! : | + ! 1 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 8  [0x1981dcc5c]
+    +                       !                   :   |   +     ! : | + 5 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 164  [0x106127c6c]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 3 swift_release  (in libswiftCore.dylib) + 4,16,...  [0x19818c810,0x19818c81c,...]
+    +                       !                   :   |   +     ! : | + ! 2 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 0,8  [0x1981dcc54,0x1981dcc5c]
+    +                       !                   :   |   +     ! : | + 4 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 28  [0x106127be4]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 3 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 0  [0x1981dcc54]
+    +                       !                   :   |   +     ! : | + ! 1 DYLD-STUB$$swift_bridgeObjectRelease  (in Chronotheca.debug.dylib) + 4  [0x106853060]
+    +                       !                   :   |   +     ! : | + 4 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 184  [0x106127c80]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 3 swift_release  (in libswiftCore.dylib) + 4  [0x19818c810]
+    +                       !                   :   |   +     ! : | + ! 1 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 0  [0x1981dcc54]
+    +                       !                   :   |   +     ! : | + 2 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 116  [0x106127c3c]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 2 swift_release  (in libswiftCore.dylib) + 0,80  [0x19818c80c,0x19818c85c]
+    +                       !                   :   |   +     ! : | + 2 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 216,224  [0x106127ca0,0x106127ca8]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + 1 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 48  [0x106127bf8]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + ! 1 type metadata accessor for Date  (in Foundation) + 0  [0x180f0d89c]
+    +                       !                   :   |   +     ! : | + 1 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 76  [0x106127c14]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | +   1 __swift_noop_void_return  (in Foundation) + 0  [0x180843890]
+    +                       !                   :   |   +     ! : | 7 _xzm_free  (in libsystem_malloc.dylib) + 1416,36,...  [0x1801ea998,0x1801ea434,...]
+    +                       !                   :   |   +     ! : | 4 <deduplicated_symbol>  (in libswiftCore.dylib) + 20  [0x1982fe374]
+    +                       !                   :   |   +     ! : | 3 _free  (in libsystem_malloc.dylib) + 0,36,...  [0x1801f9da8,0x1801f9dcc,...]
+    +                       !                   :   |   +     ! : | 3 _xzm_free  (in libsystem_malloc.dylib) + 336  [0x1801ea560]
+    +                       !                   :   |   +     ! : | + 2 DYLD-STUB$$_platform_bzero  (in libsystem_malloc.dylib) + 4  [0x180206a94]
+    +                       !                   :   |   +     ! : | + 1 __bzero  (in libsystem_platform.dylib) + 0  [0x1042aad50]
+    +                       !                   :   |   +     ! : | 2 DYLD-STUB$$free  (in libswiftCore.dylib) + 4  [0x19852e018]
+    +                       !                   :   |   +     ! : | 1 _xzm_free  (in libsystem_malloc.dylib) + 592  [0x1801ea660]
+    +                       !                   :   |   +     ! : |   1 DYLD-STUB$$pthread_getspecific  (in libsystem_malloc.dylib) + 4  [0x180206e48]
+    +                       !                   :   |   +     ! : 2 _free  (in libsystem_malloc.dylib) + 36,64  [0x1801f9dcc,0x1801f9de8]
+    +                       !                   :   |   +     ! : 2 _xzm_free  (in libsystem_malloc.dylib) + 592  [0x1801ea660]
+    +                       !                   :   |   +     ! : | 1 DYLD-STUB$$pthread_getspecific  (in libsystem_malloc.dylib) + 4  [0x180206e48]
+    +                       !                   :   |   +     ! : | 1 pthread_getspecific  (in libsystem_pthread.dylib) + 0  [0x104c35aa4]
+    +                       !                   :   |   +     ! : 2 _xzm_free  (in libsystem_malloc.dylib) + 284  [0x1801ea52c]
+    +                       !                   :   |   +     ! 53 MutableCollection<>._insertionSort(within:sortedEnd:by:)  (in libswiftCore.dylib) + 540  [0x1983d55b4]
+    +                       !                   :   |   +     ! : 20 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 360,72,...  [0x106127e1c,0x106127cfc,...]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : 8 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 524  [0x106127ec0]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 3 DYLD-STUB$$swift_bridgeObjectRetain  (in Chronotheca.debug.dylib) + 4,8  [0x10685306c,0x106853070]
+    +                       !                   :   |   +     ! : | 3 swift_retain  (in libswiftCore.dylib) + 16,56  [0x19818caf4,0x19818cb1c]
+    +                       !                   :   |   +     ! : | 2 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 0,8  [0x1981dc778,0x1981dc780]
+    +                       !                   :   |   +     ! : 7 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 332  [0x106127e00]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 3 swift_retain  (in libswiftCore.dylib) + 4,96  [0x19818cae8,0x19818cb44]
+    +                       !                   :   |   +     ! : | 2 DYLD-STUB$$swift_bridgeObjectRetain  (in Chronotheca.debug.dylib) + 4  [0x10685306c]
+    +                       !                   :   |   +     ! : | 2 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 0  [0x1981dc778]
+    +                       !                   :   |   +     ! : 4 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 124  [0x106127d30]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 4 __swift_memcpy8_8  (in Foundation) + 4,0  [0x180881324,0x180881320]
+    +                       !                   :   |   +     ! : 4 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 204  [0x106127d80]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 2 swift_retain  (in libswiftCore.dylib) + 80,92  [0x19818cb34,0x19818cb40]
+    +                       !                   :   |   +     ! : | 1 DYLD-STUB$$swift_bridgeObjectRetain  (in Chronotheca.debug.dylib) + 4  [0x10685306c]
+    +                       !                   :   |   +     ! : | 1 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 8  [0x1981dc780]
+    +                       !                   :   |   +     ! : 3 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 156  [0x106127d50]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 2 swift_retain  (in libswiftCore.dylib) + 4,96  [0x19818cae8,0x19818cb44]
+    +                       !                   :   |   +     ! : | 1 DYLD-STUB$$swift_bridgeObjectRetain  (in Chronotheca.debug.dylib) + 4  [0x10685306c]
+    +                       !                   :   |   +     ! : 3 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 476  [0x106127e90]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 2 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 8  [0x1981dc780]
+    +                       !                   :   |   +     ! : | 1 swift_retain  (in libswiftCore.dylib) + 4  [0x19818cae8]
+    +                       !                   :   |   +     ! : 2 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 376  [0x106127e2c]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 1 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 8  [0x1981dc780]
+    +                       !                   :   |   +     ! : | 1 swift_retain  (in libswiftCore.dylib) + 16  [0x19818caf4]
+    +                       !                   :   |   +     ! : 1 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 44  [0x106127ce0]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 1 DYLD-STUB$$swift_bridgeObjectRetain  (in Chronotheca.debug.dylib) + 4  [0x10685306c]
+    +                       !                   :   |   +     ! : 1 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 84  [0x106127d08]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! :   1 type metadata accessor for Date  (in Foundation) + 0  [0x180f0d89c]
+    +                       !                   :   |   +     ! 40 MutableCollection<>._insertionSort(within:sortedEnd:by:)  (in libswiftCore.dylib) + 660  [0x1983d562c]
+    +                       !                   :   |   +     ! : 7 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 204  [0x106127c94]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 6 swift_release  (in libswiftCore.dylib) + 4,48  [0x19818c810,0x19818c83c]
+    +                       !                   :   |   +     ! : | 1 DYLD-STUB$$swift_bridgeObjectRelease  (in Chronotheca.debug.dylib) + 4  [0x106853060]
+    +                       !                   :   |   +     ! : 6 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 164  [0x106127c6c]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 3 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 0  [0x1981dcc54]
+    +                       !                   :   |   +     ! : | 3 swift_release  (in libswiftCore.dylib) + 4,92  [0x19818c810,0x19818c868]
+    +                       !                   :   |   +     ! : 5 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 96  [0x106127c28]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 2 DYLD-STUB$$swift_bridgeObjectRelease  (in Chronotheca.debug.dylib) + 4  [0x106853060]
+    +                       !                   :   |   +     ! : | 2 swift_release  (in libswiftCore.dylib) + 4,56  [0x19818c810,0x19818c844]
+    +                       !                   :   |   +     ! : | 1 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 0  [0x1981dcc54]
+    +                       !                   :   |   +     ! : 5 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 116  [0x106127c3c]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 3 swift_release  (in libswiftCore.dylib) + 4,80  [0x19818c810,0x19818c85c]
+    +                       !                   :   |   +     ! : | 1 DYLD-STUB$$swift_bridgeObjectRelease  (in Chronotheca.debug.dylib) + 4  [0x106853060]
+    +                       !                   :   |   +     ! : | 1 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 8  [0x1981dcc5c]
+    +                       !                   :   |   +     ! : 5 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 216,36,...  [0x106127ca0,0x106127bec,...]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : 4 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 224  [0x106127ca8]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 4 swift_release  (in libswiftCore.dylib) + 56,4  [0x19818c844,0x19818c810]
+    +                       !                   :   |   +     ! : 2 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 28  [0x106127be4]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 2 DYLD-STUB$$swift_bridgeObjectRelease  (in Chronotheca.debug.dylib) + 4  [0x106853060]
+    +                       !                   :   |   +     ! : 2 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 48  [0x106127bf8]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 1 DYLD-STUB$$type metadata accessor for Date  (in Chronotheca.debug.dylib) + 4  [0x10684f4a8]
+    +                       !                   :   |   +     ! : | 1 type metadata accessor for Date  (in Foundation) + 0  [0x180f0d89c]
+    +                       !                   :   |   +     ! : 2 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 76  [0x106127c14]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 2 __swift_noop_void_return  (in Foundation) + 0  [0x180843890]
+    +                       !                   :   |   +     ! : 2 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 184  [0x106127c80]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! :   2 swift_release  (in libswiftCore.dylib) + 16  [0x19818c81c]
+    +                       !                   :   |   +     ! 38 MutableCollection<>._insertionSort(within:sortedEnd:by:)  (in libswiftCore.dylib) + 672  [0x1983d5638]
+    +                       !                   :   |   +     ! : 8 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 224  [0x106127ca8]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 3 DYLD-STUB$$swift_bridgeObjectRelease  (in Chronotheca.debug.dylib) + 4  [0x106853060]
+    +                       !                   :   |   +     ! : | 3 swift_release  (in libswiftCore.dylib) + 4,56  [0x19818c810,0x19818c844]
+    +                       !                   :   |   +     ! : | 2 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 8  [0x1981dcc5c]
+    +                       !                   :   |   +     ! : 7 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 48  [0x106127bf8]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 6 type metadata accessor for Date  (in Foundation) + 0  [0x180f0d89c]
+    +                       !                   :   |   +     ! : | 1 DYLD-STUB$$type metadata accessor for Date  (in Chronotheca.debug.dylib) + 4  [0x10684f4a8]
+    +                       !                   :   |   +     ! : 6 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 20,156,...  [0x106127bdc,0x106127c64,...]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : 5 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 96  [0x106127c28]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 3 DYLD-STUB$$swift_bridgeObjectRelease  (in Chronotheca.debug.dylib) + 4  [0x106853060]
+    +                       !                   :   |   +     ! : | 2 swift_release  (in libswiftCore.dylib) + 4,56  [0x19818c810,0x19818c844]
+    +                       !                   :   |   +     ! : 5 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 116  [0x106127c3c]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 3 swift_release  (in libswiftCore.dylib) + 16,4  [0x19818c81c,0x19818c810]
+    +                       !                   :   |   +     ! : | 1 DYLD-STUB$$swift_bridgeObjectRelease  (in Chronotheca.debug.dylib) + 4  [0x106853060]
+    +                       !                   :   |   +     ! : | 1 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 8  [0x1981dcc5c]
+    +                       !                   :   |   +     ! : 3 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 204  [0x106127c94]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 3 swift_release  (in libswiftCore.dylib) + 48,4  [0x19818c83c,0x19818c810]
+    +                       !                   :   |   +     ! : 2 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 184  [0x106127c80]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 1 DYLD-STUB$$swift_bridgeObjectRelease  (in Chronotheca.debug.dylib) + 4  [0x106853060]
+    +                       !                   :   |   +     ! : | 1 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 8  [0x1981dcc5c]
+    +                       !                   :   |   +     ! : 1 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 76  [0x106127c14]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 1 __swift_noop_void_return  (in Foundation) + 0  [0x180843890]
+    +                       !                   :   |   +     ! : 1 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 164  [0x106127c6c]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! :   1 swift_release  (in libswiftCore.dylib) + 16  [0x19818c81c]
+    +                       !                   :   |   +     ! 37 MutableCollection<>._insertionSort(within:sortedEnd:by:)  (in libswiftCore.dylib) + 600  [0x1983d55f0]
+    +                       !                   :   |   +     ! : 12 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 196,360,...  [0x106127d78,0x106127e1c,...]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : 6 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 524  [0x106127ec0]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 5 swift_retain  (in libswiftCore.dylib) + 56,48,...  [0x19818cb1c,0x19818cb14,...]
+    +                       !                   :   |   +     ! : | 1 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 0  [0x1981dc778]
+    +                       !                   :   |   +     ! : 4 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 156  [0x106127d50]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 2 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 0,8  [0x1981dc778,0x1981dc780]
+    +                       !                   :   |   +     ! : | 2 swift_retain  (in libswiftCore.dylib) + 16,56  [0x19818caf4,0x19818cb1c]
+    +                       !                   :   |   +     ! : 3 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 204  [0x106127d80]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 3 swift_retain  (in libswiftCore.dylib) + 80,16  [0x19818cb34,0x19818caf4]
+    +                       !                   :   |   +     ! : 3 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 332  [0x106127e00]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 2 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 8  [0x1981dc780]
+    +                       !                   :   |   +     ! : | 1 swift_retain  (in libswiftCore.dylib) + 4  [0x19818cae8]
+    +                       !                   :   |   +     ! : 3 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 376  [0x106127e2c]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 2 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 0,8  [0x1981dc778,0x1981dc780]
+    +                       !                   :   |   +     ! : | 1 DYLD-STUB$$swift_bridgeObjectRetain  (in Chronotheca.debug.dylib) + 4  [0x10685306c]
+    +                       !                   :   |   +     ! : 2 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 44  [0x106127ce0]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 2 DYLD-STUB$$swift_bridgeObjectRetain  (in Chronotheca.debug.dylib) + 4  [0x10685306c]
+    +                       !                   :   |   +     ! : 2 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 476  [0x106127e90]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 1 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 8  [0x1981dc780]
+    +                       !                   :   |   +     ! : | 1 swift_retain  (in libswiftCore.dylib) + 48  [0x19818cb14]
+    +                       !                   :   |   +     ! : 1 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 84  [0x106127d08]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | 1 type metadata accessor for Date  (in Foundation) + 0  [0x180f0d89c]
+    +                       !                   :   |   +     ! : 1 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 268  [0x106127dc0]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! :   1 DYLD-STUB$$swift_bridgeObjectRetain  (in Chronotheca.debug.dylib) + 4  [0x10685306c]
+    +                       !                   :   |   +     ! 20 MutableCollection<>._insertionSort(within:sortedEnd:by:)  (in libswiftCore.dylib) + 632  [0x1983d5610]
+    +                       !                   :   |   +     ! : 6 closure #2 in Archive.days.didset  (in Chronotheca.debug.dylib) + 152  [0x10611886c]  Archive.swift:70
+    +                       !                   :   |   +     ! : | 5 static Character.< infix(_:_:)  (in libswiftCore.dylib) + 24,0,...  [0x19827d7cc,0x19827d7b4,...]
+    +                       !                   :   |   +     ! : | 1 static Character.< infix(_:_:)  (in libswiftCore.dylib) + 0  [0x19827d7b0]
+    +                       !                   :   |   +     ! : 6 closure #2 in Archive.days.didset  (in Chronotheca.debug.dylib) + 168  [0x10611887c]  Archive.swift:70
+    +                       !                   :   |   +     ! : | 3 outlined destroy of String  (in Chronotheca.debug.dylib) + 24  [0x106121dfc]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : | + 2 DYLD-STUB$$swift_bridgeObjectRelease  (in Chronotheca.debug.dylib) + 4  [0x106853060]
+    +                       !                   :   |   +     ! : | + 1 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 0  [0x1981dcc54]
+    +                       !                   :   |   +     ! : | 3 outlined destroy of String  (in Chronotheca.debug.dylib) + 24,28  [0x106121dfc,0x106121e00]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : 3 closure #2 in Archive.days.didset  (in Chronotheca.debug.dylib) + 176  [0x106118884]  Archive.swift:70
+    +                       !                   :   |   +     ! : | 3 outlined destroy of String  (in Chronotheca.debug.dylib) + 24  [0x106121dfc]  /<compiler-generated>:0
+    +                       !                   :   |   +     ! : |   3 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 0  [0x1981dcc54]
+    +                       !                   :   |   +     ! : 2 closure #2 in Archive.days.didset  (in Chronotheca.debug.dylib) + 60  [0x106118810]  Archive.swift:70
+    +                       !                   :   |   +     ! : | 2 DYLD-STUB$$swift_bridgeObjectRetain  (in Chronotheca.debug.dylib) + 4  [0x10685306c]
+    +                       !                   :   |   +     ! : 2 closure #2 in Archive.days.didset  (in Chronotheca.debug.dylib) + 52,60  [0x106118808,0x106118810]  Archive.swift:70
+    +                       !                   :   |   +     ! : 1 closure #2 in Archive.days.didset  (in Chronotheca.debug.dylib) + 108  [0x106118840]  Archive.swift:70
+    +                       !                   :   |   +     ! :   1 DYLD-STUB$$swift_bridgeObjectRetain  (in Chronotheca.debug.dylib) + 4  [0x10685306c]
+    +                       !                   :   |   +     ! 19 MutableCollection<>._insertionSort(within:sortedEnd:by:)  (in libswiftCore.dylib) + 736  [0x1983d5678]
+    +                       !                   :   |   +     ! : 8 UnsafeMutableBufferPointer.swapAt(_:_:)  (in libswiftCore.dylib) + 160  [0x19848eb78]
+    +                       !                   :   |   +     ! : | 8 _platform_memmove  (in libsystem_platform.dylib) + 0,240,...  [0x1042ab0b0,0x1042ab1a0,...]
+    +                       !                   :   |   +     ! : 6 UnsafeMutableBufferPointer.swapAt(_:_:)  (in libswiftCore.dylib) + 180  [0x19848eb8c]
+    +                       !                   :   |   +     ! : | 5 _platform_memmove  (in libsystem_platform.dylib) + 240,288,...  [0x1042ab1a0,0x1042ab1d0,...]
+    +                       !                   :   |   +     ! : | 1 DYLD-STUB$$memmove  (in libswiftCore.dylib) + 4  [0x19852e180]
+    +                       !                   :   |   +     ! : 3 UnsafeMutableBufferPointer.swapAt(_:_:)  (in libswiftCore.dylib) + 196  [0x19848eb9c]
+    +                       !                   :   |   +     ! : | 3 _platform_memmove  (in libsystem_platform.dylib) + 288,0  [0x1042ab1d0,0x1042ab0b0]
+    +                       !                   :   |   +     ! : 2 UnsafeMutableBufferPointer.swapAt(_:_:)  (in libswiftCore.dylib) + 48,112  [0x19848eb08,0x19848eb48]
+    +                       !                   :   |   +     ! 8 MutableCollection<>._insertionSort(within:sortedEnd:by:)  (in libswiftCore.dylib) + 592,672,...  [0x1983d55e8,0x1983d5638,...]
+    +                       !                   :   |   +     ! 2 MutableCollection<>._insertionSort(within:sortedEnd:by:)  (in libswiftCore.dylib) + 772  [0x1983d569c]
+    +                       !                   :   |   +     ! : 2 swift::metadataimpl::ValueWitnesses<swift::metadataimpl::NativeBox<unsigned long long, 8ul, 8ul, 8ul>>::initializeWithTake(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib) + 4,8  [0x198190990,0x198190994]
+    +                       !                   :   |   +     ! 2 protocol witness for Collection.subscript.read in conformance UnsafeMutableBufferPointer<A>  (in libswiftCore.dylib) + 92  [0x19848f4dc]
+    +                       !                   :   |   +     ! 1 MutableCollection<>._insertionSort(within:sortedEnd:by:)  (in libswiftCore.dylib) + 312  [0x1983d54d0]
+    +                       !                   :   |   +     ! : 1 __swift_instantiateCanonicalPrespecializedGenericMetadata  (in libswiftCore.dylib) + 36  [0x1985279f0]
+    +                       !                   :   |   +     ! :   1 _swift_getGenericMetadata(swift::MetadataRequest, void const* const*, swift::TargetTypeContextDescriptor<swift::InProcess> const*)  (in libswiftCore.dylib) + 260  [0x198198e88]
+    +                       !                   :   |   +     ! :     1 swift::LockingConcurrentMap<swift::GenericCacheEntry, swift::LockingConcurrentMapStorage<swift::GenericCacheEntry, (unsigned short)14>>::getOrInsert<swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)  (in libswiftCore.dylib) + 84  [0x1981a97ac]
+    +                       !                   :   |   +     ! :       1 swift::StableAddressConcurrentReadableHashMap<swift::GenericCacheEntry, swift::TaggedMetadataAllocator<(unsigned short)14>, swift::Mutex>::getOrInsert<swift::MetadataCacheKey, swift::MetadataWaitQueue::Worker&, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataWaitQueue::Worker&, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)  (in libswiftCore.dylib) + 100  [0x1981a9aa0]
+    +                       !                   :   |   +     ! :         1 swift::MetadataCacheKey::operator==(swift::MetadataCacheKey const&) const  (in libswiftCore.dylib) + 124  [0x1981a7c00]
+    +                       !                   :   |   +     ! :           1 _platform_memcmp  (in libsystem_platform.dylib) + 8  [0x1042a8db8]
+    +                       !                   :   |   +     ! 1 MutableCollection<>._insertionSort(within:sortedEnd:by:)  (in libswiftCore.dylib) + 360  [0x1983d5500]
+    +                       !                   :   |   +     ! : 1 ???  (in libswiftCore.dylib)  load address 0x198171000 + 0x109ac8  [0x19827aac8]
+    +                       !                   :   |   +     ! 1 MutableCollection<>._insertionSort(within:sortedEnd:by:)  (in libswiftCore.dylib) + 796  [0x1983d56b4]
+    +                       !                   :   |   +     ! : 1 ???  (in libswiftCore.dylib)  load address 0x198171000 + 0x109ac8  [0x19827aac8]
+    +                       !                   :   |   +     ! 1 UnsafeMutableBufferPointer.swapAt(_:_:)  (in libswiftCore.dylib) + 72  [0x19848eb20]
+    +                       !                   :   |   +     ! 1 _xzm_free  (in libsystem_malloc.dylib) + 1372  [0x1801ea96c]
+    +                       !                   :   |   +     111 closure #1 in UnsafeMutableBufferPointer._stableSortImpl(by:)  (in libswiftCore.dylib) + 936  [0x1983d7190]
+    +                       !                   :   |   +     ! 111 UnsafeMutableBufferPointer._finalizeRuns(_:buffer:by:)  (in libswiftCore.dylib) + 200  [0x1983d6cc0]
+    +                       !                   :   |   +     !   31 _merge<A>(low:mid:high:buffer:by:)  (in libswiftCore.dylib) + 516  [0x1983d5c84]
+    +                       !                   :   |   +     !   : 9 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 476  [0x106127e90]  /<compiler-generated>:0
+    +                       !                   :   |   +     !   : | 8 swift_retain  (in libswiftCore.dylib) + 48,80,...  [0x19818cb14,0x19818cb34,...]
+    +                       !                   :   |   +     !   : | 1 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 24  [0x1981dc790]
+    +                       !                   :   |   +     !   : 7 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 376  [0x106127e2c]  /<compiler-generated>:0
+    +                       !                   :   |   +     !   : | 4 swift_retain  (in libswiftCore.dylib) + 24,4,...  [0x19818cafc,0x19818cae8,...]
+    +                       !                   :   |   +     !   : | 2 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 8,24  [0x1981dc780,0x1981dc790]
+    +                       !                   :   |   +     !   : | 1 DYLD-STUB$$swift_bridgeObjectRetain  (in Chronotheca.debug.dylib) + 4  [0x10685306c]
+    +                       !                   :   |   +     !   : 4 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 524  [0x106127ec0]  /<compiler-generated>:0
+    +                       !                   :   |   +     !   : | 3 swift_retain  (in libswiftCore.dylib) + 48  [0x19818cb14]
+    +                       !                   :   |   +     !   : | 1 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 8  [0x1981dc780]
+    +                       !                   :   |   +     !   : 4 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 188,228,...  [0x106127d70,0x106127d98,...]  /<compiler-generated>:0
+    +                       !                   :   |   +     !   : 3 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 332  [0x106127e00]  /<compiler-generated>:0
+    +                       !                   :   |   +     !   : | 3 swift_retain  (in libswiftCore.dylib) + 48,16  [0x19818cb14,0x19818caf4]
+    +                       !                   :   |   +     !   : 2 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 156  [0x106127d50]  /<compiler-generated>:0
+    +                       !                   :   |   +     !   : | 2 swift_retain  (in libswiftCore.dylib) + 48  [0x19818cb14]
+    +                       !                   :   |   +     !   : 2 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 204  [0x106127d80]  /<compiler-generated>:0
+    +                       !                   :   |   +     !   :   1 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 8  [0x1981dc780]
+    +                       !                   :   |   +     !   :   1 swift_retain  (in libswiftCore.dylib) + 4  [0x19818cae8]
+    +                       !                   :   |   +     !   29 _merge<A>(low:mid:high:buffer:by:)  (in libswiftCore.dylib) + 568  [0x1983d5cb8]
+    +                       !                   :   |   +     !   : 8 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 116  [0x106127c3c]  /<compiler-generated>:0
+    +                       !                   :   |   +     !   : | 8 swift_release  (in libswiftCore.dylib) + 24,4,...  [0x19818c824,0x19818c810,...]
+    +                       !                   :   |   +     !   : 5 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 0,216,...  [0x106127bc8,0x106127ca0,...]  /<compiler-generated>:0
+    +                       !                   :   |   +     !   : 4 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 96  [0x106127c28]  /<compiler-generated>:0
+    +                       !                   :   |   +     !   : | 2 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 8  [0x1981dcc5c]
+    +                       !                   :   |   +     !   : | 2 swift_release  (in libswiftCore.dylib) + 16,48  [0x19818c81c,0x19818c83c]
+    +                       !                   :   |   +     !   : 4 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 184  [0x106127c80]  /<compiler-generated>:0
+    +                       !                   :   |   +     !   : | 3 swift_release  (in libswiftCore.dylib) + 24,32  [0x19818c824,0x19818c82c]
+    +                       !                   :   |   +     !   : | 1 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 8  [0x1981dcc5c]
+    +                       !                   :   |   +     !   : 3 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 164  [0x106127c6c]  /<compiler-generated>:0
+    +                       !                   :   |   +     !   : | 2 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 0,8  [0x1981dcc54,0x1981dcc5c]
+    +                       !                   :   |   +     !   : | 1 swift_release  (in libswiftCore.dylib) + 56  [0x19818c844]
+    +                       !                   :   |   +     !   : 3 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 224  [0x106127ca8]  /<compiler-generated>:0
+    +                       !                   :   |   +     !   : | 2 swift_release  (in libswiftCore.dylib) + 16,56  [0x19818c81c,0x19818c844]
+    +                       !                   :   |   +     !   : | 1 DYLD-STUB$$swift_bridgeObjectRelease  (in Chronotheca.debug.dylib) + 4  [0x106853060]
+    +                       !                   :   |   +     !   : 1 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 28  [0x106127be4]  /<compiler-generated>:0
+    +                       !                   :   |   +     !   : | 1 DYLD-STUB$$swift_bridgeObjectRelease  (in Chronotheca.debug.dylib) + 4  [0x106853060]
+    +                       !                   :   |   +     !   : 1 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 204  [0x106127c94]  /<compiler-generated>:0
+    +                       !                   :   |   +     !   :   1 swift_release  (in libswiftCore.dylib) + 80  [0x19818c85c]
+    +                       !                   :   |   +     !   22 _merge<A>(low:mid:high:buffer:by:)  (in libswiftCore.dylib) + 496  [0x1983d5c70]
+    +                       !                   :   |   +     !   : 6 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 332  [0x106127e00]  /<compiler-generated>:0
+    +                       !                   :   |   +     !   : | 5 swift_retain  (in libswiftCore.dylib) + 48,56  [0x19818cb14,0x19818cb1c]
+    +                       !                   :   |   +     !   : | 1 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 0  [0x1981dc778]
+    +                       !                   :   |   +     !   : 5 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 156  [0x106127d50]  /<compiler-generated>:0
+    +                       !                   :   |   +     !   : | 5 swift_retain  (in libswiftCore.dylib) + 48,96  [0x19818cb14,0x19818cb44]
+    +                       !                   :   |   +     !   : 4 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 72,188,...  [0x106127cfc,0x106127d70,...]  /<compiler-generated>:0
 
 Sort by top of stack, same collapsed (when >= 5):
-        __workq_kernreturn  (in libsystem_kernel.dylib)        678
-        mach_msg2_trap  (in libsystem_kernel.dylib)        457
-        semaphore_timedwait_trap  (in libsystem_kernel.dylib)        210
-        semaphore_wait_trap  (in libsystem_kernel.dylib)        205
-        __semwait_signal  (in libsystem_kernel.dylib)        127
-        writev  (in libsystem_kernel.dylib)        59
-        objc_msgSend  (in libobjc.A.dylib)        19
-        ___CFBasicHashFindBucket_Linear  (in CoreFoundation)        9
-        pthread_getspecific  (in libsystem_pthread.dylib)        9
-        __CF_IS_OBJC  (in CoreFoundation)        6
-        <deduplicated_symbol>  (in SwiftUICore)        5
-        objc_retainAutoreleasedReturnValue  (in libobjc.A.dylib)        5
-        pthread_setspecific  (in libsystem_pthread.dylib)        5
-
-Binary Images:
-       0x104c4c000 -        0x104c4f507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC/data/Containers/Bundle/Application/876CF4AB-C219-4C68-80D8-7D7A64327CFE/Chronotheca.app/Chronotheca
-       0x104c5c000 -        0x104caae9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
-       0x104d1c000 -        0x104d243d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
-       0x104d50000 -        0x104e03523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
-       0x104ea8000 -        0x104ee2ee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
-       0x104f38000 -        0x104f7b65f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
-       0x105108000 -        0x10511410b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
-       0x1051c4000 -        0x10525d2af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
-       0x1058ec000 -        0x1058eedff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
-       0x105908000 -        0x10591003f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
-       0x105a1c000 -        0x105a1cb99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
-       0x105a2c000 -        0x105a3739f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
-       0x105a50000 -        0x105a53e5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
-       0x105a70000 -        0x105a7949f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
-       0x105a94000 -        0x105a9ab7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
-       0x105ab4000 -        0x105acd27f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
-       0x105b04000 -        0x105b0b2df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
-       0x105e48000 -        0x105e4b1ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
-       0x10604c000 -        0x106051407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
-       0x106068000 -        0x10606c6ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
-       0x1060e4000 -        0x10633fbbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
-       0x1069d0000 -        0x1069f2cff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
-       0x106a68000 -        0x106a8ef5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
-       0x106ab4000 -        0x106aee15f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
+        __workq_kernreturn  (in libsystem_kernel.dylib)        10480
+        mach_msg2_trap  (in libsystem_kernel.dylib)        2133
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        1237
+        malloc_type_zone_calloc  (in libsystem_malloc.dylib)        434
+        objc_msgSend$stringWithUTF8String:  (in AXCoreUtilities)        236
+        objc_msgSend  (in libobjc.A.dylib)        201
+        _CFGetTSDCreateIfNeeded  (in CoreFoundation)        174
+        swift_retain  (in libswiftCore.dylib)        140
+        swift_release  (in libswiftCore.dylib)        128
+        start_wqthread  (in libsystem_pthread.dylib)        106
+        DYLD-STUB$$strlen  (in Foundation)        91
+        dyld4::APIs::_dyld_get_image_name(unsigned int)  (in dyld_sim)        71
+        initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib)        68
+        _xzm_free  (in libsystem_malloc.dylib)        56
+        __CFAllocatorRespectsHintZeroWhenAllocating  (in CoreFoundation)        53
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib)        52
+        swift_bridgeObjectRetain  (in libswiftCore.dylib)        51
+        swift_bridgeObjectRelease  (in libswiftCore.dylib)        50
+        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        48
+        DYLD-STUB$$swift_bridgeObjectRelease  (in Chronotheca.debug.dylib)        46
+        _swift_class_getSuperclass  (in libswiftCore.dylib)        39
+        _ContiguousArrayStorage.__deallocating_deinit  (in libswiftCore.dylib)        37
+        destroy for Archive.Day  (in Chronotheca.debug.dylib)        34
+        Substring.subscript.getter  (in libswiftCore.dylib)        32
+        __CFStringCreateImmutableFunnel3  (in CoreFoundation)        32
+        getSuperclassForMaybeIncompleteMetadata(swift::TargetMetadata<swift::InProcess> const*, std::optional<swift::MetadataState>, bool)  (in libswiftCore.dylib)        32
+        type metadata accessor for URL  (in Foundation)        31
+        DYLD-STUB$$swift_bridgeObjectRetain  (in Chronotheca.debug.dylib)        30
+        os_unfair_recursive_lock_lock_with_options  (in libsystem_platform.dylib)        29
+        _platform_memmove  (in libsystem_platform.dylib)        27
+        getContextDescriptor(swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        27
+        <deduplicated_symbol>  (in libswiftCore.dylib)        26
+        pthread_getspecific  (in libsystem_pthread.dylib)        24
+        type metadata accessor for Date  (in Foundation)        24
+        swift::equalContexts(swift::TargetContextDescriptor<swift::InProcess> const*, swift::TargetContextDescriptor<swift::InProcess> const*)  (in libswiftCore.dylib)        20
+        swift::MetadataCacheKey::operator==(swift::MetadataCacheKey const&) const  (in libswiftCore.dylib)        19
+        <deduplicated_symbol>  (in libsystem_malloc.dylib)        17
+        _free  (in libsystem_malloc.dylib)        16
+        Substring.index(_:offsetBy:)  (in libswiftCore.dylib)        14
