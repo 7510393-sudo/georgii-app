@@ -841,6 +841,8 @@ struct SideDay: View {
     private var diary: some View {
         DiaryPage(tasks: tasks,
                   answer: { answers[$0] ?? "" },
+                  // Те же «Итоги дня», что у открытой страницы (P1012, P114).
+                  isPast: date < DayStore.today(),
                   title: .constant(title),
                   text: .constant(text),
                   editable: false,
