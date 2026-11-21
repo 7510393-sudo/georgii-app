@@ -1,22 +1,41 @@
 
 Sort by top of stack, same collapsed (when >= 5):
-        __workq_kernreturn  (in libsystem_kernel.dylib)        992
-        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib)        79
-        res_getStringNoTrace  (in libicucore.A.dylib)        71
-        swift::_contextDescriptorMatchesMangling(swift::TargetContextDescriptor<swift::InProcess> const*, swift::Demangle::__runtime::Node*)  (in libswiftCore.dylib)        29
-        RGBA32_shade_axial_RGB  (in CoreGraphics)        14
-        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        14
-        semaphore_wait_trap  (in libsystem_kernel.dylib)        12
-        void resample_horizontal<unsigned char, int, 3, false>(resample_filter const*, unsigned int, unsigned int, int, void**, void const* const*, int*, int, void const* const*)  (in CoreGraphics)        9
-        <deduplicated_symbol>  (in dyld)        8
-        mach_msg2_trap  (in dyld)        8
-        void resample_vertical<int, unsigned char, 3, (AlphaStyle)0>(resample_filter const*, unsigned int, unsigned int, int, void**, void const* const*)  (in CoreGraphics)        8
-        _platform_memmove  (in libsystem_platform.dylib)        7
-        argb32_image_mark  (in CoreGraphics)        7
-        aj_RGBA8888_YUV420  (in AppleJPEG)        6
-        aj_icol_row_444_to_rgba  (in AppleJPEG)        6
-        aj_block_dct  (in AppleJPEG)        5
-        res_getTableItemByKey  (in libicucore.A.dylib)        5
+        __workq_kernreturn  (in libsystem_kernel.dylib)        752
+        mach_msg2_trap  (in libsystem_kernel.dylib)        496
+        semaphore_timedwait_trap  (in libsystem_kernel.dylib)        252
+        semaphore_wait_trap  (in libsystem_kernel.dylib)        229
+        __semwait_signal  (in libsystem_kernel.dylib)        138
+        writev  (in libsystem_kernel.dylib)        42
+        objc_msgSend  (in libobjc.A.dylib)        17
+        pthread_getspecific  (in libsystem_pthread.dylib)        15
+        pthread_setspecific  (in libsystem_pthread.dylib)        10
+        <deduplicated_symbol>  (in SwiftUICore)        7
+        <deduplicated_symbol>  (in SwiftUI)        6
+        _platform_memmove  (in libsystem_platform.dylib)        6
+        _xzm_free  (in libsystem_malloc.dylib)        6
+        specialized find1<A>(_:key:filter:)  (in SwiftUICore)        6
+        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        5
+        __CF_IS_OBJC  (in CoreFoundation)        5
+        customRR_retain  (in libobjc.A.dylib)        5
+        objc_release  (in libobjc.A.dylib)        5
+        swift_retain  (in libswiftCore.dylib)        5
 
-Binary images description not available
-
+Binary Images:
+       0x1006a8000 -        0x1006ab507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/F35208D4-1C31-422D-AFB5-D6D5B0FA9E7F/Chronotheca.app/Chronotheca
+       0x1006bc000 -        0x1006c43d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
+       0x100724000 -        0x1007d7523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
+       0x10087c000 -        0x1008b6ee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
+       0x100964000 -        0x10097010b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
+       0x1009ac000 -        0x1009b403f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x1009c0000 -        0x100a0ee9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x100a7c000 -        0x100abf65f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x100bd0000 -        0x100c692af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x10149c000 -        0x10149edff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x1014b8000 -        0x1014b8b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x1014c8000 -        0x1014d339f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x1014ec000 -        0x1014efe5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x10150c000 -        0x10151549f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x101534000 -        0x10154d27f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
+       0x101584000 -        0x101589407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
+       0x101740000 -        0x101746b7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x101760000 -        0x1017646ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
