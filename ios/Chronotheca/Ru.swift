@@ -45,7 +45,8 @@ extension Ru {
 }
 
 /// Цветовая гамма (P498): цвет прошлого и «сегодня», крафт строк разделов.
-/// Три гаммы и «без цвета» — нейтральная (P683).
+/// Абрикосовая (со старой бумагой или без) и «без цвета» — нейтральная
+/// (P683); шалфей и лаванда убраны (P997).
 struct Scheme {
     let past: Color
     let today: Color
@@ -70,18 +71,6 @@ struct Scheme {
         kraft: Color(light: 0xCBB28C, dark: 0x3A3125),
         kraftInk: Color(light: 0x3A2818, dark: 0xE6D6BA),
         kraftEdge: Color(light: 0x96805F, dark: 0x1E1912))
-    static let sage = Scheme(
-        past: Color(light: 0xECDDBB, dark: 0x1E1D15),
-        today: Color(light: 0xE3EEDC, dark: 0x1F2B21),
-        kraft: Color(light: 0xB7C4A2, dark: 0x2D3829),
-        kraftInk: Color(light: 0x22301A, dark: 0xDCE8D0),
-        kraftEdge: Color(light: 0x7F8C6A, dark: 0x172016))
-    static let lavender = Scheme(
-        past: Color(light: 0xECDDBB, dark: 0x201D16),
-        today: Color(light: 0xEAE3F5, dark: 0x28232F),
-        kraft: Color(light: 0xC3B8D8, dark: 0x332E40),
-        kraftInk: Color(light: 0x2D2340, dark: 0xE4DCF2),
-        kraftEdge: Color(light: 0x8A7FA3, dark: 0x1B1824))
 
     /// «Без цвета» (P683): нейтральные серые страницы и картон без желтизны и
     /// розовости. Прежде эта кнопка красила только календарь, а страницы и
@@ -94,14 +83,12 @@ struct Scheme {
         kraftEdge: Color(light: 0x86837C, dark: 0x181817),
         rim: Color(light: 0xD3D1CB, dark: 0x3A3A38))
 
-    /// Выбранная в настройках; «distance» — прежний ключ абрикосовой, «weekday»
-    /// (цвет по дням недели) убран, он читается как абрикосовая.
+    /// Выбранная в настройках; «distance» — ключ абрикосовой; прежние
+    /// «weekday», «sage», «lavender» читаются как абрикосовая (P997).
     static var current: Scheme { named(UserDefaults.standard.string(forKey: Prefs.calendarTint)) }
 
     static func named(_ key: String?) -> Scheme {
         switch key {
-        case "sage": return sage
-        case "lavender": return lavender
         case "none": return plain
         default: return apricot
         }

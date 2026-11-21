@@ -52,6 +52,20 @@ extension Prefs {
     /// При запуске: выбор убранного шрифта переписывается на New York, чтобы
     /// в настройках стояла отметка у одного из трёх (P680); Comfortaa из
     /// файлов приложения подключается один раз (P689).
+    /// При запуске (P997): гамма и старая бумага — один выбор из трёх.
+    /// Шалфей и лаванда убраны — у кого были, тому абрикосовая; «без цвета»
+    /// со старой бумагой — без бумаги: серый выбран нарочно.
+    static func settleLook() {
+        let d = UserDefaults.standard
+        let tint = d.string(forKey: calendarTint)
+        if let tint, !["distance", "none"].contains(tint) {
+            d.set("distance", forKey: calendarTint)
+        }
+        if tint == "none", !d.bool(forKey: plainPast) {
+            d.set(true, forKey: plainPast)
+        }
+    }
+
     static func settleFont() {
         let stored = UserDefaults.standard.string(forKey: font)
         if let stored, !["newyork", "system", "comfortaa"].contains(stored) {
