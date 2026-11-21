@@ -949,14 +949,35 @@ final class Unfold: ObservableObject {
         from = card
         veiled = true
         Trace.note(String(format: "карточка раскрывается с %.0f", card.minY))
-        move.glide.run(Unfold.grow, step: { [weak self] p in self?.move.p = p }, then: { [weak self] in
+        // Задержка при раскрытии прошлого (автор по 319, видео): схема
+        // поднялась и стоит, потом рост. Замер — первый кадр, самый долгий
+        // кадр; в CI — снимок главного потока в этот миг (P808).
+        Unfold.wantSample("open-card")
+        let began = CACurrentMediaTime()
+        var last = began, first: Double?, worst = 0.0
+        move.glide.run(Unfold.grow, step: { [weak self] p in
+            let now = CACurrentMediaTime()
+            if first == nil { first = now - began } else { worst = max(worst, now - last) }
+            last = now
+            self?.move.p = p
+        }, then: { [weak self] in
             guard let self else { return }
+            Trace.note(String(format: "карточка выросла за %.2f с: первый кадр через %.2f с, самый долгий кадр %.2f с",
+                              CACurrentMediaTime() - began, first ?? -1, worst))
             withAnimation(.easeOut(duration: Unfold.show)) { self.veiled = false }
             self.move.glide.run(Unfold.show, then: { [weak self] in
                 self?.from = nil
                 Trace.note("карточка раскрылась")
             })
         })
+    }
+
+    /// Просьба к CI снять, чем занят главный поток (P808): файл рядом со
+    /// следом проверки. Вне проверок — ничего.
+    private static func wantSample(_ name: String) {
+        guard let path = ProcessInfo.processInfo.environment["CHRONOTHECA_TRACE"], !path.isEmpty else { return }
+        let url = URL(fileURLWithPath: path).deletingLastPathComponent().appendingPathComponent("want-" + name)
+        try? Data().write(to: url)
     }
 
     /// Прервать: лист — сразу, схемы нет.
