@@ -1252,8 +1252,20 @@ struct FoldSchema: View {
                     .resizable(resizingMode: .tile)
                     .opacity(scheme == .dark ? 0.2 : 0.3)
                     .clipShape(shape)
-                EdgeWear(shape: shape, depth: 8)
-                    .opacity(scheme == .dark ? 0.35 : 1)
+                // Затёртый край — без размытия (P1000): схема меняет размер
+                // на каждом кадре, и три размытые обводки `EdgeWear`
+                // пересчитывались каждый кадр — у прошлого рост и сжатие шли
+                // рывками (замер: кадры до 0,5 с), у будущего, без края, —
+                // ровно. Две полосы, обрезанные по контуру, на ходу не
+                // отличить, а считаются они сразу.
+                ZStack {
+                    shape.stroke(PageTexture.wearAmber.opacity(0.32), lineWidth: 12)
+                    shape.stroke(PageTexture.wearAmber.opacity(0.4), lineWidth: 5)
+                    shape.stroke(PageTexture.wearBurnt.opacity(0.55),
+                                 style: StrokeStyle(lineWidth: 2.5, lineCap: .round, dash: [9, 2, 4, 3, 13, 2, 6, 4]))
+                }
+                .clipShape(shape)
+                .opacity(scheme == .dark ? 0.35 : 1)
             }
             shape.stroke(Scheme.current.kraftEdge.opacity(0.7), lineWidth: 1)
         }

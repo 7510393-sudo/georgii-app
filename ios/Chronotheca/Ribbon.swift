@@ -955,9 +955,7 @@ final class Unfold: ObservableObject {
         move.p = 0
         from = card
         Trace.note(String(format: "карточка раскрывается с %.0f", card.minY))
-        // Замер — первый кадр, самый долгий кадр; в CI — снимок главного
-        // потока в этот миг (P808).
-        Unfold.wantSample("open-card")
+        // Замер — первый кадр, самый долгий кадр (P998).
         let began = CACurrentMediaTime()
         var last = began, first: Double?, worst = 0.0
         move.glide.run(Unfold.grow, step: { [weak self] p in
@@ -984,14 +982,6 @@ final class Unfold: ObservableObject {
                 })
             }
         })
-    }
-
-    /// Просьба к CI снять, чем занят главный поток (P808): файл рядом со
-    /// следом проверки. Вне проверок — ничего.
-    private static func wantSample(_ name: String) {
-        guard let path = ProcessInfo.processInfo.environment["CHRONOTHECA_TRACE"], !path.isEmpty else { return }
-        let url = URL(fileURLWithPath: path).deletingLastPathComponent().appendingPathComponent("want-" + name)
-        try? Data().write(to: url)
     }
 
     /// Прервать: лист — сразу, схемы нет.
