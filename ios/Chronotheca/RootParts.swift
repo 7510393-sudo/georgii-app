@@ -463,51 +463,61 @@ struct FoldGhost: View {
     }
 }
 
-/// Место дня на экране — для раскрытия карточки (P1011): по нему рамка
-/// карточки переводится в окно. Пока карточка раскрывается, картотеку под
-/// ней не трогают (P998).
+/// Схема раскрываемой карточки (P995): от рамки карточки — чуть вверх, как
+/// карточку вынимают из ряда, — и до целого листа. Та же схема, в которую
+/// лист складывается при закрытии (P886).
 struct UnfoldGhost: View {
     @ObservedObject var unfold: Unfold
+    @ObservedObject var move: RiseMove
     let size: CGSize
 
     var body: some View {
-        Color.clear
-            .frame(width: size.width, height: size.height)
-            .contentShape(Rectangle())
-            .allowsHitTesting(unfold.from != nil)
-            .onGeometryChange(for: CGRect.self) { proxy in
-                proxy.frame(in: .global)
-            } action: { [unfold] frame in
-                unfold.area = frame
+        if let card = unfold.from {
+            // Пока растёт, картотеку под ней не трогают (P998): день
+            // откроется, когда схема вырастет.
+            Color.clear
+                .contentShape(Rectangle())
+                .frame(width: size.width, height: size.height)
+            let p = move.p
+            // Первая четверть хода — подскок на высоту, с какой карточка
+            // при посадке ждёт над гнездом; дальше — рост до листа.
+            let up = min(1, p / 0.25)
+            let grow = max(0, (p - 0.25) / 0.75)
+            let raised = card.offsetBy(dx: 0, dy: -Landing.lift * up)
+            let sheet = CGRect(x: 0, y: unfold.top, width: size.width, height: size.height - unfold.top)
+            let r = CGRect(x: raised.minX + (sheet.minX - raised.minX) * grow,
+                           y: raised.minY + (sheet.minY - raised.minY) * grow,
+                           width: raised.width + (sheet.width - raised.width) * grow,
+                           height: raised.height + (sheet.height - raised.height) * grow)
+            // Сперва пустая рамка, по ходу роста она заполняется полем
+            // (P1004, автор по 323: «лист разворачивается пустой и
+            // загораживает карточки с информацией — подспудно раздражает»;
+            // вместо сплошной схемы с первого кадра P995). Сквозь поле
+            // видны карточки до тех пор, пока не проступит сам лист.
+            let fill = Unfold.fillFrom + (Unfold.fillTo - Unfold.fillFrom) * Double(grow)
+            ZStack {
+                FoldSchema(aged: unfold.aged)
+                    .opacity(fill)
+                FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare)
+                    .stroke(Scheme.current.kraftEdge.opacity(0.7), lineWidth: 1)
             }
-            .accessibilityHidden(true)
+                .frame(width: r.width, height: r.height)
+                .shadow(color: .black.opacity(0.12 * Double(up) * Double(1 - grow)), radius: 6, y: 3)
+                .offset(x: r.minX, y: r.minY)
+                .frame(width: size.width, height: size.height, alignment: .topLeading)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+        }
     }
 }
 
-/// Лист дня, пока карточка разворачивается (P1011): виден только сверху —
-/// полосой высотой с доехавшую карточку, и полоса шторкой растёт вниз до
-/// целого листа. Остальное время не обрезано ничем.
+/// Лист дня не виден, пока растёт схема раскрываемой карточки (P995), и
+/// проступает поверх неё, когда она выросла.
 struct UnfoldVeil: ViewModifier {
     @ObservedObject var unfold: Unfold
-    @ObservedObject var move: RiseMove
 
     func body(content: Content) -> some View {
-        let rest = max(0, unfold.area.height - unfold.top - unfold.height)
-        return content.clipShape(TopBand(bottom: unfold.shutter
-            ? unfold.top + unfold.height + rest * move.p : nil))
-    }
-}
-
-/// Полоса от верха до `bottom`; `nil` — без края.
-private struct TopBand: Shape {
-    let bottom: CGFloat?
-
-    func path(in rect: CGRect) -> Path {
-        let far: CGFloat = 100_000
-        guard let bottom else {
-            return Path(CGRect(x: -far, y: -far, width: far * 2 + rect.width, height: far * 2 + rect.height))
-        }
-        return Path(CGRect(x: -far, y: -far, width: far * 2 + rect.width, height: far + bottom))
+        content.opacity(unfold.veiled ? 0 : 1)
     }
 }
 

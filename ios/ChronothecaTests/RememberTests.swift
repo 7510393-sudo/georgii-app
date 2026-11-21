@@ -37,14 +37,4 @@ final class RememberTests: XCTestCase {
         XCTAssertTrue(Remembered.has("2020-01-450", in: list))
         XCTAssertFalse(Remembered.has("2020-01-001", in: list))
     }
-
-    /// Месяц и неделя назад — не чаще раза в неделю (P1013).
-    func testNearMemoryOncePerWeek() {
-        let day = Vault.date(from: "2026-11-21")!
-        XCTAssertTrue(NearMemory.allowed(on: day, last: nil))
-        XCTAssertTrue(NearMemory.allowed(on: day, last: "2026-11-21"))
-        XCTAssertFalse(NearMemory.allowed(on: day, last: "2026-11-18"))
-        XCTAssertFalse(NearMemory.allowed(on: day, last: "2026-11-15"))
-        XCTAssertTrue(NearMemory.allowed(on: day, last: "2026-11-14"))
-    }
 }

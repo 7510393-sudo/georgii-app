@@ -640,7 +640,6 @@ struct SearchView: View {
                 row(day)
             }
             .modifier(Landed(landing: shell.ribbon.landing, id: entry.id, aged: Ru.isPast(day.date)))
-            .modifier(UnfoldHole(unfold: shell.ribbon.unfold, id: entry.id))
             // Касание по всей карточке, а не только по буквам (P866).
             .contentShape(FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare))
             .onTapGesture { openPast(day) }
@@ -658,7 +657,6 @@ struct SearchView: View {
                     futureRow(day, sample: sample)
                 }
                 .modifier(Landed(landing: shell.ribbon.landing, id: entry.id))
-                .modifier(UnfoldHole(unfold: shell.ribbon.unfold, id: entry.id))
                 // Касание по всей карточке, а не только по буквам (P866, автор:
                 // «будущие открываются, только когда нажимаешь на текст»).
                 .contentShape(FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare))
@@ -680,7 +678,6 @@ struct SearchView: View {
                     .frame(maxWidth: .infinity)
             }
             .modifier(Landed(landing: shell.ribbon.landing, id: entry.id))
-            .modifier(UnfoldHole(unfold: shell.ribbon.unfold, id: entry.id))
             .contentShape(FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare))
             .onTapGesture { openCard(date, tab: .plan) }
             .onLongPressGesture(minimumDuration: Search.holdTime) { unfold(nil) }
@@ -833,20 +830,15 @@ struct SearchView: View {
         let from = ribbon.frames[id].map { (id: id, top: $0.minY) }
         search.typing = false
         Feel.thud()
-        // Карточка выезжает к верху и разворачивается вниз (P1011): день
-        // открывается, когда она доехала, — его страница строится в миг
-        // удара о край, а не посреди хода (P998).
+        // Карточка раскрывается в лист (P995): сперва растёт её схема, и
+        // только выросшая открывает день (P998) — его страница строится
+        // под схемой во весь лист, а не посреди хода.
         guard let card else {
             open(date, tab: tab, from: from, id: id)
             return
         }
         let future = date > DayStore.today()
-        // У будущей карточки в рамке может быть и стопка пустых дней над
-        // ней (P990): едет только сама карточка — нижняя часть рамки.
-        let tall = Search.tabHeight + 4 + Search.futureBody + Search.overlap + 2
-        let own = future && card.height > tall + 6
-            ? CGRect(x: card.minX, y: card.maxY - tall, width: card.width, height: tall) : card
-        ribbon.unfold.start(from: own, id: id, top: future ? FollowRibbon.futureTop : 0) {
+        ribbon.unfold.start(from: card, top: future ? FollowRibbon.futureTop : 0, aged: !future) {
             open(date, tab: tab, from: from, id: id)
         }
     }
@@ -1283,16 +1275,6 @@ struct FoldSchema: View {
 /// Карточка садится в своё гнездо (P895): пока схема летит, карточки нет —
 /// гнездо пустует; над гнездом она уже в своём ряду, под схемой, и
 /// опускается под следующую карточку; затем схема тает — проступает надпись.
-/// Гнездо карточки, которая едет к верху (P1011), пустует: едет её снимок.
-private struct UnfoldHole: ViewModifier {
-    @ObservedObject var unfold: Unfold
-    let id: String
-
-    func body(content: Content) -> some View {
-        content.opacity(unfold.hole == id ? 0 : 1)
-    }
-}
-
 private struct Landed: ViewModifier {
     @ObservedObject var landing: Landing
     let id: String

@@ -28,7 +28,6 @@ struct DiaryView: View {
         DiaryPage(
             tasks: store.tasks,
             answer: { store.answers[$0] ?? "" },
-            isPast: Calendar.current.startOfDay(for: store.date) < DayStore.today(),
             setAnswer: { store.answers[$0] = $1 },
             title: $store.diaryTitle,
             text: $store.diaryText,
@@ -249,8 +248,6 @@ struct DiaryPage: View {
 
     let tasks: [PlanRow]
     let answer: (String) -> String
-    /// День прошёл (P1012): в «Итогах дня» — только дела с ответом.
-    var isPast = false
     var setAnswer: ((String, String) -> Void)?
     @Binding var title: String
     @Binding var text: String
@@ -463,17 +460,8 @@ struct DiaryPage: View {
         return max(0, line * 5 - CGFloat(empty) * line)
     }
 
-    /// Дела в «Итогах дня». Пока день не кончился — три первых дела; день
-    /// прошёл — только те из них, на которые ответили (P1012, автор: «на
-    /// следующий день, когда карточка уходит в прошлое, видна только та
-    /// строка, которая прокомментирована; остальные не нужны»). Ответов
-    /// нет — нет и заголовка. Строку, которую сейчас правят, не прячем.
     private var asked: [PlanRow] {
-        let first = Array(tasks.filter { !$0.text.isEmpty }.prefix(3))
-        guard isPast else { return first }
-        return first.filter {
-            askingAt == $0.text || !answer($0.text).trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        }
+        Array(tasks.filter { !$0.text.isEmpty }.prefix(3))
     }
 
     // MARK: - Как прошло

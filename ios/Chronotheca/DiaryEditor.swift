@@ -972,26 +972,6 @@ struct DiaryEditor: UIViewRepresentable {
         /// Картинка взятого, которая идёт за пальцем.
         private var ghost: UIView?
 
-        /// Взлёт несомого (P1009, автор по видео 21.11: «тянешь — ничего,
-        /// потом резкий прыжок»): прежде оно в первый же миг оказывалось на
-        /// 70 точек выше пальца, оторвавшись от своего места. Теперь
-        /// начинает ровно там, где стояло, и за 0,22 с плавно поднимается
-        /// над пальцем. `liftFrom` — где был его центр от пальца в миг
-        /// взлёта.
-        private var liftFrom = CGPoint(x: 0, y: -70)
-        private var liftBegan: CFTimeInterval = 0
-        private static let liftTime: CFTimeInterval = 0.22
-
-        /// Где центр несомого от пальца сейчас: от места, где оно стояло, к
-        /// месту над пальцем.
-        private func carryOffset() -> CGPoint {
-            let t = min(1, max(0, (CACurrentMediaTime() - liftBegan) / Self.liftTime))
-            let e = 1 - pow(1 - t, 3)
-            return CGPoint(x: liftFrom.x * (1 - e), y: liftFrom.y * (1 - e) - Self.lift * e)
-        }
-
-        private var lifting: Bool { CACurrentMediaTime() - liftBegan < Self.liftTime + 0.05 }
-
         /// Снимок или точка под пальцем — их место в тексте поля.
         private func attachment(at at: CGPoint, in view: UITextView) -> Int? {
             guard let position = view.closestPosition(to: at) else { return nil }
@@ -1286,8 +1266,7 @@ struct DiaryEditor: UIViewRepresentable {
                     lift(i, g, in: view)
                 }
                 let local = g.location(in: ghost?.superview ?? view)
-                let off = carryOffset()
-                ghost?.center = CGPoint(x: local.x + off.x, y: local.y + off.y)
+                ghost?.center = CGPoint(x: local.x, y: local.y - Self.lift)
                 // Над полоской снимок бледнеет — видно, что отпустить здесь
                 // значит вернуть его вниз; над заголовком — то же для точки.
                 // Над делом плана — встанет под него (P409): план подсвечивает
@@ -1410,29 +1389,13 @@ struct DiaryEditor: UIViewRepresentable {
             // крупнее, чтобы её было видно (P349). Едет только она сама —
             // строки целиком в синей рамке больше нет (P561, прежде P380).
             let small = (picture?.size.height ?? 0) < 40
-            let grown = CGAffineTransform(scaleX: small ? 1.8 : 1.1, y: small ? 1.8 : 1.1)
+            shadow.transform = CGAffineTransform(scaleX: small ? 1.8 : 1.1, y: small ? 1.8 : 1.1)
             // Тень снимка — поверх всего окна: её можно донести и до
             // полоски внизу, за край страницы (P272).
             let host: UIView = view.window ?? view
             let spot = g.location(in: host)
-            // Взлёт с места (P1009): несомое начинает там, где стояло, и
-            // плавно поднимается над пальцем, вырастая.
-            liftFrom = CGPoint(x: 0, y: -Self.lift)
-            if let start = view.position(from: view.beginningOfDocument, offset: i),
-               let end = view.position(from: start, offset: 1),
-               let range = view.textRange(from: start, to: end) {
-                let rect = view.convert(view.firstRect(for: range), to: host)
-                if !rect.isNull, !rect.isInfinite, rect.width > 0 {
-                    liftFrom = CGPoint(x: rect.midX - spot.x, y: rect.midY - spot.y)
-                }
-            }
-            liftBegan = CACurrentMediaTime()
-            shadow.center = CGPoint(x: spot.x + liftFrom.x, y: spot.y + liftFrom.y)
+            shadow.center = CGPoint(x: spot.x, y: spot.y - Self.lift)
             host.addSubview(shadow)
-            UIView.animate(withDuration: Self.liftTime, delay: 0,
-                           options: [.curveEaseOut, .allowUserInteraction]) {
-                shadow.transform = grown
-            }
             ghost = shadow
             before = view.attributedText.copy() as? NSAttributedString
             measureParagraphs(view)
@@ -1667,8 +1630,7 @@ struct DiaryEditor: UIViewRepresentable {
                 return
             }
             guard ghost != nil, taken != nil else { return }
-            // Пока взлетает — каждый кадр, даже если палец стоит (P1009).
-            if scrollTowardFinger(view) || lifting { ghostFollows() }
+            if scrollTowardFinger(view) { ghostFollows() }
             previewSoon(view)
         }
 
@@ -1699,8 +1661,7 @@ struct DiaryEditor: UIViewRepresentable {
         private func ghostFollows() {
             guard let ghost, let host = ghost.superview else { return }
             let local = host.convert(finger, from: nil)
-            let off = carryOffset()
-            ghost.center = CGPoint(x: local.x + off.x, y: local.y + off.y)
+            ghost.center = CGPoint(x: local.x, y: local.y - Self.lift)
         }
 
         /// Показать, как ляжет взятое, — но не чаще раза в 0,16 секунды и

@@ -674,8 +674,9 @@ struct RootView: View {
             // Будущий день — под низом листа «Сегодня» (P896, вместо кольца
             // P876): лист начинается на 8 точек под полоской и заходит под неё.
             // Схема карточки, в которую складывается закрытый день (P886).
-            // Место дня на экране — для раскрытия карточки (P1011).
-            UnfoldGhost(unfold: shell.ribbon.unfold, size: size)
+            // Карточка раскрывается в лист (P995): над лентой, под листом —
+            // лист проступает поверх выросшей схемы.
+            UnfoldGhost(unfold: shell.ribbon.unfold, move: shell.ribbon.unfold.move, size: size)
             FoldGhost(ribbon: shell.ribbon, landing: shell.ribbon.landing, size: size)
                 .zIndex(0.5)
             DayPages()
@@ -700,7 +701,7 @@ struct RootView: View {
                     $0.opacity(shell.deck.isLanding ? 0 : 1)
                 }
                 .allowsHitTesting(shell.screen == .today)
-                .modifier(UnfoldVeil(unfold: shell.ribbon.unfold, move: shell.ribbon.unfold.move))
+                .modifier(UnfoldVeil(unfold: shell.ribbon.unfold))
             // «Сегодня» с открытого дня — сразу, поверх него (P924).
             if todayRise != 0 {
                 TodayRise(from: todayRise, size: size, move: shell.ribbon.rise)

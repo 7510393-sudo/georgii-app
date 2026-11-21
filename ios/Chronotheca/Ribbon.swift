@@ -917,111 +917,85 @@ final class Glide {
     }
 }
 
-/// Карточка выезжает к верху и разворачивается вниз (P1011, автор 21.11:
-/// «нажимаю на карточку — карточка выезжает из своего места и энергично
-/// едет к верхнему краю экрана; по дороге растёт до настоящей ширины, но
-/// остаётся высотой в 5 строк; доехала и упёрлась в край — нижняя часть
-/// энергично разворачивается вниз, открывается полноценный день»; отменяет
-/// растущую схему P995 и рамку с полем P1004).
-///
-/// Едет снимок карточки — картинка того, что видно на экране: меняется
-/// только её рамка, текст на каждом кадре не перекладывается. Гнездо под
-/// ней пустует (`hole`). Доехала — в тот же такт открывается день (его
-/// постройка, около 0,16 с, приходится на миг удара о край и читается как
-/// удар), но виден он только полосой высотой с карточку под её снимком
-/// (`shutter`). Дальше полоса шторкой растёт вниз до целого листа, а снимок
-/// тает: пять строк карточки плавно сменяются верхом страницы.
+/// Карточка раскрывается в лист (P995, автор по 317: «карточка закрывается
+/// плавно, а открывается скачком; обратная анимация — как она собирается и
+/// вставляется в картотеку: подскакивает и раскрывается; не трудоёмко для
+/// процессора»). Закрытие задом наперёд: над карточкой — её схема, та
+/// приподнимается и по кадрам экрана растёт до целого листа; лента под ней
+/// стоит, как стояла; выросла — поверх неё проступает лист дня, и схема
+/// убирается. Движется одна простая картинка: меняются только её рамка и
+/// прозрачность. День сменился сразу, в миг касания (P796) — лента не
+/// пересобирается на ходу.
 final class Unfold: ObservableObject {
     /// Рамка карточки, с которой раскрывают; `nil` — ничего не раскрывается.
-    /// Пока раскрывается, картотеку под ней не трогают (P998).
     @Published private(set) var from: CGRect?
-    /// Чья карточка уехала из гнезда: гнездо пустует, пока она в пути.
-    @Published private(set) var hole: String?
-    /// Лист дня виден только сверху — полосой высотой `height`, растущей
-    /// вниз с ходом `move.p`.
-    @Published private(set) var shutter = false
+    /// Лист дня ещё не виден: схема выросла, под ней строится день.
+    @Published private(set) var veiled = false
     /// Где верх листа: у будущего — под полоской «Сегодня» (P913).
     private(set) var top: CGFloat = 0
-    /// Высота доехавшей карточки — с неё шторка начинает.
-    private(set) var height: CGFloat = 0
-    /// Где на экране место дня — по нему рамка карточки переводится в окно.
-    var area: CGRect = .zero
+    private(set) var aged = false
     let move = RiseMove()
-    private var shot: UIView?
 
-    /// Ход к верху, разворот вниз и таяние снимка.
-    static let fly: Double = 0.3
-    static let open: Double = 0.3
-    static let fade: Double = 0.22
+    /// Вся дорога схемы, с подскоком; и сколько проступает лист.
+    static let grow: Double = 0.38
+    /// Лист проступает дольше (P1004): текст появляется постепенно, а не
+    /// скачком поверх пустой схемы (было 0,15 с).
+    static let show: Double = 0.28
+    /// Поле схемы: в начале хода — почти одна рамка, к концу — полупрозрачное
+    /// поле, сквозь которое ещё видны карточки (P1004).
+    static let fillFrom: Double = 0.08
+    static let fillTo: Double = 0.6
 
-    /// Раскрыть: снимок карточки едет к верху листа, доехал — открывается
-    /// день (`open`) и разворачивается вниз. `open` вернул `false` — открыть
-    /// нельзя (картотеку уже сменили): всё убирается. Нет окна или снимка —
-    /// день открывается сразу.
-    func start(from card: CGRect, id: String, top: CGFloat, open: @escaping () -> Bool) {
+    /// Раскрыть: схема растёт, пока картотека ещё стоит, и только выросшая —
+    /// под ней открывается день (`open`) — P998, автор по 319: «в прошлом
+    /// есть задержка при открытии». Замер показал: страница прошедшего дня
+    /// (снимки, старая бумага, запись) строится 0,5–0,7 с, и первый кадр хода
+    /// приходил после неё — схема вставала посреди движения. Теперь ход
+    /// идёт, пока строить нечего, а стройка — под схемой во весь лист; лист
+    /// проступает, когда построен. `open` вернул `false` — открыть нельзя
+    /// (картотеку уже сменили), схема убирается.
+    func start(from card: CGRect, top: CGFloat, aged: Bool, open: @escaping () -> Bool) {
         stop()
-        guard let window = UIApplication.shared.connectedScenes
-                .compactMap({ ($0 as? UIWindowScene)?.keyWindow }).first,
-              area.width > 0, card.width > 0
-        else { _ = open(); return }
-        // Видна карточка без низа: на нём лежит корешок следующей.
-        let seen = CGRect(x: card.minX, y: card.minY, width: card.width,
-                          height: max(Search.tabHeight + 24, card.height - Search.overlap))
-        let inWindow = seen.offsetBy(dx: area.minX, dy: area.minY)
-        guard let snap = window.resizableSnapshotView(from: inWindow, afterScreenUpdates: false,
-                                                      withCapInsets: .zero)
-        else { _ = open(); return }
         self.top = top
-        let grow = area.width / seen.width
-        height = seen.height * grow
+        self.aged = aged
         move.p = 0
-        snap.frame = inWindow
-        snap.isUserInteractionEnabled = false
-        snap.layer.shadowOpacity = 0.18
-        snap.layer.shadowRadius = 6
-        snap.layer.shadowOffset = CGSize(width: 0, height: 3)
-        window.addSubview(snap)
-        shot = snap
         from = card
-        hole = id
         Trace.note(String(format: "карточка раскрывается с %.0f", card.minY))
+        // Замер — первый кадр, самый долгий кадр (P998).
         let began = CACurrentMediaTime()
-        let target = CGRect(x: area.minX, y: area.minY + top, width: area.width, height: height)
-        UIView.animate(withDuration: Self.fly, delay: 0, options: [.curveEaseIn]) {
-            snap.frame = target
-        } completion: { [weak self] _ in
-            guard let self, self.shot === snap else { return }
-            // В «Замеры» на телефоне (P1001).
-            DeckTrail.mark(String(format: "карточка доехала до верха за %.2f с", CACurrentMediaTime() - began))
-            // Лист — полосой под снимком, и в том же такте открывается день.
-            self.shutter = true
+        var last = began, first: Double?, worst = 0.0
+        move.glide.run(Unfold.grow, step: { [weak self] p in
+            let now = CACurrentMediaTime()
+            if first == nil { first = now - began } else { worst = max(worst, now - last) }
+            last = now
+            self?.move.p = p
+        }, then: { [weak self] in
+            guard let self else { return }
+            // В «Замеры» на телефоне, а не только в след проверок (P1001).
+            DeckTrail.mark(String(format: "карточка выросла за %.2f с: первый кадр через %.2f с, самый долгий кадр %.2f с",
+                                  CACurrentMediaTime() - began, first ?? -1, worst))
+            // Лист прячется под схемой и открывается день — в одном такте.
+            self.veiled = true
             guard open() else { return self.stop() }
             let opened = CACurrentMediaTime()
-            // Следующий оборот — день построен и виден полосой.
+            // Следующий оборот — день уже построен и показан под схемой.
             DispatchQueue.main.async { [weak self] in
-                guard let self, self.shot === snap else { return }
-                DeckTrail.mark(String(format: "день под карточкой построен за %.2f с", CACurrentMediaTime() - opened))
-                UIView.animate(withDuration: Self.fade, delay: 0.03, options: [.curveEaseOut]) {
-                    snap.alpha = 0
-                }
-                self.move.glide.run(Self.open, step: { [weak self] p in
-                    self?.move.p = p
-                }, then: { [weak self] in
-                    self?.stop()
+                guard let self, self.from != nil else { return }
+                DeckTrail.mark(String(format: "день под схемой построен за %.2f с", CACurrentMediaTime() - opened))
+                withAnimation(.easeInOut(duration: Unfold.show)) { self.veiled = false }
+                self.move.glide.run(Unfold.show, then: { [weak self] in
+                    self?.from = nil
                     Trace.note("карточка раскрылась")
                 })
             }
-        }
+        })
     }
 
-    /// Прервать или закончить: лист целиком, снимка нет, гнездо на месте.
+    /// Прервать: лист — сразу, схемы нет.
     func stop() {
         move.glide.stop()
-        shot?.removeFromSuperview()
-        shot = nil
-        if shutter { shutter = false }
+        if veiled { veiled = false }
         if from != nil { from = nil }
-        if hole != nil { hole = nil }
     }
 }
 
