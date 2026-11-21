@@ -1,41 +1,261 @@
+    24 Thread_54026   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 24 start  (in dyld) + 6992  [0x100f4c4e4]
+    +   24 start_sim  (in dyld_sim) + 20  [0x1011d30e4]
+    +     24 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x10305fe28]  ChronothecaApp.swift:0
+    +       24 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x10305fd7c]  /<compiler-generated>:0
+    +         24 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           24 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             24 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               24 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 24 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   24 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     24 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       24 __CFRunLoopRun  (in CoreFoundation) + 2280  [0x180421df8]
+    +                         24 __CFRunLoopDoBlocks  (in CoreFoundation) + 340  [0x1804224b4]
+    +                           24 __CFRUNLOOP_IS_CALLING_OUT_TO_A_BLOCK__  (in CoreFoundation) + 20  [0x180422d28]
+    +                             24 __XCTPerformOnMainRunLoop_block_invoke  (in XCTAutomationSupport) + 392  [0x1044c7ca4]
+    +                               24 __56-[XCTElementSnapshotRequest loadSnapshotAndReturnError:]_block_invoke_2  (in XCTAutomationSupport) + 52  [0x1044ae7e0]
+    +                                 24 -[XCTElementSnapshotRequest(PlatformImplementation) accessibilitySnapshotOrError:]  (in XCTAutomationSupport) + 940  [0x1044b0ad4]
+    +                                   24 -[XCTAccessibilityFramework userTestingSnapshotForElement:options:error:]  (in XCTAutomationSupport) + 376  [0x1044a7444]
+    +                                     24 AXUIElementCopyParameterizedAttributeValue  (in AXRuntime) + 92  [0x1938ed258]
+    +                                       24 AXUIElementCopyParameterizedAttributeValueRecursive  (in AXRuntime) + 616  [0x1938ed554]
+    +                                         24 _AXXMIGCopyParameterizedAttributeValue  (in AXRuntime) + 432  [0x1938f3c28]
+    +                                           24 _handleNonMainThreadCallback  (in AXRuntime) + 52  [0x1938f35e0]
+    +                                             24 ___AXXMIGCopyParameterizedAttributeValue_block_invoke  (in AXRuntime) + 60  [0x1938f3de0]
+    +                                               24 _copyParameterizedAttributeValueCallback  (in UIAccessibility) + 360  [0x195268268]
+    +                                                 24 -[UIApplicationAccessibility _iosAccessibilityAttributeValue:forParameter:]  (in UIKit) + 1596  [0x1084406c4]
+    +                                                   24 -[NSObject(AXPrivCategory) _iosAccessibilityAttributeValue:forParameter:]  (in UIAccessibility) + 1440  [0x1952885b0]
+    +                                                     24 -[NSObject(UIAccessibilityAutomation) _accessibilityUserTestingSnapshotWithOptions:]  (in UIAccessibility) + 884  [0x1952b95d4]
+    +                                                       12 -[NSObject(UIAccessibilityAutomation) _accessibilityUserTestingSnapshotDescendantsWithAttributes:maxDepth:maxChildren:maxArrayCount:honorsModalViews:]  (in UIAccessibility) + 656  [0x1952b7f98]
+    +                                                       ! 10 _accessibilityAttributesForObject  (in UIAccessibility) + 956  [0x1952b893c]
+    +                                                       ! : 10 _fetchAttributesIfNecessary  (in UIAccessibility) + 124  [0x1952b9824]
+    +                                                       ! :   9 _accessibilityAttributesForObject  (in UIAccessibility) + 252  [0x1952b867c]
+    +                                                       ! :   | 3 -[NSObject(AXPrivCategory) _iosAccessibilityAttributeValue:]  (in UIAccessibility) + 10004  [0x19528dce0]
+    +                                                       ! :   | + 3 @objc AccessibilityNode.accessibilityTraits.getter  (in SwiftUI) + 24  [0x1d2defd1c]
+    +                                                       ! :   | +   2 AccessibilityNode.accessibilityTraits.getter  (in SwiftUI) + 80  [0x1d2defd84]
+    +                                                       ! :   | +   ! 1 AccessibilityNode.resolvedTraits.getter  (in SwiftUI) + 1536  [0x1d30403f0]
+    +                                                       ! :   | +   ! : 1 AccessibilityNode.impliedVisibility(consideringParent:with:)  (in SwiftUI) + 372  [0x1d30438ec]
+    +                                                       ! :   | +   ! :   1 AccessibilityNode.visibility.getter  (in SwiftUI) + 464  [0x1d3042ce4]
+    +                                                       ! :   | +   ! :     1 <deduplicated_symbol>  (in SwiftUI) + 72  [0x1d272c3f4]
+    +                                                       ! :   | +   ! :       1 initializeWithCopy for ClosedRange<>.Index  (in libswiftCore.dylib) + 116  [0x19851fe84]
+    +                                                       ! :   | +   ! :         1 initializeWithCopy for AccessibilityAttachment  (in SwiftUICore) + 72  [0x1d431b234]
+    +                                                       ! :   | +   ! 1 AccessibilityNode.resolvedTraits.getter  (in SwiftUI) + 3344  [0x1d3040b00]
+    +                                                       ! :   | +   !   1 -[UIView(UIDragging) _accessibilityCanDrag]  (in UIKitCore) + 0  [0x185d49104]
+    +                                                       ! :   | +   1 AccessibilityNode.accessibilityTraits.getter  (in SwiftUI) + 232  [0x1d2defe1c]
+    +                                                       ! :   | +     1 <deduplicated_symbol>  (in SwiftUI) + 44  [0x1d27227a0]
+    +                                                       ! :   | +       1 destroy for AccessibilityAttachmentStorage  (in SwiftUI) + 52  [0x1d304dde4]
+    +                                                       ! :   | +         1 destroy for AccessibilityAttachment  (in SwiftUICore) + 64  [0x1d431b1c4]
+    +                                                       ! :   | 3 -[NSObject(AXPrivCategory) _iosAccessibilityAttributeValue:]  (in UIAccessibility) + 10048  [0x19528dd0c]
+    +                                                       ! :   | + 1 -[UIResponder(UITextAccessibilityUtilities) _accessibilityHasTextOperations]  (in UIKit) + 124  [0x10851e9b8]
+    +                                                       ! :   | + ! 1 -[UITextInputUIResponderAccessibility _accessibilityTextViewTextOperationResponder]  (in UIKit) + 32  [0x10852cb4c]
+    +                                                       ! :   | + !   1 -[UITextInputUIResponderAccessibility _accessibilityTextResponder]  (in UIKit) + 32  [0x108529870]
+    +                                                       ! :   | + !     1 -[NSObjectAccessibility accessibilityTextInputResponder]  (in UIAccessibility) + 28  [0x1952a42e4]
+    +                                                       ! :   | + !       1 -[NSObject(UIAccessibility) _accessibilityGetBlockForAttribute:]  (in UIKitCore) + 52  [0x185770554]
+    +                                                       ! :   | + !         1 objc_msgSend  (in libobjc.A.dylib) + 52  [0x18003ac34]
+    +                                                       ! :   | + 1 -[UIResponder(UITextAccessibilityUtilities) _accessibilityHasTextOperations]  (in UIKit) + 344  [0x10851ea94]
+    +                                                       ! :   | + ! 1 -[UIView(Internal) canPerformAction:withSender:]  (in UIKitCore) + 104  [0x186aae3a4]
+    +                                                       ! :   | + !   1 -[UIResponder canPerformAction:withSender:]  (in UIKitCore) + 196  [0x1864d2f4c]
+    +                                                       ! :   | + !     1 -[UIView _textServicesResponderProxy]  (in UIKitCore) + 60  [0x186a84480]
+    +                                                       ! :   | + !       1 __trampolines  (in libMainThreadChecker.dylib) + 117968  [0x1012a1510]
+    +                                                       ! :   | + 1 -[UIResponder(UITextAccessibilityUtilities) _accessibilityHasTextOperations]  (in UIKit) + 796  [0x10851ec58]
+    +                                                       ! :   | +   1 -[UIResponder undoManager]  (in UIKitCore) + 60  [0x1864d37f0]
+    +                                                       ! :   | +     1 -[UIResponder undoManager]  (in UIKitCore) + 60  [0x1864d37f0]
+    +                                                       ! :   | +       1 -[UIResponder undoManager]  (in UIKitCore) + 60  [0x1864d37f0]
+    +                                                       ! :   | +         1 -[UIResponder undoManager]  (in UIKitCore) + 60  [0x1864d37f0]
+    +                                                       ! :   | +           1 -[UIResponder undoManager]  (in UIKitCore) + 60  [0x1864d37f0]
+    +                                                       ! :   | +             1 -[UIResponder undoManager]  (in UIKitCore) + 60  [0x1864d37f0]
+    +                                                       ! :   | +               1 @objc UIHostingController.undoManager.getter  (in SwiftUI) + 24  [0x1d347f6cc]
+    +                                                       ! :   | +                 1 UIHostingController.undoManager.getter  (in SwiftUI) + 224  [0x1d347f7c4]
+    +                                                       ! :   | +                   1 -[UIResponder undoManager]  (in UIKitCore) + 24  [0x1864d37cc]
+    +                                                       ! :   | +                     1 -[UIViewController nextResponder]  (in UIKitCore) + 280  [0x185c45f84]
+    +                                                       ! :   | +                       1 objc_msgSend  (in libobjc.A.dylib) + 60  [0x18003ac3c]
+    +                                                       ! :   | 2 -[NSObject(AXPrivCategory) _iosAccessibilityAttributeValue:]  (in UIAccessibility) + 4644  [0x19528c7f0]
+    +                                                       ! :   | + 2 -[NSObject(AXPrivCategory) _accessibilityProcessedLabelAttribute]  (in UIAccessibility) + 28  [0x1952864f0]
+    +                                                       ! :   | +   2 -[AccessibilityNodeAccessibility _accessibilityAXAttributedLabel]  (in SwiftUI) + 68  [0x11d54623c]
+    +                                                       ! :   | +     2 -[NSObject(AXPrivCategory) _accessibilityAXAttributedLabel]  (in UIAccessibility) + 204  [0x195286f90]
+    +                                                       ! :   | +       2 -[NSObject(AXPrivCategory) _accessibilityPotentiallyAttributedValueForNonAttributedSelector:attributedSelector:]  (in UIAccessibility) + 236  [0x195286dc8]
+    +                                                       ! :   | +         2 @objc AccessibilityNode.accessibilityLabel.getter  (in SwiftUI) + 56  [0x1d2defea8]
+    +                                                       ! :   | +           2 specialized AccessibilityNode.resolvedPlainTexts(_:separator:)  (in SwiftUI) + 464  [0x1d304fb6c]
+    +                                                       ! :   | +             1 static AccessibilityCore.textsResolvedToPlainText(_:in:options:idiom:separator:)  (in SwiftUICore) + 104  [0x1d398ef4c]
+    +                                                       ! :   | +             ! 1 specialized ContiguousArray._createNewBuffer(bufferIsUnique:minimumCapacity:growForAppend:)  (in SwiftUICore) + 16  [0x1d3ef6a94]
+    +                                                       ! :   | +             !   1 specialized _ContiguousArrayBuffer._consumeAndCreateNew(bufferIsUnique:minimumCapacity:growForAppend:)  (in SwiftUICore) + 148  [0x1d3c1e020]
+    +                                                       ! :   | +             !     1 _swift_stdlib_malloc_size  (in SwiftUICore) + 0  [0x1d3ab92c8]
+    +                                                       ! :   | +             1 static AccessibilityCore.textsResolvedToPlainText(_:in:options:idiom:separator:)  (in SwiftUICore) + 204  [0x1d398efb0]
+    +                                                       ! :   | +               1 static AccessibilityCore.textResolvedToPlainText(_:in:options:idiom:)  (in SwiftUICore) + 428  [0x1d398e334]
+    +                                                       ! :   | +                 1 specialized Text.resolve<A>(into:in:with:)  (in SwiftUICore) + 312  [0x1d3990be4]
+    +                                                       ! :   | +                   1 outlined assign with take of Text.Style  (in SwiftUICore) + 52  [0x1d3991328]
+    +                                                       ! :   | +                     1 assignWithTake for Text.Style  (in SwiftUICore) + 952  [0x1d41bc954]
+    +                                                       ! :   | +                       1 DYLD-STUB$$type metadata accessor for AttributedString.AdaptiveImageGlyph  (in SwiftUICore) + 0  [0x1d43e56e4]
+    +                                                       ! :   | 1 -[NSObject(AXPrivCategory) _iosAccessibilityAttributeValue:]  (in UIAccessibility) + 9432  [0x19528daa4]
+    +                                                       ! :   |   1 <deduplicated_symbol>  (in SwiftUI) + 36  [0x1d2dfaca8]
+    +                                                       ! :   |     1 AccessibilityNode.accessibilityIdentifier.getter  (in SwiftUI) + 112  [0x1d2df8548]
+    +                                                       ! :   1 _accessibilityAttributesForObject  (in UIAccessibility) + 500  [0x1952b8774]
+    +                                                       ! :     1 UIAXRuntimeConvertOutgoingParameterizedValue  (in UIAccessibility) + 264  [0x1952696e0]
+    +                                                       ! :       1 AXConvertOutgoingValue  (in AXRuntime) + 368  [0x1938fc140]
+    +                                                       ! :         1 NSClassFromString  (in Foundation) + 48  [0x1810eeeb8]
+    +                                                       ! 1 _accessibilityAttributesForObject  (in UIAccessibility) + 252  [0x1952b867c]
+    +                                                       ! : 1 -[NSObject(AXPrivCategory) _iosAccessibilityAttributeValue:]  (in UIAccessibility) + 10004  [0x19528dce0]
+    +                                                       ! :   1 @objc AccessibilityNode.accessibilityTraits.getter  (in SwiftUI) + 24  [0x1d2defd1c]
+    +                                                       ! :     1 AccessibilityNode.accessibilityTraits.getter  (in SwiftUI) + 80  [0x1d2defd84]
+    +                                                       ! :       1 AccessibilityNode.resolvedTraits.getter  (in SwiftUI) + 1660  [0x1d304046c]
+    +                                                       ! :         1 AccessibilityNode.impliedTraits.getter  (in SwiftUI) + 1332  [0x1d303fd10]
+    +                                                       ! :           1 destroy for AccessibilityAttachment  (in SwiftUICore) + 88  [0x1d431b1dc]
+    +                                                       ! :             1 swift_release  (in libswiftCore.dylib) + 92  [0x19818c868]
+    +                                                       ! 1 _accessibilityAttributesForObject  (in UIAccessibility) + 508  [0x1952b877c]
+    +                                                       !   1 DYLD-STUB$$objc_retainAutoreleasedReturnValue  (in UIAccessibility) + 4  [0x1952c8978]
+    +                                                       8 -[NSObject(UIAccessibilityAutomation) _accessibilityUserTestingSnapshotDescendantsWithAttributes:maxDepth:maxChildren:maxArrayCount:honorsModalViews:]  (in UIAccessibility) + 732  [0x1952b7fe4]
+    +                                                       ! 8 -[NSObject(AXPrivCategory) _iosAccessibilityAttributeValue:]  (in UIAccessibility) + 9608  [0x19528db54]
+    +                                                       !   8 -[NSObject(UIAccessibilityAutomation) _accessibilityUserTestingChildrenCount]  (in UIAccessibility) + 176  [0x1952b766c]
+    +                                                       !     8 -[AccessibilityNodeAccessibility automationElements]  (in SwiftUI) + 160  [0x11d545a74]
+    +                                                       !       8 @objc AccessibilityNode.accessibilityUserInputLabels.getter  (in SwiftUI) + 40  [0x1d2df22c4]
+    +                                                       !         8 AccessibilityNode.automationElements.getter  (in SwiftUI) + 340  [0x1d2df2458]
+    +                                                       !           8 AccessibilityNode.supplementaryLinkElements.getter  (in SwiftUI) + 132  [0x1d3041978]
+    +                                                       !             8 AccessibilityNode.linkRotor.getter  (in SwiftUI) + 1068  [0x1d30415b4]
+    +                                                       !               8 specialized AccessibilityNode.resolvedAttributedTexts(_:options:separator:)  (in SwiftUI) + 1396  [0x1d304ee14]
+    +                                                       !                 7 static AccessibilityCore.textsResolvedToAttributedText(_:in:options:idiom:separator:)  (in SwiftUICore) + 220  [0x1d3990318]
+    +                                                       !                 : 5 static AccessibilityCore.textResolvedToAttributedText(_:in:options:idiom:)  (in SwiftUICore) + 256  [0x1d398e838]
+    +                                                       !                 : | 5 Text.resolveAttributedString(in:includeDefaultAttributes:options:idiom:)  (in SwiftUICore) + 512  [0x1d3c0ace0]
+    +                                                       !                 : |   3 specialized Text.resolve<A>(into:in:with:)  (in SwiftUICore) + 348  [0x1d3990d90]
+    +                                                       !                 : |   + 2 LocalizedTextStorage.resolve<A>(into:in:with:)  (in SwiftUICore) + 76  [0x1d3bfb890]
+    +                                                       !                 : |   + ! 2 LocalizedStringKey.resolve<A>(into:in:options:table:bundle:)  (in SwiftUICore) + 2292  [0x1d3bf8ce0]
+    +                                                       !                 : |   + !   2 specialized LocalizedStringKey.resolveArguments<A>(from:into:in:options:isUniqueSizeVariant:)  (in SwiftUICore) + 304  [0x1d3bfd1e8]
+    +                                                       !                 : |   + !     2 Text.Resolved.append(_:in:with:isUniqueSizeVariant:)  (in SwiftUICore) + 296  [0x1d41b4ff0]
+    +                                                       !                 : |   + !       2 -[NSAttributedString enumerateAttributesInRange:options:usingBlock:]  (in Foundation) + 248  [0x181031a74]
+    +                                                       !                 : |   + !         2 thunk for @escaping @callee_guaranteed (@guaranteed [NSAttributedStringKey : Any], @unowned _NSRange, @unowned UnsafeMutablePointer<ObjCBool>) -> ()  (in SwiftUICore) + 108  [0x1d39900b8]
+    +                                                       !                 : |   + !           2 <deduplicated_symbol>  (in SwiftUICore) + 20  [0x1d3990040]
+    +                                                       !                 : |   + !             2 partial apply for closure #1 in Text.Resolved.append(_:in:with:isUniqueSizeVariant:)  (in SwiftUICore) + 32  [0x1d41b81f0]
+    +                                                       !                 : |   + !               1 closure #1 in Text.Resolved.append(_:in:with:isUniqueSizeVariant:)  (in SwiftUICore) + 148  [0x1d41b5138]
+    +                                                       !                 : |   + !               : 1 Dictionary<>.transferAttributedStringStyles(to:)  (in SwiftUICore) + 0  [0x1d3d872b0]
+    +                                                       !                 : |   + !               1 closure #1 in Text.Resolved.append(_:in:with:isUniqueSizeVariant:)  (in SwiftUICore) + 788  [0x1d41b53b8]
+    +                                                       !                 : |   + !                 1 Text.Style.nsAttributes(content:environment:includeDefaultAttributes:with:properties:)  (in SwiftUICore) + 2768  [0x1d3c0bc2c]
+    +                                                       !                 : |   + !                   1 specialized _NativeDictionary.setValue(_:forKey:isUnique:)  (in SwiftUICore) + 140  [0x1d3f3e0c0]
+    +                                                       !                 : |   + !                     1 specialized __RawDictionaryStorage.find<A>(_:)  (in SwiftUICore) + 40  [0x1d3f39fe0]
+    +                                                       !                 : |   + !                       1 static String._unconditionallyBridgeFromObjectiveC(_:)  (in Foundation) + 132  [0x180e38200]
+    +                                                       !                 : |   + !                         1 String.init(unsafeUninitializedCapacity:initializingUTF8With:)  (in libswiftCore.dylib) + 172  [0x1983e0930]
+    +                                                       !                 : |   + 1 ConcatenatedTextStorage.resolve<A>(into:in:with:)  (in SwiftUICore) + 84  [0x1d3ddc088]
+    +                                                       !                 : |   +   1 Text.resolve<A>(into:in:with:)  (in SwiftUICore) + 320  [0x1d434ecac]
+    +                                                       !                 : |   +     1 Text.Storage.resolve<A>(into:in:with:)  (in SwiftUICore) + 148  [0x1d434fd38]
+    +                                                       !                 : |   +       1 ResolvedTextContainer.append<A>(_:in:with:)  (in SwiftUICore) + 184  [0x1d41b3444]
+    +                                                       !                 : |   +         1 Text.Resolved.append<A>(_:in:with:isUniqueSizeVariant:)  (in SwiftUICore) + 352  [0x1d41b4af0]
+    +                                                       !                 : |   +           1 Text.Style.nsAttributes(content:environment:includeDefaultAttributes:with:properties:)  (in SwiftUICore) + 7176  [0x1d3c0cd64]
+    +                                                       !                 : |   +             1 Text.Style.resolveAccessibilityTextAttributes(into:environment:)  (in SwiftUICore) + 128  [0x1d39907b4]
+    +                                                       !                 : |   +               1 specialized static SwiftUIAccessibilityTextResolver.resolveDefaultAttributes(_:)  (in SwiftUI) + 544  [0x1d2e8c8a8]
+    +                                                       !                 : |   +                 1 specialized Dictionary.subscript.setter  (in SwiftUI) + 96  [0x1d2893d98]
+    +                                                       !                 : |   +                   1 specialized _NativeDictionary.setValue(_:forKey:isUnique:)  (in SwiftUI) + 52  [0x1d297fbd8]
+    +                                                       !                 : |   +                     1 specialized __RawDictionaryStorage.find<A>(_:)  (in SwiftUI) + 112  [0x1d2a32e14]
+    +                                                       !                 : |   +                       1 specialized __RawDictionaryStorage.find<A>(_:hashValue:)  (in SwiftUI) + 96  [0x1d2a36950]
+    +                                                       !                 : |   +                         1 static String._unconditionallyBridgeFromObjectiveC(_:)  (in Foundation) + 768  [0x180e3847c]
+    +                                                       !                 : |   1 specialized Text.resolve<A>(into:in:with:)  (in SwiftUICore) + 364  [0x1d3990da0]
+    +                                                       !                 : |   + 1 outlined assign with take of Text.Style  (in SwiftUICore) + 52  [0x1d3991328]
+    +                                                       !                 : |   +   1 assignWithTake for Text.Style  (in SwiftUICore) + 1368  [0x1d41bcaf4]
+    +                                                       !                 : |   +     1 ???  (in CoreText)  load address 0x181eae000 + 0x323c  [0x181eb123c]
+    +                                                       !                 : |   1 specialized Text.resolve<A>(into:in:with:)  (in SwiftUICore) + 396  [0x1d3990dc0]
+    +                                                       !                 : |     1 specialized ResolvedTextContainer.append<A>(_:in:with:)  (in SwiftUICore) + 368  [0x1d41b32c8]
+    +                                                       !                 : |       1 Text.Style.nsAttributes(content:environment:includeDefaultAttributes:with:properties:)  (in SwiftUICore) + 2768  [0x1d3c0bc2c]
+    +                                                       !                 : |         1 specialized _NativeDictionary.setValue(_:forKey:isUnique:)  (in SwiftUICore) + 280  [0x1d3f3e14c]
+    +                                                       !                 : |           1 <deduplicated_symbol>  (in SwiftUICore) + 0  [0x1d3a0800c]
+    +                                                       !                 : 2 static AccessibilityCore.textResolvedToAttributedText(_:in:options:idiom:)  (in SwiftUICore) + 1732  [0x1d398edfc]
+    +                                                       !                 :   2 -[NSAttributedString enumerateAttributesInRange:options:usingBlock:]  (in Foundation) + 248  [0x181031a74]
+    +                                                       !                 :     2 thunk for @escaping @callee_guaranteed (@guaranteed [NSAttributedStringKey : Any], @unowned _NSRange, @unowned UnsafeMutablePointer<ObjCBool>) -> ()  (in SwiftUICore) + 108  [0x1d39900b8]
+    +                                                       !                 :       2 <deduplicated_symbol>  (in SwiftUICore) + 20  [0x1d3990f08]
+    +                                                       !                 :         2 partial apply for closure #1 in static AccessibilityCore.resolveAttributedTextAttributes(in:environment:options:)  (in SwiftUICore) + 40  [0x1d39911a0]
+    +                                                       !                 :           1 closure #1 in static AccessibilityCore.resolveAttributedTextAttributes(in:environment:options:)  (in SwiftUICore) + 188  [0x1d398f41c]
+    +                                                       !                 :           + 1 specialized static SwiftUIAccessibilityTextResolver.resolveDefaultAttributes(_:)  (in SwiftUI) + 468  [0x1d2e8c85c]
+    +                                                       !                 :           +   1 AXNameFromColor  (in Accessibility) + 1336  [0x1cc579b78]
+    +                                                       !                 :           +     1 -[__NSDictionaryM dealloc]  (in CoreFoundation) + 144  [0x1805322b8]
+    +                                                       !                 :           +       1 cow_cleanup  (in CoreFoundation) + 156  [0x1805323a4]
+    +                                                       !                 :           +         1 _CFRelease  (in CoreFoundation) + 648  [0x180424e7c]
+    +                                                       !                 :           +           1 object_getClass  (in libobjc.A.dylib) + 4  [0x18003d404]
+    +                                                       !                 :           1 closure #1 in static AccessibilityCore.resolveAttributedTextAttributes(in:environment:options:)  (in SwiftUICore) + 2016  [0x1d398fb40]
+    +                                                       !                 :             1 specialized _NativeDictionary.copy()  (in SwiftUICore) + 64  [0x1d3a2412c]
+    +                                                       !                 :               1 static _DictionaryStorage.copy(original:)  (in libswiftCore.dylib) + 0  [0x1982eb4c4]
+    +                                                       !                 1 static AccessibilityCore.textsResolvedToAttributedText(_:in:options:idiom:separator:)  (in SwiftUICore) + 376  [0x1d39903b4]
+    +                                                       !                   1 -[NSConcreteMutableAttributedString initWithString:]  (in Foundation) + 148  [0x181033a1c]
+    +                                                       !                     1 -[NSConcreteMutableAttributedString replaceCharactersInRange:withString:]  (in Foundation) + 44  [0x181034140]
+    +                                                       !                       1 -[__NSCFString length]  (in CoreFoundation) + 0  [0x1803f260c]
+    +                                                       3 -[NSObject(UIAccessibilityAutomation) _accessibilityUserTestingSnapshotDescendantsWithAttributes:maxDepth:maxChildren:maxArrayCount:honorsModalViews:]  (in UIAccessibility) + 908  [0x1952b8094]
+    +                                                       ! 3 -[NSObject(AXPrivCategory) _iosAccessibilityAttributeValue:]  (in UIAccessibility) + 200  [0x19528b694]
+    +                                                       !   3 -[AccessibilityNodeAccessibility automationElements]  (in SwiftUI) + 160  [0x11d545a74]
+    +                                                       !     3 @objc AccessibilityNode.accessibilityUserInputLabels.getter  (in SwiftUI) + 40  [0x1d2df22c4]
+    +                                                       !       3 AccessibilityNode.automationElements.getter  (in SwiftUI) + 340  [0x1d2df2458]
+    +                                                       !         3 AccessibilityNode.supplementaryLinkElements.getter  (in SwiftUI) + 132  [0x1d3041978]
+    +                                                       !           3 AccessibilityNode.linkRotor.getter  (in SwiftUI) + 1068  [0x1d30415b4]
+    +                                                       !             3 specialized AccessibilityNode.resolvedAttributedTexts(_:options:separator:)  (in SwiftUI) + 1396  [0x1d304ee14]
+    +                                                       !               3 static AccessibilityCore.textsResolvedToAttributedText(_:in:options:idiom:separator:)  (in SwiftUICore) + 220  [0x1d3990318]
+    +                                                       !                 2 static AccessibilityCore.textResolvedToAttributedText(_:in:options:idiom:)  (in SwiftUICore) + 1732  [0x1d398edfc]
+    +                                                       !                 : 2 -[NSAttributedString enumerateAttributesInRange:options:usingBlock:]  (in Foundation) + 248  [0x181031a74]
+    +                                                       !                 :   1 thunk for @escaping @callee_guaranteed (@guaranteed [NSAttributedStringKey : Any], @unowned _NSRange, @unowned UnsafeMutablePointer<ObjCBool>) -> ()  (in SwiftUICore) + 88  [0x1d39900a4]
+    +                                                       !                 :   | 1 static Dictionary._unconditionallyBridgeFromObjectiveC(_:)  (in Foundation) + 868  [0x180f681b4]
+    +                                                       !                 :   |   1 _NativeDictionary.init(_unsafeUninitializedCapacity:allowingDuplicates:initializingWith:)  (in Foundation) + 148  [0x180f6ef10]
+    +                                                       !                 :   |     1 __swift_instantiateCanonicalPrespecializedGenericMetadata  (in libswiftCore.dylib) + 36  [0x1985279f0]
+    +                                                       !                 :   |       1 swift::LockingConcurrentMap<swift::GenericCacheEntry, swift::LockingConcurrentMapStorage<swift::GenericCacheEntry, (unsigned short)14>>::getOrInsert<swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)  (in libswiftCore.dylib) + 300  [0x1981a9884]
+    +                                                       !                 :   1 thunk for @escaping @callee_guaranteed (@guaranteed [NSAttributedStringKey : Any], @unowned _NSRange, @unowned UnsafeMutablePointer<ObjCBool>) -> ()  (in SwiftUICore) + 108  [0x1d39900b8]
+    +                                                       !                 :     1 <deduplicated_symbol>  (in SwiftUICore) + 20  [0x1d3990f08]
+    +                                                       !                 :       1 partial apply for closure #1 in static AccessibilityCore.resolveAttributedTextAttributes(in:environment:options:)  (in SwiftUICore) + 40  [0x1d39911a0]
+    +                                                       !                 :         1 closure #1 in static AccessibilityCore.resolveAttributedTextAttributes(in:environment:options:)  (in SwiftUICore) + 188  [0x1d398f41c]
+    +                                                       !                 :           1 specialized static SwiftUIAccessibilityTextResolver.resolveDefaultAttributes(_:)  (in SwiftUI) + 468  [0x1d2e8c85c]
+    +                                                       !                 :             1 AXNameFromColor  (in Accessibility) + 1336  [0x1cc579b78]
+    +                                                       !                 :               1 -[__NSDictionaryM dealloc]  (in CoreFoundation) + 144  [0x1805322b8]
+    +                                                       !                 :                 1 cow_cleanup  (in CoreFoundation) + 156  [0x1805323a4]
+    +                                                       !                 1 static AccessibilityCore.textResolvedToAttributedText(_:in:options:idiom:)  (in SwiftUICore) + 256  [0x1d398e838]
+    +                                                       !                   1 Text.resolveAttributedString(in:includeDefaultAttributes:options:idiom:)  (in SwiftUICore) + 512  [0x1d3c0ace0]
+    +                                                       !                     1 specialized Text.resolve<A>(into:in:with:)  (in SwiftUICore) + 396  [0x1d3990dc0]
+    +                                                       !                       1 specialized ResolvedTextContainer.append<A>(_:in:with:)  (in SwiftUICore) + 368  [0x1d41b32c8]
+    +                                                       !                         1 Text.Style.nsAttributes(content:environment:includeDefaultAttributes:with:properties:)  (in SwiftUICore) + 2664  [0x1d3c0bbc4]
+    +                                                       !                           1 specialized ObjectCache.subscript.getter  (in SwiftUICore) + 184  [0x1d39f6c44]
+    +                                                       !                             1 closure #1 in variable initialization expression of static Font.FontCache.shared  (in SwiftUICore) + 268  [0x1d3b75490]
+    +                                                       !                               1 CTFontCreateWithFontDescriptor  (in CoreText) + 64  [0x181efde30]
+    +                                                       !                                 1 TDescriptor::CreateMatchingDescriptor(__CFSet const*, double, unsigned long) const  (in CoreText) + 632  [0x181f1c800]
+    +                                                       !                                   1 TDescriptor::InitBaseFont(unsigned long, double)  (in CoreText) + 64  [0x181f1ca24]
+    +                                                       !                                     1 TDescriptor::CreateMatchingDescriptorInternal(__CFSet const*, unsigned long) const  (in CoreText) + 1452  [0x181f1bfa0]
+    +                                                       !                                       1 TDescriptorSource::CopyFontDescriptorPerPostScriptName(__CFString const*, unsigned long, unsigned long, __CFString const*, __CFNumber const*, __CFNumber const*, CTFontLegibilityWeight, __CFBoolean const*) const  (in CoreText) + 164  [0x181f30cd4]
+    +                                                       !                                         1 CopyNormalizedSystemFontPostScriptName(__CFString const*)  (in CoreText) + 136  [0x181fe456c]
+    +                                                       !                                           1 -[NSConstantDictionary objectForKey:]  (in CoreFoundation) + 404  [0x180436288]
+    +                                                       !                                             1 bsearch  (in libsystem_c.dylib) + 64  [0x18015c810]
+    +                                                       !                                               1 comparisonUsingOrderingForStringKeys  (in CoreFoundation) + 64  [0x180436f7c]
+    +                                                       !                                                 1 CFStringCompareWithOptionsAndLocale  (in CoreFoundation) + 196  [0x18044efcc]
+    +                                                       1 -[NSObject(UIAccessibilityAutomation) _accessibilityUserTestingSnapshotDescendantsWithAttributes:maxDepth:maxChildren:maxArrayCount:honorsModalViews:]  (in UIAccessibility) + 932  [0x1952b80ac]
+    +                                                         1 @objc __SwiftNativeNSArrayWithContiguousStorage.count.getter  (in libswiftCore.dylib) + 64  [0x19841f070]
+    +                                                           1 __ContiguousArrayStorageBase.withUnsafeBufferOfObjects<A>(_:)  (in libswiftCore.dylib) + 156  [0x1982c6a14]
+    +                                                             1 swift::metadataimpl::FixedSizeBufferValueWitnesses<swift::metadataimpl::ValueWitnesses<swift::metadataimpl::NativeBox<unsigned long long, 8ul, 8ul, 8ul>>, true, 8ul, 8ul, false>::getEnumTagSinglePayload(swift::OpaqueValue const*, unsigned int, swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib) + 0  [0x1981909a4]
 
 Sort by top of stack, same collapsed (when >= 5):
-        __workq_kernreturn  (in libsystem_kernel.dylib)        468
-        mach_msg2_trap  (in libsystem_kernel.dylib)        346
-        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        229
-        semaphore_timedwait_trap  (in libsystem_kernel.dylib)        119
-        writev  (in libsystem_kernel.dylib)        72
-        objc_msgSend  (in libobjc.A.dylib)        8
-        _platform_memmove  (in libsystem_platform.dylib)        6
-        pthread_getspecific  (in libsystem_pthread.dylib)        5
-        pthread_setspecific  (in libsystem_pthread.dylib)        5
+        __workq_kernreturn  (in libsystem_kernel.dylib)        118
+        mach_msg2_trap  (in libsystem_kernel.dylib)        24
+        semaphore_timedwait_trap  (in libsystem_kernel.dylib)        24
 
 Binary Images:
-       0x102250000 -        0x102253507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/FC6AA8B9-284A-4368-9B5C-8F9AD5EEA22F/Chronotheca.app/Chronotheca
-       0x102264000 -        0x10229eee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
-       0x1022e4000 -        0x1022ec3d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
-       0x1023a4000 -        0x1023f2e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
-       0x102460000 -        0x10246c10b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
-       0x102534000 -        0x10253c03f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
-       0x102558000 -        0x10260b523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
-       0x1026b0000 -        0x1026f365f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
-       0x102804000 -        0x10289d2af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
-       0x103040000 -        0x103042dff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
-       0x10305c000 -        0x10305cb99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
-       0x10306c000 -        0x10307739f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
-       0x103090000 -        0x103093e5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
-       0x1030b0000 -        0x1030b949f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
-       0x1030d8000 -        0x1030f127f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
-       0x103378000 -        0x10337eb7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
-       0x103398000 -        0x10339d407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
-       0x103670000 -        0x1036731ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
-       0x103688000 -        0x10368f2df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
-       0x10370c000 -        0x1037106ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
-       0x103724000 -        0x10397fbbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
-       0x104010000 -        0x104032cff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
-       0x1040a8000 -        0x1040cef5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
-       0x1040f4000 -        0x10412e15f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
-       0x1042c4000 -        0x1043177bf  com.apple.dt.XCTAutomationSupport (26.5 - 24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
-       0x1043a4000 -        0x104bde503 +Chronotheca.debug.dylib (0) <A8D90842-C6DB-338C-A01E-D93CFE1D52DF> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/FC6AA8B9-284A-4368-9B5C-8F9AD5EEA22F/Chronotheca.app/Chronotheca.debug.dylib
-       0x1058a4000 -        0x1058d85bf  com.apple.MTLSimDriver (373.2 - 373.2) <8339CA77-3986-3588-9DF9-8B8D511AE608> /Volumes/*/MTLSimDriver.framework/MTLSimDriver
-       0x105a28000 -        0x105a97cbf  com.apple.UIUnderstanding (1.0 - 1) <576E64EB-8AA4-3B1E-A89D-365C4DE0C7C8> /Volumes/*/UIUnderstanding.framework/UIUnderstanding
+       0x100f0c000 -        0x100f0f507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/B8D41992-2229-4DDE-A86C-7BE02392E26B/Chronotheca.app/Chronotheca
+       0x100f2c000 -        0x100fdf523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
+       0x101084000 -        0x1010beee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
+       0x101104000 -        0x10110c3d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
+       0x1011c8000 -        0x101216e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x101284000 -        0x1012c765f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x1013d8000 -        0x1014712af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x101a90000 -        0x101a9c10b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
+       0x101bec000 -        0x101becb99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x101c00000 -        0x101c0803f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x101d14000 -        0x101d1f39f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x101d38000 -        0x101d3adff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x101d58000 -        0x101d6149f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x101d7c000 -        0x101d82b7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x101d9c000 -        0x101da32df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
+       0x101dc8000 -        0x101dcbe5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x10211c000 -        0x10211f1ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
+       0x102260000 -        0x10227927f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
+       0x1022b0000 -        0x1022b5407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
+       0x1022f8000 -        0x102553bbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+       0x102c1c000 -        0x102c3ecff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
+       0x102c74000 -        0x102c786ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
+       0x102cb4000 -        0x102cdaf5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
+       0x102d00000 -        0x102d3a15f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
+       0x102ef4000 -        0x102f285bf  com.apple.MTLSimDriver (373.2 - 373.2) <8339CA77-3986-3588-9DF9-8B8D511AE608> /Volumes/*/MTLSimDriver.framework/MTLSimDriver
+       0x102f8c000 -        0x1037d00af +Chronotheca.debug.dylib (0) <499766BE-885B-33F4-9E68-053474900114> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/B8D41992-2229-4DDE-A86C-7BE02392E26B/Chronotheca.app/Chronotheca.debug.dylib
+       0x1044a0000 -        0x1044f37bf  com.apple.dt.XCTAutomationSupport (26.5 - 24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
+       0x104598000 -        0x1045c627f  com.apple.gpusw.MetalSerializer (1.0 - 1) <19460939-4BCE-3E8D-8868-5388DD78ACE3> /Volumes/*/MetalSerializer.framework/MetalSerializer
+       0x1046d8000 -        0x104747cbf  com.apple.UIUnderstanding (1.0 - 1) <576E64EB-8AA4-3B1E-A89D-365C4DE0C7C8> /Volumes/*/UIUnderstanding.framework/UIUnderstanding
+       0x1083ec000 -        0x1085dfd3f  com.apple.UIKit.axbundle (1.0.0 - 1.0) <D3D808D1-AB02-3566-B2DD-1B139F8E9569> /Volumes/*/UIKit
+       0x109150000 -        0x1091618bf  com.apple.MapKitFramework.axbundle (1.0 - 1.0) <E47E82F2-C0CB-3371-85B9-B78F40DB406A> /Volumes/*/MapKitFramework
+       0x109198000 -        0x109199a7f  com.apple.FrontBoard.axbundle (1.0 - 1.0) <FA25F3DC-A3E7-344D-8680-FFB8D8BBA712> /Volumes/*/FrontBoard
+       0x109a28000 -        0x109a3703f  com.apple.PreferencesFramework.axbundle (1.0 - 1.0) <CECA756F-AD42-3681-8023-94C05C2E12C6> /Volumes/*/PreferencesFramework
+       0x11765c000 -        0x11769417f  com.apple.VectorKit.axbundle (1.0 - 1.0) <77D298B9-0BAA-30BD-886F-D03401FF9B84> /Volumes/*/VectorKit
