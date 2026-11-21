@@ -256,11 +256,16 @@ extension Archive {
                 tries.append((.years(years), then))
             }
         }
-        if let month = cal.date(byAdding: .month, value: -1, to: date) {
-            tries.append((.month, month))
-        }
-        if let week = cal.date(byAdding: .day, value: -7, to: date) {
-            tries.append((.week, week))
+        // Месяц и неделя — не чаще раза в неделю (P1013): у того, кто пишет
+        // каждый день, неделя назад есть всегда, и облачко висело каждый
+        // день. Годовщины — в любой день, как у Day One.
+        if NearMemory.allowed(on: date) {
+            if let month = cal.date(byAdding: .month, value: -1, to: date) {
+                tries.append((.month, month))
+            }
+            if let week = cal.date(byAdding: .day, value: -7, to: date) {
+                tries.append((.week, week))
+            }
         }
 
         for (ago, when) in tries {
@@ -269,6 +274,32 @@ extension Archive {
             }
         }
         return nil
+    }
+}
+
+/// Облачко с записью месяц или неделю назад — не чаще раза в неделю
+/// (P1013, автор: «не слишком ли часто ставятся облачка»; у конкурентов
+/// главное — годовщины). Помнится день, когда такое облачко в последний раз
+/// показалось на сегодняшней странице: в тот же день оно остаётся, дальше —
+/// через семь дней.
+enum NearMemory {
+    static let key = "remember.near"
+
+    static func allowed(on date: Date) -> Bool {
+        allowed(on: date, last: UserDefaults.standard.string(forKey: key))
+    }
+
+    static func allowed(on date: Date, last: String?) -> Bool {
+        guard let last, let then = Vault.date(from: last) else { return true }
+        let days = Calendar.current.dateComponents([.day], from: then, to: date).day ?? 7
+        return days <= 0 || days >= 7
+    }
+
+    /// Облачко «месяц или неделю назад» показалось на сегодняшней странице.
+    static func shown(_ date: Date) {
+        let stamp = Vault.stamp(date)
+        guard UserDefaults.standard.string(forKey: key) != stamp else { return }
+        UserDefaults.standard.set(stamp, forKey: key)
     }
 }
 

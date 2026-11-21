@@ -841,6 +841,8 @@ struct SideDay: View {
     private var diary: some View {
         DiaryPage(tasks: tasks,
                   answer: { answers[$0] ?? "" },
+                  // Те же «Итоги дня», что у открытой страницы (P1012, P114).
+                  isPast: date < DayStore.today(),
                   title: .constant(title),
                   text: .constant(text),
                   editable: false,
@@ -975,6 +977,13 @@ struct DayCloud: View {
                 .offset(x: -18, y: -0.2)
                 .allowsHitTesting(live)
                 .transition(.opacity)
+                // Показалось облачко «месяц или неделю назад» — следующее
+                // такое через неделю (P1013).
+                .onAppear {
+                    guard live, date == today, let found = archive.remembered(for: date) else { return }
+                    if case .years = found.ago { return }
+                    NearMemory.shown(date)
+                }
         }
     }
 }
