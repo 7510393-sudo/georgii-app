@@ -74,16 +74,12 @@ struct MapScreen: View {
                       // Карту двигают пальцем — клавиатура уходит (P803).
                       onDrag: { hideKeyboard() },
                       onMe: here)
-            // Справа сверху, под уголком с тремя точками: «мои места /
-            // записи» и под ним «схема / спутник» (P451; спутник прежде —
-            // внизу справа, P419). Плашки точки ложатся поверх, как и на
-            // кнопку «где я». Пока плашка открыта, их нет: сквозь
-            // полупрозрачную плашку они путались со значками (P461).
-            if selected == nil || panel == nil {
-                side
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                    .transition(.opacity)
-            }
+            // Справа сверху, под шестерёнкой и на одной линии с ней (P1016):
+            // «мои места / записи», «схема / спутник», все места. Плашка
+            // точки уже экрана и их не закрывает — они видны всегда
+            // (отменяет «пока плашка открыта, их нет» P461).
+            side
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
             if let selected, panel == .naming {
                 // Новая булавка — новая панель: поля не должны
                 // остаться от прежней точки.
@@ -289,7 +285,7 @@ struct MapScreen: View {
             }
             .accessibilityLabel(T("Все места", "All places"))
         }
-        .padding(.trailing, 22)
+        .padding(.trailing, MapSide.trailing)
         .padding(.top, MapSide.top)
     }
 

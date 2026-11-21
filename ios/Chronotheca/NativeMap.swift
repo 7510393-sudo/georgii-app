@@ -92,10 +92,13 @@ struct NativeMap: UIViewRepresentable {
         }
         NSLayoutConstraint.activate([
             // Справа сверху, под уголком с тремя точками (P228).
-            track.trailingAnchor.constraint(equalTo: map.trailingAnchor, constant: -12),
+            // Середина — на одной линии с шестерёнкой и кнопками над ней (P1016).
+            track.centerXAnchor.constraint(equalTo: map.trailingAnchor, constant: -MapSide.axis),
+            track.widthAnchor.constraint(equalToConstant: MapSide.button),
+            track.heightAnchor.constraint(equalToConstant: MapSide.button),
             // Под переключателем записей и кнопкой спутника (P451).
             track.topAnchor.constraint(equalTo: map.topAnchor, constant: MapSide.bottom),
-            compass.trailingAnchor.constraint(equalTo: map.trailingAnchor, constant: -12),
+            compass.centerXAnchor.constraint(equalTo: track.centerXAnchor),
             compass.topAnchor.constraint(equalTo: track.bottomAnchor, constant: 10),
         ])
         return map
@@ -348,6 +351,13 @@ struct NativeMap: UIViewRepresentable {
 /// «где я» и компас.
 enum MapSide {
     static let button: CGFloat = 42
+    /// Середина столбика кнопок от правого края — под серединой шестерёнки
+    /// (P1016: значок шестерёнки шириной 30 стоит в 9 точках от края).
+    static let axis: CGFloat = 9 + 15
+    /// Отступ кнопок справа: их середина — на одной линии с шестерёнкой.
+    static var trailing: CGFloat { axis - button / 2 }
+    /// Сколько места справа оставляет плашка точки: столбик кнопок и зазор.
+    static var reserved: CGFloat { axis + button / 2 + 8 }
     static let segment: CGFloat = 40
     static var top: CGFloat { Corner.size + 6 }
     static var bottom: CGFloat { top + 2 * segment + 1 + 8 + button + 10 }

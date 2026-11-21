@@ -3,8 +3,8 @@ import UIKit
 import MapKit
 
 /// Плашка точки сверху карты — новой и записанной, одна (P803, вместо
-/// облачка с «Изменить» перед ней): название, что здесь было и одним рядом
-/// «В навигатор», «В дневник», «Отметить», «…» (P1003). Полупрозрачная —
+/// облачка с «Изменить» перед ней): название, что здесь было и в два ряда
+/// «В навигатор · В дневник», «Поделиться · Отметить» (P1016). Полупрозрачная —
 /// под ней видно булавку. Клавиатура открывается сразу только у новой.
 struct PointPanel: View {
 
@@ -47,11 +47,6 @@ struct PointPanel: View {
                 .background(Look.planBg, in: RoundedRectangle(cornerRadius: 8))
                 .overlay(RoundedRectangle(cornerRadius: 8)
                     .strokeBorder(Look.inkFaint.opacity(0.6), lineWidth: 1))
-                // Поле кончается перед уголком настроек (P1003, вместо
-                // «шестерёнка заходит на поле» P851): плашка у самого верха,
-                // уголок — над ней справа (видимая ширина уголка ≈ 0,86 его
-                // стороны; от края экрана до поля — 22 точки отступов).
-                .padding(.trailing, Corner.size * 0.86 + 6 - 22)
             // Не выше шести строк; длиннее — прокручивается внутри.
             TextField(T("Что здесь было", "What happened here"), text: $place.text, axis: .vertical)
                 .focused($focused, equals: .text)
@@ -61,11 +56,10 @@ struct PointPanel: View {
                 .background(Look.planBg, in: RoundedRectangle(cornerRadius: 8))
                 .overlay(RoundedRectangle(cornerRadius: 8)
                     .strokeBorder(Look.inkFaint.opacity(0.6), lineWidth: 1))
-            // Кнопки — одним рядом (P1003, автор 21.11, вместо двух рядов
-            // P996): «В навигатор · В дневник · Отметить · …». В «…» —
-            // «Поделиться» и «Удалить» (у записанной точки). «Копировать»
-            // убран: координаты и ссылка — в «Поделиться»; «Отмена» убрана:
-            // плашку закрывает касание по карте мимо неё.
+            // Кнопки — в два ряда (P1016, автор 21.11, вместо одного ряда
+            // с «…» P1003): сверху «В навигатор · В дневник», снизу
+            // «Поделиться · Отметить»; у записанной точки справа внизу —
+            // корзина «Удалить».
             HStack(spacing: 6) {
                 key(T("В навигатор", "Directions")) { navigate(place) }
                 // «В дневник» (P984): точка — в сегодняшний день или в
@@ -81,30 +75,24 @@ struct PointPanel: View {
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(Look.accent)
-                // «Отметить» со стрелкой точки карты (P989, автор по 314:
-                // «переименовать Готово в Отметить и нарисовать стрелочку —
-                // копию той, что ставится на карту»; вместо «Готово» P813).
-                key(T("Отметить", "Mark"), strong: true, mark: true) { done(place) }
-                Menu {
-                    Button {
-                        MapActions.share(GeoPoint(title: place.name, at: place.coordinate))
-                    } label: {
-                        Label(T("Поделиться", "Share"), systemImage: "square.and.arrow.up")
-                    }
-                    if let remove {
-                        Button(role: .destructive, action: remove) {
-                            Label(T("Удалить", "Delete"), systemImage: "trash")
-                        }
-                    }
-                } label: {
-                    Image(systemName: "ellipsis")
-                        .font(.system(size: 15, weight: .semibold))
-                        .frame(width: 30, height: 24)
-                        .modifier(Outlined(narrow: true))
+            }
+            HStack(spacing: 6) {
+                key(T("Поделиться", "Share")) {
+                    MapActions.share(GeoPoint(title: place.name, at: place.coordinate))
                 }
-                .buttonStyle(.plain)
-                .foregroundStyle(Look.accent)
-                .accessibilityLabel(T("Ещё", "More"))
+                // «Отметить» со стрелкой точки карты (P989).
+                key(T("Отметить", "Mark"), strong: true, mark: true) { done(place) }
+                if let remove {
+                    Button(action: remove) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 14, weight: .semibold))
+                            .frame(width: 30, height: 24)
+                            .modifier(Outlined(narrow: true))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(Look.accent)
+                    .accessibilityLabel(T("Удалить", "Delete"))
+                }
             }
         }
         .font(Look.sans(15))
@@ -114,9 +102,11 @@ struct PointPanel: View {
         .background(Look.chrome.opacity(0.55), in: RoundedRectangle(cornerRadius: 14))
         .overlay(RoundedRectangle(cornerRadius: 14)
             .strokeBorder(Look.inkSoft.opacity(0.6), lineWidth: 1))
-        .padding(.horizontal, 10)
-        // Плашка — у самого верха (P851, вместо «под уголком» —
-        // шестерёнка заходит на поле названия, так решил автор).
+        // Уже, чем экран (P1016): справа остаётся столбик кнопок карты под
+        // шестерёнкой — плашка их не закрывает.
+        .padding(.leading, 10)
+        .padding(.trailing, MapSide.reserved)
+        // Плашка — у самого верха (P851).
         .padding(.top, 4)
         .sheet(isPresented: $choosing) { dayPicker }
         .onAppear {
