@@ -846,7 +846,6 @@ final class Ribbon: ObservableObject {
     /// после складывания лента иногда оставалась «замороженной» или в ходу,
     /// и открытую карточку было не закрыть ни вверх, ни вниз (видео автора).
     func reset() {
-        unfold.stop()
         stop()
         driving = false
         foldTo = nil
@@ -930,7 +929,7 @@ final class Glide {
 final class Unfold: ObservableObject {
     /// Рамка карточки, с которой раскрывают; `nil` — ничего не раскрывается.
     @Published private(set) var from: CGRect?
-    /// Лист дня ещё не виден: растёт схема.
+    /// Лист дня ещё не виден: схема выросла, под ней строится день.
     @Published private(set) var veiled = false
     /// Где верх листа: у будущего — под полоской «Сегодня» (P913).
     private(set) var top: CGFloat = 0
@@ -941,17 +940,23 @@ final class Unfold: ObservableObject {
     static let grow: Double = 0.38
     static let show: Double = 0.15
 
-    func start(from card: CGRect, top: CGFloat, aged: Bool) {
+    /// Раскрыть: схема растёт, пока картотека ещё стоит, и только выросшая —
+    /// под ней открывается день (`open`) — P998, автор по 319: «в прошлом
+    /// есть задержка при открытии». Замер показал: страница прошедшего дня
+    /// (снимки, старая бумага, запись) строится 0,5–0,7 с, и первый кадр хода
+    /// приходил после неё — схема вставала посреди движения. Теперь ход
+    /// идёт, пока строить нечего, а стройка — под схемой во весь лист; лист
+    /// проступает, когда построен. `open` вернул `false` — открыть нельзя
+    /// (картотеку уже сменили), схема убирается.
+    func start(from card: CGRect, top: CGFloat, aged: Bool, open: @escaping () -> Bool) {
         stop()
         self.top = top
         self.aged = aged
         move.p = 0
         from = card
-        veiled = true
         Trace.note(String(format: "карточка раскрывается с %.0f", card.minY))
-        // Задержка при раскрытии прошлого (автор по 319, видео): схема
-        // поднялась и стоит, потом рост. Замер — первый кадр, самый долгий
-        // кадр; в CI — снимок главного потока в этот миг (P808).
+        // Замер — первый кадр, самый долгий кадр; в CI — снимок главного
+        // потока в этот миг (P808).
         Unfold.wantSample("open-card")
         let began = CACurrentMediaTime()
         var last = began, first: Double?, worst = 0.0
@@ -964,11 +969,20 @@ final class Unfold: ObservableObject {
             guard let self else { return }
             Trace.note(String(format: "карточка выросла за %.2f с: первый кадр через %.2f с, самый долгий кадр %.2f с",
                               CACurrentMediaTime() - began, first ?? -1, worst))
-            withAnimation(.easeOut(duration: Unfold.show)) { self.veiled = false }
-            self.move.glide.run(Unfold.show, then: { [weak self] in
-                self?.from = nil
-                Trace.note("карточка раскрылась")
-            })
+            // Лист прячется под схемой и открывается день — в одном такте.
+            self.veiled = true
+            guard open() else { return self.stop() }
+            let opened = CACurrentMediaTime()
+            // Следующий оборот — день уже построен и показан под схемой.
+            DispatchQueue.main.async { [weak self] in
+                guard let self, self.from != nil else { return }
+                Trace.note(String(format: "день под схемой построен за %.2f с", CACurrentMediaTime() - opened))
+                withAnimation(.easeOut(duration: Unfold.show)) { self.veiled = false }
+                self.move.glide.run(Unfold.show, then: { [weak self] in
+                    self?.from = nil
+                    Trace.note("карточка раскрылась")
+                })
+            }
         })
     }
 

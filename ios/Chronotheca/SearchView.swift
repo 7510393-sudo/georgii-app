@@ -822,14 +822,34 @@ struct SearchView: View {
         let ribbon = shell.ribbon
         // Соседняя карточка ещё садится — досадить её разом.
         ribbon.landing.hurry?()
-        var still = Transaction()
-        still.disablesAnimations = true
         // Откуда открыли — туда карточка и вернётся, когда день закроют
         // (P893). Лента при этом стоит, где была (P923): прежде она
         // пересобиралась вокруг открытого дня и уходила к его месту.
         let id = Vault.stamp(date)
         let card = shell.screen == .search ? ribbon.frames[id] : nil
         let from = ribbon.frames[id].map { (id: id, top: $0.minY) }
+        search.typing = false
+        Feel.thud()
+        // Карточка раскрывается в лист (P995): сперва растёт её схема, и
+        // только выросшая открывает день (P998) — его страница строится
+        // под схемой во весь лист, а не посреди хода.
+        guard let card else {
+            open(date, tab: tab, from: from, id: id)
+            return
+        }
+        let future = date > DayStore.today()
+        ribbon.unfold.start(from: card, top: future ? FollowRibbon.futureTop : 0, aged: !future) {
+            open(date, tab: tab, from: from, id: id)
+        }
+    }
+
+    /// Открыть день карточки в одном такте: день сменился, лента закрылась
+    /// (P796). `false` — открыть нельзя: картотеку уже сменили.
+    @discardableResult
+    private func open(_ date: Date, tab: DayTab, from: (id: String, top: CGFloat)?, id: String) -> Bool {
+        let ribbon = shell.ribbon
+        var still = Transaction()
+        still.disablesAnimations = true
         let opened: Bool = withTransaction(still) {
             guard shell.go(.openCard) else { return false }
             shell.instant = true
@@ -838,18 +858,12 @@ struct SearchView: View {
             shell.screen = .today
             return true
         }
-        guard opened else { return }
-        search.typing = false
-        Feel.thud()
+        guard opened else { return false }
         ribbon.reset()
         ribbon.openedFrom = from
-        // Карточка раскрывается в лист, а не сменяется им разом (P995).
-        if let card {
-            let future = date > DayStore.today()
-            ribbon.unfold.start(from: card, top: future ? FollowRibbon.futureTop : 0, aged: !future)
-        }
         Trace.note(String(format: "лента: открыт %@ с места %.0f", id, from?.top ?? -1))
         archive.reloadSoon()
+        return true
     }
 
     /// Искали в плане — туда и открываем: там нашлось искомое.

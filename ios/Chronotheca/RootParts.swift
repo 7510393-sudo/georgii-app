@@ -473,6 +473,11 @@ struct UnfoldGhost: View {
 
     var body: some View {
         if let card = unfold.from {
+            // Пока растёт, картотеку под ней не трогают (P998): день
+            // откроется, когда схема вырастет.
+            Color.clear
+                .contentShape(Rectangle())
+                .frame(width: size.width, height: size.height)
             let p = move.p
             // Первая четверть хода — подскок на высоту, с какой карточка
             // при посадке ждёт над гнездом; дальше — рост до листа.
