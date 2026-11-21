@@ -965,8 +965,9 @@ final class Unfold: ObservableObject {
             self?.move.p = p
         }, then: { [weak self] in
             guard let self else { return }
-            Trace.note(String(format: "карточка выросла за %.2f с: первый кадр через %.2f с, самый долгий кадр %.2f с",
-                              CACurrentMediaTime() - began, first ?? -1, worst))
+            // В «Замеры» на телефоне, а не только в след проверок (P1001).
+            DeckTrail.mark(String(format: "карточка выросла за %.2f с: первый кадр через %.2f с, самый долгий кадр %.2f с",
+                                  CACurrentMediaTime() - began, first ?? -1, worst))
             // Лист прячется под схемой и открывается день — в одном такте.
             self.veiled = true
             guard open() else { return self.stop() }
@@ -974,7 +975,7 @@ final class Unfold: ObservableObject {
             // Следующий оборот — день уже построен и показан под схемой.
             DispatchQueue.main.async { [weak self] in
                 guard let self, self.from != nil else { return }
-                Trace.note(String(format: "день под схемой построен за %.2f с", CACurrentMediaTime() - opened))
+                DeckTrail.mark(String(format: "день под схемой построен за %.2f с", CACurrentMediaTime() - opened))
                 withAnimation(.easeOut(duration: Unfold.show)) { self.veiled = false }
                 self.move.glide.run(Unfold.show, then: { [weak self] in
                     self?.from = nil
