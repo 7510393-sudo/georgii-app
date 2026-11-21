@@ -1239,8 +1239,16 @@ struct DiaryEditor: UIViewRepresentable {
         @objc func carried(_ g: UILongPressGestureRecognizer) {
             // Пока несут — разделы не листаются (P799).
             switch g.state {
-            case .began: Hold.report?(true)
-            case .ended, .cancelled, .failed: Hold.report?(false)
+            case .began:
+                Hold.report?(true)
+                // Пока несут вложение по тексту, лист за край не тянется
+                // (P1017, автор по 331: «при движении с геоточкой вверх
+                // закрылась страница»; у низа листа ход пальца вверх был ещё
+                // и тягой в картотеку — как у полоски до P958).
+                if maybeTaken != nil, let view, let page = page(over: view) { page.isScrollEnabled = false }
+            case .ended, .cancelled, .failed:
+                Hold.report?(false)
+                if let view, let page = page(over: view) { page.isScrollEnabled = true }
             default: break
             }
             if g.state == .began {
