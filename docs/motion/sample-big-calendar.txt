@@ -1,0 +1,79 @@
+    8128 Thread_57271   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 8128 start  (in dyld) + 6992  [0x100b2c4e4]
+    +   8128 start_sim  (in dyld_sim) + 20  [0x100a0b0e4]
+    +     8128 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x102a2fe24]  ChronothecaApp.swift:0
+    +       8128 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x102a2fd78]  /<compiler-generated>:0
+    +         8128 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           8128 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             8128 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               8128 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 8128 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   8128 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     8128 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       8123 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    +                       ! 8123 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    +                       !   8123 mach_msg  (in libsystem_kernel.dylib) + 20  [0x1008c0ef0]
+    +                       !     8123 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x1008c8c44]
+    +                       !       8123 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x1008d1e84]
+    +                       !         8123 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x1008c0b70]
+    +                       2 __CFRunLoopRun  (in CoreFoundation) + 864  [0x180421870]
+    +                       ! 1 __CFRunLoopDoObservers  (in CoreFoundation) + 504  [0x1804213fc]
+    +                       ! : 1 kdebug_trace  (in libsystem_kernel.dylib) + 12  [0x1008c0808]
+    +                       ! 1 __CFRunLoopDoObservers  (in CoreFoundation) + 556  [0x180421430]
+    +                       !   1 __CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__  (in CoreFoundation) + 32  [0x180421f4c]
+    +                       !     1 CA::Transaction::observer_callback(__CFRunLoopObserver*, unsigned long, void*)  (in QuartzCore) + 28  [0x18cefa138]
+    +                       2 __CFRunLoopRun  (in CoreFoundation) + 1884  [0x180421c6c]
+    +                       ! 2 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__  (in CoreFoundation) + 12  [0x180422a94]
+    +                       !   2 _dispatch_main_queue_callback_4CF  (in libdispatch.dylib) + 40  [0x180195890]
+    +                       !     2 _dispatch_main_queue_drain  (in libdispatch.dylib) + 1172  [0x180195d34]
+    +                       !       2 <deduplicated_symbol>  (in libdispatch.dylib) + 24  [0x1801bd748]
+    +                       !         2 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                       !           2 _dispatch_call_block_and_release  (in libdispatch.dylib) + 24  [0x1801866a0]
+    +                       !             2 thunk for @escaping @callee_guaranteed () -> ()  (in Chronotheca.debug.dylib) + 48  [0x102967f90]  /<compiler-generated>:0
+    +                       !               2 closure #1 in closure #1 in static LagWatch.start()  (in Chronotheca.debug.dylib) + 188  [0x10300596c]  Shell.swift:272
+    +                       !                 2 _dispatch_semaphore_signal_slow  (in libdispatch.dylib) + 48  [0x1801882f4]
+    +                       !                   2 _dispatch_sema4_signal  (in libdispatch.dylib) + 28  [0x180187d14]
+    +                       !                     2 semaphore_signal_trap  (in libsystem_kernel.dylib) + 8  [0x1008c0ac8]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 1528  [0x180421b08]
+    +                         1 __CFRunLoopDoObservers  (in CoreFoundation) + 284  [0x180421320]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        24384
+        mach_msg2_trap  (in libsystem_kernel.dylib)        16252
+        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        8413
+        __semwait_signal  (in libsystem_kernel.dylib)        8118
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        6827
+        objc_msgSend  (in libobjc.A.dylib)        748
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib)        371
+        __CF_IS_OBJC  (in CoreFoundation)        350
+        objc_retain_x8  (in libobjc.A.dylib)        325
+        -[NSUserDefaults(NSUserDefaults) stringForKey:]  (in Foundation)        288
+        generationCountFromListOfSources  (in CoreFoundation)        275
+        dyld4::APIs::dyld_program_sdk_at_least(dyld_build_version_t)  (in dyld_sim)        274
+        -[__NSDictionaryM objectForKey:]  (in CoreFoundation)        239
+        -[_CFXPreferences withSearchListForIdentifier:container:cloudConfigurationURL:perform:]  (in CoreFoundation)        237
+        getContextDescriptor(swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        233
+        pthread_setspecific  (in libsystem_pthread.dylib)        225
+        _CFStringGetCStringPtrInternal  (in CoreFoundation)        210
+        tuple_initializeWithCopy<true, true>(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        198
+        -[NSUserDefaults _identifier]  (in CoreFoundation)        185
+        -[NSUserDefaults(NSUserDefaults) objectForKey:]  (in Foundation)        184
+        __108-[_CFXPreferences(SearchListAdditions) withSearchListForIdentifier:container:cloudConfigurationURL:perform:]_block_invoke_2  (in CoreFoundation)        176
+        _NSIsNSString  (in CoreFoundation)        164
+        -[NSIndirectTaggedPointerString hash]  (in CoreFoundation)        153
+        _CFPreferencesCopyAppValueWithContainer  (in CoreFoundation)        145
+        -[__NSCFString isEqual:]  (in CoreFoundation)        142
+        <deduplicated_symbol>  (in libsystem_malloc.dylib)        126
+        swift::equalContexts(swift::TargetContextDescriptor<swift::InProcess> const*, swift::TargetContextDescriptor<swift::InProcess> const*)  (in libswiftCore.dylib)        116
+        swift::metadataimpl::ValueWitnesses<swift::metadataimpl::NativeBox<unsigned int, 4ul, 4ul, 4ul>>::initializeWithCopy(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        105
+        Prefs.calendarTint.unsafeMutableAddressor  (in Chronotheca.debug.dylib)        104
+        getSuperclassForMaybeIncompleteMetadata(swift::TargetMetadata<swift::InProcess> const*, std::optional<swift::MetadataState>, bool)  (in libswiftCore.dylib)        102
+        <deduplicated_symbol>  (in libswiftCore.dylib)        95
+        os_unfair_lock_lock  (in libsystem_platform.dylib)        91
+        -[_CFXPreferencesHandle copyPrefs]  (in CoreFoundation)        82
+        min<A>(_:_:)  (in libswiftCore.dylib)        81
+        pthread_getspecific  (in libsystem_pthread.dylib)        77
+        _platform_memmove  (in libsystem_platform.dylib)        72
+        _swift_class_getSuperclass  (in libswiftCore.dylib)        71
+        CFStringGetLength  (in CoreFoundation)        64
+        os_unfair_lock_unlock  (in libsystem_platform.dylib)        60
