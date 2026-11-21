@@ -88,7 +88,7 @@ struct MapScreen: View {
                 // Новая булавка — новая панель: поля не должны
                 // остаться от прежней точки.
                 PointPanel(place: selected, typeAtOnce: selected.file == nil && me == nil,
-                           cancel: cancel, done: name,
+                           done: name,
                            remove: selected.file == nil ? nil : { ask(selected) },
                            navigate: { MapActions.navigate($0) },
                            save: { save($0, to: $1) })

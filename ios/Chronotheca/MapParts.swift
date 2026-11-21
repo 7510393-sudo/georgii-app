@@ -3,8 +3,8 @@ import UIKit
 import MapKit
 
 /// Плашка точки сверху карты — новой и записанной, одна (P803, вместо
-/// облачка с «Изменить» перед ней): название, что здесь было, координаты
-/// кнопкой, «Удалить», «Отмена», «Отметить» (P213, P228). Полупрозрачная —
+/// облачка с «Изменить» перед ней): название, что здесь было и одним рядом
+/// «В навигатор», «В дневник», «Отметить», «…» (P1003). Полупрозрачная —
 /// под ней видно булавку. Клавиатура открывается сразу только у новой.
 struct PointPanel: View {
 
@@ -12,7 +12,6 @@ struct PointPanel: View {
     /// Клавиатура сразу — у новой булавки; записанное место и синюю точку
     /// «я здесь» сперва смотрят (P803, P804).
     let typeAtOnce: Bool
-    let cancel: () -> Void
     let done: (Place) -> Void
     /// Удалить записанное место; у новой булавки — нет.
     let remove: (() -> Void)?
@@ -23,7 +22,6 @@ struct PointPanel: View {
 
     private enum Field { case name, text }
     @FocusState private var focused: Field?
-    @State private var copied = false
     /// Открыт выбор дня для «В дневник» (P984).
     @State private var choosing = false
     @State private var day = DayStore.today()
@@ -49,6 +47,11 @@ struct PointPanel: View {
                 .background(Look.planBg, in: RoundedRectangle(cornerRadius: 8))
                 .overlay(RoundedRectangle(cornerRadius: 8)
                     .strokeBorder(Look.inkFaint.opacity(0.6), lineWidth: 1))
+                // Поле кончается перед уголком настроек (P1003, вместо
+                // «шестерёнка заходит на поле» P851): плашка у самого верха,
+                // уголок — над ней справа (видимая ширина уголка ≈ 0,86 его
+                // стороны; от края экрана до поля — 22 точки отступов).
+                .padding(.trailing, Corner.size * 0.86 + 6 - 22)
             // Не выше шести строк; длиннее — прокручивается внутри.
             TextField(T("Что здесь было", "What happened here"), text: $place.text, axis: .vertical)
                 .focused($focused, equals: .text)
@@ -58,32 +61,13 @@ struct PointPanel: View {
                 .background(Look.planBg, in: RoundedRectangle(cornerRadius: 8))
                 .overlay(RoundedRectangle(cornerRadius: 8)
                     .strokeBorder(Look.inkFaint.opacity(0.6), lineWidth: 1))
-            // Строки координат нет (P851, отменяет тихую строку P813):
-            // копирует их «Копировать» внизу.
-            // Все кнопки плашки — одного вида (P813): надпись в окантовке,
-            // равной ширины в ряду. Расстановка — автора (P996): вверху
-            // «Поделиться · В навигатор · Копировать», внизу «Отмена» с
-            // левого края, «В дневник» посередине, «Отметить» справа;
-            // «Удалить» — у записанной точки, между «Отменой» и «В дневник»
-            // (у новой булавки её убирает «Отмена»).
+            // Кнопки — одним рядом (P1003, автор 21.11, вместо двух рядов
+            // P996): «В навигатор · В дневник · Отметить · …». В «…» —
+            // «Поделиться» и «Удалить» (у записанной точки). «Копировать»
+            // убран: координаты и ссылка — в «Поделиться»; «Отмена» убрана:
+            // плашку закрывает касание по карте мимо неё.
             HStack(spacing: 6) {
-                key(T("Поделиться", "Share")) {
-                    MapActions.share(GeoPoint(title: place.name, at: place.coordinate))
-                }
                 key(T("В навигатор", "Directions")) { navigate(place) }
-                key(copied ? T("Скопировано", "Copied") : T("Копировать", "Copy")) {
-                    PlaceActions.copy(place.coordinate)
-                    Feel.light()
-                    copied = true
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { copied = false }
-                }
-                .accessibilityLabel(T("Скопировать координаты ", "Copy coordinates ") + Geo.text(place.coordinate))
-            }
-            HStack(spacing: 6) {
-                key(T("Отмена", "Cancel"), run: cancel)
-                if let remove {
-                    key(T("Удалить", "Delete"), run: remove)
-                }
                 // «В дневник» (P984): точка — в сегодняшний день или в
                 // другой; отправили — плашка закрыта (P996).
                 Menu {
@@ -101,6 +85,26 @@ struct PointPanel: View {
                 // «переименовать Готово в Отметить и нарисовать стрелочку —
                 // копию той, что ставится на карту»; вместо «Готово» P813).
                 key(T("Отметить", "Mark"), strong: true, mark: true) { done(place) }
+                Menu {
+                    Button {
+                        MapActions.share(GeoPoint(title: place.name, at: place.coordinate))
+                    } label: {
+                        Label(T("Поделиться", "Share"), systemImage: "square.and.arrow.up")
+                    }
+                    if let remove {
+                        Button(role: .destructive, action: remove) {
+                            Label(T("Удалить", "Delete"), systemImage: "trash")
+                        }
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .font(.system(size: 15, weight: .semibold))
+                        .frame(width: 30, height: 24)
+                        .modifier(Outlined(narrow: true))
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(Look.accent)
+                .accessibilityLabel(T("Ещё", "More"))
             }
         }
         .font(Look.sans(15))
@@ -209,7 +213,7 @@ enum MapActions {
     }
 }
 
-/// Что можно сделать с точкой: открыть в Картах, скопировать.
+/// Что можно сделать с точкой: открыть в Картах.
 enum PlaceActions {
 
     /// Открыть в Картах Apple с дорогой до точки.
@@ -242,11 +246,6 @@ enum PlaceActions {
         top.present(sheet, animated: true)
     }
 
-    /// Скопировать точку словами «59.93863, 30.31413» — их понимает любой
-    /// навигатор и любые карты.
-    static func copy(_ c: CLLocationCoordinate2D) {
-        UIPasteboard.general.string = Geo.text(c)
-    }
 }
 
 /// Кнопка в окантовке (P414): тонкая рамка цвета кнопки на светлой
