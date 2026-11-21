@@ -61,11 +61,31 @@ struct PointPanel: View {
             // Строки координат нет (P851, отменяет тихую строку P813):
             // копирует их «Копировать» внизу.
             // Все кнопки плашки — одного вида (P813): надпись в окантовке,
-            // равной ширины в ряду. Вверху — куда деть точку (P804).
+            // равной ширины в ряду. Расстановка — автора (P996): вверху
+            // «Поделиться · В навигатор · Копировать», внизу «Отмена» с
+            // левого края, «В дневник» посередине, «Отметить» справа;
+            // «Удалить» — у записанной точки, между «Отменой» и «В дневник»
+            // (у новой булавки её убирает «Отмена»).
             HStack(spacing: 6) {
+                key(T("Поделиться", "Share")) {
+                    MapActions.share(GeoPoint(title: place.name, at: place.coordinate))
+                }
                 key(T("В навигатор", "Directions")) { navigate(place) }
+                key(copied ? T("Скопировано", "Copied") : T("Копировать", "Copy")) {
+                    PlaceActions.copy(place.coordinate)
+                    Feel.light()
+                    copied = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { copied = false }
+                }
+                .accessibilityLabel(T("Скопировать координаты ", "Copy coordinates ") + Geo.text(place.coordinate))
+            }
+            HStack(spacing: 6) {
+                key(T("Отмена", "Cancel"), run: cancel)
+                if let remove {
+                    key(T("Удалить", "Delete"), run: remove)
+                }
                 // «В дневник» (P984): точка — в сегодняшний день или в
-                // другой; своё место связывается с днём только по желанию.
+                // другой; отправили — плашка закрыта (P996).
                 Menu {
                     Button(T("В сегодня", "To today")) { save(place, DayStore.today()) }
                     Button(T("В другой день…", "To another day…")) {
@@ -77,25 +97,6 @@ struct PointPanel: View {
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(Look.accent)
-                key(T("Поделиться", "Share")) {
-                    MapActions.share(GeoPoint(title: place.name, at: place.coordinate))
-                }
-            }
-            // Внизу — «Копировать» в одном ряду с «Отмена» и «Отметить»;
-            // «Удалить» — у записанной точки (P803), у новой булавки её
-            // убирает «Отмена».
-            HStack(spacing: 6) {
-                if let remove {
-                    key(T("Удалить", "Delete"), run: remove)
-                }
-                key(copied ? T("Скопировано", "Copied") : T("Копировать", "Copy")) {
-                    PlaceActions.copy(place.coordinate)
-                    Feel.light()
-                    copied = true
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { copied = false }
-                }
-                .accessibilityLabel(T("Скопировать координаты ", "Copy coordinates ") + Geo.text(place.coordinate))
-                key(T("Отмена", "Cancel"), run: cancel)
                 // «Отметить» со стрелкой точки карты (P989, автор по 314:
                 // «переименовать Готово в Отметить и нарисовать стрелочку —
                 // копию той, что ставится на карту»; вместо «Готово» P813).

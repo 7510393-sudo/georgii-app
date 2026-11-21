@@ -840,28 +840,6 @@ final class DayStore: ObservableObject {
         return true
     }
 
-    /// Подправить точку, только что отправленную с карты (P985): название
-    /// и что здесь было вписали уже после «В дневник». Строка точки ищется
-    /// целиком — в ленте, в тексте, в рядах плана; `false` — не нашлась.
-    @discardableResult
-    func replacePoint(_ old: GeoPoint, with new: GeoPoint) -> Bool {
-        let was = Geo.pointLine(old), now = Geo.pointLine(new)
-        guard was != now else { return true }
-        if canEditStrip, let i = photos.firstIndex(of: was) {
-            photos[i] = now
-        } else if canEditDiary, diaryText.contains(was) {
-            diaryText = diaryText.replacingOccurrences(of: was, with: now)
-        } else if canEditPlan,
-                  let r = planRows.firstIndex(where: { $0.verbatim?.contains(was) == true }),
-                  let line = planRows[r].verbatim {
-            planRows[r].verbatim = line.replacingOccurrences(of: was, with: now)
-        } else {
-            return false
-        }
-        save()
-        return true
-    }
-
     /// Убрать из открытого дня все точки в этом месте (P985: своё место
     /// удаляют «и из дневника») — из ленты, из текста, из рядов плана.
     /// Сколько убрано.
