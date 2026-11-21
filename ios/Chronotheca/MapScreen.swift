@@ -38,9 +38,6 @@ struct MapScreen: View {
     /// Дни дневника, где лежит удаляемое место (P985): есть — спросить,
     /// убрать ли точку и оттуда.
     @State private var linked: [Date] = []
-    /// Что отправили «В дневник» с открытой плашки (P985): пока она
-    /// открыта, «Отметить» дописывает туда название и что здесь было.
-    @State private var sent: Sent?
     @State private var searching = false
     /// Что сейчас видно на карте — поиск ищет рядом. Не состояние экрана:
     /// карта двигается часто, перерисовывать всё незачем.
@@ -59,11 +56,6 @@ struct MapScreen: View {
     @State private var picked = Date.distantPast
 
     enum Panel { case naming }
-
-    struct Sent {
-        var day: Date
-        var point: GeoPoint
-    }
 
     /// Несколько записей под одним кружком — их список (P451).
     @State private var entryList: MapEntryGroup?
@@ -107,10 +99,6 @@ struct MapScreen: View {
             // прежде вверху между уголками, P283).
         }
         .animation(.easeOut(duration: 0.15), value: panel)
-        // Другая точка или плашка закрыта — отправленное остаётся в дневнике
-        // как есть (P985).
-        .onChange(of: selected?.id) { _, _ in sent = nil }
-        .onChange(of: panel) { _, now in if now == nil { sent = nil } }
         .overlay(alignment: .bottom) { bar }
         // Вкладка у правого края посередине (P855): подсказывает, что
         // экран смахивается к «Дневнику». Касаний не берёт — край
@@ -519,10 +507,6 @@ struct MapScreen: View {
     /// один значок (P404).
     private func name(_ given: Place) {
         hideKeyboard()
-        // Отправленное «В дневник» с этой плашки — получает название и что
-        // здесь было (P985).
-        if let sent { follow(sent, with: given) }
-        sent = nil
         withAnimation { panel = nil }
         var place = given
         let unnamed = place.name.trimmingCharacters(in: .whitespaces).isEmpty
@@ -568,12 +552,15 @@ struct MapScreen: View {
         withAnimation { panel = .naming }
     }
 
-    /// «В дневник» (P984, P985): точка ложится в ленту внизу страницы
-    /// выбранного дня (P588) — сегодня или день из календаря; будущий день —
-    /// в ленту плана. Карта остаётся как была, с открытой плашкой: к дню не
-    /// переходим (P985, отменяет переход P984), только тающая надпись. Дальше
-    /// можно вписать название и что здесь было — «Отметить» допишет их в
-    /// дневник; не вписали — в дневнике «Сохранено 19 ноября».
+    /// «В дневник» (P984, P985, P996): точка ложится в ленту внизу страницы
+    /// выбранного дня (P588) — сегодня или день из календаря — с тем
+    /// названием и «что здесь было», что вписаны сейчас; не вписали — в
+    /// дневнике «Сохранено 19 ноября». К дню не переходим (P985), и это
+    /// законченное действие (P996, автор: «казалось бы, действие уже
+    /// сделано, а плашка не растворяется — снова решать, оставлять ли точку
+    /// на карте»): плашка тает, как от «Отмены»; новая булавка своим местом
+    /// не становится — точку видно в «Записях на карте» (P451). Своё место —
+    /// «Отметить», по желанию.
     private func save(_ place: Place, to day: Date) {
         hideKeyboard()
         let point = GeoPoint(title: Self.title(of: place) ?? Self.savedTitle(), at: place.coordinate)
@@ -588,22 +575,12 @@ struct MapScreen: View {
             return (ok, store.closedReason)
         }
         guard written else { return shell.say(reason) }
-        sent = Sent(day: day, point: point)
         Feel.light()
-        shell.say(T("Отправлено в дневник", "Sent to the diary"), for: 2)
-    }
-
-    /// «Отметить» после «В дневник» (P985): точка в дне получает название и
-    /// что здесь было. Ничего не вписали — остаётся как была.
-    private func follow(_ sent: Sent, with place: Place) {
-        guard let title = Self.title(of: place) else { return }
-        let now = GeoPoint(title: title, at: sent.point.at)
-        guard now != sent.point else { return }
-        let ok = inDay(sent.day) { store.replacePoint(sent.point, with: now) }
-        if !ok {
-            shell.say(T("Точку в дневнике поправить не вышло — там она прежняя.",
-                        "Could not update the place in the diary — it stays as it was."))
-        }
+        // Показаны свои места — подсказать, где теперь искать точку (P996).
+        shell.say(mapState.entries ? T("Отправлено в дневник", "Sent to the diary")
+                  : T("Отправлено в дневник · видно в «Записях на карте»",
+                      "Sent to the diary · shown in “Entries on the map”"), for: 2.5)
+        cancel()
     }
 
     /// Убрать точку из дней дневника (P985) — каждый день сперва читается,
