@@ -296,8 +296,10 @@ final class Ribbon: ObservableObject {
     let lifting = Glide()
     /// Ход листа «Сегодня» поверх открытого дня (P924, P926).
     let rise = RiseMove()
-    /// Карточка раскрывается в лист (P995).
+    /// Карточка выезжает к верху и разворачивается вниз (P1011).
     let unfold = Unfold()
+    /// Лист сворачивается вверх в полосу, и та летит в гнездо (P1015).
+    let fold = FoldUp()
 
     /// Лента уже не «только что открыта» (P898): закрытая карточка села, и
     /// перечитанная опись больше не ставит ленту в покой у дня. Прежде,
@@ -1025,6 +1027,51 @@ final class Unfold: ObservableObject {
     }
 }
 
+/// Закрытие — пара раскрытию (P1015, автор: «сделать такое же закрытие»;
+/// раскрытие — P1011). Лист стоит, где его отпустили (`at`), и шторкой
+/// сворачивается вверх до полосы высотой с карточку (`visible`); полоса —
+/// снимок верха листа (`band`) — летит в гнездо и сужается до карточки,
+/// там её сменяет сама карточка. Пока сворачивается, виден сам лист; когда
+/// летит полоса, лист скрыт (`gone`).
+final class FoldUp: ObservableObject {
+    /// Где верх листа, пока он сворачивается; `nil` — лист идёт за лентой.
+    @Published var at: CGFloat?
+    /// Сколько листа видно сверху; `nil` — весь.
+    @Published var visible: CGFloat?
+    /// Снимок полосы — летит вместо схемы.
+    @Published var band: UIImage?
+    /// Лист скрыт: летит полоса.
+    @Published var gone = false
+    /// Где верх листа от верха места: у будущего — под полоской «Сегодня».
+    var under: CGFloat = 0
+    let glide = Glide()
+
+    /// Как сворачивается и сколько летит полоса.
+    static let shut: Double = 0.24
+    static let flight: Double = 0.36
+
+    func clear() {
+        glide.stop()
+        if at != nil { at = nil }
+        if visible != nil { visible = nil }
+        if band != nil { band = nil }
+        if gone { gone = false }
+        under = 0
+    }
+
+    /// Снимок места экрана — полосы верха листа.
+    static func picture(_ rect: CGRect) -> UIImage? {
+        guard let window = UIApplication.shared.connectedScenes
+                .compactMap({ ($0 as? UIWindowScene)?.keyWindow }).first,
+              rect.width > 0, rect.height > 0 else { return nil }
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = window.screen.scale
+        return UIGraphicsImageRenderer(bounds: rect, format: format).image { _ in
+            window.drawHierarchy(in: window.bounds, afterScreenUpdates: false)
+        }
+    }
+}
+
 /// Насколько лист «Сегодня» лёг поверх открытого дня: от нуля до единицы.
 /// Смотрит на него только сам этот лист — экран целиком не перерисовывается.
 final class RiseMove: ObservableObject {
@@ -1084,12 +1131,16 @@ final class Landing: ObservableObject {
 /// и днём недели (P896, вместо кольца P876). Касание или тяга — в день.
 struct FollowRibbon: ViewModifier {
     @ObservedObject var ribbon: Ribbon
+    /// Лист сворачивается вверх (P1015) — стоит, где его отпустили.
+    @ObservedObject var fold: FoldUp
     let live: Bool
 
     func body(content: Content) -> some View {
-        let y = live ? ribbon.y : 0
+        // Отпущенный лист складывается с того места, где его отпустили
+        // (P1015): с первого же кадра, ещё до того, как посадка его запомнит.
+        let y = live || ribbon.deck.isLanding ? ribbon.y : 0
         content
-            .offset(y: FollowRibbon.shown(y, height: ribbon.height, stick: ribbon.stick))
+            .offset(y: fold.at ?? FollowRibbon.shown(y, height: ribbon.height, stick: ribbon.stick))
             // Лист всегда поверх картотеки (P860, вместо ухода под неё за
             // верхней четвертью P831): карточки будущего выходят из-под его
             // низа, а он остаётся у верха.

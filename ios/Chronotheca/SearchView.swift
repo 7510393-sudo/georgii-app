@@ -401,6 +401,7 @@ struct SearchView: View {
                 ribbon.unseat()
                 ribbon.flight.stop()
                 ribbon.foldTo = nil
+                ribbon.fold.clear()
                 return
             }
             land(closed, at)
@@ -454,6 +455,13 @@ struct SearchView: View {
         let lead = FollowRibbon.shown(ribbon.y, height: height, stick: ribbon.stick)
         let under: CGFloat = side < 0 ? FollowRibbon.futureTop : 0
         var from = CGRect(x: 0, y: lead + under, width: UIScreen.main.bounds.width, height: height - under)
+        // Лист стоит, где его отпустили, и сворачивается вверх (P1015).
+        let fold = ribbon.fold
+        withTransaction(quiet) {
+            fold.under = under
+            fold.at = lead
+            fold.visible = height - under
+        }
         var target = CGRect.zero
         // Замер замирания в миг закрытия (P929): когда показан первый кадр
         // хода схемы, какой кадр был самым долгим и сколько стоила последняя
@@ -495,6 +503,7 @@ struct SearchView: View {
             let settled: Bool
             if case .landing(_, _, .settling) = shell.deck { settled = !cut } else { settled = false }
             withTransaction(quiet) {
+                fold.clear()
                 store.go(to: DayStore.today())
                 shell.go(settled ? .landed : .cutShort)
             }
@@ -557,6 +566,33 @@ struct SearchView: View {
             })
         }
 
+        /// Лист шторкой сворачивается вверх до полосы высотой с карточку
+        /// (P1015); свернулся — снимок полосы летит в гнездо, лист уходит.
+        func shutUp() {
+            let width = UIScreen.main.bounds.width
+            let card = about.height - Search.overlap
+            let band = max(Search.tabHeight + 40, card * width / max(1, about.width))
+            let full = height - under
+            fold.glide.run(FoldUp.shut, step: { p in
+                guard alive() else { return }
+                fold.visible = full + (band - full) * p
+            }, then: {
+                guard alive() else { return }
+                let rect = CGRect(x: 0, y: lead + under, width: width, height: band)
+                let area = ribbon.unfold.area
+                let picture = FoldUp.picture(rect.offsetBy(dx: area.minX, dy: area.minY))
+                withTransaction(quiet) {
+                    fold.band = picture
+                    // Снимка нет — летит схема с места полосы.
+                    if picture == nil { fold.visible = nil }
+                    fold.gone = true
+                    ribbon.foldTo = rect
+                }
+                from = rect
+                fly(in: FoldUp.flight)
+            })
+        }
+
         /// Лента встала: картотека проступает на своём месте, схема — к
         /// точному гнезду, если оно не там, куда она уже летит.
         func stand(_ frame: CGRect?) {
@@ -590,7 +626,7 @@ struct SearchView: View {
         DispatchQueue.main.async {
             guard alive() else { return }
             target = hover(over: about)
-            fly(in: Self.flight)
+            shutUp()
             if spot.inPlace {
                 stand(ribbon.frames[closed])
             } else if known {

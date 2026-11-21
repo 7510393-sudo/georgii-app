@@ -433,6 +433,8 @@ struct FoldGhost: View {
     @ObservedObject var ribbon: Ribbon
     /// Ступени посадки: схема видна, пока летит.
     @ObservedObject var landing: Landing
+    /// Полоса свёрнутого листа (P1015) — летит вместо схемы.
+    @ObservedObject var fold: FoldUp
     let size: CGSize
 
     var body: some View {
@@ -444,9 +446,32 @@ struct FoldGhost: View {
         let under: CGFloat = side == .future ? FollowRibbon.futureTop : 0
         let start = CGRect(x: 0, y: top + under, width: size.width, height: size.height - under)
         let r = ribbon.foldTo ?? start
+        if let band = fold.band {
+            // Полоса свёрнутого листа летит в гнездо и сужается до карточки
+            // (P1015); долетела — её сменяет сама карточка, полоса тает.
+            Image(uiImage: band)
+                .resizable()
+                .scaledToFit()
+                .frame(width: r.width, height: r.height, alignment: .top)
+                .shadow(color: .black.opacity(0.15), radius: 5, y: 3)
+                .offset(x: r.minX, y: r.minY)
+                .frame(width: size.width, height: size.height, alignment: .topLeading)
+                .opacity(folding && !landing.flown ? 1 : 0)
+                .animation(.easeOut(duration: 0.2), value: landing.flown)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+        } else if fold.visible == nil {
+            // Снимка полосы нет — летит схема, как прежде. Пока лист
+            // сворачивается, схемы нет: виден сам лист.
+            schema(r, folding: folding, aged: side == .past)
+        }
+    }
+
+    /// Схема карточки — если снимка полосы нет.
+    private func schema(_ r: CGRect, folding: Bool, aged: Bool) -> some View {
         // Из листа к гнезду — одним плавным движением (P895); ход задаёт
         // посадка (P923): по его концу она и узнаёт, что схема долетела.
-        FoldSchema(aged: side == .past)
+        FoldSchema(aged: aged)
             .frame(width: r.width, height: r.height)
             .offset(x: r.minX, y: r.minY)
             .frame(width: size.width, height: size.height, alignment: .topLeading)
@@ -498,8 +523,21 @@ struct UnfoldVeil: ViewModifier {
     }
 }
 
+/// Лист, пока закрывается (P1015): сворачивается вверх — виден только сверху
+/// полосой `fold.visible`; полетела полоса — листа нет.
+struct FoldVeil: ViewModifier {
+    @ObservedObject var fold: FoldUp
+    let landing: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .clipShape(TopBand(bottom: fold.visible.map { (fold.at ?? 0) + fold.under + $0 }))
+            .opacity(landing && fold.gone ? 0 : 1)
+    }
+}
+
 /// Полоса от верха до `bottom`; `nil` — без края.
-private struct TopBand: Shape {
+struct TopBand: Shape {
     let bottom: CGFloat?
 
     func path(in rect: CGRect) -> Path {

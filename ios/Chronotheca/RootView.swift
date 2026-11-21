@@ -676,7 +676,7 @@ struct RootView: View {
             // Схема карточки, в которую складывается закрытый день (P886).
             // Место дня на экране — для раскрытия карточки (P1011).
             UnfoldGhost(unfold: shell.ribbon.unfold, size: size)
-            FoldGhost(ribbon: shell.ribbon, landing: shell.ribbon.landing, size: size)
+            FoldGhost(ribbon: shell.ribbon, landing: shell.ribbon.landing, fold: shell.ribbon.fold, size: size)
                 .zIndex(0.5)
             DayPages()
                 .frame(width: size.width,
@@ -686,7 +686,7 @@ struct RootView: View {
                        // прежнее место» (видео автора к 286).
                        height: size.height - (store.isFuture ? FollowRibbon.futureTop : 0))
                 .frame(width: size.width, height: size.height, alignment: .bottom)
-                .modifier(FollowRibbon(ribbon: shell.ribbon, live: shell.deck.isLive))
+                .modifier(FollowRibbon(ribbon: shell.ribbon, fold: shell.ribbon.fold, live: shell.deck.isLive))
                 // У края остаётся только лист сегодняшнего дня (P863).
                 .onChange(of: store.isToday, initial: true) { _, today in shell.ribbon.stick = today }
                 // День закрыт в карточку (P834) — листа нет: место дня из
@@ -694,13 +694,12 @@ struct RootView: View {
                 // полэкрана листа, под ним пустой стол).
                 // Тает, а не пропадает разом (P859): низ поднятого листа,
                 // что торчал у верха экрана, исчезал рывком. Обратно — сразу.
-                // Тает, а складывается в карточку его схема — `FoldGhost`
-                // под ним (P886, вместо сжатия самого листа P883).
-                .animation(shell.deck.isLanding ? .easeOut(duration: 0.2) : nil) {
-                    $0.opacity(shell.deck.isLanding ? 0 : 1)
-                }
+                // Сворачивается вверх шторкой и уходит, когда в гнездо
+                // полетела его полоса (P1015; вместо таяния листа над схемой
+                // P886).
                 .allowsHitTesting(shell.screen == .today)
                 .modifier(UnfoldVeil(unfold: shell.ribbon.unfold, move: shell.ribbon.unfold.move))
+                .modifier(FoldVeil(fold: shell.ribbon.fold, landing: shell.deck.isLanding))
             // «Сегодня» с открытого дня — сразу, поверх него (P924).
             if todayRise != 0 {
                 TodayRise(from: todayRise, size: size, move: shell.ribbon.rise)
