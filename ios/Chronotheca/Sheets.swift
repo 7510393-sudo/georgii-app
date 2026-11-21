@@ -172,8 +172,9 @@ struct SettingsSticker: View {
         NoteSection(title: T("Записи", "Entries"))
         // Порядок — от того, где лежат записи, к тому, как их взять с
         // собой (P428).
+        // «Данные в сохранности?» — строчкой под хранилищем, а не своей
+        // строкой (P1005, свежий взгляд `docs/88` п. 11).
         place
-        safety
         // Жмут — и весь архив переезжает, а не только то, что будет
         // написано дальше (P325).
         NoteRow(title: T("Перенести архив", "Move the archive elsewhere")) {
@@ -201,13 +202,23 @@ struct SettingsSticker: View {
         NoteRow(title: T("Корзина", "Trash")) {
             NoteButton(title: T("Открыть ›", "Open ›")) { showingTrash = true }
         }
-        // Перенос из других дневников — бесплатно всегда (M14, P378).
-        NoteRow(title: T("Из другого приложения", "From another app")) {
-            NoteButton(title: T("Открыть ›", "Open ›")) { showingImport = true }
-        }
-        // Уйти можно в любой день: записи и так обычные файлы (P428).
-        NoteRow(title: T("В другое приложение", "To another app")) {
-            NoteButton(title: T("Как ›", "How ›")) { showingLeave = true }
+        // Другие приложения — одной строкой (P1005, вместо двух строк
+        // «Из другого» и «В другое»): перенос из других дневников —
+        // бесплатно всегда (M14, P378); уйти можно в любой день — записи и
+        // так обычные файлы (P428).
+        NoteRow(title: T("Другие приложения", "Other apps")) {
+            Menu {
+                Button(T("Из другого приложения", "From another app")) { showingImport = true }
+                Button(T("В другое приложение", "To another app")) { showingLeave = true }
+            } label: {
+                Text(T("Открыть ›", "Open ›"))
+                    .font(Look.sans(13.5, weight: .semibold))
+                    .lineLimit(1)
+                    .fixedSize()
+                    .frame(minWidth: NoteButton.width - 22)
+                    .modifier(Tag(look: .plain))
+            }
+            .buttonStyle(.plain)
         }
         .alert(T("Как перейти в другое приложение", "How to move to another app"), isPresented: $showingLeave) {
             Button(T("Собрать PDF", "Make a PDF")) { showingPDF = true }
@@ -380,7 +391,9 @@ struct SettingsSticker: View {
             }
         }
         // Пройти первый запуск самому — в пробной папке (P452): свои записи
-        // остаются на месте, в них ничего не пишется.
+        // остаются на месте, в них ничего не пишется. Только в TestFlight и
+        // в проверках (P1005): в App Store эта строка — для автора, не для
+        // человека.
         if vault.inTrial {
             NoteRow(title: T("Идёт проба первого запуска", "Trying the first launch"),
                     detail: T("Образцы — в пробной папке. Ваши записи на месте.",
@@ -390,7 +403,7 @@ struct SettingsSticker: View {
                     vault.endTrial()
                 }
             }
-        } else {
+        } else if Build.testing {
             NoteRow(title: T("Пройти первый запуск", "Try the first launch"),
                     detail: T("Как увидит приложение новый человек — в пробной папке.",
                               "See the app as a newcomer does — in a trial folder.")) {
@@ -496,6 +509,7 @@ struct SettingsSticker: View {
                     if let link = vault.filesLink { openURL(link) }
                 }
             }
+            safety
             // Без связи — «Хранить загруженным» (P633, docs/50): в iCloud
             // iPhone выгружает давно не открытые файлы, и без сети записи
             // не открываются.
@@ -524,34 +538,33 @@ struct SettingsSticker: View {
         }
     }
 
-    /// «Данные в сохранности?» — сразу под строкой хранилища: да, если папка
-    /// не в самом приложении, и заметное «нет», если записи живут только
-    /// внутри «RollingDays» и пропадут вместе с ней (P326).
+    /// «Данные в сохранности?» — строчкой сразу под хранилищем (P1005,
+    /// вместо своей строки с ярлычком P326): зелёное «в сохранности» или
+    /// заметное красное «не защищены», если записи живут только внутри
+    /// «RollingDays» и пропадут вместе с ней. Касание — объяснение.
     private var safety: some View {
-        NoteRow(title: T("Данные в сохранности?", "Is my data safe?")) {
-            Button {
-                showingSafety = true
-            } label: {
-                // Ярлычок не уже прочих кнопок (P979, P982).
-                Group {
-                    if vault.onPhone {
-                        HStack(spacing: 4) {
-                            Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.yellow)
-                            Text(T("НЕТ ›", "NO ›")).font(Look.sans(13.5, weight: .bold)).foregroundStyle(.red)
-                        }
-                    } else {
-                        Text(T("✓ да ›", "✓ yes ›"))
-                            .font(Look.sans(13.5, weight: .semibold))
-                            .foregroundStyle(Color(red: 0.23, green: 0.6, blue: 0.35))
-                    }
+        Button {
+            showingSafety = true
+        } label: {
+            HStack(spacing: 5) {
+                if vault.onPhone {
+                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.yellow)
+                    Text(T("Данные не защищены", "Your data is not protected") + " ›")
+                        .font(Look.sans(13.5, weight: .bold))
+                        .foregroundStyle(.red)
+                } else {
+                    Text("✓ " + T("Данные в сохранности", "Your data is safe") + " ›")
+                        .font(Look.sans(13, weight: .semibold))
+                        .foregroundStyle(Color(red: 0.23, green: 0.6, blue: 0.35))
                 }
-                .lineLimit(1)
-                .fixedSize()
-                .frame(minWidth: NoteButton.width - 22)
-                .modifier(Tag(look: .plain))
             }
-            .buttonStyle(.plain)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 14)
+            .padding(.top, 2)
+            .padding(.bottom, 8)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
         .sheet(isPresented: $showingSafety) {
             SafetySheet(onPhone: vault.onPhone, inCloud: vault.inCloud, stuck: vault.uploadStuck()) {
                 showingSafety = false
@@ -683,6 +696,16 @@ enum Build {
         let build = info?["CFBundleVersion"] as? String ?? "?"
         return "\(version) (\(build))"
     }
+
+    /// Сборка из TestFlight, Xcode или проверок, а не из App Store (P1005):
+    /// у TestFlight чек покупок — «sandboxReceipt», у отладки — с флагом.
+    static let testing: Bool = {
+        #if DEBUG
+        return true
+        #else
+        return Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
+        #endif
+    }()
 }
 
 // MARK: - Ролик времени
