@@ -200,10 +200,13 @@ struct SchemeChoice: View {
         tint == "none" ? "none" : plain ? "distance" : "paper"
     }
 
+    /// Кнопки — по надписи, как у темы и шрифта, справа от названия; не
+    /// помещаются — переходят на вторую строку (P1002, автор по 322: «зачем
+    /// такая большая кнопка „Старая бумага“, сделать всё в две строки»;
+    /// отменяет кнопку во всю ширину P997).
     var body: some View {
-        Grid(horizontalSpacing: 4, verticalSpacing: 4) {
-            GridRow { button(options[0]).gridCellColumns(2) }
-            GridRow { button(options[1]); button(options[2]) }
+        Flow(spacing: 4, trailing: true) {
+            ForEach(options.indices, id: \.self) { button(options[$0]) }
         }
     }
 
@@ -223,11 +226,10 @@ struct SchemeChoice: View {
                 pending = nil
             }
         } label: {
-            // Кнопка одной ширины со столбцом (P691).
             Text(name)
                 .font(Look.sans(13.5, weight: on ? .semibold : .regular))
                 .lineLimit(1)
-                .frame(maxWidth: .infinity)
+                .fixedSize()
                 .modifier(Tag(look: on ? .chosen : .plain))
         }
         .buttonStyle(.plain)
