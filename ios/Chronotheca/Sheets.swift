@@ -361,16 +361,11 @@ struct SettingsSticker: View {
             .padding(.horizontal, 12)
             .padding(.top, -3)
             .padding(.bottom, 9)
-        // Четыре гаммы двумя столбцами справа от названия (P691, замена P650).
+        // Гамма — одним выбором, и «Старая бумага» — её пункт (P997, автор:
+        // «старая бумага — тоже цветовая гамма»; отменяет отдельный рычажок
+        // P730/P737 и шалфей с лавандой P683).
         NoteRow(title: T("Цветовая гамма", "Colour scheme")) {
-            SchemeChoice(selection: $calendarTint)
-        }
-        // «Старая бумага» (P730; с P737 — одним рычажком и уголок, и листок
-        // настроек; имя «Ретро» не прижилось, P738). Выключено — прошедшие
-        // дни просто цвета прошлого, листки белые, без износа и рваного края.
-        // Без пояснения (P753, слово автора).
-        NoteRow(title: T("Старая бумага", "Old paper")) {
-            Lever(isOn: Binding(get: { !plainPast }, set: { plainPast = !$0 }))
+            SchemeChoice(tint: $calendarTint, plain: $plainPast)
         }
     }
 

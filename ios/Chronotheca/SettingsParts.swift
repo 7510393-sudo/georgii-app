@@ -176,33 +176,40 @@ struct Choice<Value: Hashable>: View {
     }
 }
 
-/// Выбор цветовой гаммы (P498): кнопки — словом, без образцов (P647);
-/// четыре кнопки двумя столбцами (P691).
+/// Выбор цветовой гаммы (P498, P997): кнопки — словом, без образцов (P647).
+/// Три образа целиком, а не «цвет плюс фактура»: «Старая бумага» —
+/// абрикосовые цвета и прошлое старой бумагой с износом; «Абрикос» — те же
+/// цвета на ровной бумаге; «без цвета» — нейтральные серые, ровные. Под ними
+/// — прежние два значения настроек: гамма (`calendarTint`) и «без старой
+/// бумаги» (`plainPast`).
 struct SchemeChoice: View {
-    @Binding var selection: String
+    @Binding var tint: String
+    @Binding var plain: Bool
     /// Нажатая гамма видна сразу; смена гаммы пересобирает все страницы и
     /// занимает время — она идёт следом (P687).
     @State private var pending: String?
 
     private var options: [(String, String)] {
-        [("distance", T("Абрикос", "Apricot")),
-         ("sage", T("Шалфей", "Sage")),
-         ("lavender", T("Лаванда", "Lavender")),
+        [("paper", T("Старая бумага", "Old paper")),
+         ("distance", T("Абрикос", "Apricot")),
          ("none", T("без цвета", "none"))]
+    }
+
+    /// Какой пункт выбран сейчас.
+    private var selection: String {
+        tint == "none" ? "none" : plain ? "distance" : "paper"
     }
 
     var body: some View {
         Grid(horizontalSpacing: 4, verticalSpacing: 4) {
-            GridRow { button(options[0]); button(options[1]) }
-            GridRow { button(options[2]); button(options[3]) }
+            GridRow { button(options[0]).gridCellColumns(2) }
+            GridRow { button(options[1]); button(options[2]) }
         }
     }
 
     private func button(_ option: (String, String)) -> some View {
         let (key, name) = option
-        let shown = pending ?? selection
-        // Прежний «weekday» читается как первая гамма.
-        let on = key == shown || (key == "distance" && shown == "weekday")
+        let on = key == (pending ?? selection)
         return Button {
             guard !on else { return }
             Feel.tick()
@@ -211,7 +218,8 @@ struct SchemeChoice: View {
             // потом начнётся перекраска (P692; сразу следом оба шага
             // попадали в один кадр, и отклика не было видно).
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                selection = key
+                plain = key != "paper"
+                tint = key == "none" ? "none" : "distance"
                 pending = nil
             }
         } label: {
