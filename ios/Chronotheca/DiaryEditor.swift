@@ -2168,6 +2168,56 @@ struct DiaryEditor: UIViewRepresentable {
             provisional = NSRange(location: sel.location, length: length)
             provisionalText = stamp
             textViewDidChange(view)
+            startPulse()
+        }
+
+        // MARK: - Время мигает, пока за ним ничего нет (P1039)
+
+        /// Автор: «время ставится автоматически, человек передумал писать,
+        /// стирает его, а оно появляется снова… это не очевидно; пока ничего
+        /// не напечатано, время должно моргать, а когда печать начнётся —
+        /// стоять». Мигает только рисунок: цвет отметки меняется поверх текста
+        /// (`addRenderingAttribute`), сам текст записи не трогается —
+        /// диктовку правки текста уже ломали (P960, P991).
+        private var pulse: CADisplayLink?
+
+        private func startPulse() {
+            guard pulse == nil else { return }
+            let link = CADisplayLink(target: self, selector: #selector(pulseTick))
+            link.preferredFrameRateRange = CAFrameRateRange(minimum: 20, maximum: 30, preferred: 30)
+            link.add(to: .main, forMode: .common)
+            pulse = link
+        }
+
+        private func stopPulse() {
+            pulse?.invalidate()
+            pulse = nil
+            if let tlm = view?.textLayoutManager {
+                tlm.removeRenderingAttribute(.foregroundColor, for: tlm.documentRange)
+            }
+        }
+
+        @objc private func pulseTick() {
+            guard let view, let p = provisional, view.markedTextRange == nil,
+                  let tlm = view.textLayoutManager, let tcm = tlm.textContentManager
+            else { return stopPulse() }
+            let ns = view.textStorage.string as NSString
+            // Начали писать или диктовать — время стоит, как всегда.
+            guard NSMaxRange(p) <= ns.length, ns.substring(with: p) == provisionalText,
+                  !Self.lineHasText(ns, from: NSMaxRange(p))
+            else { return stopPulse() }
+            guard let start = tcm.location(tcm.documentRange.location, offsetBy: p.location),
+                  let end = tcm.location(start, offsetBy: p.length),
+                  let range = NSTextRange(location: start, end: end)
+            else { return stopPulse() }
+            // Мягко, без вспышек (P893): от бледного к обычному и обратно
+            // за 1,2 с.
+            let phase = CACurrentMediaTime() * 2 * .pi / 1.2
+            let alpha = 0.15 + 0.85 * (0.5 + 0.5 * cos(phase))
+            tlm.removeRenderingAttribute(.foregroundColor, for: tlm.documentRange)
+            tlm.addRenderingAttribute(.foregroundColor,
+                                      value: UIColor(Look.inkFaint).withAlphaComponent(CGFloat(alpha)),
+                                      for: range)
         }
 
         /// Есть ли что-нибудь, кроме пробелов, от `from` до конца строки.
