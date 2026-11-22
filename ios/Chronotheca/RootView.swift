@@ -661,7 +661,8 @@ struct RootView: View {
                 .modifier(RibbonFade(ribbon: shell.ribbon, unfold: shell.ribbon.unfold,
                                      live: shell.deck.isLive,
                                      card: shell.deck.isLanding,
-                                     quiet: shell.deck.isPulled && !store.isToday))
+                                     quiet: shell.deck.isPulled && !store.isToday,
+                                     beside: shell.screen == .today && !shell.deck.isLive && !store.isToday))
                 // Пока карточка садится, картотеку не листают (P923, `docs/71`
                 // §3: чего нет в таблице переходов — не происходит).
                 .allowsHitTesting(shell.screen == .search && !shell.deck.isLanding)

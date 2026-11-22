@@ -306,11 +306,18 @@ struct RibbonFade: ViewModifier {
     /// месте (автор: «за листом зачем-то тянется картотека; убрать лишнее
     /// движение»).
     var quiet = false
+    /// Открыт прошедший или будущий день (P1027, автор: «открытая карточка
+    /// лежит поверх картотеки — почему справа от корешка белый фон?»):
+    /// справа от корешка видны карточки, что лежат под ним, а не стол.
+    /// Начали тянуть — уходят (P907), мягко.
+    var beside = false
 
     func body(content: Content) -> some View {
-        let shown: Double = unfold.from != nil ? 1 : !live || quiet ? 0 : card ? 1 : Double(min(1, abs(ribbon.y) / 90))
+        let shown: Double = unfold.from != nil || beside ? 1
+            : !live || quiet ? 0 : card ? 1 : Double(min(1, abs(ribbon.y) / 90))
         content
             .opacity(shown)
+            .animation(.easeOut(duration: 0.15), value: beside)
             // Под садящейся карточкой проступает, когда лента встала (P913,
             // P923): ступени посадки «летит» и «ждёт ленту».
             .animation(.easeInOut(duration: 0.2)) { $0.opacity(ribbon.deck.isVeiled ? 0 : 1) }
@@ -527,8 +534,15 @@ struct UnfoldVeil: ViewModifier {
 
     func body(content: Content) -> some View {
         let rest = max(0, unfold.area.height - unfold.top - unfold.height)
+        // В полёте (P1027) верхняя полоса листа сжата в рамку карточки.
+        // Без полёта — тождество: вид листа не пересобирается.
+        let m = unfold.morph
+        let s = m.map { $0.width / max(1, unfold.area.width) } ?? 1
         return content.clipShape(TopBand(bottom: unfold.shutter
             ? unfold.top + unfold.height + rest * move.p : nil))
+            .scaleEffect(s, anchor: .topLeading)
+            .offset(x: m?.minX ?? 0, y: m.map { $0.minY - s * unfold.top } ?? 0)
+            .opacity(unfold.sheetShown)
     }
 }
 

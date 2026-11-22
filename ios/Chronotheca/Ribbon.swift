@@ -942,6 +942,12 @@ final class Unfold: ObservableObject {
     /// Лист дня виден только сверху — полосой высотой `height`, растущей
     /// вниз с ходом `move.p`.
     @Published private(set) var shutter = false
+    /// Лист в полёте (P1027): его верхняя полоса сжата в эту рамку (в
+    /// координатах места дня) и едет вместе со снимком карточки; `nil` — на
+    /// своём месте.
+    @Published private(set) var morph: CGRect?
+    /// Насколько лист проступил: в полёте снимок карточки тает, лист — нет.
+    @Published private(set) var sheetShown: Double = 1
     /// Где верх листа: у будущего — под полоской «Сегодня» (P913).
     private(set) var top: CGFloat = 0
     /// Высота доехавшей карточки — с неё шторка начинает.
@@ -951,13 +957,13 @@ final class Unfold: ObservableObject {
     let move = RiseMove()
     private var shot: UIView?
 
-    /// Ход к верху, разворот вниз и таяние снимка.
+    /// Ход к верху (снимок тает, лист проступает на нём) и разворот вниз.
     static let fly: Double = 0.3
     static let open: Double = 0.3
-    static let fade: Double = 0.22
 
-    /// Раскрыть: снимок карточки едет к верху листа, доехал — открывается
-    /// день (`open`) и разворачивается вниз. `open` вернул `false` — открыть
+    /// Раскрыть: день открывается сразу, снимок карточки едет к верху листа
+    /// вместе со сжатым листом и сменяется им в пути (P1027), доехал —
+    /// разворачивается вниз. `open` вернул `false` — открыть
     /// нельзя (картотеку уже сменили): всё убирается. Нет окна или снимка —
     /// день открывается сразу.
     func start(from card: CGRect, below: CGFloat? = nil, id: String, top: CGFloat,
@@ -993,31 +999,54 @@ final class Unfold: ObservableObject {
         from = card
         hole = id
         Trace.note(String(format: "карточка раскрывается с %.0f", card.minY))
-        let began = CACurrentMediaTime()
         let target = CGRect(x: area.minX, y: area.minY + top, width: area.width, height: height)
-        UIView.animate(withDuration: Self.fly, delay: 0, options: [.curveEaseIn]) {
-            snap.frame = target
-        } completion: { [weak self] _ in
+        // День открывается сразу (P1027, автор по 336: «когда она утыкается
+        // в верх экрана, на ней уже должно быть изображение верхней части
+        // карточки»; прежде — по прилёте, и верх листа наплывал на снимок
+        // на глазах). Лист — полосой высотой с доехавшую карточку, сжатый в
+        // рамку карточки и пока невидимый; летит вместе со снимком и
+        // проступает на нём, снимок тает. Полёт идёт со следующего кадра —
+        // когда день уже построен, — и ход не дёргается.
+        shutter = true
+        morph = seen
+        sheetShown = 0
+        let opened = CACurrentMediaTime()
+        guard open() else { return stop() }
+        NextFrame.run { [weak self] in
             guard let self, self.shot === snap else { return }
-            // В «Замеры» на телефоне (P1001).
-            DeckTrail.mark(String(format: "карточка доехала до верха за %.2f с", CACurrentMediaTime() - began))
-            // Лист — полосой под снимком, и в том же такте открывается день.
-            self.shutter = true
-            guard open() else { return self.stop() }
-            let opened = CACurrentMediaTime()
-            // Следующий оборот — день построен и виден полосой.
-            DispatchQueue.main.async { [weak self] in
+            DeckTrail.mark(String(format: "день под карточкой построен за %.2f с", CACurrentMediaTime() - opened))
+            let began = CACurrentMediaTime()
+            UIView.animate(withDuration: Self.fly, delay: 0, options: [.curveEaseIn]) {
+                snap.frame = target
+            } completion: { [weak self] _ in
                 guard let self, self.shot === snap else { return }
-                DeckTrail.mark(String(format: "день под карточкой построен за %.2f с", CACurrentMediaTime() - opened))
-                UIView.animate(withDuration: Self.fade, delay: 0.03, options: [.curveEaseOut]) {
-                    snap.alpha = 0
+                // В «Замеры» на телефоне (P1001).
+                DeckTrail.mark(String(format: "карточка доехала до верха за %.2f с", CACurrentMediaTime() - began))
+                snap.alpha = 0
+                var still = Transaction()
+                still.disablesAnimations = true
+                withTransaction(still) {
+                    self.morph = nil
+                    self.sheetShown = 1
                 }
+                // Доехала уже листом — разворачивается вниз.
                 self.move.glide.run(Self.open, step: { [weak self] p in
                     self?.move.p = p
                 }, then: { [weak self] in
                     self?.stop()
                     Trace.note("карточка раскрылась")
                 })
+            }
+            UIView.animate(withDuration: Self.fly * 0.75, delay: Self.fly * 0.15,
+                           options: [.curveEaseInOut]) {
+                snap.alpha = 0
+            }
+            // Тот же ход, что у снимка (`curveEaseIn`), — едут вместе.
+            withAnimation(.easeIn(duration: Self.fly)) {
+                self.morph = CGRect(x: 0, y: top, width: self.area.width, height: self.height)
+            }
+            withAnimation(.easeInOut(duration: Self.fly * 0.75).delay(Self.fly * 0.15)) {
+                self.sheetShown = 1
             }
         }
     }
@@ -1028,6 +1057,8 @@ final class Unfold: ObservableObject {
         shot?.removeFromSuperview()
         shot = nil
         if shutter { shutter = false }
+        if morph != nil { morph = nil }
+        if sheetShown != 1 { sheetShown = 1 }
         if from != nil { from = nil }
         if hole != nil { hole = nil }
     }
