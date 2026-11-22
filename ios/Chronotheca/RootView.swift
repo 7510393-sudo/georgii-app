@@ -1129,28 +1129,37 @@ struct RootView: View {
             }
         }
         guard pageAt != page else { return }
-        // С карты за пальцем — одним движением (P857): лента сразу встаёт на
-        // «Дневник», а сдвиг пересчитывается так, что на экране ничто не
-        // двинулось, — и уходит в ноль одной пружиной со скоростью пальца.
-        // Прежде ход ленты и возврат сдвига шли двумя разными ходами, и в
-        // миг отпускания экран дёргался (видео автора к 258).
+        // С карты за пальцем — одним движением (P857): ведёт только сдвиг,
+        // лента разделов стоит на карте, пока он не дошёл до «Дневника», и
+        // встаёт на него, когда всё уже стоит, — без хода (P1031, видео
+        // автора к 339: при быстром взмахе лента в миг отпускания вставала
+        // на календарь, а раздел был «Дневник»; медленный взмах шёл верно).
+        // Прежде лента вставала на «Дневник» в миг отпускания, а сдвиг
+        // пересчитывался на ширину страницы — так и прыгала лишняя страница.
         if old == .map, page == .today, !instant, mapPull.x < 0, mapPull.width > 0 {
             Feel.thud()
-            var still = Transaction()
-            still.disablesAnimations = true
-            withTransaction(still) {
-                mapPull.x += mapPull.width
-                pageAt = page
-            }
-            let start = mapPull.x
-            let speed = start > 1 ? min(20, max(0, -mapPull.speed / start)) : 0
+            let width = mapPull.width
+            let rest = width + mapPull.x
+            let speed = rest > 1 ? min(20, max(0, -mapPull.speed / rest)) : 0
             // Ход — со следующего кадра (P1020, замер автора на 334: смена
             // раздела держит телефон 0,05–0,09 с, и ход, начатый в тот же
-            // такт, показывал первый кадр уже на трети пути). Экран к этому
-            // мигу перестроен — ход идёт с начала, без прыжка.
+            // такт, показывал первый кадр уже на трети пути).
             NextFrame.run {
                 withAnimation(.interpolatingSpring(duration: 0.35, bounce: 0, initialVelocity: speed)) {
-                    mapPull.x = 0
+                    mapPull.x = -width
+                } completion: {
+                    // Лента отперта кадром раньше: встаёт сама, а не пока
+                    // заперта (P1031).
+                    mapSettling = false
+                    NextFrame.run {
+                        var still = Transaction()
+                        still.disablesAnimations = true
+                        withTransaction(still) {
+                            pageAt = page
+                            mapPull.x = 0
+                        }
+                        DeckTrail.mark("полоска карты: лента встала на «Дневник»")
+                    }
                 }
             }
             return
