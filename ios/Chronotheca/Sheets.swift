@@ -235,8 +235,10 @@ struct SettingsSticker: View {
         // docs/50): меню и так длинное. Страница в переключателе приложений
         // под замком и так прячется (P293).
         NoteRow(title: T("Замок: Face ID или код", "Lock: Face ID or passcode"),
-                info: T("Для полной защиты можно включить двухфакторную защиту Apple ID и «Расширенную защиту данных» в iCloud.",
-                          "For fuller protection you can turn on two-factor authentication for your Apple ID and Advanced Data Protection in iCloud.")) {
+                // Честно, что закрыто, а что нет (P1033, docs/67 §6): замок —
+                // не шифрование, записи — открытые файлы в папке.
+                info: T("Замок закрывает приложение от посторонних глаз. Сами записи — обычные файлы в вашей папке: их защищают код iPhone и ваш Apple ID. Для полной защиты можно включить двухфакторную защиту Apple ID и «Расширенную защиту данных» в iCloud.",
+                          "The lock keeps the app away from other eyes. The entries themselves are ordinary files in your folder: your iPhone passcode and your Apple ID protect them. For fuller protection you can turn on two-factor authentication for your Apple ID and Advanced Data Protection in iCloud.")) {
             Lever(isOn: lockChoice)
         }
         // Чужая клавиатура с «полным доступом» видит всё набранное (P633, по
