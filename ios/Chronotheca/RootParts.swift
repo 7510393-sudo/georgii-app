@@ -244,6 +244,10 @@ struct PageWatch<ID: Hashable>: ViewModifier {
                         if now == .interacting { FrameWatch.shared.start("листают пальцем") }
                         if now == .decelerating { FrameWatch.shared.start("отпустили листание") }
                     }
+                    // Где лента встала — в след (P1028): по замерам автора
+                    // к 338 после полоски карты лента листалась 0,7 с и
+                    // раздел не менялся, а на экране был календарь.
+                    if watch, now == .idle { DeckTrail.mark("лента разделов встала: \(at.map { "\($0)" } ?? "нигде")") }
                     if now == .idle, let at { landed(at) }
                 }
         } else {
@@ -309,18 +313,25 @@ struct RibbonFade: ViewModifier {
     /// Открыт прошедший или будущий день (P1027, автор: «открытая карточка
     /// лежит поверх картотеки — почему справа от корешка белый фон?»):
     /// справа от корешка видны карточки, что лежат под ним, а не стол.
-    /// Начали тянуть — уходят (P907), мягко.
+    /// Лист тянут и он садится в карточку — карточки остаются на месте
+    /// (P1028, автор по 338: «справа от корешка сверху на время белая
+    /// вставка, потом снова фон»; уточняет P907 и P1027: прежде с началом
+    /// тяги уходили за 0,15 с и проступали снова, когда лента вставала).
+    /// Уходят, только если лента поедет к карточке дня (`restless`).
     var beside = false
 
     func body(content: Content) -> some View {
-        let shown: Double = unfold.from != nil || beside ? 1
+        let moving = ribbon.deck.isPulled || ribbon.deck.isLanding
+        let calm = beside && !(moving && ribbon.restless)
+        let shown: Double = unfold.from != nil || calm ? 1
             : !live || quiet ? 0 : card ? 1 : Double(min(1, abs(ribbon.y) / 90))
         content
             .opacity(shown)
-            .animation(.easeOut(duration: 0.15), value: beside)
+            .animation(.easeOut(duration: 0.15), value: calm)
             // Под садящейся карточкой проступает, когда лента встала (P913,
-            // P923): ступени посадки «летит» и «ждёт ленту».
-            .animation(.easeInOut(duration: 0.2)) { $0.opacity(ribbon.deck.isVeiled ? 0 : 1) }
+            // P923): ступени посадки «летит» и «ждёт ленту». Лента стоит на
+            // месте (P1028) — ей проступать незачем, она и не уходила.
+            .animation(.easeInOut(duration: 0.2)) { $0.opacity(ribbon.deck.isVeiled && !calm ? 0 : 1) }
     }
 }
 

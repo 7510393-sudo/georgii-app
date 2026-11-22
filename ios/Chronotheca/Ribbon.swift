@@ -33,6 +33,12 @@ final class Ribbon: ObservableObject {
     /// Где верх места дня — от верха экрана раздела. По нему едет день.
     @Published private(set) var y: CGFloat = 0
 
+    /// Тянут не сегодняшний лист, а его карточки нет на месте (день открыт
+    /// не с неё, P923 (4)): лента под листом едет к ней, и картотеку справа
+    /// от корешка на это время прячут (P1028). Карточка на месте — лента
+    /// стоит, и картотека остаётся видна.
+    @Published private(set) var restless = false
+
     /// Прокрутка ленты.
     let box = SheetScroller()
 
@@ -175,9 +181,10 @@ final class Ribbon: ObservableObject {
     /// листом не движется — заранее встаёт на его карточку, чтобы к порогу
     /// картотека была готова.
     func aim(_ id: String, side: Int) {
-        guard ids.contains(id), seatWant?.id != id else { return }
-        let spot = nest(for: id, side: side)
-        guard !spot.inPlace else { return }
+        let spot = ids.contains(id) ? nest(for: id, side: side) : nil
+        // Лента поедет к карточке — справа от корешка её прячут (P1028).
+        restless = spot.map { !$0.inPlace } ?? false
+        guard let spot, seatWant?.id != id, !spot.inPlace else { return }
         seat(id, top: spot.top) { [weak self] frame in
             if frame != nil { self?.keepToday(side) }
         }

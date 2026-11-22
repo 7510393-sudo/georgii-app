@@ -662,7 +662,7 @@ struct RootView: View {
                                      live: shell.deck.isLive,
                                      card: shell.deck.isLanding,
                                      quiet: shell.deck.isPulled && !store.isToday,
-                                     beside: shell.screen == .today && !shell.deck.isLive && !store.isToday))
+                                     beside: !store.isToday && (shell.screen == .today || shell.deck.isLanding)))
                 // Пока карточка садится, картотеку не листают (P923, `docs/71`
                 // §3: чего нет в таблице переходов — не происходит).
                 .allowsHitTesting(shell.screen == .search && !shell.deck.isLanding)
@@ -774,7 +774,12 @@ struct RootView: View {
                         FrameWatch.shared.start("с карты полоской, отпустили")
                         // Взмах не листает ленту дальше «Дневника» (P1024).
                         mapSettling = true
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { mapSettling = false }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            mapSettling = false
+                            // След (P1028): где лента и сдвиг, когда её отперли.
+                            DeckTrail.mark(String(format: "полоска карты: лента снова листается, раздел %@, сдвиг %.0f",
+                                                  "\(pageAt.map { "\($0)" } ?? "?")", mapPull.x))
+                        }
                         // Сперва раздел (P840): на карте лента разделов
                         // заперта — палец двигает карту, — и ход ленты,
                         // заказанный до смены раздела, не шёл (P829: карта
