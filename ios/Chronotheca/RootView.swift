@@ -406,6 +406,15 @@ struct RootView: View {
         .onAppear {
             windowBottom = UIApplication.shared.connectedScenes
                 .compactMap { ($0 as? UIWindowScene)?.keyWindow }.first?.safeAreaInsets.bottom ?? 0
+            Rate.noteOpened()
+        }
+        // Дописали запись сегодняшнего дня и убрали клавиатуру — хороший
+        // миг попросить оценку, если с первого открытия прошла неделя (P1037).
+        .onChange(of: keyboard.height) { old, now in
+            if old > 0, now == 0, shell.screen == .today, store.isToday,
+               !store.diaryText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                Rate.goodMoment()
+            }
         }
         .onChange(of: shell.screen) { old, new in
             LagWatch.note(new)
