@@ -212,6 +212,8 @@ final class Shell: ObservableObject {
         // его нет, иначе открытая страница не сойдётся с соседской
         // (P114, P408).
         hideCloud = !["remember", "diary"].contains(name)
+        // Курс жестов — только на своём снимке (P1036).
+        Hints.shared.endPreview()
         switch name {
         case "diary":     tab = .diary
         case "calendar":  CalendarView.previewStart = day(-7); screen = .calendar

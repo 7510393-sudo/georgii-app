@@ -84,6 +84,12 @@ final class Hints: ObservableObject {
         step = .past
         forced = true
     }
+
+    /// Снимок курса кончился — на других снимках его нет.
+    func endPreview() {
+        guard forced else { return }
+        forced = false
+    }
 }
 
 /// Слой курса поверх приложения: стрелка, которая сама показывает жест, и
