@@ -213,16 +213,20 @@ struct PageWatch<ID: Hashable>: ViewModifier {
     /// Какой толчок: у разделов — потвёрже, у месяцев — лёгкий.
     let feel: () -> Void
     let landed: (ID) -> Void
+    /// Замерять кадры листания (P1019) — у ленты разделов.
+    let watch: Bool
 
     final class Seen { var last: AnyHashable? }
     @State private var seen = Seen()
 
     init(at: Binding<ID?>, skip: @escaping (ID) -> Bool = { _ in false },
-         feel: @escaping () -> Void = { Feel.light() }, landed: @escaping (ID) -> Void) {
+         feel: @escaping () -> Void = { Feel.light() }, landed: @escaping (ID) -> Void,
+         watch: Bool = false) {
         _at = at
         self.skip = skip
         self.feel = feel
         self.landed = landed
+        self.watch = watch
     }
 
     func body(content: Content) -> some View {
@@ -236,6 +240,10 @@ struct PageWatch<ID: Hashable>: ViewModifier {
                 .onScrollPhaseChange { _, now in
                     // Палец лёг — отклик будится заранее (P829).
                     if now == .interacting { Feel.warm() }
+                    if watch {
+                        if now == .interacting { FrameWatch.shared.start("листают пальцем") }
+                        if now == .decelerating { FrameWatch.shared.start("отпустили листание") }
+                    }
                     if now == .idle, let at { landed(at) }
                 }
         } else {
@@ -643,5 +651,50 @@ struct TodayTab: View {
         .frame(height: FollowRibbon.peekBottom + DayPage.under)
         .clipShape(DayPage.folder)
         .overlay { DayPage.folder.stroke(DayPage.edge, lineWidth: 1) }
+    }
+}
+
+/// Замер смены раздела (P1019, видео автора к 333: с карты в «Дневник» и
+/// обратно первый кадр хода прыгает на треть экрана). С мига касания,
+/// отпускания или конца листания 0,7 с считаются показанные кадры: через
+/// сколько показан первый, какой был самым долгим и сколько всего. Одной
+/// строкой в след «Замеров».
+final class FrameWatch: NSObject {
+    static let shared = FrameWatch()
+    private var link: CADisplayLink?
+    private var label = ""
+    private var began: CFTimeInterval = 0
+    private var last: CFTimeInterval = 0
+    private var first: CFTimeInterval?
+    private var worst: CFTimeInterval = 0
+    private var frames = 0
+
+    /// Начать замер; прежний, если шёл, записывается как есть.
+    func start(_ what: String) {
+        if link != nil { finish() }
+        label = what
+        began = CACurrentMediaTime()
+        last = began
+        first = nil
+        worst = 0
+        frames = 0
+        let link = CADisplayLink(target: self, selector: #selector(tick))
+        link.add(to: .main, forMode: .common)
+        self.link = link
+    }
+
+    @objc private func tick() {
+        let now = CACurrentMediaTime()
+        if first == nil { first = now - began } else { worst = max(worst, now - last) }
+        last = now
+        frames += 1
+        if now - began > 0.7 { finish() }
+    }
+
+    private func finish() {
+        link?.invalidate()
+        link = nil
+        DeckTrail.mark(String(format: "раздел, %@: первый кадр через %.2f с, самый долгий кадр %.2f с, кадров %ld за %.2f с",
+                              label, first ?? -1, worst, frames, last - began))
     }
 }

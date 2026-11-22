@@ -644,7 +644,8 @@ struct RootView: View {
             // меняется, когда лента встала (P800: прежде менялся на ходу,
             // экран перестраивался посреди хода и дёргался в миг толчка).
             .modifier(PageWatch(at: $pageAt,
-                                skip: { $0 == current }, feel: { Feel.thud() }, landed: { landed(on: $0) }))
+                                skip: { $0 == current }, feel: { Feel.thud() }, landed: { landed(on: $0) },
+                                watch: true))
         }
     }
 
@@ -768,6 +769,8 @@ struct RootView: View {
                         // Скорость и ширина — для хода одним движением (P857, `follow`).
                         mapPull.speed = drag.velocity.width
                         mapPull.width = width
+                        // Замер (P1019): здесь на видео «Дневник» прыгал.
+                        FrameWatch.shared.start("с карты полоской, отпустили")
                         // Сперва раздел (P840): на карте лента разделов
                         // заперта — палец двигает карту, — и ход ленты,
                         // заказанный до смены раздела, не шёл (P829: карта
@@ -804,6 +807,8 @@ struct RootView: View {
     /// меняется, как по касанию внизу; если её повела кнопка — уже сменился.
     private func landed(on page: Shell.Screen) {
         guard page != current else { return }
+        // Раздел меняется, когда лента встала (P1019): замер — что после.
+        FrameWatch.shared.start("встала на \(page), раздел меняется")
         // С картотеки на карту или календарь — картотека остаётся как была,
         // и возвращаемся в неё же (P907, автор: «должен возвращаться туда,
         // где был»). Прежде картотека закрывалась, и возврат вёл на «Сегодня».
@@ -968,6 +973,8 @@ struct RootView: View {
         // легла бы не в тот день.
         let again = shell.screen == target
         if !again { LaunchClock.opened("\(target)", since: Date()) }
+        // Замер (P1019); с полоски карты он уже идёт.
+        if !again, mapPull.x == 0 { FrameWatch.shared.start("кнопка \(shell.screen) → \(target)") }
         let changesDay = target == .today && again && !store.isToday
         if changesDay { store.save() }
         // Каждый раздел помнит, где его оставили (P576): ушли с прошлого дня,
