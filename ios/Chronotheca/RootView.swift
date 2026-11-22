@@ -771,6 +771,9 @@ struct RootView: View {
                         mapPull.width = width
                         // Замер (P1019): здесь на видео «Дневник» прыгал.
                         FrameWatch.shared.start("с карты полоской, отпустили")
+                        // Взмах не листает ленту дальше «Дневника» (P1024).
+                        mapSettling = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { mapSettling = false }
                         // Сперва раздел (P840): на карте лента разделов
                         // заперта — палец двигает карту, — и ход ленты,
                         // заказанный до смены раздела, не шёл (P829: карта
@@ -791,11 +794,15 @@ struct RootView: View {
     /// Лист «Сегодня» поднимается с открытого дня (P924): 1 — снизу,
     /// −1 — сверху, 0 — нет.
     @State private var todayRise = 0
+    /// Полоску карты только что отпустили (P1024): лента разделов полсекунды
+    /// не листается — иначе она подхватывала взмах и проезжала «Дневник»
+    /// до календаря (автор по 335).
+    @State private var mapSettling = false
 
     private var pagingFree: Bool {
         !shell.deck.isPulled && !shell.holding && !overlays.showingSettings && overlays.settingsPull == nil
             && overlays.movingTask == nil && shell.screen != .map
-            && vault.moving == nil
+            && vault.moving == nil && !mapSettling
     }
 
     /// Открытый раздел; лента картотеки — продолжение «Дневника».
