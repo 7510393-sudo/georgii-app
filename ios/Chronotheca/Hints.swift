@@ -174,7 +174,9 @@ struct HintLayer: View {
 
     /// Шаг можно сделать отсюда.
     private func fitsHere(_ step: Hints.Step) -> Bool {
-        guard !Vault.isUITest || hints.forced else { return false }
+        // Ни в проверках, ни на снимках экрана (и для App Store) — только
+        // на снимке самого курса.
+        guard (!Vault.isUITest && !Vault.isPreview) || hints.forced else { return false }
         switch step {
         case .past, .future, .calendar: return screen == .today && restingToday && file == nil
         case .map: return screen == .calendar || (screen == .today && restingToday && file == nil)
