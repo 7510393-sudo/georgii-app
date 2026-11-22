@@ -698,3 +698,27 @@ final class FrameWatch: NSObject {
                               label, first ?? -1, worst, frames, last - began))
     }
 }
+
+/// Сделать со следующего кадра экрана (P1020): после того как показан кадр
+/// с тяжёлой перестройкой. Ход, начатый в тот же такт, что смена раздела,
+/// показывал первый кадр через 0,05–0,09 с — уже на трети пути.
+final class NextFrame: NSObject {
+    private var link: CADisplayLink?
+    private var action: (() -> Void)?
+
+    static func run(_ action: @escaping () -> Void) {
+        let one = NextFrame()
+        one.action = action
+        let link = CADisplayLink(target: one, selector: #selector(tick))
+        one.link = link
+        link.add(to: .main, forMode: .common)
+    }
+
+    @objc private func tick() {
+        link?.invalidate()
+        link = nil
+        let act = action
+        action = nil
+        act?()
+    }
+}

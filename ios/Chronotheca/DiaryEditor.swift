@@ -2131,11 +2131,26 @@ struct DiaryEditor: UIViewRepresentable {
         private func place(_ view: UITextView) {
             let ns = view.textStorage.string as NSString
             let sel = view.selectedRange
-            guard view.isFirstResponder, parent.editable, view.markedTextRange == nil,
-                  sel.length == 0, sel.location <= ns.length, declinedAt != sel.location,
-                  Self.atEnd(view.textStorage, from: sel.location),
+            guard view.isFirstResponder, view.markedTextRange == nil,
+                  sel.length == 0, sel.location <= ns.length,
                   sel.location == 0 || ns.character(at: sel.location - 1) == 10
             else { return }
+            // Курсор на чистой строке, а время не встаёт — почему (P1021,
+            // автор по 334: нажал «Ввод» в прошлом дне, надиктовал строку —
+            // ни времени, ни строки в следе). Только когда строка пуста.
+            let blank = sel.location >= ns.length || ns.character(at: sel.location) == 10
+            guard parent.editable else {
+                if blank { StampTrace.note("курсор на чистой строке: запись не правится") }
+                return
+            }
+            guard declinedAt != sel.location else {
+                if blank { StampTrace.note("курсор на чистой строке: отметку здесь стёрли") }
+                return
+            }
+            guard Self.atEnd(view.textStorage, from: sel.location) else {
+                if blank { StampTrace.note("курсор на чистой строке: не в конце записи") }
+                return
+            }
             guard let stamp = parent.peekStamp?() else {
                 StampTrace.note("курсор на чистой строке: время не пора")
                 return

@@ -1131,8 +1131,14 @@ struct RootView: View {
             }
             let start = mapPull.x
             let speed = start > 1 ? min(20, max(0, -mapPull.speed / start)) : 0
-            withAnimation(.interpolatingSpring(duration: 0.35, bounce: 0, initialVelocity: speed)) {
-                mapPull.x = 0
+            // Ход — со следующего кадра (P1020, замер автора на 334: смена
+            // раздела держит телефон 0,05–0,09 с, и ход, начатый в тот же
+            // такт, показывал первый кадр уже на трети пути). Экран к этому
+            // мигу перестроен — ход идёт с начала, без прыжка.
+            NextFrame.run {
+                withAnimation(.interpolatingSpring(duration: 0.35, bounce: 0, initialVelocity: speed)) {
+                    mapPull.x = 0
+                }
             }
             return
         }
@@ -1144,10 +1150,13 @@ struct RootView: View {
             // Толчок — вместе с нажатием (P268).
             Feel.thud()
             // С карты за пальцем (P840): сдвиг уходит тем же ходом, что
-            // лента, — вместе одно движение.
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.9)) {
-                pageAt = page
-                mapPull.x = 0
+            // лента, — вместе одно движение. Со следующего кадра (P1020):
+            // раздел уже сменился, экран перестроен, ход — с начала.
+            NextFrame.run {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.9)) {
+                    pageAt = page
+                    mapPull.x = 0
+                }
             }
         }
     }
