@@ -333,9 +333,11 @@ struct RootView: View {
             // поверх листка больше нет.
             // Над клавиатурой разделы — частью самой клавиатуры (P613,
             // `KeyboardBar`): у полей дня. На карте и в поиске их там нет.
-            // Подсказки для первого знакомства (P427) — поверх всего, когда
-            // экран спокоен.
+            // Первое знакомство — курс жестов (P1036, вместо стикеров P427)
+            // — поверх всего, когда экран спокоен.
             HintLayer(screen: shell.screen,
+                      restingToday: shell.deck == .day && store.isToday,
+                      file: shell.deck.isOpen ? shell.deck.side : nil,
                       quiet: !overlays.showingSettings
                           && overlays.movingTask == nil && keyboard.height == 0
                           && vault.moving == nil)

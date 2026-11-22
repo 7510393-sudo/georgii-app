@@ -1,283 +1,184 @@
 import SwiftUI
 
-/// Подсказки для первого знакомства (P427).
+/// Первое знакомство — пять жестов по очереди (P1036, автор: «вместо
+/// стикеров на первых действиях человеку нужно пройти минимальный курс
+/// молодого бойца: активная стрелочка с надписью предлагает сделать
+/// свайп»; отменяет жёлтые стикеры P427, P452, P688 — «не в нашей
+/// стилистике»). Сперва то, чего не найти самому: лист «Сегодня» вниз —
+/// прошлое, вверх — будущее (автор согласился начинать с них); потом
+/// календарь, карта и обратно в день. Шаг засчитывается, когда жест
+/// сделан, — нажимать «понятно» не нужно. Как обращаться с делами и
+/// записью, рассказывают образцы дней (P1035).
 ///
-/// Самое нужное в приложении спрятано в жестах: касание по номеру дела,
-/// долгое нажатие, перенос снимка в текст, уголки сверху. Сам человек их
-/// не найдёт. Поэтому при первых встречах с экраном на нём появляется
-/// жёлтый стикер — по одному за раз, пока человек не скажет «понятно».
-/// Показанные помнятся; все разом выключаются и включаются снова в
-/// настройках.
-///
-/// Помнит их телефон, а не папка: это удобство приложения, а не запись
+/// Помнит телефон, а не папка: это удобство приложения, а не запись
 /// человека, и в архив оно не пишется.
 final class Hints: ObservableObject {
 
-    struct Hint: Equatable {
-        let id: String
-        let screen: Shell.Screen
-        let title: String
-        let text: String
-        /// Когда показывать — не просто «экран открыт», а к месту (P452).
-        var when: When = .always
-    }
+    enum Step: Int, CaseIterable {
+        case past, future, calendar, map, back
 
-    enum When { case always, evening, afterPhoto }
+        var text: String {
+            switch self {
+            case .past: return T("Потяните лист вниз — прошлое", "Pull the sheet down for the past")
+            case .future: return T("Потяните лист вверх — будущее", "Pull the sheet up for the future")
+            case .calendar: return T("Смахните влево — календарь", "Swipe left for the calendar")
+            case .map: return T("Смахните вправо — карта", "Swipe right for the map")
+            case .back: return T("Ведите влево от правого края — обратно в день",
+                                 "Drag left from the right edge to get back to the day")
+            }
+        }
+
+        /// Куда показывает стрелка.
+        var arrow: String {
+            switch self {
+            case .past: return "arrow.down"
+            case .future: return "arrow.up"
+            case .calendar, .back: return "arrow.left"
+            case .map: return "arrow.right"
+            }
+        }
+
+        var shift: CGSize {
+            switch self {
+            case .past: return CGSize(width: 0, height: 10)
+            case .future: return CGSize(width: 0, height: -10)
+            case .calendar, .back: return CGSize(width: -10, height: 0)
+            case .map: return CGSize(width: 10, height: 0)
+            }
+        }
+    }
 
     static let shared = Hints()
 
-    /// По одной и к месту (P452): на странице дня сразу — только «разделы свайпом» (P778):
-    /// как обращаться с делами и записью, рассказывают образцы дней. Итоги
-    /// дня — вечером, перенос снимка — после первого снимка, карта,
-    /// календарь и поиск — при первом заходе туда.
-    static var all: [Hint] {
-        [
-            Hint(id: "pages", screen: .today,
-                 title: T("Разделы — свайпом", "Swipe between sections"),
-                 text: T("Проведите пальцем вбок — календарь и карта. Вчера и завтра — стрелки ‹ › вверху страницы; там уже лежат образцы: так выглядит заполненный день. «Дневник» внизу вернёт на сегодня.",
-                         "Swipe sideways for the calendar and the map. Yesterday and tomorrow are behind the ‹ › arrows at the top of the page; there are samples there: this is what a filled-in day looks like. “Diary” at the bottom brings you back to today.")),
-            Hint(id: "outcome", screen: .today,
-                 title: T("Итоги дня", "How the day went"),
-                 text: T("В дневнике под каждым делом — строка для итога: что вышло. Одно слово или фраза — и вечер записан.",
-                         "In the diary, each task has a line for its outcome: how it went. A word or a phrase — and the evening is written."),
-                 when: .evening),
-            Hint(id: "photo", screen: .today,
-                 title: T("Снимок — куда угодно", "Put a photo anywhere"),
-                 text: T("Подержите снимок в записи и перенесите пальцем в другое место текста или под дело.",
-                         "Hold a photo in your entry and drag it to another spot in the text or under a task."),
-                 when: .afterPhoto),
-            Hint(id: "map", screen: .map,
-                 title: T("Свои места", "Your places"),
-                 text: T("Подержите палец на карте — встанет точка. Её можно назвать, выбрать значок и записать в день. Справа сверху — «Записи»: дни на карте с превью снимков.",
-                         "Hold your finger on the map to drop a pin. Name it, pick an icon and add it to the day. At the top right — “Entries”: days on the map with photo previews.")),
-            Hint(id: "calendar", screen: .calendar,
-                 title: T("Все дни", "All your days"),
-                 text: T("Точки под числом — в этот день есть записи. Коснитесь дня — откроется его страница.",
-                         "Dots under a date mean entries that day. Tap a day to open its page.")),
-            Hint(id: "search", screen: .search,
-                 title: T("Где искать", "Where to search"),
-                 text: T("Три точки справа сверху — искать только в плане или в дневнике, только снимки, видео, голос, файлы или места.",
-                         "The three dots at top right: search only the plan or the diary, or only photos, video, voice, files or places.")),
-        ]
-    }
+    private static let stepKey = "coach.step"
 
-    private static let photoKey = "hints.photo"
-
-    /// Человек положил первый снимок — пора подсказать, что его можно
-    /// перенести пальцем.
-    func photoAdded() {
-        guard !UserDefaults.standard.bool(forKey: Self.photoKey) else { return }
-        UserDefaults.standard.set(true, forKey: Self.photoKey)
-        photoTick += 1
-    }
-    @Published private(set) var photoTick = 0
-
-    private static let seenKey = "hints.seen"
-    private static let offKey = "hints.off"
-
-    @Published private(set) var seen: Set<String>
-    @Published private(set) var off: Bool
-    /// Что на экране сейчас.
-    @Published var shown: Hint?
+    /// Какой шаг впереди; все пройдены — `nil`.
+    @Published private(set) var step: Step?
+    /// Для снимков экрана: показать первый шаг сразу.
+    @Published private(set) var forced = false
 
     private init() {
-        let d = UserDefaults.standard
-        seen = Set(d.stringArray(forKey: Self.seenKey) ?? [])
-        off = d.bool(forKey: Self.offKey)
-        // Первый снимок — весть от хранилища дня (P970).
-        NotificationCenter.default.addObserver(forName: DayStore.photoAdded, object: nil,
-                                               queue: nil) { [weak self] _ in self?.photoAdded() }
+        let at = UserDefaults.standard.object(forKey: Self.stepKey) as? Int ?? 0
+        step = Step(rawValue: at)
     }
 
-    /// Следующая непоказанная подсказка этого экрана.
-    func next(for screen: Shell.Screen) -> Hint? {
-        guard !off else { return nil }
-        return Self.all.first { $0.screen == screen && !seen.contains($0.id) && ready($0) }
+    /// Жест сделан: если это ждали — следующий шаг.
+    func did(_ done: Step) {
+        guard step == done else { return }
+        set(Step(rawValue: done.rawValue + 1))
     }
 
-    private func ready(_ hint: Hint) -> Bool {
-        switch hint.when {
-        case .always: return true
-        case .evening: return Calendar.current.component(.hour, from: Date()) >= 18
-        case .afterPhoto: return UserDefaults.standard.bool(forKey: Self.photoKey)
-        }
+    /// «Пропустить»: курс больше не показывается.
+    func skip() { set(nil) }
+
+    /// Из настроек и пробной папки: всё сначала.
+    func startOver() { set(.past) }
+
+    private func set(_ next: Step?) {
+        step = next
+        UserDefaults.standard.set(next?.rawValue ?? Step.allCases.count, forKey: Self.stepKey)
     }
 
-    func done(_ hint: Hint) {
-        seen.insert(hint.id)
-        UserDefaults.standard.set(Array(seen), forKey: Self.seenKey)
-        shown = nil
-    }
-
-    func turnOff() {
-        off = true
-        UserDefaults.standard.set(true, forKey: Self.offKey)
-        shown = nil
-    }
-
-    /// Из настроек: показать всё сначала.
-    func startOver() {
-        seen = []
-        off = false
-        UserDefaults.standard.removeObject(forKey: Self.seenKey)
-        UserDefaults.standard.removeObject(forKey: Self.photoKey)
-        UserDefaults.standard.set(false, forKey: Self.offKey)
-    }
-
-    /// Для снимков экрана: первая подсказка, как её увидят при первом запуске.
+    /// Для снимков экрана: первый шаг, как его увидят при первом запуске.
     func showFirstForPreview() {
-        shown = Self.all.first
+        step = .past
+        forced = true
     }
 }
 
-/// Жёлтый самоклеящийся стикер с подсказкой, чуть наискось; левый нижний
-/// уголок приподнят (P688).
-struct HintSticker: View {
-
-    @ObservedObject var hints: Hints
-    let hint: Hints.Hint
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(hint.title)
-                .font(Look.serif(17, weight: .semibold))
-                .foregroundStyle(Look.ink)
-            Text(hint.text)
-                .font(Look.sans(14.5))
-                .foregroundStyle(Look.inkSoft)
-                .fixedSize(horizontal: false, vertical: true)
-            HStack(spacing: 10) {
-                Button(T("Больше не показывать", "Don’t show tips")) {
-                    withAnimation(.easeOut(duration: 0.2)) { hints.turnOff() }
-                }
-                .font(Look.sans(12.5))
-                .foregroundStyle(Look.inkFaint)
-                Spacer(minLength: 4)
-                Button {
-                    withAnimation(.easeOut(duration: 0.2)) { hints.done(hint) }
-                } label: {
-                    Text(T("Понятно", "Got it"))
-                        .font(Look.sans(14, weight: .semibold))
-                        .foregroundStyle(Look.accent)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .overlay(Capsule().strokeBorder(Look.accent.opacity(0.6), lineWidth: 1.2))
-                }
-            }
-            .buttonStyle(.plain)
-            .padding(.top, 4)
-        }
-        .padding(.horizontal, 18)
-        .padding(.top, 20)
-        .padding(.bottom, 28)
-        .frame(maxWidth: 320, alignment: .leading)
-        // Самоклеящийся листок без скотча: тень вправо-вниз, левый нижний
-        // уголок отстал и приподнят (P688, отменяет скотч).
-        .background(
-            PeeledCorner(lift: 26).fill(Look.sticker)
-                .overlay(PeeledCorner(lift: 26).stroke(Look.stickerEdge, lineWidth: 1))
-        )
-        .background(PaintedShadow(radius: 12, x: 6, y: 6, opacity: 0.28))
-        .overlay(alignment: .bottomLeading) { CurledFlap(size: 26) }
-        .rotationEffect(.degrees(-1.5))
-        .accessibilityElement(children: .contain)
-    }
-}
-
-/// Слой подсказок поверх приложения. Подсказка появляется, только когда
-/// экран спокоен: не открыты меню, настройки, листок переноса и клавиатура.
+/// Слой курса поверх приложения: стрелка, которая сама показывает жест, и
+/// одна строка; внизу — «Пропустить». Палец проходит сквозь — жест делают
+/// по самому экрану. Появляется, когда экран спокоен и стоит там, где жест
+/// можно сделать; уходит, как только жест сделан, — плавно (P893).
 struct HintLayer: View {
 
     @ObservedObject private var hints = Hints.shared
     let screen: Shell.Screen
+    /// Лист дня стоит, картотека закрыта, на листе сегодня.
+    let restingToday: Bool
+    /// Открыта картотека — с какой стороны; `nil` — закрыта.
+    let file: Deck.Side?
     let quiet: Bool
 
+    @State private var ready = false
+    @State private var swing = false
+
     var body: some View {
+        let step = hints.step
+        let fits = step.map(fitsHere) ?? false
+        let shown = (hints.forced || (fits && quiet && ready)) && step != nil
         ZStack {
-            if let hint = hints.shown {
-                // Касание мимо стикера — то же «понятно»: подсказка не
-                // держит человека.
-                Color.black.opacity(0.12)
-                    .ignoresSafeArea()
-                    .onTapGesture {
-                        withAnimation(.easeOut(duration: 0.2)) { hints.done(hint) }
+            if shown, let step {
+                VStack(spacing: 14) {
+                    // Стрелка и строка пропускают палец: жест делают прямо
+                    // по ним.
+                    Image(systemName: step.arrow)
+                        .font(.system(size: 30, weight: .semibold))
+                        .foregroundStyle(Look.accent)
+                        .offset(swing ? step.shift : .zero)
+                        .animation(.easeInOut(duration: 0.7).repeatForever(autoreverses: true), value: swing)
+                        .allowsHitTesting(false)
+                    Text(step.text)
+                        .font(Look.sans(16, weight: .medium))
+                        .foregroundStyle(Look.ink)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .allowsHitTesting(false)
+                    // «Пропустить» — единственное, что нажимается.
+                    Button(T("Пропустить", "Skip")) {
+                        withAnimation(.easeOut(duration: 0.25)) { hints.skip() }
                     }
-                HintSticker(hints: hints, hint: hint)
-                    .padding(.horizontal, 28)
-                    .transition(.scale(scale: 0.92).combined(with: .opacity))
+                    .font(Look.sans(13))
+                    .foregroundStyle(Look.inkSoft)
+                    .buttonStyle(.plain)
+                    .padding(.top, 2)
+                }
+                .padding(.horizontal, 22)
+                .padding(.vertical, 18)
+                .background {
+                    RoundedRectangle(cornerRadius: 16).fill(Look.sticker.opacity(0.96))
+                        .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Look.stickerEdge, lineWidth: 0.8))
+                        .shadow(color: .black.opacity(0.12), radius: 8, y: 3)
+                        .allowsHitTesting(false)
+                }
+                .padding(.horizontal, 40)
+                .transition(.opacity.combined(with: .scale(scale: 0.96)))
+                .onAppear { swing = true }
+                .onDisappear { swing = false }
+                .accessibilityElement(children: .contain)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .allowsHitTesting(hints.shown != nil)
-        // Ушли на другой экран — его подсказка убирается, не считаясь
-        // прочитанной: покажется, когда вернутся.
-        .onChange(of: screen) { _, now in
-            if let shown = hints.shown, shown.screen != now, !Vault.isPreview {
-                hints.shown = nil
+        .animation(.easeOut(duration: 0.3), value: shown)
+        .animation(.easeOut(duration: 0.3), value: step)
+        .onChange(of: screen, initial: true) { _, now in
+            switch now {
+            case .calendar: hints.did(.calendar)
+            case .map: hints.did(.map)
+            case .today: hints.did(.back)
+            default: break
             }
         }
-        .task(id: "\(screen)|\(quiet)|\(hints.shown?.id ?? "")|\(hints.seen.count)|\(hints.off)|\(hints.photoTick)") {
-            await pick()
+        .onChange(of: file, initial: true) { _, side in
+            if side == .past { hints.did(.past) }
+            if side == .future { hints.did(.future) }
+        }
+        // Экран успокоился — подсказка через мгновение, а не посреди хода.
+        .task(id: "\(screen)|\(restingToday)|\(file.map { "\($0.rawValue)" } ?? "-")|\(step?.rawValue ?? -1)") {
+            ready = false
+            try? await Task.sleep(nanoseconds: 900_000_000)
+            guard !Task.isCancelled else { return }
+            ready = true
         }
     }
 
-    /// Подождать, пока экран откроется и успокоится, — и показать следующую.
-    @MainActor private func pick() async {
-        guard hints.shown == nil, !Vault.isPreview else { return }
-        try? await Task.sleep(nanoseconds: 1_200_000_000)
-        guard !Task.isCancelled, quiet, hints.shown == nil,
-              let next = hints.next(for: screen) else { return }
-        withAnimation(.easeOut(duration: 0.25)) { hints.shown = next }
-    }
-}
-
-
-/// Листок без левого нижнего уголка: он отогнут (рисуется `CurledFlap`).
-struct PeeledCorner: Shape {
-    let lift: CGFloat
-    func path(in r: CGRect) -> Path {
-        var p = Path()
-        p.move(to: CGPoint(x: r.minX, y: r.minY))
-        p.addLine(to: CGPoint(x: r.maxX, y: r.minY))
-        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
-        p.addLine(to: CGPoint(x: r.minX + lift, y: r.maxY))
-        p.addLine(to: CGPoint(x: r.minX, y: r.maxY - lift))
-        p.closeSubpath()
-        return p
-    }
-}
-
-/// Отогнутый уголок: обратная сторона бумаги — светлее листа, с мягким
-/// переходом света и тенью, падающей на сам листок.
-struct CurledFlap: View {
-    let size: CGFloat
-    var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            // Тень уголка на листке — вправо-вверх от сгиба, под лампой слева сверху.
-            FlapShape()
-                .fill(Color.black.opacity(0.22))
-                .blur(radius: 3)
-                .offset(x: 2, y: -2)
-            FlapShape()
-                .fill(LinearGradient(colors: [Color.white.opacity(0.92), Look.sticker],
-                                     startPoint: .bottomLeading, endPoint: .topTrailing))
-            FlapShape()
-                .stroke(Look.stickerEdge, lineWidth: 0.8)
-        }
-        .frame(width: size, height: size)
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
-    }
-
-    /// Треугольник: линия сгиба и отражённый угол листа.
-    private struct FlapShape: Shape {
-        func path(in r: CGRect) -> Path {
-            var p = Path()
-            p.move(to: CGPoint(x: r.minX, y: r.minY))
-            p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
-            p.addLine(to: CGPoint(x: r.maxX, y: r.minY))
-            p.closeSubpath()
-            return p
+    /// Шаг можно сделать отсюда.
+    private func fitsHere(_ step: Hints.Step) -> Bool {
+        guard !Vault.isUITest || hints.forced else { return false }
+        switch step {
+        case .past, .future, .calendar: return screen == .today && restingToday && file == nil
+        case .map: return screen == .calendar || (screen == .today && restingToday && file == nil)
+        case .back: return screen == .map
         }
     }
 }
