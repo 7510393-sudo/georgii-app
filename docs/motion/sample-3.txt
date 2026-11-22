@@ -1,59 +1,404 @@
-    219 Thread_65244   DispatchQueue_1: com.apple.main-thread  (serial)
-    + 219 start  (in dyld) + 6992  [0x102fbc4e4]
-    +   219 start_sim  (in dyld_sim) + 20  [0x102e770e4]
-    +     219 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x1050db950]  ChronothecaApp.swift:0
-    +       219 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1050db8a4]  /<compiler-generated>:0
-    +         219 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
-    +           219 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
-    +             219 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
-    +               219 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
-    +                 219 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
-    +                   219 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
-    +                     219 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
-    +                       219 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
-    +                         219 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
-    +                           219 mach_msg  (in libsystem_kernel.dylib) + 20  [0x1030f4ef0]
-    +                             219 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x1030fcc44]
-    +                               219 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x103105e84]
-    +                                 219 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x1030f4b70]
+    516 Thread_69151   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 516 start  (in dyld) + 6992  [0x104c0c4e4]
+    +   516 start_sim  (in dyld_sim) + 20  [0x10497f0e4]
+    +     451 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x106a07950]  ChronothecaApp.swift:0
+    +     ! 451 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x106a078a4]  /<compiler-generated>:0
+    +     !   450 static App.main()  (in SwiftUI) + 132  [0x1d2c5f084]
+    +     !   : 450 protocol witness for App.init() in conformance ChronothecaApp  (in Chronotheca.debug.dylib) + 12  [0x106a0793c]  /<compiler-generated>:0
+    +     !   :   431 ChronothecaApp.init()  (in Chronotheca.debug.dylib) + 376  [0x106a03644]  ChronothecaApp.swift:27
+    +     !   :   | 243 static Prefs.settleFont()  (in Chronotheca.debug.dylib) + 2156  [0x106e13fb4]  Preferences.swift:76
+    +     !   :   | + 243 _CTFontManagerRegisterActionFontsForURL(__CFURL const*, CTFontManagerScope, Action, __CFError**)  (in CoreText) + 120  [0x181ff3698]
+    +     !   :   | +   242 _CTFontManagerRegisterActionFontsForURLs(__CFArray const*, CTFontManagerScope, bool, Action, __CFArray const**)  (in CoreText) + 392  [0x181ff3924]
+    +     !   :   | +   ! 230 GSFontRegisterURL  (in libGSFont.dylib) + 76  [0x1936353d4]
+    +     !   :   | +   ! : 230 RegisterURLAndCopyFaces  (in libGSFont.dylib) + 168  [0x19363548c]
+    +     !   :   | +   ! :   228 AddFontsFromURLOrPath  (in libGSFont.dylib) + 544  [0x19363ab20]
+    +     !   :   | +   ! :   | 228 AddFontsFromCGFontAndPath  (in libGSFont.dylib) + 112  [0x1936371c0]
+    +     !   :   | +   ! :   |   228 CGFontCopyName  (in CoreGraphics) + 52  [0x18d4dcb00]
+    +     !   :   | +   ! :   |     228 get_name_table  (in CoreGraphics) + 36  [0x18d4dcd08]
+    +     !   :   | +   ! :   |       228 CGFontNameTableCreate  (in CoreGraphics) + 1004  [0x18d5b74cc]
+    +     !   :   | +   ! :   |         228 @objc static NSLocale._autoupdatingCurrent.getter  (in Foundation) + 48  [0x180d7591c]
+    +     !   :   | +   ! :   |           228 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +     !   :   | +   ! :   |             228 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +     !   :   | +   ! :   |               228 one-time initialization function for systemNSLocale  (in Foundation) + 204  [0x180bf2f54]
+    +     !   :   | +   ! :   |                 228 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +     !   :   | +   ! :   |                   228 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +     !   :   | +   ! :   |                     227 one-time initialization function for system  (in Foundation) + 152  [0x180bf2da0]
+    +     !   :   | +   ! :   |                     + 227 _LocaleICU.init(identifier:prefs:)  (in Foundation) + 1156  [0x180d572a8]
+    +     !   :   | +   ! :   |                     +   227 ucal_getKeywordValuesForLocale  (in libicucore.A.dylib) + 108  [0x1825c5d88]
+    +     !   :   | +   ! :   |                     +     227 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0xb92e4  [0x1824722e4]
+    +     !   :   | +   ! :   |                     +       227 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0xbc70c  [0x18247570c]
+    +     !   :   | +   ! :   |                     +         227 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0xbd248  [0x182476248]
+    +     !   :   | +   ! :   |                     +           227 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0x8cf98  [0x182445f98]
+    +     !   :   | +   ! :   |                     +             227 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0x8d60c  [0x18244660c]
+    +     !   :   | +   ! :   |                     +               227 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0x67644  [0x182420644]
+    +     !   :   | +   ! :   |                     1 one-time initialization function for system  (in Foundation) + 60  [0x180bf2d44]
+    +     !   :   | +   ! :   |                       1 <deduplicated_symbol>  (in Foundation) + 48  [0x1808445e8]
+    +     !   :   | +   ! :   |                         1 swift::_getWitnessTable(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*, void const* const*)  (in libswiftCore.dylib) + 904  [0x1981a1e90]
+    +     !   :   | +   ! :   1 AddFontsFromURLOrPath  (in libGSFont.dylib) + 136  [0x19363a988]
+    +     !   :   | +   ! :   | 1 -[NSDictionary allValues]  (in CoreFoundation) + 148  [0x1804beb58]
+    +     !   :   | +   ! :   |   1 _CFRetain  (in CoreFoundation) + 108  [0x180424ad0]
+    +     !   :   | +   ! :   1 AddFontsFromURLOrPath  (in libGSFont.dylib) + 308  [0x19363aa34]
+    +     !   :   | +   ! :     1 CGFontCreateFontsWithURL  (in CoreGraphics) + 680  [0x18d25b250]
+    +     !   :   | +   ! :       1 CGFontCreateFontsWithPath  (in CoreGraphics) + 36  [0x18d1f18d4]
+    +     !   :   | +   ! :         1 create_private_data_array_with_path  (in CoreGraphics) + 16  [0x18d542348]
+    +     !   :   | +   ! :           1 FPFontCreateFontsWithPath  (in libFontParser.dylib) + 200  [0x1936556a8]
+    +     !   :   | +   ! :             1 TFont::CreateFontEntitiesForFile(char const*, timespec, bool, short, char const*)  (in libFontParser.dylib) + 260  [0x1937d5064]
+    +     !   :   | +   ! :               1 GSFontLibraryCore(char**)  (in libFontParser.dylib) + 92  [0x1937d796c]
+    +     !   :   | +   ! :                 1 _sl_dlopen  (in SoftLinking) + 88  [0x23206b550]
+    +     !   :   | +   ! :                   1 dyld4::APIs::dlopen_from(char const*, int, void*)  (in dyld_sim) + 344  [0x104977b1c]
+    +     !   :   | +   ! :                     1 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const  (in dyld_sim) + 184  [0x10497c390]
+    +     !   :   | +   ! :                       1 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const::'lambda'()::operator()() const  (in dyld_sim) + 280  [0x10497cbc0]
+    +     !   :   | +   ! :                         1 dyld4::Loader::getLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 828  [0x104991a70]
+    +     !   :   | +   ! :                           1 dyld4::Loader::forEachPath(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer)  (in dyld_sim) + 236  [0x104991378]
+    +     !   :   | +   ! :                             1 dyld4::ProcessConfig::PathOverrides::forEachPathVariant(char const*, mach_o::Platform, bool, bool, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer) const  (in dyld_sim) + 356  [0x1049845d0]
+    +     !   :   | +   ! :                               1 dyld4::ProcessConfig::PathOverrides::forEachInColonList(char const*, char const*, bool&, void (char const*, bool&) block_pointer)  (in dyld_sim) + 224  [0x104983860]
+    +     !   :   | +   ! :                                 1 invocation function for block in dyld4::ProcessConfig::PathOverrides::forEachPathVariant(char const*, mach_o::Platform, bool, bool, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer) const  (in dyld_sim) + 164  [0x104984ed4]
+    +     !   :   | +   ! :                                   1 dyld4::Loader::forEachResolvedAtPathVar(dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, dyld4::ProcessConfig::PathOverrides::Type, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer)  (in dyld_sim) + 468  [0x1049916f4]
+    +     !   :   | +   ! :                                     1 invocation function for block in dyld4::Loader::getLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 252  [0x104991f00]
+    +     !   :   | +   ! :                                       1 dyld4::JustInTimeLoader::matchesPath(dyld4::RuntimeState const&, char const*) const  (in dyld_sim) + 56  [0x10498d168]
+    +     !   :   | +   ! :                                         1 mach_o::UnsafeHeader::installName() const  (in dyld_sim) + 40  [0x1049b2d70]
+    +     !   :   | +   ! :                                           1 mach_o::UnsafeHeader::getDylibInstallName(char const**, mach_o::Version32*, mach_o::Version32*) const  (in dyld_sim) + 104  [0x1049b4170]
+    +     !   :   | +   ! :                                             1 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 168  [0x1049b29fc]
+    +     !   :   | +   ! 12 GSFontRegisterURL  (in libGSFont.dylib) + 28  [0x1936353a4]
+    +     !   :   | +   !   12 Initialize  (in libGSFont.dylib) + 192  [0x19363526c]
+    +     !   :   | +   !     12 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +     !   :   | +   !       12 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +     !   :   | +   !         5 __Initialize_block_invoke  (in libGSFont.dylib) + 328  [0x193639ce4]
+    +     !   :   | +   !         | 3 FixFontPathsForSimulator  (in libGSFont.dylib) + 124  [0x19363a6fc]
+    +     !   :   | +   !         | + 3 -[__NSPlaceholderDictionary initWithDictionary:copyItems:]  (in CoreFoundation) + 172  [0x18052e4a8]
+    +     !   :   | +   !         | +   3 -[NSDictionary initWithDictionary:copyItems:]  (in CoreFoundation) + 360  [0x1804c1cdc]
+    +     !   :   | +   !         | +     3 __NSDictionaryM_new  (in CoreFoundation) + 376  [0x180532084]
+    +     !   :   | +   !         | +       2 objc_msgSend  (in libobjc.A.dylib) + 8  [0x18003ac08]
+    +     !   :   | +   !         | +       1 __CFStringHash  (in CoreFoundation) + 212  [0x1804477cc]
+    +     !   :   | +   !         | 1 FixFontPathsForSimulator  (in libGSFont.dylib) + 468  [0x19363a854]
+    +     !   :   | +   !         | + 1 CFStringCreateByCombiningStrings  (in CoreFoundation) + 352  [0x180458cd4]
+    +     !   :   | +   !         | +   1 _xzm_xzone_malloc_tiny  (in libsystem_malloc.dylib) + 188  [0x1801ee40c]
+    +     !   :   | +   !         | +     1 _xzm_xzone_malloc_freelist_outlined  (in libsystem_malloc.dylib) + 320  [0x1801ef9a8]
+    +     !   :   | +   !         | +       1 _xzm_xzone_find_and_malloc_from_freelist_chunk  (in libsystem_malloc.dylib) + 1028  [0x1801f0488]
+    +     !   :   | +   !         | +         1 xzm_segment_group_alloc_chunk  (in libsystem_malloc.dylib) + 600  [0x1801cd218]
+    +     !   :   | +   !         | +           1 _platform_memset  (in libsystem_platform.dylib) + 128  [0x1048b6e40]
+    +     !   :   | +   !         | 1 FixFontPathsForSimulator  (in libGSFont.dylib) + 492  [0x19363a86c]
+    +     !   :   | +   !         |   1 -[__NSDictionaryM __setObject:forKey:]  (in CoreFoundation) + 432  [0x180530880]
+    +     !   :   | +   !         3 __Initialize_block_invoke  (in libGSFont.dylib) + 308  [0x193639cd0]
+    +     !   :   | +   !         | 2 FixFontPathsForSimulator  (in libGSFont.dylib) + 124  [0x19363a6fc]
+    +     !   :   | +   !         | + 2 -[__NSPlaceholderDictionary initWithDictionary:copyItems:]  (in CoreFoundation) + 172  [0x18052e4a8]
+    +     !   :   | +   !         | +   1 -[NSDictionary initWithDictionary:copyItems:]  (in CoreFoundation) + 272  [0x1804c1c84]
+    +     !   :   | +   !         | +   ! 1 -[NSConstantDictionary getObjects:andKeys:count:]  (in CoreFoundation) + 108  [0x18043633c]
+    +     !   :   | +   !         | +   !   1 _platform_memmove  (in libsystem_platform.dylib) + 52  [0x1048b70e4]
+    +     !   :   | +   !         | +   1 -[NSDictionary initWithDictionary:copyItems:]  (in CoreFoundation) + 360  [0x1804c1cdc]
+    +     !   :   | +   !         | +     1 __NSDictionaryM_new  (in CoreFoundation) + 376  [0x180532084]
+    +     !   :   | +   !         | +       1 __CFStringHash  (in CoreFoundation) + 100  [0x18044775c]
+    +     !   :   | +   !         | 1 FixFontPathsForSimulator  (in libGSFont.dylib) + 492  [0x19363a86c]
+    +     !   :   | +   !         |   1 -[__NSDictionaryM __setObject:forKey:]  (in CoreFoundation) + 848  [0x180530a20]
+    +     !   :   | +   !         2 __Initialize_block_invoke  (in libGSFont.dylib) + 148  [0x193639c30]
+    +     !   :   | +   !         | 1 __NSDictionaryM_new  (in CoreFoundation) + 636  [0x180532188]
+    +     !   :   | +   !         | + 1 objc_retain  (in libobjc.A.dylib) + 8  [0x180039050]
+    +     !   :   | +   !         | 1 __NSDictionaryM_new  (in CoreFoundation) + 364  [0x180532078]
+    +     !   :   | +   !         1 __Initialize_block_invoke  (in libGSFont.dylib) + 584  [0x193639de4]
+    +     !   :   | +   !         | 1 CGFontDBGetLocal  (in CoreGraphics) + 60  [0x18d19c76c]
+    +     !   :   | +   !         |   1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +     !   :   | +   !         |     1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +     !   :   | +   !         |       1 create_local_db  (in CoreGraphics) + 12  [0x18d19c660]
+    +     !   :   | +   !         |         1 CGFontDBCreate  (in CoreGraphics) + 0  [0x18d19b65c]
+    +     !   :   | +   !         1 __Initialize_block_invoke  (in libGSFont.dylib) + 1520  [0x19363a18c]
+    +     !   :   | +   !           1 _CFXNotificationRegisterObserver  (in CoreFoundation) + 212  [0x1803eb08c]
+    +     !   :   | +   !             1 _CFNotificationCenterInitializeDependentNotificationIfNecessary  (in CoreFoundation) + 168  [0x1803eac9c]
+    +     !   :   | +   !               1 CFBasicHashAddValue  (in CoreFoundation) + 264  [0x1804f3390]
+    +     !   :   | +   !                 1 ___CFBasicHashFindBucket_Linear  (in CoreFoundation) + 104  [0x1804f60a8]
+    +     !   :   | +   !                   1 _dependentNotificationHash  (in CoreFoundation) + 4  [0x1803ec84c]
+    +     !   :   | +   1 _CTFontManagerRegisterActionFontsForURLs(__CFArray const*, CTFontManagerScope, bool, Action, __CFArray const**)  (in CoreText) + 72  [0x181ff37e4]
+    +     !   :   | +     1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +     !   :   | +       1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +     !   :   | +         1 CGFontCreateWithFontName  (in CoreGraphics) + 24  [0x18d1f14bc]
+    +     !   :   | +           1 initialize_font_database_once  (in CoreGraphics) + 16  [0x18d1f1084]
+    +     !   :   | 182 static Prefs.settleFont()  (in Chronotheca.debug.dylib) + 1808  [0x106e13e58]  Preferences.swift:75
+    +     !   :   | + 182 -[NSBundle URLForResource:withExtension:subdirectory:]  (in Foundation) + 92  [0x18103bec0]
+    +     !   :   | +   182 CFBundleCopyResourceURL  (in CoreFoundation) + 52  [0x1803b27b0]
+    +     !   :   | +     182 _CFBundleCopyFindResources  (in CoreFoundation) + 1416  [0x1803b2d44]
+    +     !   :   | +       182 _copyResourceURLsFromBundle  (in CoreFoundation) + 372  [0x1803b41dc]
+    +     !   :   | +         182 _copyQueryTable  (in CoreFoundation) + 56  [0x1803b490c]
+    +     !   :   | +           181 _CFBundleCopyLanguageSearchListInBundle  (in CoreFoundation) + 112  [0x1804325b8]
+    +     !   :   | +           ! 181 _CFBundleCopyPreferredLanguagesInList  (in CoreFoundation) + 140  [0x1804337ac]
+    +     !   :   | +           !   181 _CFBundleCreateMutableArrayOfFallbackLanguages  (in CoreFoundation) + 312  [0x180434930]
+    +     !   :   | +           !     181 ualoc_localizationsToUse  (in libicucore.A.dylib) + 192  [0x18240d230]
+    +     !   :   | +           !       181 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0xb92e4  [0x1824722e4]
+    +     !   :   | +           !         181 ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0xbc810  [0x182475810]
+    +     !   :   | +           !           181 res_getResource  (in libicucore.A.dylib) + 32  [0x1824771c0]
+    +     !   :   | +           !             181 res_getTableItemByKey  (in libicucore.A.dylib) + 84  [0x182476e28]
+    +     !   :   | +           1 _CFBundleCopyLanguageSearchListInBundle  (in CoreFoundation) + 60  [0x180432584]
+    +     !   :   | +             1 _CFBundleCopyBundleLocalizations  (in CoreFoundation) + 132  [0x180433098]
+    +     !   :   | +               1 _copyBundleLocalizationsFromResources  (in CoreFoundation) + 344  [0x1804340b4]
+    +     !   :   | +                 1 _CFBundleCopyLProjDirectoriesForURL  (in CoreFoundation) + 188  [0x180433eb4]
+    +     !   :   | +                   1 _CFIterateDirectory  (in CoreFoundation) + 84  [0x1803def6c]
+    +     !   :   | +                     1 __opendir2  (in libsystem_c.dylib) + 40  [0x18012f78c]
+    +     !   :   | +                       1 open$NOCANCEL  (in libsystem_kernel.dylib) + 72  [0x10484841c]
+    +     !   :   | +                         1 __open_nocancel  (in libsystem_kernel.dylib) + 8  [0x1048356f4]
+    +     !   :   | 5 static Prefs.settleFont()  (in Chronotheca.debug.dylib) + 292  [0x106e1386c]  Preferences.swift:70
+    +     !   :   | + 5 -[NSUserDefaults(NSUserDefaults) stringForKey:]  (in Foundation) + 16  [0x18116752c]
+    +     !   :   | +   5 -[NSUserDefaults(NSUserDefaults) objectForKey:]  (in Foundation) + 56  [0x181167208]
+    +     !   :   | +     5 _CFPreferencesCopyAppValueWithContainerAndConfiguration  (in CoreFoundation) + 108  [0x18052b3dc]
+    +     !   :   | +       5 -[_CFXPreferences copyAppValueForKey:identifier:container:configurationURL:]  (in CoreFoundation) + 128  [0x1805289f8]
+    +     !   :   | +         5 -[_CFXPreferences withSearchListForIdentifier:container:cloudConfigurationURL:perform:]  (in CoreFoundation) + 136  [0x18054bee4]
+    +     !   :   | +           4 normalizeQuintuplet  (in CoreFoundation) + 396  [0x1804ee91c]
+    +     !   :   | +           ! 3 __108-[_CFXPreferences(SearchListAdditions) withSearchListForIdentifier:container:cloudConfigurationURL:perform:]_block_invoke  (in CoreFoundation) + 348  [0x1804ef088]
+    +     !   :   | +           ! : 3 __76-[_CFXPreferences copyAppValueForKey:identifier:container:configurationURL:]_block_invoke  (in CoreFoundation) + 28  [0x180528a70]
+    +     !   :   | +           ! :   3 -[CFPrefsSource copyValueForKey:]  (in CoreFoundation) + 40  [0x18047a678]
+    +     !   :   | +           ! :     3 -[CFPrefsSearchListSource alreadylocked_copyValueForKey:]  (in CoreFoundation) + 144  [0x1804ec2e8]
+    +     !   :   | +           ! :       3 -[CFPrefsSearchListSource alreadylocked_getDictionary:]  (in CoreFoundation) + 384  [0x18054b7f8]
+    +     !   :   | +           ! :         3 -[CFPrefsSearchListSource alreadylocked_generationCountFromListOfSources:count:]  (in CoreFoundation) + 236  [0x18054bd14]
+    +     !   :   | +           ! :           3 -[CFPrefsSearchListSource synchronouslySendSystemMessage:andUserMessage:andDirectMessage:replyHandler:]  (in CoreFoundation) + 268  [0x18054b324]
+    +     !   :   | +           ! :             3 CFPREFERENCES_IS_WAITING_FOR_USER_CFPREFSD  (in CoreFoundation) + 92  [0x1804ed558]
+    +     !   :   | +           ! :               3 __103-[CFPrefsSearchListSource synchronouslySendSystemMessage:andUserMessage:andDirectMessage:replyHandler:]_block_invoke  (in CoreFoundation) + 112  [0x1804ed66c]
+    +     !   :   | +           ! :                 2 -[_CFXPreferences withConnectionForRole:andUserIdentifier:performBlock:]  (in CoreFoundation) + 44  [0x18054fe64]
+    +     !   :   | +           ! :                 | 1 __103-[CFPrefsSearchListSource synchronouslySendSystemMessage:andUserMessage:andDirectMessage:replyHandler:]_block_invoke_2  (in CoreFoundation) + 40  [0x1804ed6bc]
+    +     !   :   | +           ! :                 | + 1 xpc_connection_send_message_with_reply_sync  (in libxpc.dylib) + 252  [0x1800cf918]
+    +     !   :   | +           ! :                 | +   1 dispatch_mach_send_with_result_and_wait_for_reply  (in libdispatch.dylib) + 56  [0x1801a2adc]
+    +     !   :   | +           ! :                 | +     1 _dispatch_mach_send_and_wait_for_reply  (in libdispatch.dylib) + 564  [0x1801a2740]
+    +     !   :   | +           ! :                 | +       1 mach_msg  (in libsystem_kernel.dylib) + 20  [0x104834ef0]
+    +     !   :   | +           ! :                 | +         1 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x10483cc44]
+    +     !   :   | +           ! :                 | +           1 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x104845e84]
+    +     !   :   | +           ! :                 | +             1 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x104834b70]
+    +     !   :   | +           ! :                 | 1 __103-[CFPrefsSearchListSource synchronouslySendSystemMessage:andUserMessage:andDirectMessage:replyHandler:]_block_invoke_2  (in CoreFoundation) + 72  [0x1804ed6dc]
+    +     !   :   | +           ! :                 |   1 __80-[CFPrefsSearchListSource alreadylocked_generationCountFromListOfSources:count:]_block_invoke  (in CoreFoundation) + 56  [0x1804ed9f8]
+    +     !   :   | +           ! :                 |     1 -[CFPrefsSearchListSource handleReply:toRequestNewDataMessage:onConnection:retryCount:error:]  (in CoreFoundation) + 296  [0x1804ed158]
+    +     !   :   | +           ! :                 |       1 xpc_array_apply  (in libxpc.dylib) + 88  [0x1800c822c]
+    +     !   :   | +           ! :                 |         1 __93-[CFPrefsSearchListSource handleReply:toRequestNewDataMessage:onConnection:retryCount:error:]_block_invoke  (in CoreFoundation) + 168  [0x1804ed238]
+    +     !   :   | +           ! :                 |           1 -[CFPrefsPlistSource handleReply:toRequestNewDataMessage:onConnection:retryCount:error:]  (in CoreFoundation) + 1308  [0x18053d684]
+    +     !   :   | +           ! :                 |             1 CFPropertyListCreateWithData  (in CoreFoundation) + 56  [0x1804144b0]
+    +     !   :   | +           ! :                 |               1 _CFPropertyListCreateWithData  (in CoreFoundation) + 152  [0x180413a74]
+    +     !   :   | +           ! :                 |                 1 __CFTryParseBinaryPlist  (in CoreFoundation) + 232  [0x1803ac814]
+    +     !   :   | +           ! :                 |                   1 __CFBinaryPlistCreateObjectFiltered  (in CoreFoundation) + 5340  [0x1803aaef0]
+    +     !   :   | +           ! :                 |                     1 __CFBinaryPlistCreateObjectFiltered  (in CoreFoundation) + 1024  [0x1803a9e14]
+    +     !   :   | +           ! :                 |                       1 CFDateCreate  (in CoreFoundation) + 28  [0x1804bd364]
+    +     !   :   | +           ! :                 |                         1 _objc_msgSend_uncached  (in libobjc.A.dylib) + 64  [0x18003af00]
+    +     !   :   | +           ! :                 |                           1 lookUpImpOrForward  (in libobjc.A.dylib) + 208  [0x1800533a4]
+    +     !   :   | +           ! :                 |                             1 initializeAndMaybeRelock(objc_class*, objc_object*, locker_mixin<lockdebug::lock_mixin<objc_lock_base_t>>&, bool)  (in libobjc.A.dylib) + 216  [0x1800410e0]
+    +     !   :   | +           ! :                 |                               1 initializeNonMetaClass  (in libobjc.A.dylib) + 592  [0x18003feac]
+    +     !   :   | +           ! :                 |                                 1 lockAndFinishInitializing(objc_class*, objc_class*)  (in libobjc.A.dylib) + 304  [0x18003f618]
+    +     !   :   | +           ! :                 |                                   1 _finishInitializing(objc_class*, objc_class*)  (in libobjc.A.dylib) + 100  [0x18003f780]
+    +     !   :   | +           ! :                 |                                     1 objc::Scanner::scanAddedClassImpl(objc_class*, objc::Scanner::metaclass_t)  (in libobjc.A.dylib) + 200  [0x180053dbc]
+    +     !   :   | +           ! :                 1 -[_CFXPreferences withConnectionForRole:andUserIdentifier:performBlock:]  (in CoreFoundation) + 24  [0x18054fe50]
+    +     !   :   | +           ! :                   1 -[_CFXPreferences _copyDaemonConnectionSettingUpIfNecessaryForRole:andUserIdentifier:]  (in CoreFoundation) + 316  [0x1805506d0]
+    +     !   :   | +           ! :                     1 -[_CFXPreferences _setupNewDaemonConnection:invalidationHandler:]  (in CoreFoundation) + 144  [0x180529f34]
+    +     !   :   | +           ! :                       1 _xpc_connection_activate_if_needed  (in libxpc.dylib) + 520  [0x1800cdf14]
+    +     !   :   | +           ! :                         1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +     !   :   | +           ! :                           1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +     !   :   | +           ! :                             1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9820  [0x1800b68f4]
+    +     !   :   | +           ! :                               1 _os_log_impl_stream  (in libsystem_trace.dylib) + 524  [0x1800b6e94]
+    +     !   :   | +           ! :                                 1 _os_activity_stream_reflect  (in libsystem_trace.dylib) + 540  [0x1800a6128]
+    +     !   :   | +           ! :                                   1 dispatch_block_perform  (in libdispatch.dylib) + 112  [0x18018b474]
+    +     !   :   | +           ! :                                     1 _dispatch_block_invoke_direct  (in libdispatch.dylib) + 376  [0x18018b5fc]
+    +     !   :   | +           ! :                                       1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +     !   :   | +           ! :                                         1 ___os_activity_stream_reflect_block_invoke_2  (in libsystem_trace.dylib) + 36  [0x1800a6884]
+    +     !   :   | +           ! :                                           1 _xpc_pipe_simpleroutine  (in libxpc.dylib) + 116  [0x1800e72e8]
+    +     !   :   | +           ! :                                             1 _xpc_pipe_pack_message  (in libxpc.dylib) + 184  [0x1800e7494]
+    +     !   :   | +           ! :                                               1 _xpc_serializer_pack  (in libxpc.dylib) + 648  [0x1800ddde8]
+    +     !   :   | +           ! :                                                 1 _xpc_dictionary_serialize  (in libxpc.dylib) + 56  [0x1800d49fc]
+    +     !   :   | +           ! :                                                   1 _xpc_serializer_append  (in libxpc.dylib) + 224  [0x1800ddaf4]
+    +     !   :   | +           ! :                                                     1 DYLD-STUB$$memcpy  (in libxpc.dylib) + 0  [0x1800f7edc]
+    +     !   :   | +           ! 1 __108-[_CFXPreferences(SearchListAdditions) withSearchListForIdentifier:container:cloudConfigurationURL:perform:]_block_invoke  (in CoreFoundation) + 272  [0x1804ef03c]
+    +     !   :   | +           !   1 -[_CFXPreferences withSearchLists:]  (in CoreFoundation) + 64  [0x18054be40]
+    +     !   :   | +           !     1 __108-[_CFXPreferences(SearchListAdditions) withSearchListForIdentifier:container:cloudConfigurationURL:perform:]_block_invoke_2  (in CoreFoundation) + 432  [0x1804ef318]
+    +     !   :   | +           !       1 -[CFPrefsSearchListSource addSourceForIdentifier:user:byHost:container:]  (in CoreFoundation) + 60  [0x18054b514]
+    +     !   :   | +           !         1 -[_CFXPreferences withSourceForIdentifier:user:byHost:container:cloud:perform:]  (in CoreFoundation) + 912  [0x18047b14c]
+    +     !   :   | +           !           1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +     !   :   | +           !             1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +     !   :   | +           !               1 __96-[_CFXPreferences(SourceAdditions) withSourceForIdentifier:user:byHost:container:cloud:perform:]_block_invoke_2  (in CoreFoundation) + 104  [0x18047b278]
+    +     !   :   | +           !                 1 ???  (in libsystem_notify.dylib)  load address 0x18341a000 + 0x43ac  [0x18341e3ac]
+    +     !   :   | +           !                   1 ???  (in libsystem_notify.dylib)  load address 0x18341a000 + 0x17b8  [0x18341b7b8]
+    +     !   :   | +           !                     1 ???  (in libsystem_notify.dylib)  load address 0x18341a000 + 0x1b44  [0x18341bb44]
+    +     !   :   | +           !                       1 ???  (in libsystem_notify.dylib)  load address 0x18341a000 + 0xa4f0  [0x1834244f0]
+    +     !   :   | +           !                         1 mach_msg  (in libsystem_kernel.dylib) + 20  [0x104834ef0]
+    +     !   :   | +           !                           1 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x10483cc44]
+    +     !   :   | +           !                             1 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x104845e84]
+    +     !   :   | +           !                               1 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x104834b70]
+    +     !   :   | +           1 normalizeQuintuplet  (in CoreFoundation) + 364  [0x1804ee8fc]
+    +     !   :   | +             1 _CFPrefsGetCacheStringForBundleID  (in CoreFoundation) + 92  [0x180526da0]
+    +     !   :   | +               1 CFBundleGetMainBundle  (in CoreFoundation) + 136  [0x1803aec00]
+    +     !   :   | +                 1 _CFURLCreateWithFileSystemPath  (in CoreFoundation) + 2388  [0x180484568]
+    +     !   :   | +                   1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +     !   :   | +                     1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +     !   :   | +                       1 ___foundation_swift_nsurl_feature_enabled_block_invoke  (in CoreFoundation) + 28  [0x18047c2dc]
+    +     !   :   | +                         1 _os_feature_enabled_SLOWPATH  (in libsystem_featureflags.dylib) + 932  [0x1cc2c1e3c]
+    +     !   :   | +                           1 _os_feature_enabled_load  (in libsystem_featureflags.dylib) + 172  [0x1cc2c2334]
+    +     !   :   | +                             1 open  (in libsystem_kernel.dylib) + 60  [0x10483f984]
+    +     !   :   | +                               1 __open  (in libsystem_kernel.dylib) + 8  [0x104835588]
+    +     !   :   | 1 static Prefs.settleFont()  (in Chronotheca.debug.dylib) + 1496  [0x106e13d20]  Preferences.swift:0
+    +     !   :   |   1 __swift_instantiateConcreteTypeFromMangledNameV2  (in Chronotheca.debug.dylib) + 108  [0x106936518]  /<compiler-generated>:0
+    +     !   :   |     1 swift_getTypeByMangledNameInContextImpl(char const*, unsigned long, swift::TargetContextDescriptor<swift::InProcess> const*, void const* const*)  (in libswiftCore.dylib) + 152  [0x1981b74bc]
+    +     !   :   |       1 swift_getTypeByMangledName  (in libswiftCore.dylib) + 272  [0x1981b7090]
+    +     !   :   |         1 swift_getTypeByMangledNameImpl(swift::MetadataRequest, __swift::__runtime::llvm::StringRef, void const* const*, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>)  (in libswiftCore.dylib) + 1016  [0x1981bcd58]
+    +     !   :   |           1 swift_getTypeByMangledNode  (in libswiftCore.dylib) + 272  [0x1981b8ab0]
+    +     !   :   |             1 swift_getTypeByMangledNodeImpl(swift::MetadataRequest, swift::Demangle::__runtime::Demangler&, swift::Demangle::__runtime::Node*, void const* const*, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>)  (in libswiftCore.dylib) + 576  [0x1981bc55c]
+    +     !   :   |               1 swift::Demangle::__runtime::TypeDecoder<(anonymous namespace)::DecodedMetadataBuilder>::decodeMangledType(swift::Demangle::__runtime::Node*, unsigned int, bool)  (in libswiftCore.dylib) + 9492  [0x1981c2ba4]
+    +     !   :   |                 1 (anonymous namespace)::DecodedMetadataBuilder::createBoundGenericType(swift::TargetContextDescriptor<swift::InProcess> const*, __swift::__runtime::llvm::ArrayRef<swift::MetadataPackOrValue>, swift::MetadataPackOrValue) const  (in libswiftCore.dylib) + 204  [0x1981c5fd8]
+    +     !   :   |                   1 _gatherGenericParameters(swift::TargetContextDescriptor<swift::InProcess> const*, __swift::__runtime::llvm::ArrayRef<swift::MetadataPackOrValue>, swift::TargetMetadata<swift::InProcess> const*, __swift::__runtime::llvm::SmallVectorImpl<unsigned int>&, __swift::__runtime::llvm::SmallVectorImpl<void const*>&, swift::Demangle::__runtime::Demangler&)  (in libswiftCore.dylib) + 1472  [0x1981ba2a8]
+    +     !   :   |                     1 swift::_checkGenericRequirements(__swift::__runtime::llvm::ArrayRef<swift::GenericParamDescriptor>, __swift::__runtime::llvm::ArrayRef<swift::TargetGenericRequirementDescriptor<swift::InProcess>>, __swift::__runtime::llvm::SmallVectorImpl<void const*>&, std::function<void const* (unsigned int, unsigned int)>, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>, swift::ConformanceExecutionContext*)  (in libswiftCore.dylib) + 6448  [0x1981cff40]
+    +     !   :   |                       1 swift::_conformsToProtocol(swift::OpaqueValue const*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptorRef<swift::InProcess>, swift::TargetWitnessTable<swift::InProcess> const**, swift::ConformanceExecutionContext*)  (in libswiftCore.dylib) + 48  [0x19817f170]
+    +     !   :   |                         1 swift_conformsToProtocolWithExecutionContextSlow(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, swift::ConformanceExecutionContext*, std::atomic<unsigned long>&, unsigned long, swift::TargetWitnessTable<swift::InProcess> const* (*)(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, swift::ConformanceExecutionContext*))  (in libswiftCore.dylib) + 124  [0x1981d1cfc]
+    +     !   :   |                           1 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib) + 4420  [0x1981d4124]
+    +     !   :   |                             1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +     !   :   |                               1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +     !   :   |                                 1 ConformanceState::ConformanceState()  (in libswiftCore.dylib) + 220  [0x1981d58bc]
+    +     !   :   |                                   1 objc_addLoadImageFunc2  (in libobjc.A.dylib) + 128  [0x18005b3b4]
+    +     !   :   |                                     1 (anonymous namespace)::addImageCallback<&(anonymous namespace)::TextSegment, &(anonymous namespace)::ProtocolConformancesSection, 1, &swift::addImageProtocolConformanceBlockCallbackUnsafe(void const*, void const*, unsigned long)>(mach_header const*, _dyld_section_location_info_s*)  (in libswiftCore.dylib) + 24  [0x1981902d4]
+    +     !   :   |                                       1 dyld4::APIs::_dyld_lookup_section_info(mach_header const*, _dyld_section_location_info_s*, _dyld_section_location_kind)  (in dyld_sim) + 208  [0x10497a468]
+    +     !   :   |                                         1 dyld4::APIs::_dyld_lookup_section_info(mach_header const*, _dyld_section_location_info_s*, _dyld_section_location_kind)  (in dyld_sim) + 240  [0x10497a488]
+    +     !   :   |                                           1 dyld4::JustInTimeLoader::parseSectionLocations(mach_o::UnsafeHeader const*, dyld4::SectionLocations&)  (in dyld_sim) + 208  [0x10498f238]
+    +     !   :   |                                             1 mach_o::UnsafeHeader::forEachSection(void (mach_o::UnsafeHeader::SectionInfo const&, bool&) block_pointer) const  (in dyld_sim) + 96  [0x1049b405c]
+    +     !   :   |                                               1 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x1049b2a1c]
+    +     !   :   |                                                 1 invocation function for block in mach_o::UnsafeHeader::forEachSection(void (mach_o::UnsafeHeader::SectionInfo const&, bool&) block_pointer) const  (in dyld_sim) + 88  [0x1049b5758]
+    +     !   :   |                                                   1 <deduplicated_symbol>  (in dyld_sim) + 36  [0x1049aae38]
+    +     !   :   17 ChronothecaApp.init()  (in Chronotheca.debug.dylib) + 796  [0x106a037e8]  ChronothecaApp.swift:33
+    +     !   :   | 17 Vault.__allocating_init()  (in Chronotheca.debug.dylib) + 44  [0x10705e2f0]  Vault.swift:0
+    +     !   :   |   16 Vault.init()  (in Chronotheca.debug.dylib) + 1688  [0x10705e994]  Vault.swift:211
+    +     !   :   |   + 11 Vault.usePreviewFolder()  (in Chronotheca.debug.dylib) + 804  [0x10705f26c]  Vault.swift:248
+    +     !   :   |   + ! 11 Vault.granted.setter  (in Chronotheca.debug.dylib) + 192  [0x107058c58]  <stdin>:0
+    +     !   :   |   + !   11 static Published.subscript.setter  (in Combine) + 44  [0x1c3288d14]
+    +     !   :   |   + !     11 specialized static Published.subscript.setter  (in Combine) + 48  [0x1c3289a14]
+    +     !   :   |   + !       10 specialized static Published.withMutation<A>(of:keyPath:storage:apply:)  (in Combine) + 152  [0x1c3289838]
+    +     !   :   |   + !       : 10 swift_dynamicCastSlow(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*, swift::DynamicCastFlags, std::atomic<unsigned long>&, unsigned long, bool (*)(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*, swift::DynamicCastFlags))  (in libswiftCore.dylib) + 176  [0x198184274]
+    +     !   :   |   + !       :   10 tryCast(swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*&, swift::TargetMetadata<swift::InProcess> const*&, bool, bool, bool)  (in libswiftCore.dylib) + 796  [0x1981845fc]
+    +     !   :   |   + !       :     10 tryCastToConstrainedOpaqueExistential(swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*&, swift::TargetMetadata<swift::InProcess> const*&, bool, bool, bool)  (in libswiftCore.dylib) + 56  [0x198185874]
+    +     !   :   |   + !       :       10 _conformsToProtocols(swift::OpaqueValue const*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetExistentialTypeMetadata<swift::InProcess> const*, swift::TargetWitnessTable<swift::InProcess> const**, bool)  (in libswiftCore.dylib) + 172  [0x198186838]
+    +     !   :   |   + !       :         10 swift::_conformsToProtocolInContext(swift::OpaqueValue const*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptorRef<swift::InProcess>, swift::TargetWitnessTable<swift::InProcess> const**, bool)  (in libswiftCore.dylib) + 36  [0x19817f2b0]
+    +     !   :   |   + !       :           10 swift::_conformsToProtocol(swift::OpaqueValue const*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptorRef<swift::InProcess>, swift::TargetWitnessTable<swift::InProcess> const**, swift::ConformanceExecutionContext*)  (in libswiftCore.dylib) + 48  [0x19817f170]
+    +     !   :   |   + !       :             10 swift_conformsToProtocolWithExecutionContext  (in libswiftCore.dylib) + 68  [0x1981d1b30]
+    +     !   :   |   + !       :               8 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib) + 3292  [0x1981d3cbc]
+    +     !   :   |   + !       :               | 6 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib) + 52,32,...  [0x1981d4e78,0x1981d4e64,...]
+    +     !   :   |   + !       :               | 2 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib) + 132  [0x1981d4ec8]
+    +     !   :   |   + !       :               |   2 swift::TargetProtocolConformanceDescriptor<swift::InProcess>::getCanonicalTypeMetadata() const  (in libswiftCore.dylib) + 92  [0x1981ce07c]
+    +     !   :   |   + !       :               |     2 look_up_class  (in libobjc.A.dylib) + 100  [0x180049030]
+    +     !   :   |   + !       :               |       2 realizeClassMaybeSwiftMaybeRelock(objc_class*, locker_mixin<lockdebug::lock_mixin<objc_lock_base_t>>&, bool)  (in libobjc.A.dylib) + 56  [0x180040f00]
+    +     !   :   |   + !       :               |         1 realizeClassWithoutSwift(objc_class*, objc_class*)  (in libobjc.A.dylib) + 364  [0x180041e5c]
+    +     !   :   |   + !       :               |         ! 1 realizeClassWithoutSwift(objc_class*, objc_class*)  (in libobjc.A.dylib) + 44  [0x180041d1c]
+    +     !   :   |   + !       :               |         1 realizeClassWithoutSwift(objc_class*, objc_class*)  (in libobjc.A.dylib) + 1828  [0x180042414]
+    +     !   :   |   + !       :               |           1 prepareMethodLists(objc_class*, method_list_t**, int, bool, bool, char const*)  (in libobjc.A.dylib) + 76  [0x180043338]
+    +     !   :   |   + !       :               2 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib) + 3276  [0x1981d3cac]
+    +     !   :   |   + !       1 specialized static Published.withMutation<A>(of:keyPath:storage:apply:)  (in Combine) + 124  [0x1c328981c]
+    +     !   :   |   + !         1 __swift_instantiateConcreteTypeFromMangledNameV2  (in Combine) + 64  [0x1c325b0a4]
+    +     !   :   |   + !           1 swift_getTypeByMangledNameInContextImpl(char const*, unsigned long, swift::TargetContextDescriptor<swift::InProcess> const*, void const* const*)  (in libswiftCore.dylib) + 152  [0x1981b74bc]
+    +     !   :   |   + !             1 swift_getTypeByMangledName  (in libswiftCore.dylib) + 272  [0x1981b7090]
+    +     !   :   |   + !               1 swift_getTypeByMangledNameImpl(swift::MetadataRequest, __swift::__runtime::llvm::StringRef, void const* const*, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>)  (in libswiftCore.dylib) + 1016  [0x1981bcd58]
+    +     !   :   |   + !                 1 swift_getTypeByMangledNode  (in libswiftCore.dylib) + 272  [0x1981b8ab0]
+    +     !   :   |   + !                   1 swift_getTypeByMangledNodeImpl(swift::MetadataRequest, swift::Demangle::__runtime::Demangler&, swift::Demangle::__runtime::Node*, void const* const*, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>)  (in libswiftCore.dylib) + 576  [0x1981bc55c]
+    +     !   :   |   + !                     1 swift::Demangle::__runtime::TypeDecoder<(anonymous namespace)::DecodedMetadataBuilder>::decodeMangledType(swift::Demangle::__runtime::Node*, unsigned int, bool)  (in libswiftCore.dylib) + 8328  [0x1981c2718]
+    +     !   :   |   + !                       1 swift::Demangle::__runtime::TypeDecoder<(anonymous namespace)::DecodedMetadataBuilder>::decodeMangledProtocolType(swift::Demangle::__runtime::Node*, unsigned int)  (in libswiftCore.dylib) + 3168  [0x1981c7eb4]
+    +     !   :   |   + !                         1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +     !   :   |   + !                           1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +     !   :   |   + !                             1 objc_addLoadImageFunc2  (in libobjc.A.dylib) + 128  [0x18005b3b4]
+    +     !   :   |   + !                               1 (anonymous namespace)::addImageCallback<&(anonymous namespace)::TextSegment, &(anonymous namespace)::ProtocolsSection, 0, &swift::addImageProtocolsBlockCallbackUnsafe(void const*, void const*, unsigned long)>(mach_header const*, _dyld_section_location_info_s*)  (in libswiftCore.dylib) + 24  [0x198190284]
+    +     !   :   |   + !                                 1 dyld4::APIs::_dyld_lookup_section_info(mach_header const*, _dyld_section_location_info_s*, _dyld_section_location_kind)  (in dyld_sim) + 208  [0x10497a468]
+    +     !   :   |   + !                                   1 dyld4::APIs::_dyld_lookup_section_info(mach_header const*, _dyld_section_location_info_s*, _dyld_section_location_kind)  (in dyld_sim) + 240  [0x10497a488]
+    +     !   :   |   + !                                     1 dyld4::JustInTimeLoader::parseSectionLocations(mach_o::UnsafeHeader const*, dyld4::SectionLocations&)  (in dyld_sim) + 208  [0x10498f238]
+    +     !   :   |   + !                                       1 mach_o::UnsafeHeader::forEachSection(void (mach_o::UnsafeHeader::SectionInfo const&, bool&) block_pointer) const  (in dyld_sim) + 96  [0x1049b405c]
+    +     !   :   |   + !                                         1 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x1049b2a1c]
+    +     !   :   |   + !                                           1 invocation function for block in mach_o::UnsafeHeader::forEachSection(void (mach_o::UnsafeHeader::SectionInfo const&, bool&) block_pointer) const  (in dyld_sim) + 304  [0x1049b5830]
+    +     !   :   |   + !                                             1 invocation function for block in dyld4::JustInTimeLoader::parseSectionLocations(mach_o::UnsafeHeader const*, dyld4::SectionLocations&)  (in dyld_sim) + 92  [0x10498f2c4]
+    +     !   :   |   + !                                               1 std::basic_string_view<char>::starts_with[abi:nqn210106](char const*) const  (in dyld_sim) + 72  [0x104983cd8]
+    +     !   :   |   + !                                                 1 std::basic_string_view<char>::compare[abi:nqn210106](unsigned long, unsigned long, std::basic_string_view<char>) const  (in dyld_sim) + 60  [0x104985164]
+    +     !   :   |   + !                                                   1 memcmp  (in dyld_sim) + 20  [0x1049ab40c]
+    +     !   :   |   + 3 Vault.usePreviewFolder()  (in Chronotheca.debug.dylib) + 892  [0x10705f2c4]  Vault.swift:249
+    +     !   :   |   + ! 3 Vault.root.setter  (in Chronotheca.debug.dylib) + 316  [0x1070593d8]  <stdin>:0
+    +     !   :   |   + !   3 Vault.root.didset  (in Chronotheca.debug.dylib) + 660  [0x107059688]  Vault.swift:78
+    +     !   :   |   + !     3 Vault.readMark()  (in Chronotheca.debug.dylib) + 272  [0x1070597b0]  Vault.swift:91
+    +     !   :   |   + !       2 static ArchiveMark.check(root:)  (in Chronotheca.debug.dylib) + 456  [0x10694f144]  ArchiveMark.swift:65
+    +     !   :   |   + !       : 1 static ArchiveMark.parse(_:)  (in Chronotheca.debug.dylib) + 228  [0x10694d7c8]  ArchiveMark.swift:30
+    +     !   :   |   + !       : | 1 StringProtocol.data(using:allowLossyConversion:)  (in Foundation) + 176  [0x180e5c404]
+    +     !   :   |   + !       : |   1 specialized Data.init<A>(_:)  (in Foundation) + 276  [0x180aac504]
+    +     !   :   |   + !       : |     1 swift_dynamicCast  (in libswiftCore.dylib) + 92  [0x19818405c]
+    +     !   :   |   + !       : |       1 tryCast(swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*&, swift::TargetMetadata<swift::InProcess> const*&, bool, bool, bool)  (in libswiftCore.dylib) + 796  [0x1981845fc]
+    +     !   :   |   + !       : |         1 tryCastToConstrainedOpaqueExistential(swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*&, swift::TargetMetadata<swift::InProcess> const*&, bool, bool, bool)  (in libswiftCore.dylib) + 56  [0x198185874]
+    +     !   :   |   + !       : |           1 _conformsToProtocols(swift::OpaqueValue const*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetExistentialTypeMetadata<swift::InProcess> const*, swift::TargetWitnessTable<swift::InProcess> const**, bool)  (in libswiftCore.dylib) + 172  [0x198186838]
+    +     !   :   |   + !       : |             1 swift::_conformsToProtocolInContext(swift::OpaqueValue const*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptorRef<swift::InProcess>, swift::TargetWitnessTable<swift::InProcess> const**, bool)  (in libswiftCore.dylib) + 36  [0x19817f2b0]
+    +     !   :   |   + !       : |               1 swift::_conformsToProtocol(swift::OpaqueValue const*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptorRef<swift::InProcess>, swift::TargetWitnessTable<swift::InProcess> const**, swift::ConformanceExecutionContext*)  (in libswiftCore.dylib) + 48  [0x19817f170]
+    +     !   :   |   + !       : |                 1 swift_conformsToProtocolWithExecutionContext  (in libswiftCore.dylib) + 68  [0x1981d1b30]
+    +     !   :   |   + !       : |                   1 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib) + 3292  [0x1981d3cbc]
+    +     !   :   |   + !       : |                     1 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib) + 32  [0x1981d4e64]
+    +     !   :   |   + !       : 1 static ArchiveMark.parse(_:)  (in Chronotheca.debug.dylib) + 692  [0x10694d998]  ArchiveMark.swift:31
+    +     !   :   |   + !       :   1 swift_dynamicCast  (in libswiftCore.dylib) + 92  [0x19818405c]
+    +     !   :   |   + !       :     1 tryCast(swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*&, swift::TargetMetadata<swift::InProcess> const*&, bool, bool, bool)  (in libswiftCore.dylib) + 1476  [0x1981848a4]
+    +     !   :   |   + !       :       1 tryCast(swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*&, swift::TargetMetadata<swift::InProcess> const*&, bool, bool, bool)  (in libswiftCore.dylib) + 2184  [0x198184b68]
+    +     !   :   |   + !       :         1 tryCastFromClassToObjCBridgeable(swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*&, swift::TargetMetadata<swift::InProcess> const*&, bool, bool)  (in libswiftCore.dylib) + 80  [0x198184d38]
+    +     !   :   |   + !       :           1 findBridgeWitness(swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib) + 88  [0x198186ae4]
+    +     !   :   |   + !       :             1 swift_conformsToProtocolCommonSlow(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, std::atomic<unsigned long>&, unsigned long, swift::TargetWitnessTable<swift::InProcess> const* (*)(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*))  (in libswiftCore.dylib) + 28  [0x1981d1a64]
+    +     !   :   |   + !       :               1 swift::getOverride_conformsToProtocolCommon()  (in libswiftCore.dylib) + 0  [0x198174194]
+    +     !   :   |   + !       1 static ArchiveMark.check(root:)  (in Chronotheca.debug.dylib) + 364  [0x10694f0e8]  ArchiveMark.swift:65
+    +     !   :   |   + !         1 static Vault.reading(at:coordinated:)  (in Chronotheca.debug.dylib) + 796  [0x107077e34]  Vault.swift:1152
+    +     !   :   |   + !           1 static Vault.text(of:)  (in Chronotheca.debug.dylib) + 276  [0x107078954]  Vault.swift:1170
+    +     !   :   |   + !             1 String.init(data:encoding:)  (in Foundation) + 0  [0x180e4c030]
+    +     !   :   |   + 2 Vault.usePreviewFolder()  (in Chronotheca.debug.dylib) + 904  [0x10705f2d0]  Vault.swift:250
+    +     !   :   |   +   1 Vault.seedPreview()  (in Chronotheca.debug.dylib) + 884  [0x107061b88]  Vault.swift:261
+    +     !   :   |   +   : 1 T(_:_:)  (in Chronotheca.debug.dylib) + 76  [0x106bcf0e4]  Lang.swift:41
+    +     !   :   |   +   :   1 static Lang.code.getter  (in Chronotheca.debug.dylib) + 12  [0x106bcea94]  Lang.swift:19
+    +     !   :   |   +   :     1 static Lang.phone.getter  (in Chronotheca.debug.dylib) + 412  [0x106bcec38]  Lang.swift:25
+    +     !   :   |   +   :       1 Lang.all.unsafeMutableAddressor  (in Chronotheca.debug.dylib) + 76  [0x106bcea58]  Lang.swift:11
+    +     !   :   |   +   :         1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +     !   :   |   +   :           1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +     !   :   |   +   :             1 one-time initialization function for all  (in Chronotheca.debug.dylib) + 32  [0x106bce5f0]  Lang.swift:11
+    +     !   :   |   +   :               1 __swift_instantiateConcreteTypeFromMangledNameV2  (in Chronotheca.debug.dylib) + 108  [0x106936518]  /<compiler-generated>:0
+    +     !   :   |   +   :                 1 swift_getTypeByMangledNameInContextImpl(char const*, unsigned long, swift::TargetContextDescriptor<swift::InProcess> const*, void const* const*)  (in libswiftCore.dylib) + 152  [0x1981b74bc]
+    +     !   :   |   +   :                   1 swift_getTypeByMangledName  (in libswiftCore.dylib) + 272  [0x1981b7090]
+    +     !   :   |   +   :                     1 swift_getTypeByMangledNameImpl(swift::MetadataRequest, __swift::__runtime::llvm::StringRef, void const* const*, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>)  (in libswiftCore.dylib) + 1016  [0x1981bcd58]
+    +     !   :   |   +   :                       1 swift_getTypeByMangledNode  (in libswiftCore.dylib) + 272  [0x1981b8ab0]
+    +     !   :   |   +   :                         1 swift_getTypeByMangledNodeImpl(swift::MetadataRequest, swift::Demangle::__runtime::Demangler&, swift::Demangle::__runtime::Node*, void const* const*, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>)  (in libswiftCore.dylib) + 576  [0x1981bc55c]
+    +     !   :   |   +   :                           1 swift::Demangle::__runtime::TypeDecoder<(anonymous namespace)::DecodedMetadataBuilder>::decodeMangledType(swift::Demangle::__runtime::Node*, unsigned int, bool)  (in libswiftCore.dylib) + 12892  [0x1981c38ec]
+    +     !   :   |   +   :                             1 (anonymous namespace)::DecodedMetadataBuilder::createTupleType(__swift::__runtime::llvm::ArrayRef<swift::MetadataPackOrValue>, __swift::__runtime::llvm::ArrayRef<__swift::__runtime::llvm::StringRef>) const  (in libswiftCore.dylib) + 144  [0x1981c9228]
+    +     !   :   |   +   :                               1 std::basic_string<char>::append(char const*, unsigned long)  (in libc++.1.dylib) + 140  [0x1802f8d10]
+    +     !   :   |   +   :                                 1 DYLD-STUB$$memmove  (in libc++.1.dylib) + 0  [0x18033de80]
+    +     !   :   |   +   1 Vault.seedPreview()  (in Chronotheca.debug.dylib) + 988  [0x107061bf0]  Vault.swift:274
+    +     !   :   |   +     1 static Vault.stamp(_:)  (in Chronotheca.debug.dylib) + 44  [0x1070637e8]  Vault.swift:1395
+    +     !   :   |   +       1 static Vault.stampFormat.getter  (in Chronotheca.debug.dylib) + 1512  [0x10707cfa8]  Vault.swift:1413
+    +     !   :   |   +         1 Calendar.init(identifier:)  (in Foundation) + 552  [0x180a3f230]
+    +     !   :   |   +           1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +     !   :   |   +             1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +     !   :   |   +               1 one-time initialization function for cache  (in Foundation) + 0  [0x180a5978c]
+    +     !   :   |   1 Vault.init()  (in Chronotheca.debug.dylib) + 1672  [0x10705e984]  Vault.swift:211
+    +     !   :   |     1 static Vault.isPreview.getter  (in Chronotheca.debug.dylib) + 60  [0x10705ed6c]  Vault.swift:224
+    +     !   :   |       1 @objc _NSSwiftProcessInfo.environment.getter  (in Foundation) + 12  [0x180d9b62c]
+    +     !   :   |         1 specialized _ProcessInfo.environment.getter  (in Foundation) + 616  [0x180c6b238]
+    +     !   :   |           1 specialized _NativeDictionary._copyOrMoveAndResize(capacity:moveElements:)  (in Foundation) + 76  [0x1808ec3a0]
+    +     !   :   |             1 __swift_instantiateConcreteTypeFromMangledNameV2  (in Foundation) + 64  [0x180845674]
+    +     !   :   |               1 swift_getTypeByMangledNameInContextImpl(char const*, unsigned long, swift::TargetContextDescriptor<swift::InProcess> const*, void const* const*)  (in libswiftCore.dylib) + 152  [0x1981b74bc]
+    +     !   :   |                 1 swift_getTypeByMangledName  (in libswiftCore.dylib) + 272  [0x1981b7090]
+    +     !   :   |                   1 swift_getTypeByMangledNameImpl(swift::MetadataRequest, __swift::__runtime::llvm::StringRef, void const* const*, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>)  (in libswiftCore.dylib) + 1016  [0x1981bcd58]
+    +     !   :   |                     1 swift_getTypeByMangledNode  (in libswiftCore.dylib) + 272  [0x1981b8ab0]
+    +     !   :   |                       1 swift_getTypeByMangledNodeImpl(swift::MetadataRequest, swift::Demangle::__runtime::Demangler&, swift::Demangle::__runtime::Node*, void const* const*, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>)  (in libswiftCore.dylib) + 576  [0x1981bc55c]
+    +     !   :   |                         1 swift::Demangle::__runtime::TypeDecoder<(anonymous namespace)::DecodedMetadataBuilder>::decodeMangledType(swift::Demangle::__runtime::Node*, unsigned int, bool)  (in libswiftCore.dylib) + 9492  [0x1981c2ba4]
+    +     !   :   |                           1 (anonymous namespace)::DecodedMetadataBuilder::createBoundGenericType(swift::TargetContextDescriptor<swift::InProcess> const*, __swift::__runtime::llvm::ArrayRef<swift::MetadataPackOrValue>, swift::MetadataPackOrValue) const  (in libswiftCore.dylib) + 204  [0x1981c5fd8]
+    +     !   :   |                             1 _gatherGenericParameters(swift::TargetContextDescriptor<swift::InProcess> const*, __swift::__runtime::llvm::ArrayRef<swift::MetadataPackOrValue>, swift::TargetMetadata<swift::InProcess> const*, __swift::__runtime::llvm::SmallVectorImpl<unsigned int>&, __swift::__runtime::llvm::SmallVectorImpl<void const*>&, swift::Demangle::__runtime::Demangler&)  (in libswiftCore.dylib) + 1472  [0x1981ba2a8]
+    +     !   :   |                               1 swift::_checkGenericRequirements(__swift::__runtime::llvm::ArrayRef<swift::GenericParamDescriptor>, __swift::__runtime::llvm::ArrayRef<swift::TargetGenericRequirementDescriptor<swift::InProcess>>, __swift::__runtime::llvm::SmallVectorImpl<void const*>&, std::function<void const* (unsigned int, unsigned int)>, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>, swift::ConformanceExecutionContext*)  (in libswiftCore.dylib) + 6448  [0x1981cff40]
+    +     !   :   |                                 1 swift::_conformsToProtocol(swift::OpaqueValue const*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptorRef<swift::InProcess>, swift::TargetWitnessTable<swift::InProcess> const**, swift::ConformanceExecutionContext*)  (in libswiftCore.dylib) + 48  [0x19817f170]
+    +     !   :   |                                   1 swift_conformsToProtocolWithExecutionContext  (in libswiftCore.dylib) + 68  [0x1981d1b30]
+    +     !   :   |                                     1 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib) + 776  [0x1981d32e8]
+    +     !   :   |                                       1 swift::TargetProtocolConformanceDescriptor<swift::InProcess>::getWitnessTable(swift::TargetMetadata<swift::InProcess> const*, swift::ConformanceExecutionContext&) const  (in libswiftCore.dylib) + 676  [0x1981ce394]
+    +     !   :   1 ChronothecaApp.init()  (in Chronotheca.debug.dylib) + 216  [0x106a035a4]  ChronothecaApp.swift:20
+    +     !   :   | 1 _swift_getKeyPath(pattern:arguments:)  (in libswiftCore.dylib) + 112  [0x19836e7e4]
+    +     !   :   |   1 _getKeyPathClassAndInstanceSizeFromPattern(_:_:)  (in libswiftCore.dylib) + 72  [0x19836e990]
+    +     !   :   |     1 specialized _walkKeyPathPattern<A>(_:walker:)  (in libswiftCore.dylib) + 504  [0x19836f564]
+    +     !   :   |       1 RawKeyPathComponent.Header.kind.getter  (in libswiftCore.dylib) + 0  [0x198369a10]
+    +     !   :   1 ChronothecaApp.init()  (in Chronotheca.debug.dylib) + 656  [0x106a0375c]  ChronothecaApp.swift:31
+    +     !   :     1 +[UNUserNotificationCenter currentNotificationCenter]  (in UserNotifications) + 128  [0x18da8ba6c]
+    +     !   :       1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +     !   :         1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +     !   :           1 __53+[UNUserNotificationCenter currentNotificationCenter]_block_invoke  (in UserNotifications) + 352  [0x18da8bbd0]
+    +     !   :             1 -[UNUserNotificationCenter initWithBundleIdentifier:queue:]  (in UserNotifications) + 104  [0x18da8bd24]
+    +     !   :               1 UNRegisterUserNotificationsLogging  (in UserNotifications) + 0  [0x18da74780]
+    +     !   1 static App.main()  (in SwiftUI) + 0  [0x1d2c5f000]
+    +     65 __debug_blank_executor_main  (in Chronotheca) + 784  [0x104820b20]
+    +       65 dyld4::APIs::dlsym(void*, char const*)  (in dyld_sim) + 632  [0x1049783b0]
+    +         65 dyld4::RuntimeLocks::withLoadersReadLock(void () block_pointer)  (in dyld_sim) + 60  [0x10498539c]
+    +           65 invocation function for block in dyld4::APIs::dlsym(void*, char const*)  (in dyld_sim) + 132  [0x104978974]
+    +             64 dyld4::Loader::hasExportedSymbol(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::ExportedSymbolMode, dyld4::Loader::ResolverMode, dyld4::Loader::ResolvedSymbol*, dyld3::Array<dyld4::Loader const*>*) const  (in dyld_sim) + 376  [0x10499585c]
+    +             : 64 dyld3::MachOFile::trieWalk(Diagnostics&, unsigned char const*, unsigned char const*, char const*)  (in dyld_sim) + 120  [0x1049a2020]
+    +             1 dyld4::Loader::hasExportedSymbol(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::ExportedSymbolMode, dyld4::Loader::ResolverMode, dyld4::Loader::ResolvedSymbol*, dyld3::Array<dyld4::Loader const*>*) const  (in dyld_sim) + 336  [0x104995834]
 
 Sort by top of stack, same collapsed (when >= 5):
-        __workq_kernreturn  (in libsystem_kernel.dylib)        438
-        mach_msg2_trap  (in libsystem_kernel.dylib)        438
-        __semwait_signal  (in libsystem_kernel.dylib)        219
-        at #1 (_:_:) in static PageTexture.edgeDistance(_:width:height:)  (in Chronotheca.debug.dylib)        21
-        static PageTexture.edgeDistance(_:width:height:)  (in Chronotheca.debug.dylib)        17
-        pthread_getspecific  (in libsystem_pthread.dylib)        15
-        _swift_isClassOrObjCExistentialType  (in libswiftCore.dylib)        14
-        StrideThroughIterator.next()  (in libswiftCore.dylib)        8
-        min<A>(_:_:)  (in libswiftCore.dylib)        7
-        swift::runtime::AccessSet::insert(swift::runtime::Access*, void*, void*, swift::ExclusivityFlags)  (in libswiftCore.dylib)        7
-        DYLD-STUB$$pthread_getspecific  (in libswiftCore.dylib)        6
-        swift::LockingConcurrentMap<(anonymous namespace)::TupleCacheEntry, (anonymous namespace)::TupleCacheStorage>::getOrInsert<(anonymous namespace)::TupleCacheEntry::Key, swift::MetadataRequest&, swift::TargetValueWitnessTable<swift::InProcess> const*&>((anonymous namespace)::TupleCacheEntry::Key, swift::MetadataRequest&, swift::TargetValueWitnessTable<swift::InProcess> const*&)  (in libswiftCore.dylib)        6
-        swift::metadataimpl::ValueWitnesses<swift::metadataimpl::NativeBox<unsigned int, 4ul, 4ul, 4ul>>::initializeWithCopy(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        6
-        swift_beginAccess  (in libswiftCore.dylib)        6
-        Array._checkSubscript(_:wasNativeTypeChecked:)  (in libswiftCore.dylib)        5
-        Array.subscript.getter  (in libswiftCore.dylib)        5
+        __workq_kernreturn  (in libsystem_kernel.dylib)        690
+        ???  (in libicucore.A.dylib)  load address 0x1823b9000 + 0x67644  [0x182420644]        227
+        res_getTableItemByKey  (in libicucore.A.dylib)        181
+        dyld3::MachOFile::trieWalk(Diagnostics&, unsigned char const*, unsigned char const*, char const*)  (in dyld_sim)        64
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        7
 
-Binary Images:
-       0x102e5c000 -        0x102e5f507 +com.kobiashvili.diary (1.0 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/9638A62C-4FB2-44D3-9C05-3E907B10AE07/Chronotheca.app/Chronotheca
-       0x102e6c000 -        0x102ebae9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
-       0x102f2c000 -        0x102f343d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
-       0x102f9c000 -        0x10304f523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
-       0x1030f4000 -        0x10312eee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
-       0x103184000 -        0x1031c765f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
-       0x103354000 -        0x10336010b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
-       0x1033f4000 -        0x1033fc03f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
-       0x103410000 -        0x1034a92af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
-       0x103c54000 -        0x103c56dff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
-       0x103c70000 -        0x103c70b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
-       0x103c80000 -        0x103c8b39f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
-       0x103ca4000 -        0x103ca7e5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
-       0x103cc4000 -        0x103ccd49f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
-       0x103cec000 -        0x103d0527f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
-       0x103e58000 -        0x103e5eb7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
-       0x103e78000 -        0x103e7d407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
-       0x104250000 -        0x1042572df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
-       0x104270000 -        0x1042746ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
-       0x104288000 -        0x10428b1ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
-       0x104330000 -        0x10458bbbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+Binary images description not available
+
