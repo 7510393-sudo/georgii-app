@@ -392,10 +392,10 @@ struct SettingsSticker: View {
                 Purchase.shared.asking = true
             }
         }
-        // Пройти первый запуск самому — в пробной папке (P452): свои записи
-        // остаются на месте, в них ничего не пишется. Только в TestFlight и
-        // в проверках (P1005): в App Store эта строка — для автора, не для
-        // человека.
+        // Курс жестов сначала (P1041, вместо строки «Пройти первый запуск»
+        // P452/P1005, автор: «нужна ли эта настройка?»): пять подсказок,
+        // без пробной папки. Сама проба — только для автора: долгим
+        // нажатием на «Версию», в «Замерах».
         if vault.inTrial {
             NoteRow(title: T("Идёт проба первого запуска", "Trying the first launch"),
                     detail: T("Образцы — в пробной папке. Ваши записи на месте.",
@@ -405,11 +405,13 @@ struct SettingsSticker: View {
                     vault.endTrial()
                 }
             }
-        } else if Build.testing {
-            NoteRow(title: T("Пройти первый запуск", "Try the first launch"),
-                    detail: T("Как увидит приложение новый человек — в пробной папке.",
-                              "See the app as a newcomer does — in a trial folder.")) {
-                NoteButton(title: T("Начать ›", "Start ›")) { askingTrial = true }
+        }
+        NoteRow(title: T("Курс жестов", "Gesture tour"),
+                detail: T("Пять подсказок: прошлое, будущее, календарь, карта.",
+                          "Five tips: past, future, calendar, map.")) {
+            NoteButton(title: T("Сначала ›", "Again ›")) {
+                Hints.shared.startOver()
+                close()
             }
         }
     }
@@ -605,7 +607,13 @@ struct SettingsSticker: View {
         // на этом телефоне с этим архивом. Для автора и для тех, кто пишет
         // о медленной работе: снимок этого окна говорит, что именно медлит.
         .onLongPressGesture { showingSpeed = true }
-        .sheet(isPresented: $showingSpeed) { SpeedSheet(bytes: storageBytes) }
+        .sheet(isPresented: $showingSpeed) {
+            SpeedSheet(bytes: storageBytes, trial: vault.inTrial || !Build.testing ? nil : {
+                // Только в TestFlight (P1005). Окно «Замеров» сперва уходит,
+                // потом вопрос (P1041).
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { askingTrial = true }
+            })
+        }
     }
 
     private func close() {
@@ -1131,6 +1139,9 @@ struct WelcomeView: View {
 /// телефоне человека.
 private struct SpeedSheet: View {
     let bytes: Int64?
+    /// Пройти первый запуск в пробной папке — для автора (P1041); `nil` —
+    /// проба уже идёт.
+    var trial: (() -> Void)?
     @Environment(\.dismiss) private var dismiss
 
     private var text: String {
@@ -1166,6 +1177,14 @@ private struct SpeedSheet: View {
             .navigationTitle(T("Замеры скорости", "Speed measurements"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                if let trial {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(T("Первый запуск", "First launch")) {
+                            dismiss()
+                            trial()
+                        }
+                    }
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(T("Готово", "Done")) { dismiss() }
                 }
