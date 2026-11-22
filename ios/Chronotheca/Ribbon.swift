@@ -1062,6 +1062,24 @@ final class FoldUp: ObservableObject {
         under = 0
     }
 
+    /// Снимок полосы — по контуру листа (P1025, автор по 336: «экран
+    /// обрезается прямоугольно и волочёт за собой кусок карточки сзади и
+    /// часть листочка с шестерёнкой»): справа от корешка — пусто, низ прямой,
+    /// как у карточки. `top` — где верх листа от верха снимка.
+    static func shaped(_ image: UIImage, top: CGFloat) -> UIImage {
+        let size = image.size
+        let outline = FolderShape(tabHeight: DayPage.headLine + 6, tabShare: 0.56, soft: true)
+            .path(in: CGRect(x: 0, y: top, width: size.width, height: max(1, size.height - top)))
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = image.scale
+        format.opaque = false
+        return UIGraphicsImageRenderer(size: size, format: format).image { context in
+            context.cgContext.addPath(outline.cgPath)
+            context.cgContext.clip()
+            image.draw(at: .zero)
+        }
+    }
+
     /// Снимок места экрана — полосы верха листа.
     static func picture(_ rect: CGRect) -> UIImage? {
         guard let window = UIApplication.shared.connectedScenes

@@ -605,6 +605,7 @@ struct SearchView: View {
                 let rect = CGRect(x: 0, y: shown, width: width, height: band)
                 let area = ribbon.unfold.area
                 let picture = FoldUp.picture(rect.offsetBy(dx: area.minX, dy: area.minY))
+                    .map { FoldUp.shaped($0, top: lead + under - shown) }
                 withTransaction(quiet) {
                     // Полоса летит — карточка под ней садится без схемы
                     // (P1018): её сменяет полоса, а не бледный контур.
