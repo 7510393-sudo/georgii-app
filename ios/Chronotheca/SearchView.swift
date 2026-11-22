@@ -481,7 +481,11 @@ struct SearchView: View {
         /// гнезда, у прошлого ниже; карточка появлялась в стороне от неё
         /// (след автора к 292: карточка на 430, схема летела к 340 вместо 394).
         func hover(over frame: CGRect) -> CGRect {
-            frame.insetBy(dx: Search.cardInset, dy: 0).offsetBy(dx: 0, dy: -Landing.lift)
+            // Прямо в гнездо (P1029, автор по 339: «карточка, когда
+            // возвращается в картотеку, прыгает»; отменяет подъём над гнездом
+            // P895: полоса садилась на 36 точек выше, и карточка оттуда
+            // опускалась вторым ходом).
+            frame.insetBy(dx: Search.cardInset, dy: 0)
         }
 
         /// Картотека под карточкой проступает — если ещё не проступила:
@@ -1388,7 +1392,6 @@ private struct Landed: ViewModifier {
                         .allowsHitTesting(false)
                 }
             }
-            .offset(y: stage == .hover || near ? -Landing.lift : 0)
     }
 }
 

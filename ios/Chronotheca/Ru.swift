@@ -59,6 +59,11 @@ struct Scheme {
     /// Тонкая рамка панелек календаря (P824): прежде у всех гамм один
     /// жёлтый (`Look.stickerEdge`), и в «Без цвета» он просвечивал по краям.
     var rim = Color(light: 0xE8DCAE, dark: 0x3D3520)
+    /// Бумага записок — разделы настроек, меню страницы, подсказки — и её
+    /// кромка (P1030, автор по 339: «в режиме без цвета всё равно жёлтые
+    /// листочки в настройках»): прежде у всех гамм одна жёлтая.
+    var sticker = Color(light: 0xFBF3D8, dark: 0x2A2517)
+    var stickerEdge = Color(light: 0xE8DCAE, dark: 0x3D3520)
 
     static let apricot = Scheme(
         // Прошлое — одна выцветшая сливочная бумага во всех гаммах, жёлтее и
@@ -81,7 +86,9 @@ struct Scheme {
         kraft: Color(light: 0xB9B6AF, dark: 0x363634),
         kraftInk: Color(light: 0x2B2A27, dark: 0xE4E3DF),
         kraftEdge: Color(light: 0x86837C, dark: 0x181817),
-        rim: Color(light: 0xD3D1CB, dark: 0x3A3A38))
+        rim: Color(light: 0xD3D1CB, dark: 0x3A3A38),
+        sticker: Color(light: 0xF8F7F4, dark: 0x2A2A28),
+        stickerEdge: Color(light: 0xD3D1CB, dark: 0x3A3A38))
 
     /// Выбранная в настройках; «distance» — ключ абрикосовой; прежние
     /// «weekday», «sage», «lavender» читаются как абрикосовая (P997).
@@ -154,11 +161,11 @@ enum Look {
     /// Бумага приклеенных записок. Жёлтая — меню страницы, голубая —
     /// настройки. Разный цвет, одна порода: канцелярские бумажки,
     /// приклеенные к верхнему краю.
-    static let sticker     = Color(light: 0xFBF3D8, dark: 0x2A2517)
+    static var sticker: Color { Scheme.current.sticker }
     /// Плашка дела (P413): желтоватая, как стикер, светлее у левого
     /// верхнего угла — свет падает оттуда.
     static let plateLight  = Color(light: 0xFFF9E3, dark: 0x3A3426)
-    static let stickerEdge = Color(light: 0xE8DCAE, dark: 0x3D3520)
+    static var stickerEdge: Color { Scheme.current.stickerEdge }
     /// Выбранный вариант в настройках (P600) — чуть тронут чернилами, а не
     /// голубой цвет iPhone (P670).
     static let noteChosen  = Color(light: 0xDDE2EC, dark: 0x2A3850)
