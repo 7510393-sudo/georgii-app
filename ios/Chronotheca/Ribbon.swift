@@ -1042,6 +1042,8 @@ final class FoldUp: ObservableObject {
     @Published var band: UIImage?
     /// Лист скрыт: летит полоса.
     @Published var gone = false
+    /// Полоса долетела и тает над карточкой (P1018).
+    @Published var fading = false
     /// Где верх листа от верха места: у будущего — под полоской «Сегодня».
     var under: CGFloat = 0
     let glide = Glide()
@@ -1056,6 +1058,7 @@ final class FoldUp: ObservableObject {
         if visible != nil { visible = nil }
         if band != nil { band = nil }
         if gone { gone = false }
+        if fading { fading = false }
         under = 0
     }
 
@@ -1091,6 +1094,8 @@ final class Landing: ObservableObject {
     enum Stage { case none, away, hover, down, done, lost }
     @Published var id: String?
     @Published var stage: Stage = .none
+    /// Садится под снимком полосы листа, без схемы (P1018).
+    @Published var bare = false
     /// Насколько над гнездом карточка ждёт, прежде чем опуститься: выше
     /// нахлёста — следующая карточка её ещё не закрывает.
     static let lift: CGFloat = Search.overlap + 4
@@ -1121,6 +1126,7 @@ final class Landing: ObservableObject {
         hurry = nil
         if id != nil { id = nil }
         if stage != .none { stage = .none }
+        if bare { bare = false }
     }
 }
 

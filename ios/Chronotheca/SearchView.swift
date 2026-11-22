@@ -522,13 +522,19 @@ struct SearchView: View {
             guard alive(), arrived, stood, landing.stage == .away else { return }
             if lost {
                 // Карточки нет — схема тает у края, а не пропадает разом.
-                withAnimation(.easeOut(duration: 0.25)) { landing.stage = .lost }
+                withAnimation(.easeOut(duration: 0.25)) {
+                    landing.stage = .lost
+                    fold.fading = true
+                }
                 ribbon.flight.run(0.25, then: { finish() })
                 return
             }
             withTransaction(quiet) { landing.stage = .hover }
             DispatchQueue.main.async {
                 guard alive() else { return }
+                // Полоса тает над карточкой (P1018): прежде ступень шла без
+                // хода, и полоса пропадала за один кадр.
+                withAnimation(.easeOut(duration: 0.22)) { fold.fading = true }
                 withAnimation(.easeInOut(duration: 0.3)) { landing.stage = .down }
                 ribbon.flight.run(0.3, then: {
                     guard alive() else { return }
@@ -573,15 +579,24 @@ struct SearchView: View {
             let card = about.height - Search.overlap
             let band = max(Search.tabHeight + 40, card * width / max(1, about.width))
             let full = height - under
+            // Будущий лист, утянутый пальцем вверх, заходит верхом под
+            // полоску «Сегодня» (P1018, видео автора к 333: в гнездо летела
+            // вторая полоска «Сегодня» — снимок брал её). Полоса — от низа
+            // полоски, а лист сворачивается до низа полосы.
+            let shown = side < 0 ? max(lead + under, FollowRibbon.peekTop) : lead + under
+            let keep = shown - (lead + under) + band
             fold.glide.run(FoldUp.shut, step: { p in
                 guard alive() else { return }
-                fold.visible = full + (band - full) * p
+                fold.visible = full + (keep - full) * p
             }, then: {
                 guard alive() else { return }
-                let rect = CGRect(x: 0, y: lead + under, width: width, height: band)
+                let rect = CGRect(x: 0, y: shown, width: width, height: band)
                 let area = ribbon.unfold.area
                 let picture = FoldUp.picture(rect.offsetBy(dx: area.minX, dy: area.minY))
                 withTransaction(quiet) {
+                    // Полоса летит — карточка под ней садится без схемы
+                    // (P1018): её сменяет полоса, а не бледный контур.
+                    landing.bare = picture != nil
                     fold.band = picture
                     // Снимка нет — летит схема с места полосы.
                     if picture == nil { fold.visible = nil }
@@ -1341,7 +1356,9 @@ private struct Landed: ViewModifier {
         // угловатости; пораньше делать вставляющуюся карточку
         // полупрозрачной»): сквозь неё проступает сама карточка, и к концу
         // опускания схемы почти нет — без смены одного на другое разом.
-        let veil: Double = stage == .hover ? 0.6 : stage == .down ? 0.2 : 0
+        // Над карточкой тает снимок полосы листа (P1018) — схемы нет,
+        // карточка сразу целиком.
+        let veil: Double = landing.bare ? 0 : stage == .hover ? 0.6 : stage == .down ? 0.2 : 0
         content
             .animation(.easeOut(duration: 0.2)) { $0.opacity(stage == .away ? 0 : 1) }
             .overlay {

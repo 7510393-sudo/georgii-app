@@ -58,8 +58,8 @@ struct PointPanel: View {
                     .strokeBorder(Look.inkFaint.opacity(0.6), lineWidth: 1))
             // Кнопки — в два ряда (P1016, автор 21.11, вместо одного ряда
             // с «…» P1003): сверху «В навигатор · В дневник», снизу
-            // «Поделиться · Отметить»; у записанной точки справа внизу —
-            // корзина «Удалить».
+            // «Поделиться · Отметить»; у записанной точки слева внизу —
+            // корзина «Удалить» (P1018).
             HStack(spacing: 6) {
                 key(T("В навигатор", "Directions")) { navigate(place) }
                 // «В дневник» (P984): точка — в сегодняшний день или в
@@ -77,11 +77,6 @@ struct PointPanel: View {
                 .foregroundStyle(Look.accent)
             }
             HStack(spacing: 6) {
-                key(T("Поделиться", "Share")) {
-                    MapActions.share(GeoPoint(title: place.name, at: place.coordinate))
-                }
-                // «Отметить» со стрелкой точки карты (P989).
-                key(T("Отметить", "Mark"), strong: true, mark: true) { done(place) }
                 if let remove {
                     Button(action: remove) {
                         Image(systemName: "trash")
@@ -93,6 +88,11 @@ struct PointPanel: View {
                     .foregroundStyle(Look.accent)
                     .accessibilityLabel(T("Удалить", "Delete"))
                 }
+                key(T("Поделиться", "Share")) {
+                    MapActions.share(GeoPoint(title: place.name, at: place.coordinate))
+                }
+                // «Отметить» со стрелкой точки карты (P989).
+                key(T("Отметить", "Mark"), strong: true, mark: true) { done(place) }
             }
         }
         .font(Look.sans(15))

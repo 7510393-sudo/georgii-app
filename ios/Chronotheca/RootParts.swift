@@ -456,8 +456,9 @@ struct FoldGhost: View {
                 .shadow(color: .black.opacity(0.15), radius: 5, y: 3)
                 .offset(x: r.minX, y: r.minY)
                 .frame(width: size.width, height: size.height, alignment: .topLeading)
-                .opacity(folding && !landing.flown ? 1 : 0)
-                .animation(.easeOut(duration: 0.2), value: landing.flown)
+                // Тает своим ходом (P1018), а не со ступенью посадки: та
+                // меняется без хода, и полоса пропадала за один кадр.
+                .opacity(folding && !fold.fading ? 1 : 0)
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
         } else if fold.visible == nil {
