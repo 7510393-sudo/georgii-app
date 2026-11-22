@@ -2271,7 +2271,6 @@ struct DiaryEditor: UIViewRepresentable {
                              - страница.bounds.height)
             let куда = min(страница.contentOffset.y + ниже, предел)
             guard куда > страница.contentOffset.y else { return }
-            StampTrace.note("страница подвинута к курсору")
             страница.setContentOffset(CGPoint(x: страница.contentOffset.x, y: куда),
                                       animated: animated)
         }
@@ -2309,12 +2308,6 @@ struct DiaryEditor: UIViewRepresentable {
         }
 
         func textViewDidChange(_ view: UITextView) {
-            // Что поле видит на каждой правке (P967): признак диктовки на
-            // телефоне автора не срабатывает — по следу видно, что именно
-            // поле делает в миг, когда диктовка выключается.
-            StampTrace.note("правка: " + (Self.dictating(view) ? "диктовка" : "не диктовка")
-                            + (view.markedTextRange != nil ? " · временный текст" : "")
-                            + " · ввод " + (view.textInputMode?.primaryLanguage ?? "—"))
             // Диктовка пишет — запомнить её строку; отпустила — время в
             // начало строки, если его там нет (P869).
             if Self.dictating(view), !placing {
@@ -2613,7 +2606,6 @@ struct DiaryEditor: UIViewRepresentable {
                 start = line.location + line.length
             }
             if !stale.isEmpty {
-                StampTrace.note("краска: строк \(stale.count)")
                 storage.beginEditing()
                 for item in stale {
                     storage.addAttributes(body, range: item.line)

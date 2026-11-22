@@ -301,12 +301,10 @@ extension DayStoreTests {
         Clock.forced = false
         defer { Clock.forced = nil }
         let вчера = store(-1)
-        XCTAssertTrue(вчера.stampIfNeeded())
-        XCTAssertNotNil(вчера.diaryText.range(
+        XCTAssertNotNil(вчера.peekStamp()?.range(
             of: #"^\d{2}:\d{2} \d{2}\.\d{2}\.\d{2} $"#, options: .regularExpression))
         let сегодня = store(0)
-        XCTAssertTrue(сегодня.stampIfNeeded())
-        XCTAssertNotNil(сегодня.diaryText.range(
+        XCTAssertNotNil(сегодня.peekStamp()?.range(
             of: #"^\d{2}:\d{2} $"#, options: .regularExpression))
         let строка = "08:15 25.09.26 Дописал"
         XCTAssertEqual(DiaryEditor.stamp.firstMatch(
@@ -444,8 +442,7 @@ extension DayStoreTests {
         Clock.forced = true
         defer { Clock.forced = nil }
         let сегодня = store(0)
-        XCTAssertTrue(сегодня.stampIfNeeded())
-        XCTAssertNotNil(сегодня.diaryText.range(
+        XCTAssertNotNil(сегодня.peekStamp()?.range(
             of: #"^\d{2}:\d{2} [AP]M $"#, options: .regularExpression))
         let строка = "09:41 PM Вечером"
         XCTAssertEqual(DiaryEditor.stamp.firstMatch(

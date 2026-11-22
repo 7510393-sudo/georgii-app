@@ -635,42 +635,9 @@ final class DayStore: ObservableObject {
 
     // MARK: - Отметка времени в дневнике
 
-    /// Нужна ли новая отметка времени перед тем, как человек начнёт писать.
-    ///
-    /// Нужна, если запись пуста или к ней не возвращались больше часа. Смысл
-    /// отметок — показать, что день писался в несколько заходов, а не залпом.
-    ///
-    /// Возвращает `true`, если отметка поставлена: тогда курсор надо
-    /// перенести за неё — писать человек будет там (решение P137).
-    @discardableResult
-    func stampIfNeeded() -> Bool {
-        guard canEditDiary else { return false }
-        let body = diaryText.replacingOccurrences(of: "\\s+$", with: "",
-                                                  options: .regularExpression)
-        let stale = lastEdit.map { Date().timeIntervalSince($0) > DayStore.stampGap } ?? true
-        guard body.isEmpty || stale else { return false }
-
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "en_US_POSIX")
-        // Дописывая прошедший день, человек пишет не в тот день, о котором
-        // запись: за временем встаёт и дата, когда писал (P227, P232).
-        // 12 часов — «09:41 PM» (P602): две цифры часа, как и у 24-х, —
-        // по ним отметка узнаётся в тексте.
-        f.dateFormat = (Clock.twelve ? "hh:mm a" : "HH:mm") + (isToday ? "" : " dd.MM.yy")
-        diaryText = (body.isEmpty ? "" : body + "\n\n") + f.string(from: Date()) + " "
-        lastEdit = Date()
-        save()
-        return true
-    }
-
-    /// Прежде здесь отмечалась любая правка дневника — даже снимок или
-    /// открытие страницы. Теперь час до новой отметки времени считается
-    /// только от того, как человек писал текст в конце записи (P519,
-    /// `noteWriting`); правка плана, ответов «Как прошло?» и прежних
-    /// строк в счёт не идёт. Вызовы оставлены, но ничего не делают.
-    func touchDiary() {}
-
-    /// Человек набрал текст в конце записи.
+    /// Человек набрал текст в конце записи. Час до новой отметки времени
+    /// считается только от этого (P519): правка плана, ответов «Как
+    /// прошло?», вложений и прежних строк в счёт не идёт.
     func noteWriting() { lastEdit = Date() }
 
     /// Отметка времени для первой буквы новой строки — один раз (P403):
@@ -704,7 +671,6 @@ final class DayStore: ObservableObject {
         guard canEditDiary else { return }
         let body = diaryText.trimmingCharacters(in: .whitespacesAndNewlines)
         diaryText = (body.isEmpty ? "" : body + "\n\n") + "♥ " + line
-        touchDiary()
         save()
     }
 
@@ -721,7 +687,6 @@ final class DayStore: ObservableObject {
             let body = diaryText.trimmingCharacters(in: .whitespacesAndNewlines)
             diaryText = (body.isEmpty ? "" : body + "\n\n") + text
         }
-        touchDiary()
         save()
     }
 
@@ -754,7 +719,6 @@ final class DayStore: ObservableObject {
     /// (P961).
     private func attach(_ link: String) {
         photos.append(link)
-        touchDiary()
         save()
     }
 
@@ -764,7 +728,6 @@ final class DayStore: ObservableObject {
     func removePhoto(at index: Int) {
         guard canEditStrip, photos.indices.contains(index) else { return }
         photos.remove(at: index)
-        touchDiary()
         save()
     }
 
@@ -1054,7 +1017,6 @@ final class DayStore: ObservableObject {
         guard canEditPlan, canEditStrip, index(of: id) != nil,
               let k = photos.firstIndex(of: link) else { return }
         photos.remove(at: k)
-        touchDiary()
         place(link, under: id)
     }
 
@@ -1062,7 +1024,6 @@ final class DayStore: ObservableObject {
     func stripToEvent(_ link: String, underEvent mark: DayEvents.Mark) {
         guard canEditPlan, canEditStrip, let k = photos.firstIndex(of: link) else { return }
         photos.remove(at: k)
-        touchDiary()
         place(link, underEvent: mark)
     }
 
@@ -1072,7 +1033,6 @@ final class DayStore: ObservableObject {
         guard canEditPlan, canEditStrip, index(of: id) != nil,
               let k = photos.firstIndex(of: link) else { return }
         photos.remove(at: k)
-        touchDiary()
         addToPhotoRow(Diary.line(link), under: id)
         save()
     }
@@ -1082,7 +1042,6 @@ final class DayStore: ObservableObject {
     func returnPlanPhoto(_ link: String) {
         guard canEditPlan, canEditStrip, !photos.contains(link), takeOutPlanPhoto(link) else { return }
         photos.append(link)
-        touchDiary()
         save()
     }
 
@@ -1110,7 +1069,6 @@ final class DayStore: ObservableObject {
         diaryTitle = diaryTitle.replacingOccurrences(of: "  ", with: " ")
             .trimmingCharacters(in: .whitespaces)
         diaryText = DayStore.insert(line, into: diaryText, at: nil).0
-        touchDiary()
         save()
     }
 
@@ -1119,7 +1077,6 @@ final class DayStore: ObservableObject {
     func moveToEnd(_ link: String) {
         guard canEditDiary, cutFromDiary(link) else { return }
         photos.append(link)
-        touchDiary()
         save()
     }
 
@@ -1128,7 +1085,6 @@ final class DayStore: ObservableObject {
     func deleteFromDiary(_ link: String, delete: Bool) -> String {
         guard canEditDiary else { return closedReason }
         guard cutFromDiary(link) else { return "" }
-        touchDiary()
         save()
         if Diary.isPoint(link) { return T("Точка убрана со страницы.", "The place is removed from the page.") }
         return trashed(link, from: .diary, delete: delete)
@@ -1238,7 +1194,6 @@ final class DayStore: ObservableObject {
         guard canEditStrip, from != to,
               photos.indices.contains(from), photos.indices.contains(to) else { return }
         photos.insert(photos.remove(at: from), at: to)
-        touchDiary()
         save()
     }
 
