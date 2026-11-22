@@ -960,15 +960,21 @@ final class Unfold: ObservableObject {
     /// день (`open`) и разворачивается вниз. `open` вернул `false` — открыть
     /// нельзя (картотеку уже сменили): всё убирается. Нет окна или снимка —
     /// день открывается сразу.
-    func start(from card: CGRect, id: String, top: CGFloat, open: @escaping () -> Bool) {
+    func start(from card: CGRect, below: CGFloat? = nil, id: String, top: CGFloat,
+               open: @escaping () -> Bool) {
         stop()
         guard let window = UIApplication.shared.connectedScenes
                 .compactMap({ ($0 as? UIWindowScene)?.keyWindow }).first,
               area.width > 0, card.width > 0
         else { _ = open(); return }
-        // Видна карточка без низа: на нём лежит корешок следующей.
+        // Видна карточка без низа: на нём лежит корешок следующей. У верха
+        // ленты карточки сближены (P927) — следующая начинается выше, и в
+        // снимок попадал её корешок (P1026, снимок автора к 336): снимок —
+        // только до верха следующей.
+        var visible = card.height - Search.overlap
+        if let below { visible = min(visible, below - card.minY) }
         let seen = CGRect(x: card.minX, y: card.minY, width: card.width,
-                          height: max(Search.tabHeight + 24, card.height - Search.overlap))
+                          height: max(Search.tabHeight + 8, visible))
         let inWindow = seen.offsetBy(dx: area.minX, dy: area.minY)
         guard let snap = window.resizableSnapshotView(from: inWindow, afterScreenUpdates: false,
                                                       withCapInsets: .zero)

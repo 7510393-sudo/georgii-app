@@ -910,7 +910,10 @@ struct SearchView: View {
         let tall = Search.tabHeight + 4 + Search.futureBody + Search.overlap + 2
         let own = future && card.height > tall + 6
             ? CGRect(x: card.minX, y: card.maxY - tall, width: card.width, height: tall) : card
-        ribbon.unfold.start(from: own, id: id, top: future ? FollowRibbon.futureTop : 0) {
+        // Где начинается карточка под ней (P1026): у верха ленты карточки
+        // сближены, и следующая закрывает больше, чем нахлёст.
+        let below = ribbon.frames.values.map(\.minY).filter { $0 > own.minY + 1 }.min()
+        ribbon.unfold.start(from: own, below: below, id: id, top: future ? FollowRibbon.futureTop : 0) {
             open(date, tab: tab, from: from, id: id)
         }
     }
