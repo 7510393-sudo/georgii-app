@@ -474,16 +474,26 @@ struct FoldGhost: View {
         let r = ribbon.foldTo ?? start
         if let band = fold.band {
             // Полоса свёрнутого листа летит в гнездо и сужается до карточки
-            // (P1015); долетела — её сменяет сама карточка, полоса тает.
+            // (P1015) — одна вещь от листа до карточки (P1034): контур
+            // переходит от листа к карточке, на ней проступает снимок самой
+            // карточки, и в гнезде её сменяют в один кадр, без таяния.
+            let full = size.width
+            let cardWidth = fold.cardWidth > 0 ? fold.cardWidth : r.width
+            let span = max(1, full - cardWidth)
+            let p = min(1, max(0, (full - r.width) / span))
+            let s = r.width / max(1, full)
+            let height = band.size.height
+            let q = min(1, max(0, (p - 0.15) / 0.7))
             Image(uiImage: band)
                 .resizable()
-                .scaledToFit()
-                .frame(width: r.width, height: r.height, alignment: .top)
-                .shadow(color: .black.opacity(0.15), radius: 5, y: 3)
+                .frame(width: full, height: height)
+                .modifier(FlightMask(t: 1 - p, grow: max(1, full / cardWidth), card: fold.card,
+                                     cardShown: Double(q * q * (3 - 2 * q)),
+                                     at: 0, height: height, top: -fold.lift,
+                                     shade: 0.16 * Double(min(1, p * 5, (1 - p) * 5))))
+                .scaleEffect(s, anchor: .topLeading)
                 .offset(x: r.minX, y: r.minY)
                 .frame(width: size.width, height: size.height, alignment: .topLeading)
-                // Тает своим ходом (P1018), а не со ступенью посадки: та
-                // меняется без хода, и полоса пропадала за один кадр.
                 .opacity(folding && !fold.fading ? 1 : 0)
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
@@ -538,22 +548,35 @@ struct UnfoldGhost: View {
 
 /// Лист дня, пока карточка разворачивается (P1011): виден только сверху —
 /// полосой высотой с доехавшую карточку, и полоса шторкой растёт вниз до
-/// целого листа. Остальное время не обрезано ничем.
+/// целого листа. В полёте (P1034) полоса и снимок карточки — одна вещь:
+/// уменьшены до карточки и стоят в гнезде, потом едут к верху и растут, а
+/// контур переходит от карточки к листу. Остальное время не обрезано ничем,
+/// и обёртки те же — вид листа не пересобирается.
 struct UnfoldVeil: ViewModifier {
     @ObservedObject var unfold: Unfold
     @ObservedObject var move: RiseMove
+    @ObservedObject var flight: RiseMove
 
     func body(content: Content) -> some View {
         let rest = max(0, unfold.area.height - unfold.top - unfold.height)
-        // В полёте (P1027) верхняя полоса листа сжата в рамку карточки.
-        // Без полёта — тождество: вид листа не пересобирается.
-        let m = unfold.morph
-        let s = m.map { $0.width / max(1, unfold.area.width) } ?? 1
+        let card = unfold.card
+        let flying = card != nil && unfold.from != nil
+        let p = flying ? flight.p : 1
+        let g = max(1, unfold.grow)
+        let from = unfold.from ?? .zero
+        let s = flying ? 1 / g + (1 - 1 / g) * p : 1
+        let x = flying ? from.minX * (1 - p) : 0
+        let y = flying ? from.minY + (unfold.top - from.minY) * p - s * unfold.top : 0
+        // Снимок карточки тает в середине пути — верх листа проступает на
+        // ней, а не сменяет её.
+        let q = min(1, max(0, (p - 0.12) / 0.7))
         return content.clipShape(TopBand(bottom: unfold.shutter
             ? unfold.top + unfold.height + rest * move.p : nil))
+            .modifier(FlightMask(t: p, grow: g, card: card, cardShown: Double(1 - q * q * (3 - 2 * q)),
+                                 at: unfold.top, height: unfold.height, on: flying,
+                                 shade: 0.16 * Double(min(1, p * 5, (1 - p) * 5))))
             .scaleEffect(s, anchor: .topLeading)
-            .offset(x: m?.minX ?? 0, y: m.map { $0.minY - s * unfold.top } ?? 0)
-            .opacity(unfold.sheetShown)
+            .offset(x: x, y: y)
     }
 }
 

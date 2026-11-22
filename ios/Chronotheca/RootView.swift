@@ -700,7 +700,8 @@ struct RootView: View {
                 // полетела его полоса (P1015; вместо таяния листа над схемой
                 // P886).
                 .allowsHitTesting(shell.screen == .today)
-                .modifier(UnfoldVeil(unfold: shell.ribbon.unfold, move: shell.ribbon.unfold.move))
+                .modifier(UnfoldVeil(unfold: shell.ribbon.unfold, move: shell.ribbon.unfold.move,
+                                     flight: shell.ribbon.unfold.flight))
                 .modifier(FoldVeil(fold: shell.ribbon.fold, landing: shell.deck.isLanding))
             // «Сегодня» с открытого дня — сразу, поверх него (P924).
             if todayRise != 0 {

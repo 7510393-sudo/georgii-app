@@ -892,9 +892,14 @@ final class Glide {
 
     var running: Bool { link != nil }
 
-    func run(_ length: CFTimeInterval, step: ((CGFloat) -> Void)? = nil,
+    /// Ход с быстрым началом и мягким концом (P1034): карточка выходит из
+    /// гнезда энергично; иначе — плавное начало и конец.
+    private var brisk = false
+
+    func run(_ length: CFTimeInterval, brisk: Bool = false, step: ((CGFloat) -> Void)? = nil,
              then: @escaping () -> Void) {
         stop()
+        self.brisk = brisk
         self.length = max(0.01, length)
         self.step = step
         done = then
@@ -918,7 +923,7 @@ final class Glide {
         if last > 0 { shown += min(1.0 / 30, now - last) }
         last = now
         let t = CGFloat(min(1, shown / length))
-        step?(t * t * (3 - 2 * t))
+        step?(brisk ? 1 - pow(1 - t, 3) : t * t * (3 - 2 * t))
         guard t >= 1 else { return }
         let then = done
         stop()
@@ -933,28 +938,30 @@ final class Glide {
 /// энергично разворачивается вниз, открывается полноценный день»; отменяет
 /// растущую схему P995 и рамку с полем P1004).
 ///
-/// Едет снимок карточки — картинка того, что видно на экране: меняется
-/// только её рамка, текст на каждом кадре не перекладывается. Гнездо под
-/// ней пустует (`hole`). Доехала — в тот же такт открывается день (его
-/// постройка, около 0,16 с, приходится на миг удара о край и читается как
-/// удар), но виден он только полосой высотой с карточку под её снимком
-/// (`shutter`). Дальше полоса шторкой растёт вниз до целого листа, а снимок
-/// тает: пять строк карточки плавно сменяются верхом страницы.
+/// Едет одна карточка (P1034, автор по 340: «карточка из картотеки в том
+/// же самом виде, формате и масштабе выходит из гнезда энергично, плывёт
+/// наверх, постепенно увеличиваясь, и на ней постепенно меняется текст»;
+/// отменяет снимок карточки поверх окна, который таял, пока на его месте
+/// проступал сжатый лист, P1011, P1027). День открывается в миг касания
+/// и стоит под карточкой полосой высотой с неё (`shutter`); полоса и снимок
+/// карточки — одна вещь: её уменьшают до карточки и ставят в гнездо
+/// (`flight` от 0 до 1 ведёт её к верху и в рост), контур `MorphFolder`
+/// переходит от карточки к листу, снимок карточки на ней тает, и проступает
+/// верх дня. Доехала — это уже верх листа, дальше он разворачивается вниз.
 final class Unfold: ObservableObject {
-    /// Рамка карточки, с которой раскрывают; `nil` — ничего не раскрывается.
-    /// Пока раскрывается, картотеку под ней не трогают (P998).
+    /// Рамка карточки, с которой раскрывают (без полей ленты); `nil` —
+    /// ничего не раскрывается. Пока раскрывается, картотеку под ней не
+    /// трогают (P998).
     @Published private(set) var from: CGRect?
     /// Чья карточка уехала из гнезда: гнездо пустует, пока она в пути.
     @Published private(set) var hole: String?
     /// Лист дня виден только сверху — полосой высотой `height`, растущей
     /// вниз с ходом `move.p`.
     @Published private(set) var shutter = false
-    /// Лист в полёте (P1027): его верхняя полоса сжата в эту рамку (в
-    /// координатах места дня) и едет вместе со снимком карточки; `nil` — на
-    /// своём месте.
-    @Published private(set) var morph: CGRect?
-    /// Насколько лист проступил: в полёте снимок карточки тает, лист — нет.
-    @Published private(set) var sheetShown: Double = 1
+    /// Снимок карточки, пока она летит; `nil` — не летит.
+    @Published private(set) var card: UIImage?
+    /// Во сколько раз лист шире карточки.
+    private(set) var grow: CGFloat = 1
     /// Где верх листа: у будущего — под полоской «Сегодня» (P913).
     private(set) var top: CGFloat = 0
     /// Высота доехавшей карточки — с неё шторка начинает.
@@ -962,112 +969,103 @@ final class Unfold: ObservableObject {
     /// Где на экране место дня — по нему рамка карточки переводится в окно.
     var area: CGRect = .zero
     let move = RiseMove()
-    private var shot: UIView?
+    /// Ход полёта: от гнезда (0) до верха листа (1).
+    let flight = RiseMove()
+    /// Снимки карточек, которые открывали (P1034): закрытый день садится
+    /// обратно той же карточкой, а не другой картинкой.
+    private(set) var pictures: [String: UIImage] = [:]
 
-    /// Ход к верху (снимок тает, лист проступает на нём) и разворот вниз.
-    static let fly: Double = 0.3
+    /// К верху и разворот вниз.
+    static let fly: Double = 0.34
     static let open: Double = 0.3
 
-    /// Раскрыть: день открывается сразу, снимок карточки едет к верху листа
-    /// вместе со сжатым листом и сменяется им в пути (P1027), доехал —
-    /// разворачивается вниз. `open` вернул `false` — открыть
-    /// нельзя (картотеку уже сменили): всё убирается. Нет окна или снимка —
-    /// день открывается сразу.
-    func start(from card: CGRect, below: CGFloat? = nil, id: String, top: CGFloat,
+    /// Раскрыть: день открывается сразу, карточка едет к верху листа и на
+    /// ней проступает его верх, доехала — разворачивается вниз. `open`
+    /// вернул `false` — открыть нельзя (картотеку уже сменили): всё
+    /// убирается. Нет окна или снимка — день открывается сразу.
+    func start(from frame: CGRect, below: CGFloat? = nil, id: String, top: CGFloat,
                open: @escaping () -> Bool) {
         stop()
-        guard let window = UIApplication.shared.connectedScenes
-                .compactMap({ ($0 as? UIWindowScene)?.keyWindow }).first,
-              area.width > 0, card.width > 0
-        else { _ = open(); return }
-        // Видна карточка без низа: на нём лежит корешок следующей. У верха
-        // ленты карточки сближены (P927) — следующая начинается выше, и в
-        // снимок попадал её корешок (P1026, снимок автора к 336): снимок —
-        // только до верха следующей.
+        // Рамка в ленте — с полями по бокам; сама карточка уже (P1034: в
+        // снимок попадал стол по бокам — полупрозрачный прямоугольник
+        // вокруг карточки).
+        let card = frame.insetBy(dx: Search.cardInset, dy: 0)
+        guard area.width > 0, card.width > 0 else { _ = open(); return }
+        // Видна карточка без низа: на нём лежит корешок следующей (P1026).
         var visible = card.height - Search.overlap
         if let below { visible = min(visible, below - card.minY) }
         let seen = CGRect(x: card.minX, y: card.minY, width: card.width,
                           height: max(Search.tabHeight + 8, visible))
-        let inWindow = seen.offsetBy(dx: area.minX, dy: area.minY)
-        guard let snap = window.resizableSnapshotView(from: inWindow, afterScreenUpdates: false,
-                                                      withCapInsets: .zero)
-        else { _ = open(); return }
+        guard let raw = FoldUp.picture(seen.offsetBy(dx: area.minX, dy: area.minY)) else {
+            _ = open(); return
+        }
+        let picture = Self.cut(raw)
+        pictures[id] = picture
         self.top = top
-        let grow = area.width / seen.width
+        grow = area.width / seen.width
         height = seen.height * grow
         move.p = 0
-        snap.frame = inWindow
-        snap.isUserInteractionEnabled = false
-        snap.layer.shadowOpacity = 0.18
-        snap.layer.shadowRadius = 6
-        snap.layer.shadowOffset = CGSize(width: 0, height: 3)
-        window.addSubview(snap)
-        shot = snap
-        from = card
-        hole = id
-        Trace.note(String(format: "карточка раскрывается с %.0f", card.minY))
-        let target = CGRect(x: area.minX, y: area.minY + top, width: area.width, height: height)
-        // День открывается сразу (P1027, автор по 336: «когда она утыкается
-        // в верх экрана, на ней уже должно быть изображение верхней части
-        // карточки»; прежде — по прилёте, и верх листа наплывал на снимок
-        // на глазах). Лист — полосой высотой с доехавшую карточку, сжатый в
-        // рамку карточки и пока невидимый; летит вместе со снимком и
-        // проступает на нём, снимок тает. Полёт идёт со следующего кадра —
-        // когда день уже построен, — и ход не дёргается.
-        shutter = true
-        morph = seen
-        sheetShown = 0
+        flight.p = 0
+        var still = Transaction()
+        still.disablesAnimations = true
+        withTransaction(still) {
+            self.card = picture
+            from = seen
+            hole = id
+            shutter = true
+        }
+        Trace.note(String(format: "карточка раскрывается с %.0f", seen.minY))
         let opened = CACurrentMediaTime()
         guard open() else { return stop() }
+        // Ход — со следующего кадра, когда день уже построен (P1020).
         NextFrame.run { [weak self] in
-            guard let self, self.shot === snap else { return }
+            guard let self, self.card === picture else { return }
             DeckTrail.mark(String(format: "день под карточкой построен за %.2f с", CACurrentMediaTime() - opened))
             let began = CACurrentMediaTime()
-            UIView.animate(withDuration: Self.fly, delay: 0, options: [.curveEaseIn]) {
-                snap.frame = target
-            } completion: { [weak self] _ in
-                guard let self, self.shot === snap else { return }
-                // В «Замеры» на телефоне (P1001).
+            self.flight.glide.run(Self.fly, brisk: true, step: { [weak self] p in
+                self?.flight.p = p
+            }, then: { [weak self] in
+                guard let self, self.card === picture else { return }
                 DeckTrail.mark(String(format: "карточка доехала до верха за %.2f с", CACurrentMediaTime() - began))
-                snap.alpha = 0
-                var still = Transaction()
-                still.disablesAnimations = true
-                withTransaction(still) {
-                    self.morph = nil
-                    self.sheetShown = 1
-                }
-                // Доехала уже листом — разворачивается вниз.
+                withTransaction(still) { self.card = nil }
+                // Доехала уже верхом листа — разворачивается вниз.
                 self.move.glide.run(Self.open, step: { [weak self] p in
                     self?.move.p = p
                 }, then: { [weak self] in
                     self?.stop()
                     Trace.note("карточка раскрылась")
                 })
-            }
-            UIView.animate(withDuration: Self.fly * 0.75, delay: Self.fly * 0.15,
-                           options: [.curveEaseInOut]) {
-                snap.alpha = 0
-            }
-            // Тот же ход, что у снимка (`curveEaseIn`), — едут вместе.
-            withAnimation(.easeIn(duration: Self.fly)) {
-                self.morph = CGRect(x: 0, y: top, width: self.area.width, height: self.height)
-            }
-            withAnimation(.easeInOut(duration: Self.fly * 0.75).delay(Self.fly * 0.15)) {
-                self.sheetShown = 1
-            }
+            })
+        }
+    }
+
+    /// Снимок карточки — по её контуру: вокруг корешка и по бокам ничего.
+    static func cut(_ image: UIImage) -> UIImage {
+        let size = image.size
+        let outline = FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare)
+            .path(in: CGRect(origin: .zero, size: size))
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = image.scale
+        format.opaque = false
+        return UIGraphicsImageRenderer(size: size, format: format).image { context in
+            context.cgContext.addPath(outline.cgPath)
+            context.cgContext.clip()
+            image.draw(at: .zero)
         }
     }
 
     /// Прервать или закончить: лист целиком, снимка нет, гнездо на месте.
     func stop() {
+        flight.glide.stop()
         move.glide.stop()
-        shot?.removeFromSuperview()
-        shot = nil
-        if shutter { shutter = false }
-        if morph != nil { morph = nil }
-        if sheetShown != 1 { sheetShown = 1 }
-        if from != nil { from = nil }
-        if hole != nil { hole = nil }
+        var still = Transaction()
+        still.disablesAnimations = true
+        withTransaction(still) {
+            if card != nil { card = nil }
+            if shutter { shutter = false }
+            if from != nil { from = nil }
+            if hole != nil { hole = nil }
+        }
     }
 }
 
@@ -1086,8 +1084,15 @@ final class FoldUp: ObservableObject {
     @Published var band: UIImage?
     /// Лист скрыт: летит полоса.
     @Published var gone = false
-    /// Полоса долетела и тает над карточкой (P1018).
+    /// Полоса долетела — её сменила сама карточка (P1018, P1034).
     @Published var fading = false
+    /// Снимок карточки этого дня (P1034): проступает на полосе в полёте,
+    /// и в гнездо садится та же карточка; `nil` — день открыт не с карточки.
+    var card: UIImage?
+    /// Ширина карточки в ленте: к ней полоса сужается.
+    var cardWidth: CGFloat = 0
+    /// Верх листа выше полосы — у будущего, утянутого под «Сегодня».
+    var lift: CGFloat = 0
     /// Где верх листа от верха места: у будущего — под полоской «Сегодня».
     var under: CGFloat = 0
     let glide = Glide()
@@ -1103,6 +1108,9 @@ final class FoldUp: ObservableObject {
         if band != nil { band = nil }
         if gone { gone = false }
         if fading { fading = false }
+        card = nil
+        cardWidth = 0
+        lift = 0
         under = 0
     }
 
@@ -1158,9 +1166,6 @@ final class Landing: ObservableObject {
     @Published var stage: Stage = .none
     /// Садится под снимком полосы листа, без схемы (P1018).
     @Published var bare = false
-    /// Полоса на второй половине полёта (P1023): карточка уже проступает
-    /// над гнездом, а полоса тает — к посадке смены одного на другое нет.
-    @Published var nearing = false
 
     /// Схема своё отлетала: дальше садится сама карточка в своём ряду
     /// (P895) — или садиться некуда.
@@ -1189,7 +1194,6 @@ final class Landing: ObservableObject {
         if id != nil { id = nil }
         if stage != .none { stage = .none }
         if bare { bare = false }
-        if nearing { nearing = false }
     }
 }
 

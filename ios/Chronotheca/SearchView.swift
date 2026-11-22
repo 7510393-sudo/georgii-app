@@ -533,11 +533,29 @@ struct SearchView: View {
                 ribbon.flight.run(0.25, then: { finish() })
                 return
             }
+            if landing.bare {
+                // Полоса долетела той же карточкой, что стоит в гнезде (P1034):
+                // в один кадр её сменяет сама карточка — подмены не видно.
+                // Снимка карточки не было (день открыт не с неё) — на месте
+                // сменяются коротким таянием.
+                if fold.card != nil {
+                    withTransaction(quiet) {
+                        landing.stage = .done
+                        fold.fading = true
+                    }
+                    NextFrame.run { finish() }
+                } else {
+                    withAnimation(.easeOut(duration: 0.2)) {
+                        landing.stage = .done
+                        fold.fading = true
+                    }
+                    ribbon.flight.run(0.2, then: { finish() })
+                }
+                return
+            }
             withTransaction(quiet) { landing.stage = .hover }
             DispatchQueue.main.async {
                 guard alive() else { return }
-                // Полоса тает над карточкой (P1018): прежде ступень шла без
-                // хода, и полоса пропадала за один кадр.
                 withAnimation(.easeOut(duration: 0.22)) { fold.fading = true }
                 withAnimation(.easeInOut(duration: 0.3)) { landing.stage = .down }
                 ribbon.flight.run(0.3, then: {
@@ -553,20 +571,12 @@ struct SearchView: View {
         func fly(in time: Double) {
             from = ribbon.foldTo ?? from
             arrived = false
+            // Карточка в гнезде не проступает раньше, чем полоса до неё
+            // долетела (P1034, автор по 340: «под ней из воздуха генерируется
+            // дубль»; отменяет проступание на полпути P1023): содержание
+            // меняется на самой полосе.
             ribbon.flight.run(time, step: { p in
                 guard alive() else { return }
-                // Полпути пройдено, и гнездо точно известно (лента встала) —
-                // карточка проступает над гнездом, полоса тает до посадки
-                // (P1023, видео автора к 335: долетев, полоса с серединой
-                // прокрученного листа разом сменялась другой карточкой).
-                if p >= 0.5, stood, !lost, landing.bare, !landing.nearing,
-                   landing.stage == .away {
-                    let rest = time * 0.5
-                    withAnimation(.easeIn(duration: rest)) {
-                        landing.nearing = true
-                        fold.fading = true
-                    }
-                }
                 let now = CACurrentMediaTime()
                 if firstFrame == nil { firstFrame = now - began } else { worstFrame = max(worstFrame, now - lastFrame) }
                 lastFrame = now
@@ -592,8 +602,12 @@ struct SearchView: View {
         /// (P1015); свернулся — снимок полосы летит в гнездо, лист уходит.
         func shutUp() {
             let width = UIScreen.main.bounds.width
-            let card = about.height - Search.overlap
-            let band = max(Search.tabHeight + 40, card * width / max(1, about.width))
+            // Карточка в ленте уже рамки на поля по бокам (P1034): полоса —
+            // в той же пропорции, что карточка, чтобы сжаться в неё ровно.
+            let cardWidth = max(1, about.width - 2 * Search.cardInset)
+            let picture = ribbon.unfold.pictures[closed]
+            let card = picture?.size.height ?? (about.height - Search.overlap)
+            let band = max(Search.tabHeight + 40, card * width / cardWidth)
             let full = height - under
             // Будущий лист, утянутый пальцем вверх, заходит верхом под
             // полоску «Сегодня» (P1018, видео автора к 333: в гнездо летела
@@ -608,15 +622,18 @@ struct SearchView: View {
                 guard alive() else { return }
                 let rect = CGRect(x: 0, y: shown, width: width, height: band)
                 let area = ribbon.unfold.area
-                let picture = FoldUp.picture(rect.offsetBy(dx: area.minX, dy: area.minY))
+                let shot = FoldUp.picture(rect.offsetBy(dx: area.minX, dy: area.minY))
                     .map { FoldUp.shaped($0, top: lead + under - shown) }
                 withTransaction(quiet) {
                     // Полоса летит — карточка под ней садится без схемы
                     // (P1018): её сменяет полоса, а не бледный контур.
-                    landing.bare = picture != nil
-                    fold.band = picture
+                    landing.bare = shot != nil
+                    fold.band = shot
+                    fold.card = picture
+                    fold.cardWidth = cardWidth
+                    fold.lift = shown - (lead + under)
                     // Снимка нет — летит схема с места полосы.
-                    if picture == nil { fold.visible = nil }
+                    if shot == nil { fold.visible = nil }
                     fold.gone = true
                     ribbon.foldTo = rect
                 }
@@ -1379,10 +1396,10 @@ private struct Landed: ViewModifier {
         // Над карточкой тает снимок полосы листа (P1018) — схемы нет,
         // карточка сразу целиком.
         let veil: Double = landing.bare ? 0 : stage == .hover ? 0.6 : stage == .down ? 0.2 : 0
-        // Проступает над гнездом ещё в полёте полосы (P1023).
-        let near = stage == .away && landing.id == id && landing.nearing
+        // Под полосой листа (P1034) — без своего хода: её сменяют в один
+        // кадр или общим таянием, которое задаёт посадка.
         content
-            .animation(.easeOut(duration: 0.2)) { $0.opacity(stage == .away && !near ? 0 : 1) }
+            .animation(landing.bare ? nil : .easeOut(duration: 0.2)) { $0.opacity(stage == .away ? 0 : 1) }
             .overlay {
                 if stage == .hover || stage == .down || stage == .done {
                     // Меняется вместе со ступенью — её ходом (P923), своего нет:
@@ -1480,6 +1497,108 @@ struct FolderShape: Shape {
                  tangent2End: CGPoint(x: r.minX, y: r.maxY - bodyR), radius: bodyR)
         p.closeSubpath()
         return p
+    }
+}
+
+/// Контур карточки в полёте (P1034, автор по 340: «никакие карточки не
+/// должны подменяться одна другой… карточка в том же самом виде выходит из
+/// гнезда, плывёт наверх, постепенно увеличиваясь, и на ней постепенно
+/// меняется текст»). Один контур на всём пути: при `t = 0` — контур
+/// карточки картотеки, увеличенный в `grow` раз (корешок 22, доля 0,45,
+/// углы 10 и 12), при `t = 1` — верх листа «Дня» (корешок `headLine + 6`,
+/// доля 0,56, мягкие углы 18, 14, 16). Между ними меняются числа, а не
+/// фигура — вырезы корешка переходят друг в друга. Низ прямой: внизу
+/// полоса продолжается листом или уходит под соседнюю карточку.
+struct MorphFolder: Shape {
+    let t: CGFloat
+    let grow: CGFloat
+    /// Где верх контура от верха полосы: у листа, утянутого под полоску
+    /// «Сегодня», верх выше полосы (`lift`); у карточки — ровно верх.
+    var top: CGFloat = 0
+    /// Высота полосы — там, где у контура прямой низ.
+    let height: CGFloat
+    /// Сверху от верха вида — где полоса (у листа место дня выше полосы).
+    var at: CGFloat = 0
+    /// Не летит — не обрезает ничего (вид при этом не пересобирается).
+    var on = true
+
+    private func mix(_ a: CGFloat, _ b: CGFloat) -> CGFloat { a + (b - a) * t }
+
+    func path(in r: CGRect) -> Path {
+        guard on else {
+            let far: CGFloat = 100_000
+            return Path(CGRect(x: -far, y: -far, width: far * 2 + r.width, height: far * 2 + r.height))
+        }
+        let g = grow
+        let tabH = mix(Search.tabHeight * g, DayPage.headLine + 6)
+        let share = mix(Search.tabShare, 0.56)
+        let leftR = mix(10 * g, 18)
+        let tabR = mix(10 * g, min(FolderShape.wave, (DayPage.headLine + 2) / 2))
+        let inner = mix(max(6, min(16, Search.tabHeight - 12)) * g, min(FolderShape.wave, (DayPage.headLine + 2) / 2))
+        let bodyR = mix(12 * g, 16)
+        let minY = r.minY + at + mix(0, top)
+        let maxY = r.minY + at + height
+        let edge = r.minX + r.width * share
+        let shoulder = minY + tabH
+        var p = Path()
+        p.move(to: CGPoint(x: r.minX, y: maxY))
+        p.addLine(to: CGPoint(x: r.minX, y: minY + leftR))
+        p.addArc(tangent1End: CGPoint(x: r.minX, y: minY),
+                 tangent2End: CGPoint(x: r.minX + leftR, y: minY), radius: leftR)
+        p.addLine(to: CGPoint(x: edge - tabR, y: minY))
+        p.addArc(tangent1End: CGPoint(x: edge, y: minY),
+                 tangent2End: CGPoint(x: edge, y: minY + tabR), radius: tabR)
+        p.addLine(to: CGPoint(x: edge, y: shoulder - inner))
+        p.addArc(tangent1End: CGPoint(x: edge, y: shoulder),
+                 tangent2End: CGPoint(x: edge + inner, y: shoulder), radius: inner)
+        p.addLine(to: CGPoint(x: r.maxX - bodyR, y: shoulder))
+        p.addArc(tangent1End: CGPoint(x: r.maxX, y: shoulder),
+                 tangent2End: CGPoint(x: r.maxX, y: shoulder + bodyR), radius: bodyR)
+        p.addLine(to: CGPoint(x: r.maxX, y: maxY))
+        p.closeSubpath()
+        return p
+    }
+}
+
+/// Карточка в полёте (P1034): что под контуром — лист или его снимок, —
+/// а поверх в той же рамке снимок самой карточки, который тает или
+/// проступает (`cardShown`). Всё обрезано одним контуром `MorphFolder` и
+/// отбрасывает одну тень по нему. Вид — во всю ширину листа; уменьшение до
+/// карточки и место на экране задаёт тот, кто его рисует.
+struct FlightMask: ViewModifier {
+    let t: CGFloat
+    let grow: CGFloat
+    let card: UIImage?
+    let cardShown: Double
+    /// Полоса в виде: сверху `at`, высотой `height`.
+    let at: CGFloat
+    let height: CGFloat
+    var top: CGFloat = 0
+    /// Не летит — вид как есть: тот же набор обёрток, ничего не обрезано.
+    var on = true
+    /// Сила тени: в гнезде и у верха её нет, в пути — есть (не появляется
+    /// разом, P893).
+    var shade: Double = 0.16
+
+    func body(content: Content) -> some View {
+        let shape = MorphFolder(t: t, grow: grow, top: top, height: height, at: at, on: on)
+        content
+            .overlay(alignment: .topLeading) {
+                if let card {
+                    Image(uiImage: card)
+                        .resizable()
+                        .frame(height: height)
+                        .frame(maxWidth: .infinity)
+                        .offset(y: at)
+                        .opacity(cardShown)
+                }
+            }
+            .clipShape(shape)
+            .background {
+                shape.fill(Color.black.opacity(on ? shade : 0))
+                    .blur(radius: 5)
+                    .offset(y: 3)
+            }
     }
 }
 
