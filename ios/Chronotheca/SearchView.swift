@@ -551,6 +551,18 @@ struct SearchView: View {
             arrived = false
             ribbon.flight.run(time, step: { p in
                 guard alive() else { return }
+                // Полпути пройдено, и гнездо точно известно (лента встала) —
+                // карточка проступает над гнездом, полоса тает до посадки
+                // (P1023, видео автора к 335: долетев, полоса с серединой
+                // прокрученного листа разом сменялась другой карточкой).
+                if p >= 0.5, stood, !lost, landing.bare, !landing.nearing,
+                   landing.stage == .away {
+                    let rest = time * 0.5
+                    withAnimation(.easeIn(duration: rest)) {
+                        landing.nearing = true
+                        fold.fading = true
+                    }
+                }
                 let now = CACurrentMediaTime()
                 if firstFrame == nil { firstFrame = now - began } else { worstFrame = max(worstFrame, now - lastFrame) }
                 lastFrame = now
@@ -1359,8 +1371,10 @@ private struct Landed: ViewModifier {
         // Над карточкой тает снимок полосы листа (P1018) — схемы нет,
         // карточка сразу целиком.
         let veil: Double = landing.bare ? 0 : stage == .hover ? 0.6 : stage == .down ? 0.2 : 0
+        // Проступает над гнездом ещё в полёте полосы (P1023).
+        let near = stage == .away && landing.id == id && landing.nearing
         content
-            .animation(.easeOut(duration: 0.2)) { $0.opacity(stage == .away ? 0 : 1) }
+            .animation(.easeOut(duration: 0.2)) { $0.opacity(stage == .away && !near ? 0 : 1) }
             .overlay {
                 if stage == .hover || stage == .down || stage == .done {
                     // Меняется вместе со ступенью — её ходом (P923), своего нет:
@@ -1370,7 +1384,7 @@ private struct Landed: ViewModifier {
                         .allowsHitTesting(false)
                 }
             }
-            .offset(y: stage == .hover ? -Landing.lift : 0)
+            .offset(y: stage == .hover || near ? -Landing.lift : 0)
     }
 }
 

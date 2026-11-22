@@ -1096,6 +1096,9 @@ final class Landing: ObservableObject {
     @Published var stage: Stage = .none
     /// Садится под снимком полосы листа, без схемы (P1018).
     @Published var bare = false
+    /// Полоса на второй половине полёта (P1023): карточка уже проступает
+    /// над гнездом, а полоса тает — к посадке смены одного на другое нет.
+    @Published var nearing = false
     /// Насколько над гнездом карточка ждёт, прежде чем опуститься: выше
     /// нахлёста — следующая карточка её ещё не закрывает.
     static let lift: CGFloat = Search.overlap + 4
@@ -1127,6 +1130,7 @@ final class Landing: ObservableObject {
         if id != nil { id = nil }
         if stage != .none { stage = .none }
         if bare { bare = false }
+        if nearing { nearing = false }
     }
 }
 
