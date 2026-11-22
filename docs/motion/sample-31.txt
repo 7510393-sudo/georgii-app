@@ -1,41 +1,441 @@
+    401 Thread_143976   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 401 start  (in dyld) + 6992  [0x1032044e4]
+    +   401 start_sim  (in dyld_sim) + 20  [0x10306b0e4]
+    +     401 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x10514b950]  ChronothecaApp.swift:0
+    +       401 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x10514b8a4]  /<compiler-generated>:0
+    +         401 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           401 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             401 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               401 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 401 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   401 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     401 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       196 __CFRunLoopRun  (in CoreFoundation) + 2100  [0x180421d44]
+    +                       ! 196 __CFRunLoopDoSource1  (in CoreFoundation) + 476  [0x180422c78]
+    +                       !   196 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE1_PERFORM_FUNCTION__  (in CoreFoundation) + 56  [0x180423628]
+    +                       !     196 __CFMachPortPerform  (in CoreFoundation) + 164  [0x1803e6c50]
+    +                       !       196 UC::DriverCore::continueProcessing()  (in UpdateCycle) + 80  [0x2343d22c0]
+    +                       !         196 schedulerStepScheduledMainSectionContinue  (in UIKitCore) + 56  [0x1863b6064]
+    +                       !           196 _UIUpdateSequenceRunNext  (in UIKitCore) + 120  [0x18590339c]
+    +                       !             106 __setupUpdateSequence_block_invoke_2  (in UIKitCore) + 372  [0x1863b5c0c]
+    +                       !             : 106 _UIApplicationFlushCATransaction  (in UIKitCore) + 48  [0x1864a3b50]
+    +                       !             :   106 CA::Transaction::flush_as_runloop_observer(bool)  (in QuartzCore) + 68  [0x18cefa1a4]
+    +                       !             :     105 CA::Transaction::commit()  (in QuartzCore) + 632  [0x18cef88f0]
+    +                       !             :     | 105 CA::Context::commit_transaction(CA::Transaction*, double, double*)  (in QuartzCore) + 560  [0x18cecacc8]
+    +                       !             :     |   104 CA::Layer::layout_and_display_if_needed(CA::Transaction*)  (in QuartzCore) + 156  [0x18cfb2978]
+    +                       !             :     |   + 104 CA::Layer::update_if_needed_(CA::Transaction*, CA::LayerUpdateReason)  (in QuartzCore) + 600  [0x18cfa6d94]
+    +                       !             :     |   +   103 CA::Layer::perform_update_(CA::Layer*, CALayer*, unsigned int, CA::LayerUpdateReason, CA::Transaction*)  (in QuartzCore) + 456  [0x18cfa7548]
+    +                       !             :     |   +   ! 102 -[UIView(CALayerDelegate) layoutSublayersOfLayer:]  (in UIKitCore) + 2648  [0x186ab0548]
+    +                       !             :     |   +   ! : 102 ???  (in UIKitCore)  load address 0x185289000 + 0x3c511c  [0x18564e11c]
+    +                       !             :     |   +   ! :   101 ???  (in UIKitCore)  load address 0x185289000 + 0x3c4d74  [0x18564dd74]
+    +                       !             :     |   +   ! :   | 99 @objc _UIHostingView.layoutSubviews()  (in SwiftUI) + 32  [0x1d3474ac0]
+    +                       !             :     |   +   ! :   | + 99 _UIHostingView.layoutSubviews()  (in SwiftUI) + 80  [0x1d3474a8c]
+    +                       !             :     |   +   ! :   | +   99 ???  (in UIKitCore)  load address 0x185289000 + 0x14c250  [0x1853d5250]
+    +                       !             :     |   +   ! :   | +     99 ViewGraphRootValueUpdater.render(interval:updateDisplayList:targetTimestamp:)  (in SwiftUICore) + 460  [0x1d43be2c0]
+    +                       !             :     |   +   ! :   | +       70 closure #1 in ViewGraphRootValueUpdater.render(interval:updateDisplayList:targetTimestamp:)  (in SwiftUICore) + 712  [0x1d43bfbc0]
+    +                       !             :     |   +   ! :   | +       ! 39 ViewGraph.updateOutputs(at:)  (in SwiftUICore) + 156  [0x1d43c5ac0]
+    +                       !             :     |   +   ! :   | +       ! : 39 specialized GraphHost.runTransaction(_:do:id:)  (in SwiftUICore) + 324  [0x1d3f37cfc]
+    +                       !             :     |   +   ! :   | +       ! :   38 AG::Subgraph::update(unsigned int)  (in AttributeGraph) + 952  [0x1c42da590]
+    +                       !             :     |   +   ! :   | +       ! :   | 37 AG::Graph::UpdateStack::update()  (in AttributeGraph) + 488  [0x1c42cb6c0]
+    +                       !             :     |   +   ! :   | +       ! :   | + 24 partial apply for implicit closure #1 in closure #1 in closure #1 in Attribute.init<A>(_:)  (in SwiftUICore) + 28  [0x1d3a882d4]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! 18 DynamicBody.updateValue()  (in SwiftUICore) + 840  [0x1d3d0744c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! : 18 closure #1 in DynamicBody.updateValue()  (in SwiftUICore) + 936  [0x1d3d07af4]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :   18 protocol witness for BodyAccessor.updateBody(of:changed:) in conformance ViewBodyAccessor<A>  (in SwiftUICore) + 12  [0x1d3be116c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     17 ViewBodyAccessor.updateBody(of:changed:)  (in SwiftUICore) + 180  [0x1d3be0cc4]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     | 17 closure #1 in ViewBodyAccessor.updateBody(of:changed:)  (in SwiftUICore) + 864  [0x1d3be1054]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   11 protocol witness for View.body.getter in conformance SearchView  (in Chronotheca.debug.dylib) + 52  [0x105675b78]  /<compiler-generated>:0
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   + 11 SearchView.body.getter  (in Chronotheca.debug.dylib) + 532  [0x1056557cc]  SearchView.swift:38
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   4 SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 1348  [0x105656264]  SearchView.swift:273
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   ! 3 SearchView.entries(_:_:)  (in Chronotheca.debug.dylib) + 1960  [0x10565b0f0]  SearchView.swift:0
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   ! : 3 EnumeratedSequence.Iterator.next()  (in libswiftCore.dylib) + 232  [0x1982f67c8]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   ! :   1 protocol witness for IteratorProtocol.next() in conformance IndexingIterator<A>  (in libswiftCore.dylib) + 380  [0x1982b0420]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   ! :   | 1 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 332  [0x10508be00]  /<compiler-generated>:0
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   ! :   |   1 swift_retain  (in libswiftCore.dylib) + 56  [0x19818cb1c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   ! :   1 protocol witness for IteratorProtocol.next() in conformance IndexingIterator<A>  (in libswiftCore.dylib) + 392  [0x1982b042c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   ! :   | 1 <deduplicated_symbol>  (in libswiftCore.dylib) + 28  [0x198491b4c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   ! :   |   1 _xzm_free  (in libsystem_malloc.dylib) + 592  [0x1801ea660]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   ! :   |     1 pthread_getspecific  (in libsystem_pthread.dylib) + 0  [0x10311daa4]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   ! :   1 protocol witness for IteratorProtocol.next() in conformance IndexingIterator<A>  (in libswiftCore.dylib) + 324  [0x1982b03e8]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   ! 1 SearchView.entries(_:_:)  (in Chronotheca.debug.dylib) + 3516  [0x10565b704]  SearchView.swift:218
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !   1 SearchView.plan(_:)  (in Chronotheca.debug.dylib) + 856  [0x10565c86c]  SearchView.swift:834
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !     1 Archive.tasks(_:)  (in Chronotheca.debug.dylib) + 144  [0x10507e7c0]  Archive.swift:95
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !       1 Archive.days.getter  (in Chronotheca.debug.dylib) + 100  [0x10507c378]  Archive.swift:0
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !         1 static Published.subscript.getter  (in Combine) + 172  [0x1c3288ba8]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !           1 specialized static Published.access<A>(_:keyPath:storage:)  (in Combine) + 92  [0x1c32895e0]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !             1 swift_unknownObjectRetain  (in libswiftCore.dylib) + 0  [0x1981dc5ec]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   2 SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 556  [0x105655f4c]  SearchView.swift:263
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   ! 1 _ArrayProtocol.filter(_:)  (in libswiftCore.dylib) + 408  [0x19827097c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   ! : 1 protocol witness for IteratorProtocol.next() in conformance IndexingIterator<A>  (in libswiftCore.dylib) + 392  [0x1982b042c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   ! :   1 _xzm_free  (in libsystem_malloc.dylib) + 152  [0x1801ea4a8]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   ! 1 _ArrayProtocol.filter(_:)  (in libswiftCore.dylib) + 464  [0x1982709b4]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !   1 partial apply for closure #1 in SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 28  [0x10565ca0c]  /<compiler-generated>:0
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !     1 closure #1 in SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 108  [0x10565c9d8]  SearchView.swift:263
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !       1 swift_bridgeObjectRelease  (in libswiftCore.dylib) + 0  [0x1981dcc54]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   2 SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 884  [0x105656094]  SearchView.swift:267
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   ! 2 _ArrayProtocol.filter(_:)  (in libswiftCore.dylib) + 408  [0x19827097c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !   2 protocol witness for IteratorProtocol.next() in conformance IndexingIterator<A>  (in libswiftCore.dylib) + 308  [0x1982b03d8]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !     2 protocol witness for Collection.subscript.read in conformance [A]  (in libswiftCore.dylib) + 68  [0x19825c630]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !       1 Array.subscript.read  (in libswiftCore.dylib) + 68  [0x19825c694]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !       : 1 DYLD-STUB$$malloc_type_malloc  (in libswiftCore.dylib) + 4  [0x19852e120]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !       1 Array.subscript.read  (in libswiftCore.dylib) + 164  [0x19825c6f4]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !         1 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 156  [0x10508bd50]  /<compiler-generated>:0
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !           1 swift_retain  (in libswiftCore.dylib) + 48  [0x19818cb14]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   1 SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 3196  [0x10565699c]  /<compiler-generated>:0
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   ! 1 outlined destroy of [Archive.Day]  (in Chronotheca.debug.dylib) + 24  [0x10507c928]  /<compiler-generated>:0
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !   1 swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::doDecrementSlow<(swift::PerformDeinit)1>(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)  (in libswiftCore.dylib) + 164  [0x19818faec]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !     1 _swift_release_dealloc  (in libswiftCore.dylib) + 44  [0x19818efc8]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !       1 _ContiguousArrayStorage.__deallocating_deinit  (in libswiftCore.dylib) + 44  [0x1982c6bac]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !         1 swift_arrayDestroy  (in libswiftCore.dylib) + 172  [0x198175dd0]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !           1 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 224  [0x10508bca8]  /<compiler-generated>:0
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !             1 swift_release  (in libswiftCore.dylib) + 48  [0x19818c83c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   1 SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 1628  [0x10565637c]  SearchView.swift:278
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   ! 1 Collection.map<A, B>(_:)  (in Chronotheca.debug.dylib) + 1012  [0x10507b8c0]  /<compiler-generated>:0
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !   1 partial apply for implicit closure #1 in SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 32  [0x10565cd50]  /<compiler-generated>:0
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !     1 implicit closure #1 in SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 60  [0x10565cd20]  /<compiler-generated>:0
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   !       1 swift_release  (in libswiftCore.dylib) + 0  [0x19818c80c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +   1 SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 1708  [0x1056563cc]  SearchView.swift:278
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +     1 Set.init<A>(_:)  (in libswiftCore.dylib) + 616  [0x1983c1038]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +       1 Set._Variant.insert(_:)  (in libswiftCore.dylib) + 716  [0x1983996c4]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   +         1 _NativeSet.insertNew(_:at:isUnique:)  (in libswiftCore.dylib) + 40  [0x198388ffc]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |   6 protocol witness for View.body.getter in conformance SearchCard<A>  (in Chronotheca.debug.dylib) + 12  [0x105677c00]  /<compiler-generated>:0
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |     6 SearchCard.body.getter  (in Chronotheca.debug.dylib) + 592  [0x105676b38]  SearchView.swift:1140
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |       6 VStack.init(alignment:spacing:content:)  (in SwiftUICore) + 72  [0x1d3a08160]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |         6 _VariadicView.Tree.init(_:content:)  (in SwiftUICore) + 112  [0x1d3cfd904]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |           6 <deduplicated_symbol>  (in SwiftUICore) + 88  [0x1d393df24]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |             6 closure #1 in SearchCard.body.getter  (in Chronotheca.debug.dylib) + 800  [0x105677054]  SearchView.swift:1154
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               5 closure #1 in SearchView.piece(_:sample:)  (in Chronotheca.debug.dylib) + 164  [0x10566c3c8]  SearchView.swift:708
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               ! 5 SearchView.row(_:)  (in Chronotheca.debug.dylib) + 468  [0x10566c670]  SearchView.swift:955
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !   5 Button.init(action:label:)  (in SwiftUI) + 128  [0x1d34e9bc8]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !     5 closure #2 in SearchView.row(_:)  (in Chronotheca.debug.dylib) + 460  [0x1056733a4]  SearchView.swift:958
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !       5 HStack.init(alignment:spacing:content:)  (in SwiftUICore) + 72  [0x1d3c1365c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !         5 _VariadicView.Tree.init(_:content:)  (in SwiftUICore) + 112  [0x1d3cfd904]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !           5 <deduplicated_symbol>  (in SwiftUICore) + 88  [0x1d393df24]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !             4 closure #1 in closure #2 in SearchView.row(_:)  (in Chronotheca.debug.dylib) + 424  [0x105673688]  SearchView.swift:959
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !             : 4 VStack.init(alignment:spacing:content:)  (in SwiftUICore) + 72  [0x1d3a08160]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !             :   4 _VariadicView.Tree.init(_:content:)  (in SwiftUICore) + 112  [0x1d3cfd904]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !             :     4 <deduplicated_symbol>  (in SwiftUICore) + 88  [0x1d393df24]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !             :       2 closure #1 in closure #1 in closure #2 in SearchView.row(_:)  (in Chronotheca.debug.dylib) + 2776  [0x10567448c]  SearchView.swift:978
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !             :       | 1 Archive.Day.preview.getter  (in Chronotheca.debug.dylib) + 208  [0x10507b1c8]  Archive.swift:58
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !             :       | + 1 Collection<>.split(separator:maxSplits:omittingEmptySubsequences:)  (in libswiftCore.dylib) + 164  [0x1983b4d4c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !             :       | +   1 Collection.split(maxSplits:omittingEmptySubsequences:whereSeparator:)  (in libswiftCore.dylib) + 2056  [0x1982b458c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !             :       | +     1 protocol witness for Collection.subscript.getter in conformance String  (in libswiftCore.dylib) + 44  [0x1983eb8e8]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !             :       | +       1 _StringGuts.validateScalarRange(_:)  (in libswiftCore.dylib) + 0  [0x198400c48]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !             :       | 1 Archive.Day.preview.getter  (in Chronotheca.debug.dylib) + 312  [0x10507b230]  Archive.swift:59
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !             :       |   1 Collection.map<A, B>(_:)  (in Chronotheca.debug.dylib) + 1192  [0x10507b974]  /<compiler-generated>:0
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !             :       |     1 <deduplicated_symbol>  (in libswiftCore.dylib) + 0  [0x19825c898]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !             :       1 closure #1 in closure #1 in closure #2 in SearchView.row(_:)  (in Chronotheca.debug.dylib) + 184  [0x105673a6c]  SearchView.swift:964
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !             :       | 1 static Geo.stripped(_:)  (in Chronotheca.debug.dylib) + 1260  [0x105487948]  Places.swift:209
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !             :       |   1 StringProtocol.replacingOccurrences<A, B>(of:with:options:range:)  (in Foundation) + 476  [0x180fb3e94]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !             :       |     1 StringProtocol._toUTF16Offsets(_:)  (in libswiftCore.dylib) + 0  [0x1983e8ea4]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !             :       1 closure #1 in closure #1 in closure #2 in SearchView.row(_:)  (in Chronotheca.debug.dylib) + 3324  [0x1056746b0]  SearchView.swift:982
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !             :         1 View.multilineTextAlignment(_:)  (in SwiftUICore) + 0  [0x1d3de61f0]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !             1 closure #1 in closure #2 in SearchView.row(_:)  (in Chronotheca.debug.dylib) + 808  [0x105673808]  SearchView.swift:989
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !               1 SearchView.preview(_:of:)  (in Chronotheca.debug.dylib) + 452  [0x105674bc4]  SearchView.swift:1000
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !                 1 Vault.mediaURL(_:for:)  (in Chronotheca.debug.dylib) + 664  [0x1057c02ec]  Vault.swift:1370
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !                   1 Vault.file(_:for:)  (in Chronotheca.debug.dylib) + 520  [0x1057bb508]  Vault.swift:1093
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !                     1 URL.appendingPathComponent(_:)  (in Foundation) + 80  [0x180e74834]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !                       1 specialized _SwiftURL.appending<A>(path:directoryHint:encodingSlashes:compatibility:)  (in Foundation) + 1740  [0x180ea9604]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !                         1 <deduplicated_symbol>  (in Foundation) + 12  [0x180ee3240]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !                           1 ???  (in Foundation)  load address 0x180840000 + 0x69e820  [0x180ede820]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !                             1 specialized String.init<A>(bytes:encoding:)  (in Foundation) + 260  [0x180e473f8]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !                               1 static String._tryFromUTF8(_:)  (in libswiftCore.dylib) + 44  [0x1982cad9c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !                                 1 specialized static String._uncheckedFromUTF8(_:isASCII:)  (in libswiftCore.dylib) + 88  [0x1984e8b40]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !                                   1 specialized static __StringStorage.create(initializingFrom:codeUnitCapacity:isASCII:)  (in libswiftCore.dylib) + 52  [0x1984e885c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !                                     1 _allocateStringStorage(codeUnitCapacity:)  (in libswiftCore.dylib) + 172  [0x198403950]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !                                       1 swift_allocObject  (in libswiftCore.dylib) + 52  [0x19818bf7c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !                                         1 swift_slowAlloc  (in libswiftCore.dylib) + 48  [0x19818bc00]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !                                           1 _xzm_xzone_malloc  (in libsystem_malloc.dylib) + 68  [0x1801e9c24]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               !                                             1 pthread_getspecific  (in libsystem_pthread.dylib) + 0  [0x10311daa4]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |               1 closure #1 in closure #3 in SearchView.piece(_:sample:)  (in Chronotheca.debug.dylib) + 196  [0x10566e95c]  SearchView.swift:726
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |                 1 SearchView.futureRow(_:sample:)  (in Chronotheca.debug.dylib) + 288  [0x10566eb50]  SearchView.swift:843
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |                   1 SearchView.plan(_:)  (in Chronotheca.debug.dylib) + 472  [0x10565c6ec]  SearchView.swift:833
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |                     1 static DayEvents.cachedItems(for:)  (in Chronotheca.debug.dylib) + 64  [0x10515ce84]  DayEvents.swift:96
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |                       1 static Vault.stamp(_:)  (in Chronotheca.debug.dylib) + 76  [0x1057a7b44]  Vault.swift:1395
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |                         1 -[NSDateFormatter stringForObjectValue:]  (in Foundation) + 192  [0x181061e38]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     |                           1 objc_msgSend  (in libobjc.A.dylib) + 108  [0x18003ac6c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     1 ViewBodyAccessor.updateBody(of:changed:)  (in SwiftUICore) + 144  [0x1d3be0ca0]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :       1 initializeWithCopy for Button  (in SwiftUI) + 364  [0x1d34ec048]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :         1 swift_retain  (in libswiftCore.dylib) + 0  [0x19818cae4]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! 2 GeometryReader.Child.updateValue()  (in SwiftUICore) + 1252  [0x1d3da17b0]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! : 2 <deduplicated_symbol>  (in SwiftUICore) + 72  [0x1d3a7a600]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :   2 partial apply for closure #1 in ObservationCenter._withObservation<A>(do:)  (in SwiftUICore) + 24  [0x1d398a798]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     2 closure #1 in ObservationCenter._withObservation<A>(do:)  (in SwiftUICore) + 84  [0x1d3f557a0]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :       2 partial apply for closure #1 in GeometryReader.Child.updateValue()  (in SwiftUICore) + 100  [0x1d3da2d94]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :         2 Attribute.syncMainIfReferences<A>(do:)  (in SwiftUICore) + 336  [0x1d4093c44]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :           2 closure #1 in Attribute.syncMainIfReferences<A>(do:)  (in SwiftUICore) + 104  [0x1d4094b48]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :             2 partial apply for closure #1 in closure #1 in GeometryReader.Child.updateValue()  (in SwiftUICore) + 56  [0x1d3da2de4]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :               1 closure #1 in closure #1 in SearchCard.body.getter  (in Chronotheca.debug.dylib) + 76  [0x1056773c0]  SearchView.swift:1144
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :               | 1 SearchCard.tabText.getter  (in Chronotheca.debug.dylib) + 192  [0x105676608]  SearchView.swift:1133
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :               |   1 Text.foregroundColor(_:)  (in SwiftUICore) + 64  [0x1d407df28]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :               |     1 outlined copy of Text.Storage  (in SwiftUICore) + 0  [0x1d396a7b8]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :               1 closure #1 in closure #1 in SearchCard.body.getter  (in Chronotheca.debug.dylib) + 108  [0x1056773e0]  SearchView.swift:1145
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                 1 static Look.mono(_:weight:)  (in Chronotheca.debug.dylib) + 112  [0x10564b234]  Ru.swift:212
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                   1 static Look.grow.getter  (in Chronotheca.debug.dylib) + 64  [0x10564b5f8]  Ru.swift:245
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                     1 -[UIFontMetrics scaledValueForValue:compatibleWithTraitCollection:]  (in UIKitCore) + 128  [0x185f86404]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                       1 TDescriptorSource::GetTextStyleSize(__CFString const*, void const*, CTFontTextStylePlatform, double*, double*, bool, __CFString const*)  (in CoreText) + 232  [0x181f3f584]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                         1 -[__NSDictionaryI objectForKeyedSubscript:]  (in CoreFoundation) + 136  [0x1803cdb6c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                           1 -[__NSCFString isEqual:]  (in CoreFoundation) + 0  [0x1803f2cb8]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! 1 ForEachChild.updateValue()  (in SwiftUICore) + 1152  [0x1d42eb12c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! : 1 <deduplicated_symbol>  (in SwiftUICore) + 72  [0x1d3a7a600]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :   1 <deduplicated_symbol>  (in SwiftUICore) + 12  [0x1d3f57390]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     1 partial apply for closure #1 in ObservationCenter._withObservation<A>(do:)  (in SwiftUICore) + 24  [0x1d398a798]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :       1 closure #1 in ObservationCenter._withObservation<A>(do:)  (in SwiftUICore) + 84  [0x1d3f557a0]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :         1 partial apply for closure #1 in ForEachChild.updateValue()  (in SwiftUICore) + 16  [0x1d42efdfc]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :           1 closure #1 in ForEachChild.updateValue()  (in SwiftUICore) + 532  [0x1d42eb768]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :             1 closure #1 in closure #1 in closure #1 in closure #5 in SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 664  [0x10565f010]  SearchView.swift:294
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :               1 SearchView.piece(_:sample:)  (in Chronotheca.debug.dylib) + 5760  [0x105660a20]  SearchView.swift:705
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                 1 static Search.stamp(_:)  (in Chronotheca.debug.dylib) + 704  [0x10566b8e4]  SearchView.swift:1101
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                   1 static Ru.monthNames.getter  (in Chronotheca.debug.dylib) + 52  [0x105155d08]  Dates.swift:40
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                     1 static Ru.own.getter  (in Chronotheca.debug.dylib) + 16  [0x105155878]  Dates.swift:20
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                       1 static Lang.code.getter  (in Chronotheca.debug.dylib) + 12  [0x105318dec]  Lang.swift:19
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                         1 static Lang.phone.getter  (in Chronotheca.debug.dylib) + 64  [0x105318e34]  Lang.swift:23
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                           1 static Locale.preferredLanguages.getter  (in Foundation) + 120  [0x180be6adc]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                             1 _CFPreferencesCopyAppValueWithContainerAndConfiguration  (in CoreFoundation) + 108  [0x18052b3dc]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                               1 -[_CFXPreferences copyAppValueForKey:identifier:container:configurationURL:]  (in CoreFoundation) + 128  [0x1805289f8]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                                 1 -[_CFXPreferences withSearchListForIdentifier:container:cloudConfigurationURL:perform:]  (in CoreFoundation) + 136  [0x18054bee4]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                                   1 normalizeQuintuplet  (in CoreFoundation) + 396  [0x1804ee91c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                                     1 __108-[_CFXPreferences(SearchListAdditions) withSearchListForIdentifier:container:cloudConfigurationURL:perform:]_block_invoke  (in CoreFoundation) + 348  [0x1804ef088]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                                       1 __76-[_CFXPreferences copyAppValueForKey:identifier:container:configurationURL:]_block_invoke  (in CoreFoundation) + 28  [0x180528a70]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                                         1 -[CFPrefsSource copyValueForKey:]  (in CoreFoundation) + 40  [0x18047a678]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                                           1 -[CFPrefsSearchListSource alreadylocked_copyValueForKey:]  (in CoreFoundation) + 144  [0x1804ec2e8]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                                             1 -[CFPrefsSearchListSource alreadylocked_getDictionary:]  (in CoreFoundation) + 368  [0x18054b7e8]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                                               1 -[__NSArrayM getObjects:range:]  (in CoreFoundation) + 280  [0x1803a0a70]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                                                 1 DYLD-STUB$$memmove  (in CoreFoundation) + 0  [0x180553ed8]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! 1 StaticBody.updateValue()  (in SwiftUICore) + 592  [0x1d3d06b08]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! : 1 closure #1 in StaticBody.updateValue()  (in SwiftUICore) + 276  [0x1d3d06f14]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :   1 StyleBodyAccessor.updateBody(of:changed:)  (in SwiftUICore) + 1184  [0x1d3f95b84]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     1 <deduplicated_symbol>  (in SwiftUICore) + 72  [0x1d3a7a600]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :       1 partial apply for closure #2 in BodyAccessor.setBody(_:)  (in SwiftUICore) + 20  [0x1d3a3952c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :         1 closure #2 in BodyAccessor.setBody(_:)  (in SwiftUICore) + 68  [0x1d3d06808]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :           1 AGGraphSetOutputValue  (in AttributeGraph) + 244  [0x1c42eb228]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :             1 AG::LayoutDescriptor::compare(unsigned char const*, unsigned char const*, unsigned char const*, unsigned long, unsigned int)  (in AttributeGraph) + 100  [0x1c42de388]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :               1 AG::LayoutDescriptor::Compare::operator()(unsigned char const*, unsigned char const*, unsigned char const*, unsigned long, unsigned long, unsigned int)  (in AttributeGraph) + 952  [0x1c42dddc4]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :                 1 AG::LayoutDescriptor::Compare::operator()(unsigned char const*, unsigned char const*, unsigned char const*, unsigned long, unsigned long, unsigned int)  (in AttributeGraph) + 1552  [0x1c42de01c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! 1 ViewListTransition.updateValue()  (in SwiftUICore) + 268  [0x1d3dc2370]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! : 1 TransitionHelper.update()  (in SwiftUICore) + 104  [0x1d3dc2008]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :   1 TransitionHelper.info.getter  (in SwiftUICore) + 0  [0x1d3dc1da4]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! 1 closure #1 in PlatformViewChild.updateValue()  (in SwiftUICore) + 2172  [0x1d3aa9278]
+    +                       !             :     |   +   ! :   | +       ! :   | + !   1 closure #3 in closure #1 in PlatformViewChild.updateValue()  (in SwiftUICore) + 180  [0x1d3aaa858]
+    +                       !             :     |   +   ! :   | +       ! :   | + !     1 ???  (in UIKitCore)  load address 0x185289000 + 0x28cbbc  [0x185515bbc]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       1 -[UIView _updateTraitsIfNeededWithBehavior:]  (in UIKitCore) + 152  [0x186a7e9b8]
+    +                       !             :     |   +   ! :   | +       ! :   | + !         1 -[UIView _updateTraitCollectionAndProcessChangesWithBehavior:previousCollection:]  (in UIKitCore) + 76  [0x186a8d84c]
+    +                       !             :     |   +   ! :   | +       ! :   | + !           1 -[UIView _updateCachedTraitCollectionIfNeeded]  (in UIKitCore) + 220  [0x186a8a1bc]
+    +                       !             :     |   +   ! :   | +       ! :   | + !             1 -[UITraitCollection _traitCollectionByModifyingTraitsCopyOnWrite:]  (in UIKitCore) + 172  [0x185ff0700]
+    +                       !             :     |   +   ! :   | +       ! :   | + !               1 __46-[UIView _updateCachedTraitCollectionIfNeeded]_block_invoke  (in UIKitCore) + 236  [0x186a8a3ac]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                 1 __66-[UITraitCollection _traitCollectionByModifyingTraitsCopyOnWrite:]_block_invoke_2  (in UIKitCore) + 128  [0x185ff3be8]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                   1 -[__NSDictionaryM mutableCopy]  (in CoreFoundation) + 108  [0x180532434]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                     1 __CFAllocateObject  (in CoreFoundation) + 16  [0x1804da8f8]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                       1 class_createInstance  (in libobjc.A.dylib) + 0  [0x180056fec]
+    +                       !             :     |   +   ! :   | +       ! :   | + 4 implicit closure #1 in closure #1 in closure #1 in Attribute.init<A>(_:)  (in SwiftUICore) + 148  [0x1d3d9ed8c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! 3 protocol witness for Rule.value.getter in conformance ForEachState<A, B, C>.Info.Init  (in SwiftUICore) + 44  [0x1d42e871c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! : 3 ForEachState.Info.Init.value.getter  (in SwiftUICore) + 200  [0x1d42e868c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :   2 ForEachState.update(view:)  (in SwiftUICore) + 3124  [0x1d42e18f4]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :   | 2 dispatch thunk of Sequence.withContiguousStorageIfAvailable<A>(_:)  (in libswiftCore.dylib) + 16  [0x198517dc8]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :   |   2 protocol witness for Sequence.withContiguousStorageIfAvailable<A>(_:) in conformance [A]  (in libswiftCore.dylib) + 24  [0x19825cbb8]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :   |     2 Array.withContiguousStorageIfAvailable<A>(_:)  (in libswiftCore.dylib) + 220  [0x19825cc9c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :   |       2 partial apply for closure #1 in ForEachState.update(view:)  (in SwiftUICore) + 52  [0x1d42ee0dc]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :   |         1 closure #1 in ForEachState.update(view:)  (in SwiftUICore) + 884  [0x1d42e2a88]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :   |         + 1 Set._Variant.insert(_:)  (in libswiftCore.dylib) + 716  [0x1983996c4]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :   |         +   1 _NativeSet.insertNew(_:at:isUnique:)  (in libswiftCore.dylib) + 128  [0x198389054]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :   |         +     1 _NativeSet._unsafeInsertNew(_:)  (in libswiftCore.dylib) + 344  [0x19838556c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :   |         1 closure #1 in ForEachState.update(view:)  (in SwiftUICore) + 1028  [0x1d42e2b18]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :   |           1 closure #2 in KeyPath.makeGetFunction()  (in SwiftUICore) + 112  [0x1d42df6e8]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :   |             1 swift_getAtKeyPath  (in libswiftCore.dylib) + 20  [0x19836d830]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :   |               1 KeyPath._projectReadOnly(from:)  (in libswiftCore.dylib) + 264  [0x19836a23c]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :   |                 1 RawKeyPathComponent.value.getter  (in libswiftCore.dylib) + 388  [0x198369f64]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :   1 ForEachState.update(view:)  (in SwiftUICore) + 1292  [0x1d42e11cc]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :     1 assignWithTake for ForEachState.LazyEdits  (in SwiftUICore) + 212  [0x1d42ecedc]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :       1 swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::doDecrementSlow<(swift::PerformDeinit)1>(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)  (in libswiftCore.dylib) + 164  [0x19818faec]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :         1 _swift_release_dealloc  (in libswiftCore.dylib) + 44  [0x19818efc8]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :           1 _ContiguousArrayStorage.__deallocating_deinit  (in libswiftCore.dylib) + 44  [0x1982c6bac]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :             1 swift_arrayDestroy  (in libswiftCore.dylib) + 172  [0x198175dd0]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! :               1 destroy for SearchView.Entry  (in Chronotheca.debug.dylib) + 708  [0x105699980]  /<compiler-generated>:0
+    +                       !             :     |   +   ! :   | +       ! :   | + ! 1 MakeScrapeableResolvedRepresentation.value.getter  (in SwiftUICore) + 136  [0x1d3f940e0]
+    +                       !             :     |   +   ! :   | +       ! :   | + !   1 closure #1 in MakeScrapeableResolvedRepresentation.value.getter  (in SwiftUICore) + 228  [0x1d3f941f4]
+    +                       !             :     |   +   ! :   | +       ! :   | + !     1 ResolvedButtonStyle.body.getter  (in SwiftUI) + 1584  [0x1d2c3a07c]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       1 View.input<A>(_:)  (in SwiftUICore) + 200  [0x1d3a6b004]
+    +                       !             :     |   +   ! :   | +       ! :   | + !         1 View.modifier<A>(_:)  (in SwiftUICore) + 120  [0x1d42510f4]
+    +                       !             :     |   +   ! :   | +       ! :   | + !           1 <deduplicated_symbol>  (in SwiftUICore) + 44  [0x1d39dd580]
+    +                       !             :     |   +   ! :   | +       ! :   | + !             1 <deduplicated_symbol>  (in SwiftUICore) + 88  [0x1d39dd5ac]
+    +                       !             :     |   +   ! :   | +       ! :   | + !               1 initializeWithCopy for KeyboardShortcutBindingBehavior  (in SwiftUI) + 0  [0x1d3409138]
+    +                       !             :     |   +   ! :   | +       ! :   | + 3 specialized implicit closure #1 in closure #1 in closure #1 in Attribute.init<A>(_:)  (in SwiftUICore) + 20  [0x1d404eae8]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! 3 ResolvedTextFilter.updateValue()  (in SwiftUICore) + 256  [0x1d3c4a4a8]
+    +                       !             :     |   +   ! :   | +       ! :   | + !   3 PropertyList.Tracker.hasDifferentUsedValues(_:)  (in SwiftUICore) + 152  [0x1d423fbdc]
+    +                       !             :     |   +   ! :   | +       ! :   | + !     2 compare(_:against:)  (in SwiftUICore) + 292  [0x1d4243548]
+    +                       !             :     |   +   ! :   | +       ! :   | + !     : 2 SecondaryLookupTrackedValue.hasMatchingValue(in:)  (in SwiftUICore) + 196  [0x1d4242f54]
+    +                       !             :     |   +   ! :   | +       ! :   | + !     :   2 PropertyList.valueWithSecondaryLookup<A>(_:)  (in SwiftUICore) + 188  [0x1d424101c]
+    +                       !             :     |   +   ! :   | +       ! :   | + !     :     2 withExtendedLifetime<A, B, C>(_:_:)  (in SwiftUICore) + 68  [0x1d3c778d8]
+    +                       !             :     |   +   ! :   | +       ! :   | + !     :       2 partial apply for closure #1 in PropertyList.valueWithSecondaryLookup<A>(_:)  (in SwiftUICore) + 24  [0x1d4244454]
+    +                       !             :     |   +   ! :   | +       ! :   | + !     :         2 closure #1 in PropertyList.valueWithSecondaryLookup<A>(_:)  (in SwiftUICore) + 324  [0x1d4241f80]
+    +                       !             :     |   +   ! :   | +       ! :   | + !     :           2 findValueWithSecondaryLookup<A>(_:secondaryLookupHandler:filter:secondaryFilter:)  (in SwiftUICore) + 704  [0x1d42422d8]
+    +                       !             :     |   +   ! :   | +       ! :   | + !     :             2 static UITraitBridgedEnvironmentPropertyKeyLookup.lookup(in:)  (in SwiftUI) + 140  [0x1d33789f0]
+    +                       !             :     |   +   ! :   | +       ! :   | + !     :               2 Optional.map<A, B>(_:)  (in SwiftUI) + 236  [0x1d276a6e0]
+    +                       !             :     |   +   ! :   | +       ! :   | + !     :                 2 partial apply for implicit closure #1 in static UITraitBridgedEnvironmentPropertyKeyLookup.lookup(in:)  (in SwiftUI) + 36  [0x1d3378af8]
+    +                       !             :     |   +   ! :   | +       ! :   | + !     :                   1 protocol witness for static UITraitBridgedEnvironmentKey.read(from:) in conformance Text.AlignmentStrategy.EnvironmentKey  (in SwiftUI) + 52  [0x1d2e7964c]
+    +                       !             :     |   +   ! :   | +       ! :   | + !     :                   | 1 ???  (in UIKitCore)  load address 0x185289000 + 0x82b4  [0x1852912b4]
+    +                       !             :     |   +   ! :   | +       ! :   | + !     :                   |   1 ???  (in UIKitCore)  load address 0x185289000 + 0x563c  [0x18528e63c]
+    +                       !             :     |   +   ! :   | +       ! :   | + !     :                   |     1 ???  (in UIKitCore)  load address 0x185289000 + 0x3af8  [0x18528caf8]
+    +                       !             :     |   +   ! :   | +       ! :   | + !     :                   |       1 ???  (in UIKitCore)  load address 0x185289000 + 0x7100  [0x185290100]
+    +                       !             :     |   +   ! :   | +       ! :   | + !     :                   |         1 ???  (in UIKitCore)  load address 0x185289000 + 0x20690  [0x1852a9690]
+    +                       !             :     |   +   ! :   | +       ! :   | + !     :                   1 protocol witness for static UITraitBridgedEnvironmentKey.read(from:) in conformance Text.AlignmentStrategy.EnvironmentKey  (in SwiftUI) + 0  [0x1d2e79618]
+    +                       !             :     |   +   ! :   | +       ! :   | + !     1 compare(_:against:)  (in SwiftUICore) + 208  [0x1d42434f4]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       1 <deduplicated_symbol>  (in SwiftUICore) + 20  [0x1d38f86ac]
+    +                       !             :     |   +   ! :   | +       ! :   | + 2 specialized implicit closure #1 in closure #1 in closure #1 in Attribute.init<A>(_:)  (in SwiftUICore) + 20  [0x1d404c8b0]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! 2 specialized ShapeStyleResolver.updateValue()  (in SwiftUICore) + 412  [0x1d3ff3430]
+    +                       !             :     |   +   ! :   | +       ! :   | + !   2 PropertyList.Tracker.hasDifferentUsedValues(_:)  (in SwiftUICore) + 152  [0x1d423fbdc]
+    +                       !             :     |   +   ! :   | +       ! :   | + !     2 compare(_:against:)  (in SwiftUICore) + 292  [0x1d4243548]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       1 SecondaryLookupTrackedValue.hasMatchingValue(in:)  (in SwiftUICore) + 196  [0x1d4242f54]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       : 1 PropertyList.valueWithSecondaryLookup<A>(_:)  (in SwiftUICore) + 188  [0x1d424101c]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       :   1 withExtendedLifetime<A, B, C>(_:_:)  (in SwiftUICore) + 68  [0x1d3c778d8]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       :     1 partial apply for closure #1 in PropertyList.valueWithSecondaryLookup<A>(_:)  (in SwiftUICore) + 24  [0x1d4244454]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       :       1 closure #1 in PropertyList.valueWithSecondaryLookup<A>(_:)  (in SwiftUICore) + 324  [0x1d4241f80]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       :         1 findValueWithSecondaryLookup<A>(_:secondaryLookupHandler:filter:secondaryFilter:)  (in SwiftUICore) + 704  [0x1d42422d8]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       :           1 protocol witness for static PropertyKeyLookup.lookup(in:) in conformance UITraitBridgedEnvironmentPropertyKeyLookup<A>  (in SwiftUI) + 0  [0x1d3378a04]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       1 TrackedValue.hasMatchingValue(in:)  (in SwiftUICore) + 148  [0x1d4242b24]
+    +                       !             :     |   +   ! :   | +       ! :   | + !         1 static EnvironmentPropertyKey.valuesEqual(_:_:)  (in SwiftUICore) + 24  [0x1d3f607e8]
+    +                       !             :     |   +   ! :   | +       ! :   | + !           1 protocol witness for static EnvironmentKey._valuesEqual(_:_:) in conformance TintKey  (in SwiftUICore) + 92  [0x1d3f841bc]
+    +                       !             :     |   +   ! :   | +       ! :   | + !             1 AG::LayoutDescriptor::compare(unsigned char const*, unsigned char const*, unsigned char const*, unsigned long, unsigned int)  (in AttributeGraph) + 100  [0x1c42de388]
+    +                       !             :     |   +   ! :   | +       ! :   | + !               1 AG::LayoutDescriptor::Compare::operator()(unsigned char const*, unsigned char const*, unsigned char const*, unsigned long, unsigned long, unsigned int)  (in AttributeGraph) + 1260  [0x1c42ddef8]
+    +                       !             :     |   +   ! :   | +       ! :   | + 2 specialized implicit closure #1 in closure #1 in closure #1 in Attribute.init<A>(_:)  (in SwiftUICore) + 20  [0x1d404d174]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! 2 specialized DynamicContainerInfo.updateValue()  (in SwiftUICore) + 448  [0x1d40242ac]
+    +                       !             :     |   +   ! :   | +       ! :   | + !   2 specialized DynamicContainerInfo.updateItems(disableTransitions:)  (in SwiftUICore) + 348  [0x1d4025538]
+    +                       !             :     |   +   ! :   | +       ! :   | + !     2 ViewList.applySublists(from:list:to:)  (in SwiftUICore) + 76  [0x1d3e25f58]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       1 DynamicViewList.WrappedList.applyNodes(from:style:list:transform:to:)  (in SwiftUICore) + 156  [0x1d41963d8]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       : 1 _ViewList_TemporarySublistTransform.withPushedItem<A, B>(_:do:)  (in SwiftUICore) + 376  [0x1d3e2d5a4]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       :   1 <deduplicated_symbol>  (in SwiftUICore) + 72  [0x1d3a7a600]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       :     1 partial apply for closure #1 in _ViewList_TemporarySublistTransform.withPushedItem<A, B>(_:do:)  (in SwiftUICore) + 40  [0x1d3e56ea8]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       :       1 <deduplicated_symbol>  (in SwiftUICore) + 48  [0x1d419a5ec]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       :         1 <deduplicated_symbol>  (in SwiftUICore) + 140  [0x1d4196484]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       :           1 ModifiedViewList.applyNodes(from:style:list:transform:to:)  (in SwiftUICore) + 444  [0x1d3e37858]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       :             1 ModifiedViewList.applyNodes(from:style:list:transform:to:)  (in SwiftUICore) + 444  [0x1d3e37858]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       :               1 ModifiedViewList.applyNodes(from:style:list:transform:to:)  (in SwiftUICore) + 444  [0x1d3e37858]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       :                 1 ModifiedViewList.applyNodes(from:style:list:transform:to:)  (in SwiftUICore) + 444  [0x1d3e37858]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       :                   1 ModifiedViewList.applyNodes(from:style:list:transform:to:)  (in SwiftUICore) + 444  [0x1d3e37858]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       :                     1 ModifiedViewList.applyNodes(from:style:list:transform:to:)  (in SwiftUICore) + 444  [0x1d3e37858]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       :                       1 ModifiedViewList.applyNodes(from:style:list:transform:to:)  (in SwiftUICore) + 444  [0x1d3e37858]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       :                         1 BaseViewList.applyNodes(from:style:list:transform:to:)  (in SwiftUICore) + 308  [0x1d3e33bec]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       :                           1 partial apply for closure #1 in _ViewList_Node.applySublists(from:style:transform:to:)  (in SwiftUICore) + 68  [0x1d3e57018]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       :                             1 _ViewList_Node.applySublists(from:style:transform:to:)  (in SwiftUICore) + 544  [0x1d3e2f960]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       :                               1 _ViewList_TemporarySublistTransform.apply(sublist:)  (in SwiftUICore) + 268  [0x1d3e254e8]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       :                                 1 protocol witness for _ViewList_SublistTransform_Item.apply(sublist:) in conformance ModifiedViewList.Transform  (in SwiftUICore) + 88  [0x1d3e37a90]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       :                                   1 <deduplicated_symbol>  (in SwiftUICore) + 52  [0x1d38f86cc]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       :                                     1 <deduplicated_symbol>  (in SwiftUICore) + 4  [0x1d38ccff8]
+    +                       !             :     |   +   ! :   | +       ! :   | + !       1 protocol witness for ViewList.applyNodes(from:style:list:transform:to:) in conformance ForEachList<A, B, C>  (in SwiftUICore) + 68  [0x1d42eabb0]
+    +                       !             :     |   +   ! :   | +       ! :   | + !         1 specialized ForEachList.applyNodes(from:style:list:transform:to:)  (in SwiftUICore) + 68  [0x1d42ee698]
+    +                       !             :     |   +   ! :   | +       ! :   | + !           1 ForEachState.forEachItem(from:style:do:)  (in SwiftUICore) + 1244  [0x1d42dddd4]
+    +                       !             :     |   +   ! :   | +       ! :   | + !             1 closure #1 in ForEachState.applyNodes(from:style:list:transform:to:)  (in SwiftUICore) + 752  [0x1d42e6b3c]
+    +                       !             :     |   +   ! :   | +       ! :   | + !               1 _ViewList_TemporarySublistTransform.withPushedItem<A, B>(_:do:)  (in SwiftUICore) + 376  [0x1d3e2d5a4]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                 1 <deduplicated_symbol>  (in SwiftUICore) + 72  [0x1d3a7a600]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                   1 partial apply for closure #1 in _ViewList_TemporarySublistTransform.withPushedItem<A, B>(_:do:)  (in SwiftUICore) + 40  [0x1d3e56ea8]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                     1 closure #2 in closure #1 in ForEachState.applyNodes(from:style:list:transform:to:)  (in SwiftUICore) + 156  [0x1d42e712c]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                       1 ModifiedViewList.applyNodes(from:style:list:transform:to:)  (in SwiftUICore) + 444  [0x1d3e37858]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                         1 ModifiedViewList.applyNodes(from:style:list:transform:to:)  (in SwiftUICore) + 444  [0x1d3e37858]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                           1 ModifiedViewList.applyNodes(from:style:list:transform:to:)  (in SwiftUICore) + 444  [0x1d3e37858]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                             1 ModifiedViewList.applyNodes(from:style:list:transform:to:)  (in SwiftUICore) + 444  [0x1d3e37858]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                               1 ModifiedViewList.applyNodes(from:style:list:transform:to:)  (in SwiftUICore) + 444  [0x1d3e37858]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                                 1 ModifiedViewList.applyNodes(from:style:list:transform:to:)  (in SwiftUICore) + 444  [0x1d3e37858]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                                   1 ModifiedViewList.applyNodes(from:style:list:transform:to:)  (in SwiftUICore) + 444  [0x1d3e37858]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                                     1 ModifiedViewList.applyNodes(from:style:list:transform:to:)  (in SwiftUICore) + 444  [0x1d3e37858]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                                       1 BaseViewList.applyNodes(from:style:list:transform:to:)  (in SwiftUICore) + 308  [0x1d3e33bec]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                                         1 partial apply for closure #1 in _ViewList_Node.applySublists(from:style:transform:to:)  (in SwiftUICore) + 68  [0x1d3e57018]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                                           1 _ViewList_Node.applySublists(from:style:transform:to:)  (in SwiftUICore) + 544  [0x1d3e2f960]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                                             1 _ViewList_TemporarySublistTransform.apply(sublist:)  (in SwiftUICore) + 268  [0x1d3e254e8]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                                               1 protocol witness for _ViewList_SublistTransform_Item.apply(sublist:) in conformance ForEachState<A, B, C>.Transform  (in SwiftUICore) + 84  [0x1d42e84f8]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                                                 1 ForEachState.Transform.apply(sublist:)  (in SwiftUICore) + 56  [0x1d42e8230]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                                                   1 ForEachState.Transform.bindID(_:)  (in SwiftUICore) + 136  [0x1d42e8330]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                                                     1 _ViewList_ID.bind<A>(explicitID:owner:isUnary:reuseID:)  (in SwiftUICore) + 116  [0x1d3e31f8c]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                                                       1 AnyHashable2.init<A>(_:)  (in SwiftUICore) + 144  [0x1d3b83644]
+    +                       !             :     |   +   ! :   | +       ! :   | + !                                                         1 __swift_memcpy16_8  (in libswiftCore.dylib) + 0  [0x19850a300]
+    +                       !             :     |   +   ! :   | +       ! :   | + 1 partial apply for implicit closure #1 in closure #1 in closure #1 in Attribute.init<A>(_:)  (in SwiftUI) + 28  [0x1d274cd30]
+    +                       !             :     |   +   ! :   | +       ! :   | + ! 1 TransformScrollStorageEnvironment.updateValue()  (in SwiftUI) + 128  [0x1d2d4e2b0]
+    +                       !             :     |   +   ! :   | +       ! :   | + !   1 <deduplicated_symbol>  (in SwiftUI) + 0  [0x1d272ac8c]
+    +                       !             :     |   +   ! :   | +       ! :   | + 1 specialized implicit closure #1 in closure #1 in closure #1 in Rule<>.cachedValue(options:owner:)  (in SwiftUICore) + 104  [0x1d3ad9be4]
+    +                       !             :     |   +   ! :   | +       ! :   | +   1 swift_getAtKeyPath  (in libswiftCore.dylib) + 20  [0x19836d830]
+    +                       !             :     |   +   ! :   | +       ! :   | +     1 KeyPath._projectReadOnly(from:)  (in libswiftCore.dylib) + 344  [0x19836a28c]
+    +                       !             :     |   +   ! :   | +       ! :   | +       1 <deduplicated_symbol>  (in SwiftUICore) + 36  [0x1d3f72874]
+    +                       !             :     |   +   ! :   | +       ! :   | +         1 EnvironmentValues.pixelLength.getter  (in SwiftUICore) + 0  [0x1d42c9310]
+    +                       !             :     |   +   ! :   | +       ! :   | 1 AG::Graph::UpdateStack::update()  (in AttributeGraph) + 172  [0x1c42cb584]
+    +                       !             :     |   +   ! :   | +       ! :   1 AG::Subgraph::update(unsigned int)  (in AttributeGraph) + 1520  [0x1c42da7c8]
+    +                       !             :     |   +   ! :   | +       ! :     1 AG::Graph::invalidate_subgraphs()  (in AttributeGraph) + 320  [0x1c42d7dd8]
+    +                       !             :     |   +   ! :   | +       ! :       1 AG::Subgraph::invalidate_now(AG::Graph&)  (in AttributeGraph) + 1184  [0x1c42d8384]
+    +                       !             :     |   +   ! :   | +       ! :         1 AG::Node::destroy(AG::Graph&)  (in AttributeGraph) + 80  [0x1c42e2a04]
+    +                       !             :     |   +   ! :   | +       ! :           1 _swift_release_dealloc  (in libswiftCore.dylib) + 64  [0x19818efdc]
+    +                       !             :     |   +   ! :   | +       ! 18 ViewGraph.updateOutputs(at:)  (in SwiftUICore) + 164  [0x1d43c5ac8]
+    +                       !             :     |   +   ! :   | +       ! : 18 GraphHost.updatePreferences()  (in SwiftUICore) + 56  [0x1d3f38e84]
+    +                       !             :     |   +   ! :   | +       ! :   18 AGGraphGetWeakValue  (in AttributeGraph) + 368  [0x1c42eade4]
+    +                       !             :     |   +   ! :   | +       ! :     18 AG::Graph::value_ref(AG::AttributeID, unsigned int, AGSwiftMetadata const*, unsigned char&)  (in AttributeGraph) + 260  [0x1c42d2b48]
+    +                       !             :     |   +   ! :   | +       ! :       18 AG::Graph::update_attribute(AG::data::ptr<AG::Node>, unsigned int)  (in AttributeGraph) + 352  [0x1c42cbda8]
+    +                       !             :     |   +   ! :   | +       ! :         17 AG::Graph::UpdateStack::update()  (in AttributeGraph) + 488  [0x1c42cb6c0]
+    +                       !             :     |   +   ! :   | +       ! :         | 12 partial apply for implicit closure #1 in closure #1 in closure #1 in Attribute.init<A>(_:)  (in SwiftUICore) + 28  [0x1d3a882d4]
+    +                       !             :     |   +   ! :   | +       ! :         | + 4 DynamicBody.updateValue()  (in SwiftUICore) + 840  [0x1d3d0744c]
+    +                       !             :     |   +   ! :   | +       ! :         | + ! 4 closure #1 in DynamicBody.updateValue()  (in SwiftUICore) + 936  [0x1d3d07af4]
+    +                       !             :     |   +   ! :   | +       ! :         | + !   4 protocol witness for BodyAccessor.updateBody(of:changed:) in conformance ViewBodyAccessor<A>  (in SwiftUICore) + 12  [0x1d3be116c]
+    +                       !             :     |   +   ! :   | +       ! :         | + !     4 ViewBodyAccessor.updateBody(of:changed:)  (in SwiftUICore) + 180  [0x1d3be0cc4]
+    +                       !             :     |   +   ! :   | +       ! :         | + !       3 closure #1 in ViewBodyAccessor.updateBody(of:changed:)  (in SwiftUICore) + 864  [0x1d3be1054]
+    +                       !             :     |   +   ! :   | +       ! :         | + !       : 3 protocol witness for View.body.getter in conformance ButtonBehavior<A>  (in SwiftUI) + 48  [0x1d2dabd68]
+    +                       !             :     |   +   ! :   | +       ! :         | + !       :   1 ButtonBehavior.body.getter  (in SwiftUI) + 1344  [0x1d2daaef4]
+    +                       !             :     |   +   ! :   | +       ! :         | + !       :   | 1 lazy protocol witness table accessor for type _SemanticFeature<Semantics_v3> and conformance _SemanticFeature<A>  (in SwiftUI) + 0  [0x1d2857538]
+    +                       !             :     |   +   ! :   | +       ! :         | + !       :   1 ButtonBehavior.body.getter  (in SwiftUI) + 1468  [0x1d2daaf70]
+    +                       !             :     |   +   ! :   | +       ! :         | + !       :   | 1 initializeWithCopy for ModifierGesture  (in SwiftUICore) + 44  [0x1d3c15b90]
+    +                       !             :     |   +   ! :   | +       ! :         | + !       :   |   1 initializeWithCopy for ModifierGesture  (in SwiftUICore) + 44  [0x1d3c15b90]
+    +                       !             :     |   +   ! :   | +       ! :         | + !       :   |     1 initializeWithCopy for _ButtonGesture  (in SwiftUI) + 56  [0x1d3493ee8]
+    +                       !             :     |   +   ! :   | +       ! :         | + !       :   |       1 swift_retain  (in libswiftCore.dylib) + 96  [0x19818cb44]
+    +                       !             :     |   +   ! :   | +       ! :         | + !       :   1 ButtonBehavior.body.getter  (in SwiftUI) + 2648  [0x1d2dab40c]
+    +                       !             :     |   +   ! :   | +       ! :         | + !       :     1 Binding.subscript.getter  (in SwiftUICore) + 112  [0x1d3f58b74]
+    +                       !             :     |   +   ! :   | +       ! :         | + !       :       1 Binding.projecting<A>(_:)  (in SwiftUICore) + 164  [0x1d3f58c2c]
+    +                       !             :     |   +   ! :   | +       ! :         | + !       :         1 StoredLocationBase.projecting<A>(_:)  (in SwiftUICore) + 180  [0x1d4166020]
+    +                       !             :     |   +   ! :   | +       ! :         | + !       :           1 LocationProjectionCache.reference<A, B>(for:on:)  (in SwiftUICore) + 356  [0x1d3e85bd8]
+    +                       !             :     |   +   ! :   | +       ! :         | + !       :             1 __swift_instantiateGenericMetadata  (in SwiftUICore) + 16  [0x1d390954c]
+    +                       !             :     |   +   ! :   | +       ! :         | + !       1 closure #1 in ViewBodyAccessor.updateBody(of:changed:)  (in SwiftUICore) + 988  [0x1d3be10d0]
+    +                       !             :     |   +   ! :   | +       ! :         | + !         1 <deduplicated_symbol>  (in SwiftUICore) + 72  [0x1d3a7a600]
+    +                       !             :     |   +   ! :   | +       ! :         | + !           1 partial apply for closure #2 in BodyAccessor.setBody(_:)  (in SwiftUICore) + 20  [0x1d3a3952c]
+    +                       !             :     |   +   ! :   | +       ! :         | + !             1 closure #2 in BodyAccessor.setBody(_:)  (in SwiftUICore) + 68  [0x1d3d06808]
+    +                       !             :     |   +   ! :   | +       ! :         | + !               1 AGGraphSetOutputValue  (in AttributeGraph) + 564  [0x1c42eb368]
+    +                       !             :     |   +   ! :   | +       ! :         | + !                 1 <deduplicated_symbol>  (in SwiftUICore) + 88  [0x1d39dd618]
+    +                       !             :     |   +   ! :   | +       ! :         | + !                   1 <deduplicated_symbol>  (in SwiftUI) + 32  [0x1d2a0813c]
+    +                       !             :     |   +   ! :   | +       ! :         | + !                     1 <deduplicated_symbol>  (in SwiftUICore) + 88  [0x1d3b8e9f8]
+    +                       !             :     |   +   ! :   | +       ! :         | + !                       1 <deduplicated_symbol>  (in SwiftUICore) + 44  [0x1d39dd5ec]
+    +                       !             :     |   +   ! :   | +       ! :         | + !                         1 <deduplicated_symbol>  (in SwiftUICore) + 44  [0x1d39dd5ec]
+    +                       !             :     |   +   ! :   | +       ! :         | + !                           1 <deduplicated_symbol>  (in SwiftUICore) + 44  [0x1d39dd5ec]
+    +                       !             :     |   +   ! :   | +       ! :         | + !                             1 <deduplicated_symbol>  (in SwiftUICore) + 44  [0x1d39dd5ec]
 
 Sort by top of stack, same collapsed (when >= 5):
-        __workq_kernreturn  (in libsystem_kernel.dylib)        927
-        mach_msg2_trap  (in libsystem_kernel.dylib)        556
-        semaphore_timedwait_trap  (in libsystem_kernel.dylib)        371
-        semaphore_wait_trap  (in libsystem_kernel.dylib)        335
-        __semwait_signal  (in libsystem_kernel.dylib)        118
-        writev  (in libsystem_kernel.dylib)        38
-        objc_msgSend  (in libobjc.A.dylib)        27
-        pthread_getspecific  (in libsystem_pthread.dylib)        15
-        pthread_setspecific  (in libsystem_pthread.dylib)        15
-        <deduplicated_symbol>  (in SwiftUICore)        8
-        __CF_IS_OBJC  (in CoreFoundation)        7
-        _platform_memmove  (in libsystem_platform.dylib)        6
-        specialized find1<A>(_:key:filter:)  (in SwiftUICore)        6
-        ___CFBasicHashFindBucket_Linear  (in CoreFoundation)        5
+        __workq_kernreturn  (in libsystem_kernel.dylib)        1600
+        mach_msg2_trap  (in libsystem_kernel.dylib)        623
+        swift_retain  (in libswiftCore.dylib)        12
+        <deduplicated_symbol>  (in SwiftUICore)        7
+        AG::Graph::UpdateStack::update()  (in AttributeGraph)        6
+        pthread_getspecific  (in libsystem_pthread.dylib)        6
+        <deduplicated_symbol>  (in libswiftCore.dylib)        5
+        AG::Graph::propagate_dirty(AG::AttributeID)  (in AttributeGraph)        5
+        swift_release  (in libswiftCore.dylib)        5
 
 Binary Images:
-       0x102e44000 -        0x102e47507 +com.kobiashvili.diary (1.0 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/2064868C-A050-4EA6-85EB-6844838523AE/Chronotheca.app/Chronotheca
-       0x102e54000 -        0x102ea2e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
-       0x102f24000 -        0x102fd7523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
-       0x10307c000 -        0x1030b6ee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
-       0x10310c000 -        0x10314f65f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
-       0x103260000 -        0x1032683d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
-       0x103308000 -        0x10331410b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
-       0x103398000 -        0x1034312af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
-       0x103b28000 -        0x103b2adff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
-       0x103b44000 -        0x103b4c03f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
-       0x103c58000 -        0x103c58b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
-       0x103c68000 -        0x103c7339f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
-       0x103c8c000 -        0x103c8fe5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
-       0x103cac000 -        0x103cb549f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
-       0x103cd0000 -        0x103cd6b7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
-       0x103cf0000 -        0x103cf72df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
-       0x103d10000 -        0x103d146ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
-       0x103e7c000 -        0x103e7f1ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
-       0x104258000 -        0x10427127f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
-       0x1042b8000 -        0x104513bbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
-       0x104b34000 -        0x104b39407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
-       0x104c20000 -        0x104c42cff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
-       0x104cb8000 -        0x104cdef5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
+       0x102f0c000 -        0x102f0f507 +com.kobiashvili.diary (1.0 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/E92C4099-0E94-4735-92EB-D727ED8B4D05/Chronotheca.app/Chronotheca
+       0x102f20000 -        0x102f5aee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
+       0x102fa0000 -        0x102fa83d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
+       0x103060000 -        0x1030aee9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x10311c000 -        0x10312810b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
+       0x1031e4000 -        0x103297523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
+       0x10333c000 -        0x10337f65f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x103490000 -        0x1035292af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x103be8000 -        0x103be8b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x103bfc000 -        0x103c0403f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x103d18000 -        0x103d1be5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x103d34000 -        0x103d36dff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x103d54000 -        0x103d5d49f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x103d78000 -        0x103d7eb7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x103dc4000 -        0x103dc86ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
+       0x104200000 -        0x10420b39f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x104224000 -        0x1042271ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
+       0x1042bc000 -        0x1042d527f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
+       0x10430c000 -        0x1043132df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
+       0x10437c000 -        0x104381407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
+       0x1043b0000 -        0x10460bbbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+       0x104c9c000 -        0x104cbecff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
+       0x104d34000 -        0x104d5af5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
+       0x104d80000 -        0x104dba15f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
+       0x104e44000 -        0x104e4755f  com.apple.SceneKit.axbundle (1.0 - 1.0) <FCC9CF03-2C32-32B4-8E00-92D3AF2209F5> /Volumes/*/SceneKit
+       0x104f74000 -        0x104fc77bf  com.apple.dt.XCTAutomationSupport (26.5 - 24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
+       0x105078000 -        0x1058d462f +Chronotheca.debug.dylib (0) <B8A5009D-6C72-3A41-9BE7-AAB865CC8CA3> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/E92C4099-0E94-4735-92EB-D727ED8B4D05/Chronotheca.app/Chronotheca.debug.dylib
+       0x1095d0000 -        0x10963fcbf  com.apple.UIUnderstanding (1.0 - 1) <576E64EB-8AA4-3B1E-A89D-365C4DE0C7C8> /Volumes/*/UIUnderstanding.framework/UIUnderstanding
