@@ -134,28 +134,32 @@ struct LeatherCover: View {
     }
 }
 
-/// Цвета и зернь кожи переплёта (P745). Кожа одна во всех гаммах и в
-/// тёмной теме. Светлая седельная кожа (P748: «более светлого цвета…
+/// Цвета и зернь кожи переплёта (P745). Кожа одна во всех гаммах.
+/// Светлая седельная кожа (P748: «более светлого цвета…
 /// оставить неинвертированные значки»): значки и надписи — тёмными
-/// чернилами, как на бумаге, а не золотом.
+/// чернилами, как на бумаге, а не золотом. В тёмной теме (P1038, автор:
+/// «нижняя строка не меняет цвет в ночном режиме») — тёмная шоколадная
+/// кожа той же выделки, тиснение светлее её, нить приглушена.
 enum Leather {
-    static let top = Color(red: 0.72, green: 0.53, blue: 0.34)
-    static let base = Color(red: 0.64, green: 0.46, blue: 0.28)
-    static let deep = Color(red: 0.55, green: 0.38, blue: 0.22)
-    static let rim = Color(red: 0.36, green: 0.23, blue: 0.12)
-    static let sheen = Color(red: 0.86, green: 0.71, blue: 0.52).opacity(0.7)
+    static let top = Color(light: 0xB88757, dark: 0x4A3424)
+    static let base = Color(light: 0xA37547, dark: 0x3D2B1D)
+    static let deep = Color(light: 0x8C6138, dark: 0x302217)
+    static let rim = Color(light: 0x5C3B1F, dark: 0x140D08)
+    static let sheen = Color(light: 0xDBB585, dark: 0x6B5038).opacity(0.7)
     /// Нить — суровая, небелёная льняная (P757; коричневая P749 отменена):
     /// светлая грань, тело и тень валика.
-    static let threadLit = Color(red: 0.93, green: 0.89, blue: 0.80)
-    static let thread = Color(red: 0.80, green: 0.74, blue: 0.62)
-    static let threadDeep = Color(red: 0.58, green: 0.52, blue: 0.41)
-    /// Значки и надписи — тиснение (P759): вдавлены в кожу, темнее её.
-    static let ink = Color(red: 0.36, green: 0.23, blue: 0.12)
+    static let threadLit = Color(light: 0xEDE3CC, dark: 0xB3A68C)
+    static let thread = Color(light: 0xCCBD9E, dark: 0x968A72)
+    static let threadDeep = Color(light: 0x948569, dark: 0x6B6250)
+    /// Значки и надписи — тиснение (P759): вдавлены в кожу, темнее её; в
+    /// тёмной теме — светлее, иначе их не видно.
+    static let ink = Color(light: 0x5C3B1F, dark: 0xD2B48C)
     /// Открытый раздел — тиснение глубже, на светлой подушке.
-    static let lit = Color(red: 0.22, green: 0.13, blue: 0.06)
-    /// Светлая грань тиснения — снизу-справа: свет слева сверху (P670).
-    static let embossLit = Color(red: 0.92, green: 0.79, blue: 0.61).opacity(0.8)
-    static let pad = Color(red: 0.98, green: 0.92, blue: 0.80).opacity(0.38)
+    static let lit = Color(light: 0x38210F, dark: 0xF0DDBF)
+    /// Светлая грань тиснения — снизу-справа: свет слева сверху (P670); в
+    /// тёмной теме — тень.
+    static let embossLit = Color(light: 0xEBC99C, dark: 0x140D08).opacity(0.8)
+    static let pad = Color(light: 0xFAEBCC, dark: 0x8A6A4A).opacity(0.38)
     /// Насколько строчка ниже края — посередине полосы над значками (P746).
     static let stitchInset: CGFloat = 4.5
     /// Высота полосы над значками у нижней строки и у строки над
