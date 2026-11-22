@@ -824,19 +824,10 @@ struct DiaryEditor: UIViewRepresentable {
             // заголовок дня и перешёл в запись. Тогда вестей о ней больше
             // не будет, и место надо освободить самому.
             DispatchQueue.main.async { [weak self] in self?.makeRoom(scroll: true) }
-            // Курсор мог встать в запись без вести о выборе (из заголовка
-            // по «Вводу», P762) — тогда время не вставало до первой буквы,
-            // а диктовка её мимо и проходит (P956).
-            DispatchQueue.main.async { [weak self, weak view] in
-                guard let self, let view, view.isFirstResponder else { return }
-                self.settleStamp(view, leaving: false)
-            }
         }
 
         func textViewDidEndEditing(_ view: UITextView) {
             parent.onEditing?(false)
-            // Ушли из записи, ничего не написав за отметкой, — её нет (P711).
-            settleStamp(view, leaving: true)
             scrub()
             stampDictated(view)
             raiseFirst(view)
@@ -2034,7 +2025,6 @@ struct DiaryEditor: UIViewRepresentable {
                 || view.typingAttributes[DiaryEditor.photoKey] != nil {
                 view.typingAttributes = DiaryEditor.body(parent.size, serif: parent.serif)
             }
-            settleStamp(view, leaving: false)
             raiseLeftLine(view)
         }
 
@@ -2052,173 +2042,18 @@ struct DiaryEditor: UIViewRepresentable {
             defer { caretLine = here }
             guard let left = caretLine, left != here, left < ns.length,
                   left == 0 || ns.character(at: left - 1) == 10 else { return }
+            // Строку дописали словом или диктовкой без отметки — время в её
+            // начало, теперь, когда с неё ушли (P1042): посреди диктовки поле
+            // текст не правит (P960).
+            if dictatedLine?.at == left { stampDictated(view) }
             // Длина буквы та же — курсор и начало его строки на местах.
             raiseFirst(view, line: left)
         }
 
-        // MARK: - Время под курсором (P711)
+        // MARK: - Время в начало строки (P1042)
 
-        /// Отметка времени, поставленная, едва курсор встал на чистую строку в
-        /// конце записи, — пока за ней ничего не написано. Так время стоит уже
-        /// перед диктовкой: начало диктовки поле узнать не может (P671, P686,
-        /// P708 не сработали). Ушли, не написав, — отметка убирается; вернулись
-        /// позже — встаёт заново, на новое время.
-        private var provisional: NSRange?
-        private var provisionalText = ""
         /// Своя правка текста идёт — вести о курсоре от неё не в счёт.
         private var placing = false
-        /// Здесь человек стёр отметку времени (P864): пока курсор тут, она не
-        /// ставится снова — ни сама, ни с первой буквой. Прежде стёртая по
-        /// цифре отметка, едва строка становилась чистой, вставала обратно
-        /// (видео автора к 260).
-        private var declinedAt: Int?
-
-        func settleStamp(_ view: UITextView, leaving: Bool) {
-            guard !placing else { return }
-            let ns = view.textStorage.string as NSString
-            let sel = view.selectedRange
-            // Курсор ушёл с места, где отметку стёрли, — отказ кончился.
-            if let d = declinedAt, leaving || sel.length > 0 || sel.location != d { declinedAt = nil }
-            if let p = provisional {
-                provisional = nil
-                guard NSMaxRange(p) <= ns.length, ns.substring(with: p) == provisionalText else { return }
-                // За отметкой на той же строке что-то есть — написали (или
-                // надиктовали): отметка остаётся насовсем, час — от этого.
-                if Self.lineHasText(ns, from: NSMaxRange(p)) {
-                    StampTrace.note("отметка осталась: за ней написали")
-                    parent.onWrite?()
-                    return
-                }
-                // Курсор всё там же, за отметкой, — ждём букв.
-                if !leaving, sel.length == 0, sel.location == NSMaxRange(p) {
-                    provisional = p
-                    return
-                }
-                // Включили диктовку (P766): iPhone ставит временный текст
-                // или на миг выделяет место под слова за отметкой — курсор
-                // сдвигается, хотя человек никуда не уходил. Прежде отметка
-                // от этого убиралась и вставала заново только с готовой
-                // фразой, когда микрофон выключали. Пока идёт временный
-                // текст или курсор на той же строке за отметкой — ждём.
-                if !leaving, Self.dictating(view) {
-                    provisional = p
-                    return
-                }
-                if !leaving, sel.location >= NSMaxRange(p), NSMaxRange(sel) <= ns.length,
-                   !ns.substring(with: NSRange(location: NSMaxRange(p),
-                                               length: NSMaxRange(sel) - NSMaxRange(p))).contains("\n") {
-                    provisional = p
-                    return
-                }
-                // Ушли, ничего не написав, — убрать.
-                StampTrace.note("отметка убрана: ушли, не написав")
-                placing = true
-                view.textStorage.replaceCharacters(in: p, with: "")
-                var s = view.selectedRange
-                if s.location >= NSMaxRange(p) { s.location -= p.length }
-                else if s.location > p.location { s.location = p.location }
-                view.selectedRange = NSRange(location: min(s.location, view.textStorage.length),
-                                             length: s.length)
-                placing = false
-                textViewDidChange(view)
-            }
-            guard !leaving else { return }
-            place(view)
-        }
-
-        /// Поставить отметку под курсор, если он на чистой строке в конце записи
-        /// и пора (правило то же, что для первой буквы, P403, P528, P595).
-        private func place(_ view: UITextView) {
-            let ns = view.textStorage.string as NSString
-            let sel = view.selectedRange
-            guard view.isFirstResponder, view.markedTextRange == nil,
-                  sel.length == 0, sel.location <= ns.length,
-                  sel.location == 0 || ns.character(at: sel.location - 1) == 10
-            else { return }
-            // Курсор на чистой строке, а время не встаёт — почему (P1021,
-            // автор по 334: нажал «Ввод» в прошлом дне, надиктовал строку —
-            // ни времени, ни строки в следе). Только когда строка пуста.
-            let blank = sel.location >= ns.length || ns.character(at: sel.location) == 10
-            guard parent.editable else {
-                if blank { StampTrace.note("курсор на чистой строке: запись не правится") }
-                return
-            }
-            guard declinedAt != sel.location else {
-                if blank { StampTrace.note("курсор на чистой строке: отметку здесь стёрли") }
-                return
-            }
-            guard Self.atEnd(view.textStorage, from: sel.location) else {
-                if blank { StampTrace.note("курсор на чистой строке: не в конце записи") }
-                return
-            }
-            guard let stamp = parent.peekStamp?() else {
-                StampTrace.note("курсор на чистой строке: время не пора")
-                return
-            }
-            StampTrace.note("курсор на чистой строке: время поставлено")
-            placing = true
-            view.textStorage.replaceCharacters(
-                in: NSRange(location: sel.location, length: 0),
-                with: NSAttributedString(string: stamp,
-                                         attributes: DiaryEditor.body(parent.size, serif: parent.serif)))
-            let length = (stamp as NSString).length
-            view.selectedRange = NSRange(location: sel.location + length, length: 0)
-            view.typingAttributes = DiaryEditor.body(parent.size, serif: parent.serif)
-            placing = false
-            provisional = NSRange(location: sel.location, length: length)
-            provisionalText = stamp
-            textViewDidChange(view)
-            startPulse()
-        }
-
-        // MARK: - Время мигает, пока за ним ничего нет (P1039)
-
-        /// Автор: «время ставится автоматически, человек передумал писать,
-        /// стирает его, а оно появляется снова… это не очевидно; пока ничего
-        /// не напечатано, время должно моргать, а когда печать начнётся —
-        /// стоять». Мигает только рисунок: цвет отметки меняется поверх текста
-        /// (`addRenderingAttribute`), сам текст записи не трогается —
-        /// диктовку правки текста уже ломали (P960, P991).
-        private var pulse: CADisplayLink?
-
-        private func startPulse() {
-            guard pulse == nil else { return }
-            let link = CADisplayLink(target: self, selector: #selector(pulseTick))
-            link.preferredFrameRateRange = CAFrameRateRange(minimum: 20, maximum: 30, preferred: 30)
-            link.add(to: .main, forMode: .common)
-            pulse = link
-        }
-
-        private func stopPulse() {
-            pulse?.invalidate()
-            pulse = nil
-            if let tlm = view?.textLayoutManager {
-                tlm.removeRenderingAttribute(.foregroundColor, for: tlm.documentRange)
-            }
-        }
-
-        @objc private func pulseTick() {
-            guard let view, let p = provisional, view.markedTextRange == nil,
-                  let tlm = view.textLayoutManager, let tcm = tlm.textContentManager
-            else { return stopPulse() }
-            let ns = view.textStorage.string as NSString
-            // Начали писать или диктовать — время стоит, как всегда.
-            guard NSMaxRange(p) <= ns.length, ns.substring(with: p) == provisionalText,
-                  !Self.lineHasText(ns, from: NSMaxRange(p))
-            else { return stopPulse() }
-            guard let start = tcm.location(tcm.documentRange.location, offsetBy: p.location),
-                  let end = tcm.location(start, offsetBy: p.length),
-                  let range = NSTextRange(location: start, end: end)
-            else { return stopPulse() }
-            // Мягко, без вспышек (P893): от бледного к обычному и обратно
-            // за 1,2 с.
-            let phase = CACurrentMediaTime() * 2 * .pi / 1.2
-            let alpha = 0.15 + 0.85 * (0.5 + 0.5 * cos(phase))
-            tlm.removeRenderingAttribute(.foregroundColor, for: tlm.documentRange)
-            tlm.addRenderingAttribute(.foregroundColor,
-                                      value: UIColor(Look.inkFaint).withAlphaComponent(CGFloat(alpha)),
-                                      for: range)
-        }
 
         /// Есть ли что-нибудь, кроме пробелов, от `from` до конца строки.
         private static func lineHasText(_ ns: NSString, from: Int) -> Bool {
@@ -2419,22 +2254,21 @@ struct DiaryEditor: UIViewRepresentable {
                 noteDictation(view, at: range.location, end: NSMaxRange(range))
                 return true
             }
-            // Стирают поставленную отметку (P864) — она уходит целиком, одним
-            // касанием, и снова сама не встаёт, пока курсор здесь.
-            if text.isEmpty, range.length > 0, let p = provisional,
-               NSMaxRange(p) <= view.textStorage.length,
-               (view.textStorage.string as NSString).substring(with: p) == provisionalText,
-               NSIntersectionRange(range, p).length > 0 || NSMaxRange(range) == NSMaxRange(p) {
-                provisional = nil
-                placing = true
-                view.textStorage.replaceCharacters(in: p, with: "")
-                view.selectedRange = NSRange(location: p.location, length: 0)
-                placing = false
-                declinedAt = p.location
-                textViewDidChange(view)
-                return false
-            }
             if let decided = keepObjectsApart(view, range, text) { return decided }
+            // Время не ставится заранее (P1042, автор: «чтобы время
+            // вставлялось после первой буквы» — тогда iPhone видит начало
+            // строки и сам пишет с заглавной, как в Заметках; отменяет
+            // отметку под курсором до первой буквы P711 и её мерцание P1039).
+            // Одна буква с клавиатуры — время встаёт перед ней сразу (P403,
+            // ниже). Слово или фраза разом (диктовка, подсказка, росчерк) —
+            // поле их не трогает: строка запоминается, время встаёт в её
+            // начало, когда с неё уйдут.
+            if range.length == 0, (text as NSString).length > 1,
+               text.contains(where: { !$0.isWhitespace && $0 != "\u{FFFC}" }),
+               Self.atEnd(view.textStorage, from: range.location) {
+                noteDictation(view, at: range.location, end: NSMaxRange(range))
+                return true
+            }
             // Первая буква в новой строке под записью — и только тогда
             // перед ней встаёт время (P403). Буква — заглавная.
             // Только с чистой строки и только буквой: пробел и продолжение
@@ -2446,7 +2280,7 @@ struct DiaryEditor: UIViewRepresentable {
                let first = text.first, !first.isWhitespace, !text.contains("\u{FFFC}"),
                range.location == 0
                 || (view.textStorage.string as NSString).character(at: range.location - 1) == 10,
-               declinedAt != range.location,
+               (text as NSString).length == 1,
                let stamp = parent.takeStamp?() {
                 let piece = stamp + String(first).uppercased() + String(text.dropFirst())
                 view.textStorage.replaceCharacters(
