@@ -1,41 +1,177 @@
+    1263 Thread_171832   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 1263 start  (in dyld) + 6992  [0x1008744e4]
+    +   1263 start_sim  (in dyld_sim) + 20  [0x100afb0e4]
+    +     1263 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x1029a78e4]  ChronothecaApp.swift:0
+    +       1263 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1029a7838]  /<compiler-generated>:0
+    +         1263 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           1263 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             1263 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               1262 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +               ! 1262 -[UIApplication _run]  (in UIKitCore) + 100  [0x1864a5228]
+    +               !   1261 -[UIApplication(UIKitApplicationAccessibility) _accessibilityInit]  (in UIKitCore) + 104  [0x18576eee0]
+    +               !   : 1261 +[UIApplication(UIKitApplicationAccessibility) _updateAccessibilitySettingsLoader]  (in UIKitCore) + 16  [0x18576ea74]
+    +               !   :   1261 +[UIApplication(UIKitApplicationAccessibility) _accessibilitySettingsBundle]  (in UIKitCore) + 80  [0x18576e988]
+    +               !   :     737 -[NSBundle loadAndReturnError:]  (in Foundation) + 248  [0x18103c7c4]
+    +               !   :     | 736 _CFBundleLoadExecutableAndReturnError  (in CoreFoundation) + 460  [0x1803b117c]
+    +               !   :     | + 736 _CFBundleDlfcnLoadFramework  (in CoreFoundation) + 152  [0x1803e4180]
+    +               !   :     | +   736 dyld4::APIs::dlopen_from(char const*, int, void*)  (in dyld_sim) + 344  [0x100af3b1c]
+    +               !   :     | +     736 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const  (in dyld_sim) + 184  [0x100af8390]
+    +               !   :     | +       692 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const::'lambda'()::operator()() const  (in dyld_sim) + 656  [0x100af8d38]
+    +               !   :     | +       ! 531 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 244  [0x100b09c58]
+    +               !   :     | +       ! : 391 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 244  [0x100b09c58]
+    +               !   :     | +       ! : | 391 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 136  [0x100b09bec]
+    +               !   :     | +       ! : |   391 mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 144  [0x100b303f4]
+    +               !   :     | +       ! : |     391 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x100b2ea1c]
+    +               !   :     | +       ! : |       391 invocation function for block in mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 128  [0x100b306a8]
+    +               !   :     | +       ! : |         391 invocation function for block in dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 476  [0x100b09ecc]
+    +               !   :     | +       ! : |           391 dyld4::Loader::getLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 828  [0x100b0da70]
+    +               !   :     | +       ! : |             391 dyld4::Loader::forEachPath(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer)  (in dyld_sim) + 236  [0x100b0d378]
+    +               !   :     | +       ! : |               391 dyld4::ProcessConfig::PathOverrides::forEachPathVariant(char const*, mach_o::Platform, bool, bool, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer) const  (in dyld_sim) + 884  [0x100b007e0]
+    +               !   :     | +       ! : |                 391 dyld4::Loader::forEachResolvedAtPathVar(dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, dyld4::ProcessConfig::PathOverrides::Type, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer)  (in dyld_sim) + 468  [0x100b0d6f4]
+    +               !   :     | +       ! : |                   391 invocation function for block in dyld4::Loader::getLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 3592  [0x100b0ec0c]
+    +               !   :     | +       ! : |                     225 dyld4::JustInTimeLoader::makeJustInTimeLoaderDisk(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, bool, unsigned int, mach_o::Layout const*)  (in dyld_sim) + 732  [0x100b0be08]
+    +               !   :     | +       ! : |                     + 225 dyld3::MachOAnalyzer::neverUnload() const  (in dyld_sim) + 32  [0x100b1a550]
+    +               !   :     | +       ! : |                     +   225 dyld3::MachOAnalyzer::hasSwiftOrObjC(bool*) const  (in dyld_sim) + 128  [0x100b1a36c]
+    +               !   :     | +       ! : |                     +     225 mach_o::UnsafeHeader::forEachSection(void (mach_o::UnsafeHeader::SectionInfo const&, bool&) block_pointer) const  (in dyld_sim) + 96  [0x100b3005c]
+    +               !   :     | +       ! : |                     +       225 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x100b2ea1c]
+    +               !   :     | +       ! : |                     +         225 invocation function for block in mach_o::UnsafeHeader::forEachSection(void (mach_o::UnsafeHeader::SectionInfo const&, bool&) block_pointer) const  (in dyld_sim) + 304  [0x100b31830]
+    +               !   :     | +       ! : |                     +           225 invocation function for block in dyld3::MachOAnalyzer::hasSwiftOrObjC(bool*) const  (in dyld_sim) + 132  [0x100b1a418]
+    +               !   :     | +       ! : |                     165 dyld4::JustInTimeLoader::makeJustInTimeLoaderDisk(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, bool, unsigned int, mach_o::Layout const*)  (in dyld_sim) + 256  [0x100b0bc2c]
+    +               !   :     | +       ! : |                     + 165 dyld3::MachOFile::compatibleSlice(Diagnostics&, unsigned long long&, unsigned long long&, void const*, unsigned long, char const*, mach_o::Platform, bool, mach_o::GradedArchitectures const&, bool)  (in dyld_sim) + 96  [0x100b1dd48]
+    +               !   :     | +       ! : |                     +   165 mach_o::Universal::isUniversal(std::span<unsigned char const, 18446744073709551615ul>)  (in dyld_sim) + 16  [0x100b2c1dc]
+    +               !   :     | +       ! : |                     1 dyld4::JustInTimeLoader::makeJustInTimeLoaderDisk(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, bool, unsigned int, mach_o::Layout const*)  (in dyld_sim) + 928  [0x100b0becc]
+    +               !   :     | +       ! : |                       1 __mmap  (in dyld) + 8  [0x1008591bc]
+    +               !   :     | +       ! : 140 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 136  [0x100b09bec]
+    +               !   :     | +       ! :   140 mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 144  [0x100b303f4]
+    +               !   :     | +       ! :     140 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x100b2ea1c]
+    +               !   :     | +       ! :       140 invocation function for block in mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 128  [0x100b306a8]
+    +               !   :     | +       ! :         140 invocation function for block in dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 476  [0x100b09ecc]
+    +               !   :     | +       ! :           140 dyld4::Loader::getLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 828  [0x100b0da70]
+    +               !   :     | +       ! :             140 dyld4::Loader::forEachPath(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer)  (in dyld_sim) + 236  [0x100b0d378]
+    +               !   :     | +       ! :               139 dyld4::ProcessConfig::PathOverrides::forEachPathVariant(char const*, mach_o::Platform, bool, bool, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer) const  (in dyld_sim) + 884  [0x100b007e0]
+    +               !   :     | +       ! :               + 139 dyld4::Loader::forEachResolvedAtPathVar(dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, dyld4::ProcessConfig::PathOverrides::Type, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer)  (in dyld_sim) + 468  [0x100b0d6f4]
+    +               !   :     | +       ! :               +   139 invocation function for block in dyld4::Loader::getLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 3592  [0x100b0ec0c]
+    +               !   :     | +       ! :               +     139 dyld4::JustInTimeLoader::makeJustInTimeLoaderDisk(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, bool, unsigned int, mach_o::Layout const*)  (in dyld_sim) + 256  [0x100b0bc2c]
+    +               !   :     | +       ! :               +       139 dyld3::MachOFile::compatibleSlice(Diagnostics&, unsigned long long&, unsigned long long&, void const*, unsigned long, char const*, mach_o::Platform, bool, mach_o::GradedArchitectures const&, bool)  (in dyld_sim) + 96  [0x100b1dd48]
+    +               !   :     | +       ! :               +         139 mach_o::Universal::isUniversal(std::span<unsigned char const, 18446744073709551615ul>)  (in dyld_sim) + 16  [0x100b2c1dc]
+    +               !   :     | +       ! :               1 dyld4::ProcessConfig::PathOverrides::forEachPathVariant(char const*, mach_o::Platform, bool, bool, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer) const  (in dyld_sim) + 356  [0x100b005d0]
+    +               !   :     | +       ! :                 1 dyld4::ProcessConfig::PathOverrides::forEachInColonList(char const*, char const*, bool&, void (char const*, bool&) block_pointer)  (in dyld_sim) + 224  [0x100aff860]
+    +               !   :     | +       ! :                   1 invocation function for block in dyld4::ProcessConfig::PathOverrides::forEachPathVariant(char const*, mach_o::Platform, bool, bool, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer) const  (in dyld_sim) + 164  [0x100b00dfc]
+    +               !   :     | +       ! :                     1 dyld4::Loader::forEachResolvedAtPathVar(dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, dyld4::ProcessConfig::PathOverrides::Type, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer)  (in dyld_sim) + 468  [0x100b0d6f4]
+    +               !   :     | +       ! :                       1 invocation function for block in dyld4::Loader::getLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 252  [0x100b0df00]
+    +               !   :     | +       ! :                         1 dyld4::Loader::matchesPath(dyld4::RuntimeState const&, char const*) const  (in dyld_sim) + 8  [0x100b0c9c8]
+    +               !   :     | +       ! 161 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 136  [0x100b09bec]
+    +               !   :     | +       !   161 mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 144  [0x100b303f4]
+    +               !   :     | +       !     161 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x100b2ea1c]
+    +               !   :     | +       !       161 invocation function for block in mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 128  [0x100b306a8]
+    +               !   :     | +       !         160 invocation function for block in dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 476  [0x100b09ecc]
+    +               !   :     | +       !         | 160 dyld4::Loader::getLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 828  [0x100b0da70]
+    +               !   :     | +       !         |   160 dyld4::Loader::forEachPath(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer)  (in dyld_sim) + 236  [0x100b0d378]
+    +               !   :     | +       !         |     159 dyld4::ProcessConfig::PathOverrides::forEachPathVariant(char const*, mach_o::Platform, bool, bool, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer) const  (in dyld_sim) + 884  [0x100b007e0]
+    +               !   :     | +       !         |     + 159 dyld4::Loader::forEachResolvedAtPathVar(dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, dyld4::ProcessConfig::PathOverrides::Type, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer)  (in dyld_sim) + 468  [0x100b0d6f4]
+    +               !   :     | +       !         |     +   159 invocation function for block in dyld4::Loader::getLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 3592  [0x100b0ec0c]
+    +               !   :     | +       !         |     +     158 dyld4::JustInTimeLoader::makeJustInTimeLoaderDisk(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, bool, unsigned int, mach_o::Layout const*)  (in dyld_sim) + 256  [0x100b0bc2c]
+    +               !   :     | +       !         |     +     ! 158 dyld3::MachOFile::compatibleSlice(Diagnostics&, unsigned long long&, unsigned long long&, void const*, unsigned long, char const*, mach_o::Platform, bool, mach_o::GradedArchitectures const&, bool)  (in dyld_sim) + 96  [0x100b1dd48]
+    +               !   :     | +       !         |     +     !   158 mach_o::Universal::isUniversal(std::span<unsigned char const, 18446744073709551615ul>)  (in dyld_sim) + 16  [0x100b2c1dc]
+    +               !   :     | +       !         |     +     1 dyld4::JustInTimeLoader::makeJustInTimeLoaderDisk(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, bool, unsigned int, mach_o::Layout const*)  (in dyld_sim) + 928  [0x100b0becc]
+    +               !   :     | +       !         |     +       1 __mmap  (in dyld) + 8  [0x1008591bc]
+    +               !   :     | +       !         |     1 dyld4::ProcessConfig::PathOverrides::forEachPathVariant(char const*, mach_o::Platform, bool, bool, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer) const  (in dyld_sim) + 356  [0x100b005d0]
+    +               !   :     | +       !         |       1 dyld4::ProcessConfig::PathOverrides::forEachInColonList(char const*, char const*, bool&, void (char const*, bool&) block_pointer)  (in dyld_sim) + 224  [0x100aff860]
+    +               !   :     | +       !         |         1 invocation function for block in dyld4::ProcessConfig::PathOverrides::forEachPathVariant(char const*, mach_o::Platform, bool, bool, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer) const  (in dyld_sim) + 164  [0x100b00dfc]
+    +               !   :     | +       !         |           1 dyld4::Loader::forEachResolvedAtPathVar(dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, dyld4::ProcessConfig::PathOverrides::Type, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer)  (in dyld_sim) + 468  [0x100b0d6f4]
+    +               !   :     | +       !         |             1 invocation function for block in dyld4::Loader::getLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 1408  [0x100b0e384]
+    +               !   :     | +       !         |               1 dyld4::SyscallDelegate::fileExists(char const*, dyld4::FileID*, int*) const  (in dyld_sim) + 36  [0x100afa5cc]
+    +               !   :     | +       !         |                 1 dyld3::stat(char const*, stat*)  (in dyld_sim) + 24  [0x100b1c6a0]
+    +               !   :     | +       !         |                   1 stat_with_subsystem  (in dyld_sim) + 52  [0x100b25304]
+    +               !   :     | +       !         |                     1 <deduplicated_symbol>  (in dyld) + 8  [0x100856c48]
+    +               !   :     | +       !         1 invocation function for block in dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 232  [0x100b09dd8]
+    +               !   :     | +       !           1 dyld4::JustInTimeLoader::matchesPath(dyld4::RuntimeState const&, char const*) const  (in dyld_sim) + 56  [0x100b09168]
+    +               !   :     | +       !             1 mach_o::UnsafeHeader::installName() const  (in dyld_sim) + 40  [0x100b2ed70]
+    +               !   :     | +       !               1 mach_o::UnsafeHeader::getDylibInstallName(char const**, mach_o::Version32*, mach_o::Version32*) const  (in dyld_sim) + 104  [0x100b30170]
+    +               !   :     | +       !                 1 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 88  [0x100b2e9ac]
+    +               !   :     | +       44 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const::'lambda'()::operator()() const  (in dyld_sim) + 996  [0x100af8e8c]
+    +               !   :     | +         44 dyld4::JustInTimeLoader::applyFixups(Diagnostics&, dyld4::RuntimeState&, dyld4::DyldCacheDataConstLazyScopedWriter&, bool, lsl::Vector<std::pair<dyld4::Loader const*, char const*>>*) const  (in dyld_sim) + 404  [0x100b0a4c4]
+    +               !   :     | +           44 dyld4::Loader::forEachBindTarget(Diagnostics&, dyld4::RuntimeState&, void (unsigned int, unsigned int, dyld4::Loader::ResolvedSymbol const&) block_pointer, bool, void (dyld4::Loader::ResolvedSymbol const&, bool&) block_pointer, void (dyld4::Loader::ResolvedSymbol const&, bool&) block_pointer) const  (in dyld_sim) + 80  [0x100b10784]
+    +               !   :     | +             44 dyld3::MachOAnalyzer::withVMLayout(Diagnostics&, void (mach_o::Layout const&) block_pointer) const  (in dyld_sim) + 688  [0x100b177d8]
+    +               !   :     | +               44 invocation function for block in dyld4::Loader::forEachBindTarget(Diagnostics&, dyld4::RuntimeState&, void (unsigned int, unsigned int, dyld4::Loader::ResolvedSymbol const&) block_pointer, bool, void (dyld4::Loader::ResolvedSymbol const&, bool&) block_pointer, void (dyld4::Loader::ResolvedSymbol const&, bool&) block_pointer) const  (in dyld_sim) + 212  [0x100b10864]
+    +               !   :     | +                 44 mach_o::Fixups::forEachBindTarget_ChainedFixups(Diagnostics&, void (mach_o::Fixups::BindTargetInfo const&, bool&) block_pointer) const  (in dyld_sim) + 116  [0x100b1f1b8]
+    +               !   :     | +                   44 dyld3::MachOFile::forEachChainedFixupTarget(Diagnostics&, dyld_chained_fixups_header const*, linkedit_data_command const*, void (int, char const*, unsigned long long, bool, bool&) block_pointer)  (in dyld_sim) + 32  [0x100b1d9c4]
+    +               !   :     | 1 _CFBundleLoadExecutableAndReturnError  (in CoreFoundation) + 88  [0x1803b1008]
+    +               !   :     |   1 _CFBundleCopyExecutableURLInDirectory2  (in CoreFoundation) + 504  [0x1803ce85c]
+    +               !   :     |     1 _CFBundleCopyExecutableURLRaw  (in CoreFoundation) + 316  [0x1803ced28]
+    +               !   :     |       1 _binaryLoadable  (in CoreFoundation) + 40  [0x1803ced7c]
+    +               !   :     |         1 _CFURLExists  (in CoreFoundation) + 80  [0x1803de78c]
+    +               !   :     |           1 _CFGetFileProperties  (in CoreFoundation) + 160  [0x1803de5d0]
+    +               !   :     |             1 stat  (in libsystem_kernel.dylib) + 8  [0x1009b7928]
+    +               !   :     524 -[NSBundle loadAndReturnError:]  (in Foundation) + 164  [0x18103c770]
+    +               !   :       524 -[NSBundle _cfBundle]  (in Foundation) + 72  [0x18103b734]
+    +               !   :         348 _CFBundleCreate  (in CoreFoundation) + 372  [0x1803afd70]
+    +               !   :         + 348 _CFBundleGetBundleVersionForURL  (in CoreFoundation) + 376  [0x1803b38a0]
+    +               !   :         +   348 _CFIterateDirectory  (in CoreFoundation) + 96  [0x1803def78]
+    +               !   :         +     348 readdir  (in libsystem_c.dylib) + 36  [0x1801303a4]
+    +               !   :         +       348 _readdir_unlocked  (in libsystem_c.dylib) + 220  [0x1801302b0]
+    +               !   :         +         348 __getdirentries64  (in libsystem_kernel.dylib) + 8  [0x1009ae670]
+    +               !   :         176 _CFBundleCreate  (in CoreFoundation) + 652  [0x1803afe88]
+    +               !   :           176 CFBundleGetInfoDictionary  (in CoreFoundation) + 44  [0x180537d8c]
+    +               !   :             176 _CFBundleRefreshInfoDictionaryAlreadyLocked  (in CoreFoundation) + 148  [0x180537e6c]
+    +               !   :               176 _CFBundleCopyInfoDictionaryInDirectoryWithVersion  (in CoreFoundation) + 1528  [0x180537220]
+    +               !   :                 176 _CFDataCreateFromURL  (in CoreFoundation) + 80  [0x180491428]
+    +               !   :                   176 _CFReadBytesFromFile  (in CoreFoundation) + 360  [0x1803ddda4]
+    +               !   :                     176 read  (in libsystem_kernel.dylib) + 8  [0x1009ad6cc]
+    +               !   1 -[UIApplication(UIKitApplicationAccessibility) _accessibilityInit]  (in UIKitCore) + 88  [0x18576eed0]
+    +               !     1 _AXSAccessibilityEnabled  (in libAccessibility.dylib) + 244  [0x192a80350]
+    +               !       1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +               !         1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +               !           1 ___accessibilityEnabled_block_invoke  (in libAccessibility.dylib) + 56  [0x192a80228]
+    +               !             1 _CFXNotificationRegisterObserver  (in CoreFoundation) + 948  [0x1803eb36c]
+    +               !               1 ???  (in libsystem_notify.dylib)  load address 0x18341a000 + 0x43c0  [0x18341e3c0]
+    +               !                 1 ???  (in libsystem_notify.dylib)  load address 0x18341a000 + 0x475c  [0x18341e75c]
+    +               !                   1 mach_msg  (in libsystem_kernel.dylib) + 20  [0x1009acef0]
+    +               !                     1 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x1009b4c44]
+    +               !                       1 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x1009bde84]
+    +               !                         1 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x1009acb70]
+    +               1 UIApplicationMain  (in UIKitCore) + 100  [0x186b9f8fc]
+    +                 1 _UIApplicationMainPreparations  (in UIKitCore) + 1312  [0x1864a9d40]
+    +                   1 NSClassFromString  (in Foundation) + 152  [0x1810eef20]
+    +                     1 look_up_class  (in libobjc.A.dylib) + 64  [0x18004900c]
 
 Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        18441
+        mach_msg2_trap  (in libsystem_kernel.dylib)        1264
+        __ulock_wait2  (in libsystem_kernel.dylib)        567
+        read  (in libsystem_kernel.dylib)        522
+        mach_o::Universal::isUniversal(std::span<unsigned char const, 18446744073709551615ul>)  (in dyld_sim)        462
+        __open  (in libsystem_kernel.dylib)        349
+        __getdirentries64  (in libsystem_kernel.dylib)        348
+        invocation function for block in dyld3::MachOAnalyzer::hasSwiftOrObjC(bool*) const  (in dyld_sim)        225
+        dyld3::MachOFile::forEachChainedFixupTarget(Diagnostics&, dyld_chained_fixups_header const*, linkedit_data_command const*, void (int, char const*, unsigned long long, bool, bool&) block_pointer)  (in dyld_sim)        44
 
 Binary Images:
-       0x102658000 -        0x10265b507 +com.kobiashvili.diary (0.1 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/96D06A54-B576-4048-9D42-AF33391EEF23/Chronotheca.app/Chronotheca
-       0x10266c000 -        0x1026a6ee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
-       0x1026ec000 -        0x1026f43d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
-       0x1027ac000 -        0x1027fae9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
-       0x102868000 -        0x10287410b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
-       0x1028e0000 -        0x102993523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
-       0x102a38000 -        0x102a7b65f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
-       0x102b8c000 -        0x102c252af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
-       0x103338000 -        0x103338b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
-       0x10334c000 -        0x10335403f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
-       0x103460000 -        0x10346b39f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
-       0x103484000 -        0x103486dff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
-       0x1034a4000 -        0x1034ad49f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
-       0x1034c8000 -        0x1034ceb7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
-       0x1034e8000 -        0x1034ef2df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
-       0x103514000 -        0x103517e5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
-       0x1037dc000 -        0x1037df1ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
-       0x103a58000 -        0x103a7127f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
-       0x103aac000 -        0x103d07bbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
-       0x104328000 -        0x10432d407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
-       0x104344000 -        0x1043486ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
-       0x104414000 -        0x104436cff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
-       0x1044ac000 -        0x1044d2f5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
-       0x1044f8000 -        0x10453215f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
-       0x104760000 -        0x104fb2303 +Chronotheca.debug.dylib (0) <DFB9B8E5-11FF-378F-AA4E-29CC007B64F2> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/96D06A54-B576-4048-9D42-AF33391EEF23/Chronotheca.app/Chronotheca.debug.dylib
-       0x105c94000 -        0x105ce77bf  com.apple.dt.XCTAutomationSupport (26.5 - 24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
-       0x105d8c000 -        0x105dc05bf  com.apple.MTLSimDriver (373.2 - 373.2) <8339CA77-3986-3588-9DF9-8B8D511AE608> /Volumes/*/MTLSimDriver.framework/MTLSimDriver
-       0x105e38000 -        0x105e3d7df  com.apple.LinkPresentation.axbundle (1.0 - 1.0) <7BAD0605-47F6-3470-9C28-AE38795FEC45> /Volumes/*/LinkPresentation
-       0x105ecc000 -        0x105f3bcbf  com.apple.UIUnderstanding (1.0 - 1) <576E64EB-8AA4-3B1E-A89D-365C4DE0C7C8> /Volumes/*/UIUnderstanding.framework/UIUnderstanding
-       0x108f28000 -        0x108f5627f  com.apple.gpusw.MetalSerializer (1.0 - 1) <19460939-4BCE-3E8D-8868-5388DD78ACE3> /Volumes/*/MetalSerializer.framework/MetalSerializer
-       0x109bec000 -        0x109ddfd3f  com.apple.UIKit.axbundle (1.0.0 - 1.0) <D3D808D1-AB02-3566-B2DD-1B139F8E9569> /Volumes/*/UIKit
-       0x10b0e4000 -        0x10b0e6bdf  com.apple.GeoServices.axbundle (1.0 - 1.0) <69D2FB7A-6D7C-3EDE-9495-629B7904ED32> /Volumes/*/GeoServices
-       0x119154000 -        0x11916303f  com.apple.PreferencesFramework.axbundle (1.0 - 1.0) <CECA756F-AD42-3681-8023-94C05C2E12C6> /Volumes/*/PreferencesFramework
-       0x119194000 -        0x119195a7f  com.apple.FrontBoard.axbundle (1.0 - 1.0) <FA25F3DC-A3E7-344D-8680-FFB8D8BBA712> /Volumes/*/FrontBoard
-       0x1192bc000 -        0x1192c185f  com.apple.TelephonyUIFramework.axbundle (1.0 - 1.0) <3B6B5DA7-09A6-3441-8C4B-A04351314E29> /Volumes/*/TelephonyUIFramework
-       0x1192e0000 -        0x1192e1f7f  com.apple.RealityFoundation.axbundle (1.0 - 1.0) <6C245B7D-6C04-31D7-9CA0-27091B29C32E> /Volumes/*/RealityFoundation
-       0x1192f4000 -        0x1192f543f  com.apple.IntentsUI.axbundle (1.0 - 1.0) <2CEAAC55-35DD-3814-93AD-6A5B4C7FA2DE> /Volumes/*/IntentsUI
+       0x100824000 -        0x100827507 +Chronotheca (0.1 - 0) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/FA979007-FA09-4E26-8584-140FF073B7BC/Chronotheca.app/Chronotheca
+       0x100854000 -        0x100907523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
+       0x1009ac000 -        0x1009e6ee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
+       0x100a2c000 -        0x100a343d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
+       0x100af0000 -        0x100b3ee9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x100bac000 -        0x100bef65f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x100d00000 -        0x100d992af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x1013b8000 -        0x1013c410b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
+       0x10150c000 -        0x10150edff +SpeakTypingServices (3191.35) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x101528000 -        0x10153003f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x10163c000 -        0x10163cb99 +AXGuestPassServices (3191.35) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x10164c000 -        0x10165739f +AXFrontBoardUtils (3191.35) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x101670000 -        0x101673e5f +SpeakThisServices (3191.35) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x101690000 -        0x10169949f +AccessibilityUI (3191.35) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x1016b4000 -        0x1016bab7f +AccessibilityUIShared (3191.35) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x1016d4000 -        0x1016db2df +AutomationMode (31) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
+       0x101a80000 -        0x101a831ff +iCloudDriveFileProviderOverride (4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
+       0x101bd8000 -        0x101bdd407 +XCTestSupport (24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
+       0x101bf4000 -        0x101bf86ff +FileProviderOverride (4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
+       0x101c20000 -        0x101e7bbbf +_StoreKit_SwiftUI (1.0 - 815.5.6) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+       0x1025cc000 -        0x1025e527f +AccessibilitySettingsLoader (3191.35) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
+       0x10261c000 -        0x10263ecff +AccessibilityPlatformTranslation (545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
+       0x1026b4000 -        0x1026daf5f +DTXConnectionServices (64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
+       0x102848000 -        0x10287627f +MetalSerializer (373.2) <19460939-4BCE-3E8D-8868-5388DD78ACE3> /Volumes/*/MetalSerializer.framework/MetalSerializer
+       0x1028d4000 -        0x103125443 +Chronotheca.debug.dylib (0) <25355D8A-0D43-39DD-B76C-99949E4AAA64> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/FA979007-FA09-4E26-8584-140FF073B7BC/Chronotheca.app/Chronotheca.debug.dylib
+       0x103e08000 -        0x103e5b7bf +XCTAutomationSupport (24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
+       0x103ebc000 -        0x103f2bcbf +UIUnderstanding (2.8) <576E64EB-8AA4-3B1E-A89D-365C4DE0C7C8> /Volumes/*/UIUnderstanding.framework/UIUnderstanding
+       0x106dd0000 -        0x106e0a15f +AccessibilityAudit (187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
