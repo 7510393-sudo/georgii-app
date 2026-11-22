@@ -101,6 +101,15 @@ final class Shell: ObservableObject {
             overlays.showingSettings = false
             overlays.settingsPull = nil
             screen = .today
+            // Картотека закрыта и лента у дня (P1040, автор: «включаешь
+            // первый запуск — страница „Сегодня“ перестаёт уезжать вверх или
+            // вниз»): если настройки открыли из картотеки, она оставалась
+            // открытой под новым днём, и тянуть лист было нельзя.
+            if deck.isLive {
+                go(.closeNow)
+                ribbon.release()
+                ribbon.park()
+            }
         }
         tab = .plan
         if !store.isToday { store.go(to: DayStore.today()) }
