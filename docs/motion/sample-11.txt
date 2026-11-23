@@ -1,41 +1,117 @@
+    6 Thread_104550   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 6 start  (in dyld) + 6992  [0x1011084e4]
+    +   6 start_sim  (in dyld_sim) + 20  [0x10124b0e4]
+    +     6 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x10311398c]  ChronothecaApp.swift:0
+    +       6 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1031138e0]  /<compiler-generated>:0
+    +         6 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           6 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             6 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               6 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 6 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   6 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     6 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       6 __CFRunLoopRun  (in CoreFoundation) + 760  [0x180421808]
+    +                         6 __CFRunLoopDoSources0  (in CoreFoundation) + 312  [0x180422690]
+    +                           6 __CFRunLoopDoSource0  (in CoreFoundation) + 168  [0x180422ea4]
+    +                             6 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__  (in CoreFoundation) + 24  [0x180422f5c]
+    +                               6 UC::DriverCore::continueProcessing()  (in UpdateCycle) + 80  [0x2343d22c0]
+    +                                 6 schedulerStepScheduledMainSectionContinue  (in UIKitCore) + 56  [0x1863b6064]
+    +                                   6 _UIUpdateSequenceRunNext  (in UIKitCore) + 120  [0x18590339c]
+    +                                     6 __setupUpdateSequence_block_invoke_2  (in UIKitCore) + 372  [0x1863b5c0c]
+    +                                       6 _UIApplicationFlushCATransaction  (in UIKitCore) + 48  [0x1864a3b50]
+    +                                         6 CA::Transaction::flush_as_runloop_observer(bool)  (in QuartzCore) + 68  [0x18cefa1a4]
+    +                                           6 CA::Transaction::commit()  (in QuartzCore) + 632  [0x18cef88f0]
+    +                                             4 CA::Context::commit_transaction(CA::Transaction*, double, double*)  (in QuartzCore) + 560  [0x18cecacc8]
+    +                                             ! 4 CA::Layer::layout_and_display_if_needed(CA::Transaction*)  (in QuartzCore) + 464  [0x18cfb2aac]
+    +                                             !   3 -[CALayer _display]  (in QuartzCore) + 1648  [0x18cf9e8e4]
+    +                                             !   : 3 invocation function for block in CA::Layer::display_()  (in QuartzCore) + 60  [0x18cfa9280]
+    +                                             !   :   1 CABackingStoreUpdate_  (in QuartzCore) + 636  [0x18cdfede8]
+    +                                             !   :   | 1 CGDisplayListDrawInContextDelegate  (in CoreGraphics) + 308  [0x18d47b770]
+    +                                             !   :   |   1 CG::DisplayList::executeEntries(std::__wrap_iter<std::shared_ptr<CG::DisplayListEntry const>*>, std::__wrap_iter<std::shared_ptr<CG::DisplayListEntry const>*>, CGContextDelegate*, CGRenderingState*, CGGStack*, CGRect const*, __CFDictionary const*, bool)  (in CoreGraphics) + 1304  [0x18d479558]
+    +                                             !   :   |     1 ripc_DrawGlyphs  (in CoreGraphics) + 1452  [0x18d4981c0]
+    +                                             !   :   |       1 draw_glyph_bitmaps  (in CoreGraphics) + 1096  [0x18d498d10]
+    +                                             !   :   |         1 render_glyphs  (in CoreGraphics) + 276  [0x18d498f60]
+    +                                             !   :   |           1 CGGlyphBuilderLockBitmaps  (in CoreGraphics) + 1092  [0x18d4a2b64]
+    +                                             !   :   |             1 CGFontCreateGlyphPath  (in CoreGraphics) + 40  [0x18d525008]
+    +                                             !   :   |               1 FPFontCopyGlyphPath  (in libFontParser.dylib) + 24  [0x19365aa48]
+    +                                             !   :   |                 1 TFPFont::CopyGlyphPath(CGAffineTransform const*, unsigned int) const  (in libFontParser.dylib) + 36  [0x1937e6328]
+    +                                             !   :   |                   1 TFPFont::CopyGlyphPath(unsigned int) const  (in libFontParser.dylib) + 328  [0x1937e51ac]
+    +                                             !   :   |                     1 TConcreteFontScaler::CopyGlyphPath(unsigned short, CGAffineTransform const*) const  (in libFontParser.dylib) + 400  [0x19366e92c]
+    +                                             !   :   |                       1 TTRenderGlyphs  (in libFontParser.dylib) + 504  [0x193780c80]
+    +                                             !   :   |                         1 AssureGlyphBlock(fsg_SplineKey*, memoryContext*, scalerGlyph*)  (in libFontParser.dylib) + 148  [0x19378bb84]
+    +                                             !   :   |                           1 CreateScalerGlyphBlock(fsg_SplineKey*, memoryContext*, scalerGlyph const*)  (in libFontParser.dylib) + 276  [0x19378d8b4]
+    +                                             !   :   |                             1 CreateGlyphElement(fsg_SplineKey*, int, unsigned char, unsigned char)  (in libFontParser.dylib) + 584  [0x19378d67c]
+    +                                             !   :   |                               1 CreateGlyphOutline(fsg_SplineKey*, unsigned short, unsigned char)  (in libFontParser.dylib) + 68  [0x193784ee8]
+    +                                             !   :   |                                 1 StretchGlyph(fsg_SplineKey*, fnt_ElementType*, transformState const*, std::unique_ptr<float []>*, unsigned char, unsigned char*, unsigned int)  (in libFontParser.dylib) + 1940  [0x19378419c]
+    +                                             !   :   |                                   1 StretchGlyph(fsg_SplineKey*, fnt_ElementType*, transformState const*, std::unique_ptr<float []>*, unsigned char, unsigned char*, unsigned int)  (in libFontParser.dylib) + 328  [0x193783b50]
+    +                                             !   :   |                                     1 ApplyFeaturesToOutline(fsg_SplineKey*, fnt_ElementType*)  (in libFontParser.dylib) + 524  [0x19379b2a4]
+    +                                             !   :   |                                       1 ApplyVariationsToGlyph(int, short*, unsigned int, glyphVariation const*, int, short const*, int, int, unsigned short const*, float*, float*, float*, float*, float*, float*, int)  (in libFontParser.dylib) + 460  [0x19379a964]
+    +                                             !   :   1 CABackingStoreUpdate_  (in QuartzCore) + 884  [0x18cdfeee0]
+    +                                             !   :   | 1 CABackingStoreReleaseImages(CABackingStore*)  (in QuartzCore) + 56  [0x18cdfe968]
+    +                                             !   :   |   1 CA::Render::Image::release_data() const  (in QuartzCore) + 40  [0x18cdfcce4]
+    +                                             !   :   |     1 CA::Render::Image::~Image()  (in QuartzCore) + 36  [0x18cdfcd50]
+    +                                             !   :   |       1 CA::Render::Shmem::~Shmem()  (in QuartzCore) + 0  [0x18ce13880]
+    +                                             !   :   1 CABackingStoreUpdate_  (in QuartzCore) + 960  [0x18cdfef2c]
+    +                                             !   :     1 _CFRelease  (in CoreFoundation) + 296  [0x180424d1c]
+    +                                             !   :       1 dl_Finalize(void const*)  (in CoreGraphics) + 188  [0x18d476610]
+    +                                             !   :         1 <deduplicated_symbol>  (in CoreGraphics) + 56  [0x18d2be6d0]
+    +                                             !   :           1 CG::DisplayListShape::~DisplayListShape()  (in CoreGraphics) + 0  [0x18d3f4ec0]
+    +                                             !   1 -[CALayer _display]  (in QuartzCore) + 2060  [0x18cf9ea80]
+    +                                             !     1 CA::Layer::end_change(CA::Transaction*, unsigned int, objc_object*, objc_object*)  (in QuartzCore) + 32  [0x18cfa2810]
+    +                                             !       1 CA::Layer::property_did_change(CA::Transaction*, unsigned int)  (in QuartzCore) + 3104  [0x18cfa3480]
+    +                                             !         1 CA::Layer::mark(CA::Transaction*, unsigned int, unsigned int)  (in QuartzCore) + 240  [0x18cfa3b60]
+    +                                             !           1 CA::Layer::retain_parent(CA::Transaction*) const  (in QuartzCore) + 56  [0x18cfa422c]
+    +                                             1 CA::Context::commit_transaction(CA::Transaction*, double, double*)  (in QuartzCore) + 708  [0x18cecad5c]
+    +                                             ! 1 objc_autoreleasePoolPop  (in libobjc.A.dylib) + 256  [0x180062258]
+    +                                             !   1 AutoreleasePoolPage::releaseUntil(objc_object**)  (in libobjc.A.dylib) + 212  [0x180062394]
+    +                                             !     1 objc_release  (in libobjc.A.dylib) + 8  [0x18003967c]
+    +                                             1 CA::Context::commit_transaction(CA::Transaction*, double, double*)  (in QuartzCore) + 10984  [0x18cecd580]
+    +                                               1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 244  [0x18cfb3050]
+    +                                                 1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 244  [0x18cfb3050]
+    +                                                   1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 244  [0x18cfb3050]
+    +                                                     1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 244  [0x18cfb3050]
+    +                                                       1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 244  [0x18cfb3050]
+    +                                                         1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 348  [0x18cfb30b8]
+    +                                                           1 invocation function for block in CA::Context::commit_transaction(CA::Transaction*, double, double*)  (in QuartzCore) + 172  [0x18ced0748]
+    +                                                             1 objc_msgSend  (in libobjc.A.dylib) + 20  [0x18003ac14]
 
 Sort by top of stack, same collapsed (when >= 5):
-        __workq_kernreturn  (in libsystem_kernel.dylib)        441
-        mach_msg2_trap  (in libsystem_kernel.dylib)        275
-        _platform_strlen  (in libsystem_platform.dylib)        217
-        semaphore_timedwait_trap  (in libsystem_kernel.dylib)        162
-        semaphore_wait_trap  (in libsystem_kernel.dylib)        153
-        __semwait_signal  (in libsystem_kernel.dylib)        64
-        writev  (in libsystem_kernel.dylib)        32
-        objc_msgSend  (in libobjc.A.dylib)        9
-        swift_retain  (in libswiftCore.dylib)        5
+        __workq_kernreturn  (in libsystem_kernel.dylib)        23
+        mach_msg2_trap  (in libsystem_kernel.dylib)        6
 
 Binary Images:
-       0x102d98000 -        0x102d9b507 +com.kobiashvili.diary (1.0 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/8DC8077E-D136-420C-A7DA-A30CC4E46AEB/Chronotheca.app/Chronotheca
-       0x102da8000 -        0x102df6e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
-       0x102e68000 -        0x102e703d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
-       0x102e94000 -        0x102f47523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
-       0x102fec000 -        0x103026ee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
-       0x10307c000 -        0x1030bf65f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
-       0x10324c000 -        0x10325810b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
-       0x103308000 -        0x1033a12af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
-       0x103a78000 -        0x103a7adff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
-       0x103a94000 -        0x103a9c03f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
-       0x103ba8000 -        0x103ba8b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
-       0x103bb8000 -        0x103bc339f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
-       0x103bdc000 -        0x103bdfe5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
-       0x103bfc000 -        0x103c0549f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
-       0x103c20000 -        0x103c26b7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
-       0x103c40000 -        0x103c472df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
-       0x103c60000 -        0x103c646ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
-       0x10403c000 -        0x10403f1ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
-       0x1040c8000 -        0x1040e127f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
-       0x104118000 -        0x10411d407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
-       0x104228000 -        0x104483bbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
-       0x104aa4000 -        0x104ac6cff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
-       0x104b3c000 -        0x104b62f5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
-       0x104b88000 -        0x104bc215f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
-       0x104d58000 -        0x104dab7bf  com.apple.dt.XCTAutomationSupport (26.5 - 24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
-       0x104e0c000 -        0x104e7bcbf  com.apple.UIUnderstanding (1.0 - 1) <576E64EB-8AA4-3B1E-A89D-365C4DE0C7C8> /Volumes/*/UIUnderstanding.framework/UIUnderstanding
-       0x104efc000 -        0x10575d177 +Chronotheca.debug.dylib (0) <C0A49162-3C6E-3092-B035-096EE8667CB6> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/8DC8077E-D136-420C-A7DA-A30CC4E46AEB/Chronotheca.app/Chronotheca.debug.dylib
-       0x106450000 -        0x1064845bf  com.apple.MTLSimDriver (373.2 - 373.2) <8339CA77-3986-3588-9DF9-8B8D511AE608> /Volumes/*/MTLSimDriver.framework/MTLSimDriver
+       0x100f20000 -        0x100f23507 +com.kobiashvili.diary (1.0 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/BE3EEE4A-E6EC-4058-B3AF-CFCBAACDF50E/Chronotheca.app/Chronotheca
+       0x100f34000 -        0x100f6eee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
+       0x100fb4000 -        0x100fbc3d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
+       0x10105c000 -        0x10106810b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
+       0x1010e8000 -        0x10119b523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
+       0x101240000 -        0x10128ee9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x1012fc000 -        0x10133f65f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x101450000 -        0x1014e92af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x101bfc000 -        0x101bfcb99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x101c10000 -        0x101c1803f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x101d24000 -        0x101d2f39f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x101d48000 -        0x101d4adff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x101d68000 -        0x101d7149f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x101d8c000 -        0x101d92b7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x101dac000 -        0x101db32df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
+       0x101dd8000 -        0x101ddbe5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x1021c4000 -        0x1021c71ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
+       0x1022c0000 -        0x1022d927f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
+       0x102310000 -        0x102315407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
+       0x10232c000 -        0x1023306ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
+       0x102370000 -        0x1025cbbbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+       0x103040000 -        0x10389d797 +Chronotheca.debug.dylib (0) <11276C43-10A3-3D69-B000-FCB733C6FFC4> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/BE3EEE4A-E6EC-4058-B3AF-CFCBAACDF50E/Chronotheca.app/Chronotheca.debug.dylib
+       0x104600000 -        0x104622cff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
+       0x104698000 -        0x1046bef5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
+       0x1046e4000 -        0x10471e15f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
+       0x107294000 -        0x1072e77bf  com.apple.dt.XCTAutomationSupport (26.5 - 24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
+       0x107984000 -        0x1079f3cbf  com.apple.UIUnderstanding (1.0 - 1) <576E64EB-8AA4-3B1E-A89D-365C4DE0C7C8> /Volumes/*/UIUnderstanding.framework/UIUnderstanding
+       0x107e20000 -        0x107e545bf  com.apple.MTLSimDriver (373.2 - 373.2) <8339CA77-3986-3588-9DF9-8B8D511AE608> /Volumes/*/MTLSimDriver.framework/MTLSimDriver
+       0x107eb0000 -        0x107ede27f  com.apple.gpusw.MetalSerializer (1.0 - 1) <19460939-4BCE-3E8D-8868-5388DD78ACE3> /Volumes/*/MetalSerializer.framework/MetalSerializer
+       0x107f98000 -        0x107f9abdf  com.apple.GeoServices.axbundle (1.0 - 1.0) <69D2FB7A-6D7C-3EDE-9495-629B7904ED32> /Volumes/*/GeoServices
+       0x107fec000 -        0x1081dfd3f  com.apple.UIKit.axbundle (1.0.0 - 1.0) <D3D808D1-AB02-3566-B2DD-1B139F8E9569> /Volumes/*/UIKit
+       0x108b98000 -        0x108ba165f  com.apple.TextInputUI.axbundle (1.0 - 1.0) <DC063DFF-DD0C-3A1B-BDE8-97C4FBCCE928> /Volumes/*/TextInputUI
+       0x117b4c000 -        0x117b5b03f  com.apple.PreferencesFramework.axbundle (1.0 - 1.0) <CECA756F-AD42-3681-8023-94C05C2E12C6> /Volumes/*/PreferencesFramework
+       0x11aa7c000 -        0x11aa9041f  com.apple.AVKit.axbundle (1.0 - 1.0) <C5AC1369-B745-33DD-9237-CBAAD541CBE3> /Volumes/*/AVKit
+       0x11aacc000 -        0x11aad185f  com.apple.TelephonyUIFramework.axbundle (1.0 - 1.0) <3B6B5DA7-09A6-3441-8C4B-A04351314E29> /Volumes/*/TelephonyUIFramework
