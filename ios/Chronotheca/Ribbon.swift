@@ -992,8 +992,14 @@ final class Unfold: ObservableObject {
         let card = frame.insetBy(dx: Search.cardInset, dy: 0)
         guard area.width > 0, card.width > 0 else { _ = open(); return }
         // Видна карточка без низа: на нём лежит корешок следующей (P1026).
-        var visible = card.height - Search.overlap
-        if let below { visible = min(visible, below - card.minY) }
+        // Сколько карточки видно — до верха следующей, какой она стоит на
+        // экране (P1044, автор по 346: «прежде чем начать движение вверх,
+        // карточка укорачивается снизу до пятой строки; должна вылезать из
+        // гнезда ровно такой, какая есть»). Прежде видимое бралось не больше
+        // высоты без нахлёста — а у ближнего края следующая карточка стоит
+        // ниже, и снизу срезалась видимая строка. Следующей нет — вся.
+        var visible = card.height
+        if let below { visible = min(visible, max(below - card.minY, Search.tabHeight + 8)) }
         let seen = CGRect(x: card.minX, y: card.minY, width: card.width,
                           height: max(Search.tabHeight + 8, visible))
         guard let raw = FoldUp.picture(seen.offsetBy(dx: area.minX, dy: area.minY)) else {
