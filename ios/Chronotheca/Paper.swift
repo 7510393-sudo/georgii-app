@@ -1104,7 +1104,7 @@ struct PageTexture: View {
         // Сверху вниз, в точках — как рисует SwiftUI.
         ctx.translateBy(x: 0, y: CGFloat(H))
         ctx.scaleBy(x: CGFloat(px), y: -CGFloat(px))
-        let shape = FolderShape(tabHeight: tab, tabShare: share)
+        let shape = FolderShape(tabHeight: tab, tabShare: share, soft: true)
         ctx.addPath(shape.path(in: CGRect(origin: .zero, size: size)).cgPath)
         ctx.setFillColor(gray: 1, alpha: 1)
         ctx.fillPath()

@@ -734,7 +734,7 @@ struct SearchView: View {
             .modifier(Landed(landing: shell.ribbon.landing, id: entry.id, aged: Ru.isPast(day.date)))
             .modifier(UnfoldHole(unfold: shell.ribbon.unfold, id: entry.id))
             // Касание по всей карточке, а не только по буквам (P866).
-            .contentShape(FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare))
+            .contentShape(Search.card)
             .onTapGesture { openPast(day) }
             .padding(.horizontal, Search.cardInset)
         case .slot:
@@ -753,7 +753,7 @@ struct SearchView: View {
                 .modifier(UnfoldHole(unfold: shell.ribbon.unfold, id: entry.id))
                 // Касание по всей карточке, а не только по буквам (P866, автор:
                 // «будущие открываются, только когда нажимаешь на текст»).
-                .contentShape(FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare))
+                .contentShape(Search.card)
                 .onTapGesture { openCard(day.date, tab: .plan) }
             }
             .padding(.horizontal, Search.cardInset)
@@ -773,7 +773,7 @@ struct SearchView: View {
             }
             .modifier(Landed(landing: shell.ribbon.landing, id: entry.id))
             .modifier(UnfoldHole(unfold: shell.ribbon.unfold, id: entry.id))
-            .contentShape(FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare))
+            .contentShape(Search.card)
             .onTapGesture { openCard(date, tab: .plan) }
             .onLongPressGesture(minimumDuration: Search.holdTime) { unfold(nil) }
             .accessibilityElement()
@@ -1052,10 +1052,14 @@ struct SearchView: View {
 enum Search {
     /// Высота корешка карточки (P695).
     static let tabHeight: CGFloat = 22
-    /// Доля ширины карточки под корешок (P859; прежде треть): дата крупнее —
-    /// «2026 сентябрь 22 ПН» шрифтом 13 входит целиком, а в трети ужималась
-    /// почти до 9.
-    static let tabShare: CGFloat = 0.45
+    /// Доля ширины карточки под корешок — та же, что у листа «Дня» (P1051,
+    /// автор: «привести в соответствие геометрию выреза корешка на закрытой
+    /// и на открытой карточке»; прежде 0,45 — P859, ещё прежде треть).
+    static let tabShare: CGFloat = 0.56
+    /// Контур карточки — тех же мягких обводов, что лист «Дня» (P1051):
+    /// вертикальный край корешка, круглые верхний и внутренний углы выреза.
+    /// Низ прямой — уходит под следующую (P725).
+    static let card = FolderShape(tabHeight: tabHeight, tabShare: tabShare, soft: true)
     /// На сколько карточка заходит на предыдущую: корешок и ещё немного
     /// листа, чтобы нижний край предыдущей скрылся под ней (P696).
     static let overlap: CGFloat = tabHeight + 10
@@ -1216,14 +1220,16 @@ private struct EmptyTabs: View {
 
     var body: some View {
         Canvas { context, size in
-            let shape = FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare)
+            let shape = Search.card
             let tall = Search.tabHeight + Search.overlap
             let paper = Image(uiImage: PageTexture.paper)
             let edge = Scheme.current.kraftEdge.opacity(0.5)
             for i in 0..<count {
                 let rect = CGRect(x: 0, y: CGFloat(i) * Search.emptyPitch, width: size.width, height: tall)
                 let path = shape.path(in: rect)
-                context.fill(path, with: .color(Scheme.current.past))
+                // Пустые дни — будущее: бумага цвета «сегодня», как у
+                // открытого будущего листа (P1050).
+                context.fill(path, with: .color(Scheme.current.today))
                 var grain = context
                 grain.opacity = scheme == .dark ? 0.2 : 0.3
                 grain.fill(path, with: .tiledImage(paper))
@@ -1251,7 +1257,7 @@ private struct CardPaper: View {
     @AppStorage(Prefs.plainPast) private var plainPast = false
     @State private var art: PageTexture.AgedArt?
 
-    private var folder: FolderShape { FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare) }
+    private var folder: FolderShape { Search.card }
 
     var body: some View {
         GeometryReader { geo in
@@ -1284,11 +1290,14 @@ private struct CardPaper: View {
         .allowsHitTesting(false)
     }
 
-    /// Старая бумага: цвет прошлого и рельеф плиткой — непрозрачная, иначе
-    /// корешок соседа просвечивал бы.
+    /// Бумага: рельеф плиткой — непрозрачная, иначе корешок соседа
+    /// просвечивал бы. Цвет — как у открытого листа того же дня (P1050,
+    /// отменяет одну бумагу на всё из P846): прошлое — цвета прошлого,
+    /// будущее — цвета «сегодня» (P412), иначе при раскрытии карточка на
+    /// глазах меняла цвет.
     private var paper: some View {
         ZStack {
-            Scheme.current.past
+            past ? Scheme.current.past : Scheme.current.today
             Image(uiImage: PageTexture.paper)
                 .resizable(resizingMode: .tile)
                 .opacity(scheme == .dark ? 0.2 : 0.3)
@@ -1347,9 +1356,10 @@ struct FoldSchema: View {
     @AppStorage(Prefs.plainPast) private var plainPast = false
 
     var body: some View {
-        let shape = FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare)
+        let shape = Search.card
         ZStack {
-            shape.fill(Scheme.current.past)
+            // Цвет — как у карточки этого дня (P1050).
+            shape.fill(aged ? Scheme.current.past : Scheme.current.today)
             if aged && !plainPast {
                 Image(uiImage: PageTexture.paper)
                     .resizable(resizingMode: .tile)
@@ -1400,7 +1410,7 @@ private struct UnfoldHole: ViewModifier {
                         .padding(.top, Search.tabHeight)
                         .mask {
                             Rectangle().padding(-24)
-                                .overlay(FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare)
+                                .overlay(Search.card
                                     .blendMode(.destinationOut))
                                 .compositingGroup()
                         }
@@ -1499,10 +1509,18 @@ struct FolderShape: Shape {
     /// наклонен, почти нет вертикальной части»): правый край корешка
     /// вертикален, оба его угла — и верхний, и внутренний у плеча — круглые,
     /// радиусом 14; углы листа — 18 сверху слева и 16 у плеча и внизу.
+    /// Тем же контуром — карточки картотеки (P1051): у низкого корешка углы
+    /// выреза и левый верхний меньше, по его высоте; низ прямой, если не
+    /// `roundBottom`.
+    static func softRadii(tabHeight: CGFloat) -> (left: CGFloat, corner: CGFloat, body: CGFloat) {
+        (min(18, (tabHeight * 0.45).rounded()), min(wave, (tabHeight - 4) / 2), 16)
+    }
+
     private func softPath(in r: CGRect) -> Path {
         let tabWidth = r.width * tabShare
-        let tabR: CGFloat = 18, bodyR: CGFloat = 16
-        let corner = min(Self.wave, (tabHeight - 4) / 2)
+        let radii = Self.softRadii(tabHeight: tabHeight)
+        let tabR = radii.left, bodyR = radii.body
+        let corner = radii.corner
         let shoulder = r.minY + tabHeight
         let edge = r.minX + tabWidth
         var p = Path()
@@ -1518,12 +1536,17 @@ struct FolderShape: Shape {
         p.addLine(to: CGPoint(x: r.maxX - bodyR, y: shoulder))
         p.addArc(tangent1End: CGPoint(x: r.maxX, y: shoulder),
                  tangent2End: CGPoint(x: r.maxX, y: shoulder + bodyR), radius: bodyR)
-        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY - bodyR))
-        p.addArc(tangent1End: CGPoint(x: r.maxX, y: r.maxY),
-                 tangent2End: CGPoint(x: r.maxX - bodyR, y: r.maxY), radius: bodyR)
-        p.addLine(to: CGPoint(x: r.minX + bodyR, y: r.maxY))
-        p.addArc(tangent1End: CGPoint(x: r.minX, y: r.maxY),
-                 tangent2End: CGPoint(x: r.minX, y: r.maxY - bodyR), radius: bodyR)
+        if roundBottom {
+            p.addLine(to: CGPoint(x: r.maxX, y: r.maxY - bodyR))
+            p.addArc(tangent1End: CGPoint(x: r.maxX, y: r.maxY),
+                     tangent2End: CGPoint(x: r.maxX - bodyR, y: r.maxY), radius: bodyR)
+            p.addLine(to: CGPoint(x: r.minX + bodyR, y: r.maxY))
+            p.addArc(tangent1End: CGPoint(x: r.minX, y: r.maxY),
+                     tangent2End: CGPoint(x: r.minX, y: r.maxY - bodyR), radius: bodyR)
+        } else {
+            p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
+            p.addLine(to: CGPoint(x: r.minX, y: r.maxY))
+        }
         p.closeSubpath()
         return p
     }
@@ -1533,9 +1556,9 @@ struct FolderShape: Shape {
 /// должны подменяться одна другой… карточка в том же самом виде выходит из
 /// гнезда, плывёт наверх, постепенно увеличиваясь, и на ней постепенно
 /// меняется текст»). Один контур на всём пути: при `t = 0` — контур
-/// карточки картотеки, увеличенный в `grow` раз (корешок 22, доля 0,45,
-/// углы 10 и 12), при `t = 1` — верх листа «Дня» (корешок `headLine + 6`,
-/// доля 0,56, мягкие углы 18, 14, 16). Между ними меняются числа, а не
+/// карточки картотеки, увеличенный в `grow` раз (корешок 22, доля 0,56,
+/// мягкие углы по высоте корешка, P1051), при `t = 1` — верх листа «Дня»
+/// (корешок `headLine + 6`, доля 0,56, мягкие углы 18, 14, 16). Между ними меняются числа, а не
 /// фигура — вырезы корешка переходят друг в друга. Низ прямой: внизу
 /// полоса продолжается листом или уходит под соседнюю карточку.
 struct MorphFolder: Shape {
@@ -1563,12 +1586,16 @@ struct MorphFolder: Shape {
             return Path(CGRect(x: -far, y: -far, width: far * 2 + r.width, height: far * 2 + r.height))
         }
         let g = grow
+        // Карточка и лист — один мягкий контур (P1051): меняются только
+        // размеры, вырез корешка тот же.
+        let card = FolderShape.softRadii(tabHeight: Search.tabHeight)
+        let sheet = FolderShape.softRadii(tabHeight: DayPage.headLine + 6)
         let tabH = mix(Search.tabHeight * g, DayPage.headLine + 6)
         let share = mix(Search.tabShare, 0.56)
-        let leftR = mix(10 * g, 18)
-        let tabR = mix(10 * g, min(FolderShape.wave, (DayPage.headLine + 2) / 2))
-        let inner = mix(max(6, min(16, Search.tabHeight - 12)) * g, min(FolderShape.wave, (DayPage.headLine + 2) / 2))
-        let bodyR = mix(12 * g, 16)
+        let leftR = mix(card.left * g, sheet.left)
+        let tabR = mix(card.corner * g, sheet.corner)
+        let inner = tabR
+        let bodyR = mix(card.body * g, sheet.body)
         let minY = r.minY + at + mix(0, top)
         let maxY = r.minY + at + height
         let edge = r.minX + r.width * share
@@ -1595,12 +1622,14 @@ struct MorphFolder: Shape {
             // переход в плечо — весь внутри контура, низом по низу полосы.
             let top = maxY - nh
             let tabEdge = r.minX + r.width * Search.tabShare
-            let rr = min(10 * g, nh / 2)
-            let cove = min(rr, nh / 2)
+            let soft = FolderShape.softRadii(tabHeight: Search.tabHeight)
+            let left = min(soft.left * g, nh / 2)
+            let rr = min(soft.corner * g, nh / 2)
+            let cove = rr
             p.move(to: CGPoint(x: r.minX, y: maxY))
-            p.addLine(to: CGPoint(x: r.minX, y: top + rr))
+            p.addLine(to: CGPoint(x: r.minX, y: top + left))
             p.addArc(tangent1End: CGPoint(x: r.minX, y: top),
-                     tangent2End: CGPoint(x: r.minX + rr, y: top), radius: rr)
+                     tangent2End: CGPoint(x: r.minX + left, y: top), radius: left)
             p.addLine(to: CGPoint(x: tabEdge - rr, y: top))
             p.addArc(tangent1End: CGPoint(x: tabEdge, y: top),
                      tangent2End: CGPoint(x: tabEdge, y: top + rr), radius: rr)

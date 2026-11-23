@@ -1066,7 +1066,7 @@ final class Unfold: ObservableObject {
     /// вырезается, видимое справа от него остаётся (P1047).
     static func cut(_ image: UIImage, next: CGFloat? = nil) -> UIImage {
         let size = image.size
-        let shape = FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare)
+        let shape = Search.card
         let outline = shape.path(in: CGRect(origin: .zero, size: size))
         let format = UIGraphicsImageRendererFormat()
         format.scale = image.scale
@@ -1154,7 +1154,7 @@ final class FoldUp: ObservableObject {
     /// как у карточки. `top` — где верх листа от верха снимка.
     static func shaped(_ image: UIImage, top: CGFloat) -> UIImage {
         let size = image.size
-        let outline = FolderShape(tabHeight: DayPage.headLine + 6, tabShare: 0.56, soft: true)
+        let outline = FolderShape(tabHeight: DayPage.headLine + 6, tabShare: 0.56, roundBottom: true, soft: true)
             .path(in: CGRect(x: 0, y: top, width: size.width, height: max(1, size.height - top)))
         let format = UIGraphicsImageRendererFormat()
         format.scale = image.scale
@@ -1310,9 +1310,10 @@ struct TimeLine: View {
         let most: CGFloat = max(0, height / 2 - 70)
         let length: CGFloat = most * abs(reach)
         let past = reach > 0
-        // Цвет — как у карточек картотеки, по гамме (P846): та же бумага цвета
-        // прошлого и та же кромка; прошлое — с кромкой темнее (его края
-        // затёрты сильнее), будущее — светлее.
+        // Цвет — как у карточек картотеки, по гамме (P846): та же бумага —
+        // у прошлого цвета прошлого, у будущего цвета «сегодня» (P1050) — и та
+        // же кромка; прошлое — с кромкой темнее (его края затёрты сильнее),
+        // будущее — светлее.
         let rim: Color = Scheme.current.kraftEdge.opacity(past ? 0.9 : 0.45)
         ZStack {
             // Ноль — короткая черта поперёк середины (P859, автор по 259): от
@@ -1323,7 +1324,7 @@ struct TimeLine: View {
                 .frame(width: 12, height: 1.5)
                 .frame(width: 24, height: height)
             Capsule()
-                .fill(Scheme.current.past)
+                .fill(past ? Scheme.current.past : Scheme.current.today)
                 .overlay(Capsule().strokeBorder(rim, lineWidth: 1))
                 .frame(width: 5, height: max(0, length))
                 // Прошлое — вверх от середины, будущее — вниз.
