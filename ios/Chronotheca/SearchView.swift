@@ -613,24 +613,17 @@ struct SearchView: View {
             // полоску «Сегодня» (P1018, видео автора к 333: в гнездо летела
             // вторая полоска «Сегодня» — снимок брал её). Полоса — от низа
             // полоски, а лист сворачивается до низа полосы.
-            // Пока сворачивается, лист возвращается на своё место и
-            // докручивается к началу (P1043, видео автора к 346: смахнутый
-            // вверх прокрученный лист улетал в гнездо серединой записи, без
-            // шапки дня — и в гнезде его сменяла совсем другая картинка).
-            // Отменяет «лист стоит, где его отпустили» P1015.
-            let shown = side < 0 ? max(under, FollowRibbon.peekTop) : under
-            let keep = shown - under + band
-            NotificationCenter.default.post(name: FoldUp.toTop, object: nil)
+            let shown = side < 0 ? max(lead + under, FollowRibbon.peekTop) : lead + under
+            let keep = shown - (lead + under) + band
             fold.glide.run(FoldUp.shut, step: { p in
                 guard alive() else { return }
-                fold.at = lead * (1 - p)
                 fold.visible = full + (keep - full) * p
             }, then: {
                 guard alive() else { return }
                 let rect = CGRect(x: 0, y: shown, width: width, height: band)
                 let area = ribbon.unfold.area
                 let shot = FoldUp.picture(rect.offsetBy(dx: area.minX, dy: area.minY))
-                    .map { FoldUp.shaped($0, top: under - shown) }
+                    .map { FoldUp.shaped($0, top: lead + under - shown) }
                 withTransaction(quiet) {
                     // Полоса летит — карточка под ней садится без схемы
                     // (P1018): её сменяет полоса, а не бледный контур.
@@ -638,7 +631,7 @@ struct SearchView: View {
                     fold.band = shot
                     fold.card = picture
                     fold.cardWidth = cardWidth
-                    fold.lift = shown - under
+                    fold.lift = shown - (lead + under)
                     // Снимка нет — летит схема с места полосы.
                     if shot == nil { fold.visible = nil }
                     fold.gone = true

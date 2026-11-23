@@ -568,10 +568,8 @@ struct UnfoldVeil: ViewModifier {
         let x = flying ? from.minX * (1 - p) : 0
         let y = flying ? from.minY + (unfold.top - from.minY) * p - s * unfold.top : 0
         // Снимок карточки тает в середине пути — верх листа проступает на
-        // ней, а не сменяет её. По времени, а не по ходу (P1043): ход
-        // начинается быстро, и по нему текст сменялся в первые доли секунды.
-        let lin = flying ? 1 - pow(1 - p, 1.0 / 3) : 1
-        let q = min(1, max(0, (lin - 0.2) / 0.65))
+        // ней, а не сменяет её.
+        let q = min(1, max(0, (p - 0.12) / 0.7))
         return content.clipShape(TopBand(bottom: unfold.shutter
             ? unfold.top + unfold.height + rest * move.p : nil))
             .modifier(FlightMask(t: p, grow: g, card: card, cardShown: Double(1 - q * q * (3 - 2 * q)),
