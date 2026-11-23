@@ -116,7 +116,6 @@ struct PlanTitle: UIViewRepresentable {
         context.coordinator.parent = self
         context.coordinator.open = context.environment.openPoint
         (view as? TitleView)?.indent = indent
-        (view as? TitleView)?.wrap = wrap
         view.isEditable = editable
         view.isSelectable = editable
         apply(to: view, context.coordinator)
@@ -179,12 +178,14 @@ struct PlanTitle: UIViewRepresentable {
         return out
     }
 
-    /// Строки после «Ввода» — новые абзацы: они идут из-под времени, как
-    /// перенесённые, а не с отступом первой строки (P652).
+    /// Строки после «Ввода» — новые абзацы прямо под названием дела, с тем
+    /// же отступом, что первая строка (P1052, автор: «да, под название»;
+    /// прежде шли из-под времени, как перенесённые, P652). Перенос самой
+    /// первой строки по-прежнему из-под времени (P177).
     func continuationStyle() -> NSParagraphStyle {
         let paragraph = NSMutableParagraphStyle()
-        paragraph.firstLineHeadIndent = wrap
-        paragraph.headIndent = wrap
+        paragraph.firstLineHeadIndent = indent
+        paragraph.headIndent = indent
         paragraph.lineSpacing = 0
         return paragraph
     }
@@ -388,8 +389,6 @@ struct PlanTitle: UIViewRepresentable {
 /// (решение P193).
 final class TitleView: UITextView {
     var indent: CGFloat = 0
-    /// Откуда идут строки после «Ввода» (P652).
-    var wrap: CGFloat = 0
 
     override func caretRect(for position: UITextPosition) -> CGRect {
         var r = super.caretRect(for: position)
@@ -402,7 +401,7 @@ final class TitleView: UITextView {
         let at = offset(from: beginningOfDocument, to: position)
         if at > 0, at <= ns.length, ns.character(at: at - 1) == 10,
            at == ns.length || ns.character(at: at) == 10 {
-            r.origin.x = textContainerInset.left + textContainer.lineFragmentPadding + wrap
+            r.origin.x = textContainerInset.left + textContainer.lineFragmentPadding + indent
         }
         return r
     }
