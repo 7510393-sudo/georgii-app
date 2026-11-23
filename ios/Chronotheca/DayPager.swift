@@ -843,6 +843,7 @@ struct SideDay: View {
                   answer: { answers[$0] ?? "" },
                   // Те же «Итоги дня», что у открытой страницы (P1012, P114).
                   isPast: date < DayStore.today(),
+                  isFuture: Calendar.current.startOfDay(for: date) > DayStore.today(),
                   title: .constant(title),
                   text: .constant(text),
                   editable: false,
