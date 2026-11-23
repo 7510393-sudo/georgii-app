@@ -1103,6 +1103,9 @@ final class FoldUp: ObservableObject {
     var under: CGFloat = 0
     let glide = Glide()
 
+    /// Лист пора докрутить к началу: его закрывают в карточку (P1043).
+    static let toTop = Notification.Name("FoldUp.toTop")
+
     /// Как сворачивается и сколько летит полоса.
     static let shut: Double = 0.28
     static let flight: Double = 0.36
