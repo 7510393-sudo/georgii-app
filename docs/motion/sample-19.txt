@@ -1,41 +1,41 @@
 
 Sort by top of stack, same collapsed (when >= 5):
-        __workq_kernreturn  (in libsystem_kernel.dylib)        2484
-        __ulock_wait  (in libsystem_kernel.dylib)        621
-        mach_msg2_trap  (in libsystem_kernel.dylib)        621
-        semaphore_wait_trap  (in libsystem_kernel.dylib)        621
-        AG::data::table::alloc_page(AG::data::zone&, unsigned int)  (in AttributeGraph)        36
-        swift::MetadataCacheKey::operator==(swift::MetadataCacheKey const&) const  (in libswiftCore.dylib)        33
-        <deduplicated_symbol>  (in SwiftUICore)        20
-        lstat  (in libsystem_kernel.dylib)        17
-        specialized find1<A>(_:key:filter:)  (in SwiftUICore)        16
-        objc_msgSend  (in libobjc.A.dylib)        9
-        swift_retain  (in libswiftCore.dylib)        9
-        getCache(swift::TargetTypeContextDescriptor<swift::InProcess> const&)  (in libswiftCore.dylib)        8
-        util::UntypedTable::lookup(void*, void**) const  (in AttributeGraph)        8
-        <deduplicated_symbol>  (in libswiftCore.dylib)        7
-        OTL::GPOS::ApplyPairPosAccelerated(OTL::Lookup const&, unsigned int, TGlyphIterator&) const  (in CoreText)        6
-        _platform_memmove  (in libsystem_platform.dylib)        6
-        _swift_getGenericMetadata(swift::MetadataRequest, void const* const*, swift::TargetTypeContextDescriptor<swift::InProcess> const*)  (in libswiftCore.dylib)        6
-        malloc_type_malloc  (in libsystem_malloc.dylib)        6
-        swift::ConcurrentReadableHashMap<swift::HashMapElementWrapper<swift::GenericCacheEntry>, swift::Mutex>::find<swift::MetadataCacheKey>(swift::MetadataCacheKey const&, swift::ConcurrentReadableHashMap<swift::HashMapElementWrapper<swift::GenericCacheEntry>, swift::Mutex>::IndexStorage, unsigned long, swift::HashMapElementWrapper<swift::GenericCacheEntry>*)  (in libswiftCore.dylib)        6
-        pthread_getspecific  (in libsystem_pthread.dylib)        5
-        swift_allocObject  (in libswiftCore.dylib)        5
+        __workq_kernreturn  (in libsystem_kernel.dylib)        1771
+        mach_msg2_trap  (in libsystem_kernel.dylib)        1124
+        semaphore_timedwait_trap  (in libsystem_kernel.dylib)        630
+        semaphore_wait_trap  (in libsystem_kernel.dylib)        554
+        __semwait_signal  (in libsystem_kernel.dylib)        316
+        writev  (in libsystem_kernel.dylib)        83
+        objc_msgSend  (in libobjc.A.dylib)        39
+        pthread_setspecific  (in libsystem_pthread.dylib)        25
+        pthread_getspecific  (in libsystem_pthread.dylib)        23
+        <deduplicated_symbol>  (in SwiftUI)        13
+        <deduplicated_symbol>  (in SwiftUICore)        13
+        _platform_memmove  (in libsystem_platform.dylib)        13
+        __CF_IS_OBJC  (in CoreFoundation)        11
+        ___CFBasicHashFindBucket_Linear  (in CoreFoundation)        11
+        specialized find1<A>(_:key:filter:)  (in SwiftUICore)        9
+        objc_release  (in libobjc.A.dylib)        8
+        swift_retain  (in libswiftCore.dylib)        7
+        CFRelease  (in CoreFoundation)        6
+        _CFRelease  (in CoreFoundation)        6
+        _xzm_malloc_zone_malloc_type_calloc_entry  (in libsystem_malloc.dylib)        6
+        _xzm_xzone_malloc  (in libsystem_malloc.dylib)        6
+        swift_release  (in libswiftCore.dylib)        6
+        -[__NSDictionaryM objectForKey:]  (in CoreFoundation)        5
+        __CFStringCreateImmutableFunnel3  (in CoreFoundation)        5
+        __CFStringEqual  (in CoreFoundation)        5
+        _xzm_free  (in libsystem_malloc.dylib)        5
+        _xzm_xzone_malloc_tiny  (in libsystem_malloc.dylib)        5
+        objc_autoreleaseReturnValue  (in libobjc.A.dylib)        5
 
 Binary Images:
-       0x10435c000 -        0x10435f507 +com.kobiashvili.diary (1.0 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/88D3773F-284D-4372-A1C8-D4F6741D5E76/Chronotheca.app/Chronotheca
-       0x104370000 -        0x1043aaee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
-       0x1043f0000 -        0x1043f83d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
-       0x1044b0000 -        0x1044fee9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
-       0x10456c000 -        0x10457810b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
-       0x104640000 -        0x10464803f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
-       0x104664000 -        0x104717523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
-       0x1047bc000 -        0x1047ff65f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
-       0x104910000 -        0x1049a92af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
-       0x10514c000 -        0x10514edff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
-       0x105168000 -        0x105168b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
-       0x105178000 -        0x10518339f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
-       0x10519c000 -        0x10519fe5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
-       0x1051bc000 -        0x1051c549f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
-       0x1051e4000 -        0x1051fd27f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
-       0x105630000 -        0x105636b7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x100950000 -        0x100953507 +com.kobiashvili.diary (1.0 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/14A6F0D4-8FE0-43FE-AA80-1FDB783816AE/Chronotheca.app/Chronotheca
+       0x100964000 -        0x10099eee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
+       0x1009e4000 -        0x1009ec3d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
+       0x100aa4000 -        0x100af2e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x100b60000 -        0x100b6c10b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
+       0x100c10000 -        0x100cc3523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
+       0x100d68000 -        0x100dab65f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x100ebc000 -        0x100f552af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x10162c000 -        0x10162edff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
