@@ -998,14 +998,23 @@ final class Unfold: ObservableObject {
         // гнезда ровно такой, какая есть»). Прежде видимое бралось не больше
         // высоты без нахлёста — а у ближнего края следующая карточка стоит
         // ниже, и снизу срезалась видимая строка. Следующей нет — вся.
+        // P1047 (автор по 347: «всё равно обрезается»): следующая
+        // закрывает карточку только корешком слева, а справа от корешка
+        // карточка видна ещё на высоту корешка — там последняя строка.
+        // Снимок берётся до верха тела следующей, а её корешок вырезается.
         var visible = card.height
-        if let below { visible = min(visible, max(below - card.minY, Search.tabHeight + 8)) }
+        var next: CGFloat? = nil
+        if let below {
+            let lip = max(below - card.minY, Search.tabHeight + 8)
+            visible = min(visible, lip + Search.tabHeight)
+            if lip < visible { next = lip }
+        }
         let seen = CGRect(x: card.minX, y: card.minY, width: card.width,
                           height: max(Search.tabHeight + 8, visible))
         guard let raw = FoldUp.picture(seen.offsetBy(dx: area.minX, dy: area.minY)) else {
             _ = open(); return
         }
-        let picture = Self.cut(raw)
+        let picture = Self.cut(raw, next: next)
         pictures[id] = picture
         self.top = top
         grow = area.width / seen.width
@@ -1046,16 +1055,26 @@ final class Unfold: ObservableObject {
     }
 
     /// Снимок карточки — по её контуру: вокруг корешка и по бокам ничего.
-    static func cut(_ image: UIImage) -> UIImage {
+    /// `next` — где в снимке начинается корешок следующей карточки: он
+    /// вырезается, видимое справа от него остаётся (P1047).
+    static func cut(_ image: UIImage, next: CGFloat? = nil) -> UIImage {
         let size = image.size
-        let outline = FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare)
-            .path(in: CGRect(origin: .zero, size: size))
+        let shape = FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare)
+        let outline = shape.path(in: CGRect(origin: .zero, size: size))
         let format = UIGraphicsImageRendererFormat()
         format.scale = image.scale
         format.opaque = false
         return UIGraphicsImageRenderer(size: size, format: format).image { context in
             context.cgContext.addPath(outline.cgPath)
-            context.cgContext.clip()
+            if let next {
+                // Чёт-нечет: где следующая лежит поверх — вырезано.
+                let lower = shape.path(in: CGRect(x: 0, y: next, width: size.width,
+                                                  height: size.height + Search.tabHeight))
+                context.cgContext.addPath(lower.cgPath)
+                context.cgContext.clip(using: .evenOdd)
+            } else {
+                context.cgContext.clip()
+            }
             image.draw(at: .zero)
         }
     }
