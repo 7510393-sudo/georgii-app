@@ -490,7 +490,8 @@ struct FoldGhost: View {
                 .modifier(FlightMask(t: 1 - p, grow: max(1, full / cardWidth), card: fold.card,
                                      cardShown: Double(q * q * (3 - 2 * q)),
                                      at: 0, height: height, top: -fold.lift,
-                                     shade: 0.16 * Double(min(1, p * 5, (1 - p) * 5))))
+                                     shade: 0.16 * Double(min(1, p * 5, (1 - p) * 5)),
+                                     notch: fold.notch))
                 .scaleEffect(s, anchor: .topLeading)
                 .offset(x: r.minX, y: r.minY)
                 .frame(width: size.width, height: size.height, alignment: .topLeading)
@@ -576,7 +577,8 @@ struct UnfoldVeil: ViewModifier {
             ? unfold.top + unfold.height + rest * move.p : nil))
             .modifier(FlightMask(t: p, grow: g, card: card, cardShown: Double(1 - q * q * (3 - 2 * q)),
                                  at: unfold.top, height: unfold.height, on: flying,
-                                 shade: 0.16 * Double(min(1, p * 5, (1 - p) * 5))))
+                                 shade: 0.16 * Double(min(1, p * 5, (1 - p) * 5)),
+                                 notch: unfold.notch))
             .scaleEffect(s, anchor: .topLeading)
             .offset(x: x, y: y)
     }

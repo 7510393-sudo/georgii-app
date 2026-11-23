@@ -636,6 +636,7 @@ struct SearchView: View {
                     landing.bare = shot != nil
                     fold.band = shot
                     fold.card = picture
+                    fold.notch = ribbon.unfold.notches[closed] ?? 0
                     fold.cardWidth = cardWidth
                     fold.lift = shown - under
                     // Снимка нет — летит схема с места полосы.
@@ -1549,6 +1550,10 @@ struct MorphFolder: Shape {
     var at: CGFloat = 0
     /// Не летит — не обрезает ничего (вид при этом не пересобирается).
     var on = true
+    /// Корешок следующей карточки внизу слева (P1049, автор по 349:
+    /// «закрывается корешок передней карточки в начале и конце открытия»):
+    /// контур полёта его не накрывает. Вычитается чёт-нечетом.
+    var notch: CGFloat = 0
 
     private func mix(_ a: CGFloat, _ b: CGFloat) -> CGFloat { a + (b - a) * t }
 
@@ -1584,6 +1589,26 @@ struct MorphFolder: Shape {
                  tangent2End: CGPoint(x: r.maxX, y: shoulder + bodyR), radius: bodyR)
         p.addLine(to: CGPoint(x: r.maxX, y: maxY))
         p.closeSubpath()
+        let nh = min(notch, maxY - shoulder)
+        if nh > 1 {
+            // Корешок следующей: левая треть, скруглённый верх, вогнутый
+            // переход в плечо — весь внутри контура, низом по низу полосы.
+            let top = maxY - nh
+            let tabEdge = r.minX + r.width * Search.tabShare
+            let rr = min(10 * g, nh / 2)
+            let cove = min(rr, nh / 2)
+            p.move(to: CGPoint(x: r.minX, y: maxY))
+            p.addLine(to: CGPoint(x: r.minX, y: top + rr))
+            p.addArc(tangent1End: CGPoint(x: r.minX, y: top),
+                     tangent2End: CGPoint(x: r.minX + rr, y: top), radius: rr)
+            p.addLine(to: CGPoint(x: tabEdge - rr, y: top))
+            p.addArc(tangent1End: CGPoint(x: tabEdge, y: top),
+                     tangent2End: CGPoint(x: tabEdge, y: top + rr), radius: rr)
+            p.addLine(to: CGPoint(x: tabEdge, y: maxY - cove))
+            p.addArc(tangent1End: CGPoint(x: tabEdge, y: maxY),
+                     tangent2End: CGPoint(x: tabEdge + cove, y: maxY), radius: cove)
+            p.closeSubpath()
+        }
         return p
     }
 }
@@ -1607,9 +1632,13 @@ struct FlightMask: ViewModifier {
     /// Сила тени: в гнезде и у верха её нет, в пути — есть (не появляется
     /// разом, P893).
     var shade: Double = 0.16
+    /// Вырез под корешок следующей карточки (P1049), в точках карточки:
+    /// в гнезде — во всю высоту, к листу сходит на нет.
+    var notch: CGFloat = 0
 
     func body(content: Content) -> some View {
-        let shape = MorphFolder(t: t, grow: grow, top: top, height: height, at: at, on: on)
+        let shape = MorphFolder(t: t, grow: grow, top: top, height: height, at: at, on: on,
+                                notch: notch * grow * max(0, 1 - t))
         content
             .overlay(alignment: .topLeading) {
                 if let card {
@@ -1621,9 +1650,9 @@ struct FlightMask: ViewModifier {
                         .opacity(cardShown)
                 }
             }
-            .clipShape(shape)
+            .clipShape(shape, style: FillStyle(eoFill: true))
             .background {
-                shape.fill(Color.black.opacity(on ? shade : 0))
+                shape.fill(Color.black.opacity(on ? shade : 0), style: FillStyle(eoFill: true))
                     .blur(radius: 5)
                     .offset(y: 3)
             }

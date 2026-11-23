@@ -974,6 +974,11 @@ final class Unfold: ObservableObject {
     /// Снимки карточек, которые открывали (P1034): закрытый день садится
     /// обратно той же карточкой, а не другой картинкой.
     private(set) var pictures: [String: UIImage] = [:]
+    /// Высота выреза под корешок следующей карточки внизу слева снимка
+    /// (P1049): по ней вырезан и контур полёта.
+    private(set) var notches: [String: CGFloat] = [:]
+    /// Вырез летящей сейчас карточки.
+    private(set) var notch: CGFloat = 0
 
     /// К верху и разворот вниз.
     static let fly: Double = 0.34
@@ -1016,6 +1021,8 @@ final class Unfold: ObservableObject {
         }
         let picture = Self.cut(raw, next: next)
         pictures[id] = picture
+        notch = next.map { max(0, seen.height - $0) } ?? 0
+        notches[id] = notch
         self.top = top
         grow = area.width / seen.width
         height = seen.height * grow
@@ -1116,6 +1123,8 @@ final class FoldUp: ObservableObject {
     var card: UIImage?
     /// Ширина карточки в ленте: к ней полоса сужается.
     var cardWidth: CGFloat = 0
+    /// Вырез под корешок следующей у снимка карточки (P1049).
+    var notch: CGFloat = 0
     /// Верх листа выше полосы — у будущего, утянутого под «Сегодня».
     var lift: CGFloat = 0
     /// Где верх листа от верха места: у будущего — под полоской «Сегодня».
