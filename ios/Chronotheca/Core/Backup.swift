@@ -16,7 +16,12 @@ import UIKit
 /// трогает: его только читают.
 enum Backup {
 
-    static let folderName = "Chronotheca Backup"
+    /// Имя папки копии — по имени приложения (P1054; прежде рабочее
+    /// «Chronotheca Backup»: в «Файлах» человек его не узнавал).
+    static let folderName = "RollingDays Backup"
+    /// Прежнее имя: такую папку при следующей копии переименовывают в
+    /// новое, и копия продолжается в ней, а не начинается заново.
+    static let oldFolderName = "Chronotheca Backup"
 
     private static let bookmarkKey = "backup.bookmark"
     private static let pathKey = "backup.path"
@@ -157,6 +162,12 @@ enum Backup {
             return .failure(.text(t))
         }
         let fm = FileManager.default
+        // Копия под прежним именем — переименовать (P1054). Не вышло —
+        // копия идёт в новую папку целиком, старая остаётся как была.
+        let old = dest.appendingPathComponent(oldFolderName)
+        if fm.fileExists(atPath: old.path), !fm.fileExists(atPath: session.target.path) {
+            try? fm.moveItem(at: old, to: session.target)
+        }
         do {
             try fm.createDirectory(at: session.target, withIntermediateDirectories: true)
             let probe = session.target.appendingPathComponent(".probe-" + UUID().uuidString)

@@ -62,6 +62,20 @@ final class BackupTests: XCTestCase {
         XCTAssertNotNil(Backup.last)
     }
 
+    /// P1054: копия под прежним именем переименовывается и продолжается —
+    /// заново ничего не копируется.
+    func testПрежняяПапкаКопииПереименовывается() {
+        put("Diary/2026/2026-10-04.md", "снег")
+        XCTAssertNil(Backup.choose(place))
+        XCTAssertEqual(run()?.copied, 1)
+        let now = place.appendingPathComponent(Backup.folderName)
+        let old = place.appendingPathComponent(Backup.oldFolderName)
+        XCTAssertNoThrow(try fm.moveItem(at: now, to: old))
+        XCTAssertEqual(run()?.copied, 0, "копия продолжается в прежних файлах")
+        XCTAssertFalse(fm.fileExists(atPath: old.path), "прежняя папка переименована")
+        XCTAssertEqual(copied("Diary/2026/2026-10-04.md"), "снег")
+    }
+
     /// Пять ступеней (P375): копия сверяется с описью, в ней лежит опись
     /// для человека, временных и пробных файлов не остаётся.
     func testСверкаИОписьВКопии() {
