@@ -1381,9 +1381,31 @@ struct FoldSchema: View {
 private struct UnfoldHole: ViewModifier {
     @ObservedObject var unfold: Unfold
     let id: String
+    @Environment(\.colorScheme) private var scheme
 
     func body(content: Content) -> some View {
-        content.opacity(unfold.hole == id ? 0 : 1)
+        let away = unfold.hole == id
+        content
+            .opacity(away ? 0 : 1)
+            // Тень карточки остаётся, пока гнездо пустует (P1048, автор по
+            // 348: «в момент, когда начинается движение, у карточек скачком
+            // пропадают тени, а потом скачком появляются»): гаснет только
+            // сама карточка, её тень на соседях и столе — та же, что была.
+            // Тень — та же, что у `SearchCard`, и только снаружи контура.
+            .background {
+                if away {
+                    PaintedShadow(radius: 5, corner: 12, x: 2, y: 3,
+                                  opacity: scheme == .dark ? 0.5 : 0.3)
+                        .padding(.top, Search.tabHeight)
+                        .mask {
+                            Rectangle().padding(-24)
+                                .overlay(FolderShape(tabHeight: Search.tabHeight, tabShare: Search.tabShare)
+                                    .blendMode(.destinationOut))
+                                .compositingGroup()
+                        }
+                        .allowsHitTesting(false)
+                }
+            }
     }
 }
 
