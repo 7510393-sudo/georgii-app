@@ -1106,22 +1106,11 @@ enum Search {
     }
 
     /// «2026 сентябрь 22» — от крупного к мелкому, как ищут в архиве.
-    /// День недели двумя буквами (P844): ПН, ВТ, СР… — на языке приложения
-    /// (у английского Mo, Tu…). Названия берутся у календаря один раз.
+    /// День недели двумя буквами (P844): ПН, ВТ, СР… — те же, что в шапке
+    /// календаря (P1053; прежде свои, от календаря iPhone).
     static func weekday(_ date: Date) -> String {
-        if weekdayCode != Lang.code {
-            var cal = Calendar(identifier: .gregorian)
-            cal.locale = Lang.locale
-            weekdayNames = cal.shortStandaloneWeekdaySymbols.map {
-                String($0.replacingOccurrences(of: ".", with: "").prefix(2)).uppercased()
-            }
-            weekdayCode = Lang.code
-        }
-        let i = Calendar.current.component(.weekday, from: date) - 1
-        return weekdayNames.indices.contains(i) ? weekdayNames[i] : ""
+        String(Ru.weekdayShort(date).prefix(2)).uppercased()
     }
-    private static var weekdayCode = ""
-    private static var weekdayNames: [String] = []
 
     static func stamp(_ date: Date) -> String {
         let c = Calendar.current.dateComponents([.day, .month, .year], from: date)

@@ -245,7 +245,7 @@ struct TrashSheet: View {
                 }
                 ForEach(items) { item in
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(Ru.weekday(item.date) + ", " + Ru.longDate(item.date))
+                        Text(Ru.dayLine(item.date))
                             .font(Look.sans(15, weight: .medium))
                         Text(item.preview)
                             .font(Look.serif(13.5))

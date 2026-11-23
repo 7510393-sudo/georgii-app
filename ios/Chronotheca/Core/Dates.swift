@@ -91,6 +91,13 @@ enum Ru {
         return "\(c.day ?? 1) \(months[(c.month ?? 1) - 1]) ’\(String(format: "%02d", (c.year ?? 2026) % 100))"
     }
 
+    /// «13 сентября ’26, воскресенье» — один вид даты дня на экране (P1053):
+    /// под именем листа, в списке дня календаря, в корзине. Корешок
+    /// карточки — свой порядок, год первым (P123).
+    static func dayLine(_ date: Date) -> String {
+        headDate(date) + ", " + weekday(date)
+    }
+
     /// «13 сентября»
     static func shortDate(_ date: Date) -> String {
         guard own else { return pattern("dMMMM", date) }

@@ -548,9 +548,10 @@ struct CalendarView: View {
         if let stamp = selected, let date = Vault.date(from: stamp) {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    // Сначала число, справа день недели (P467).
-                    (Text(Ru.shortDate(date)).foregroundColor(Look.ink)
-                     + Text("  " + Ru.weekdayShort(date)).foregroundColor(Ru.dayColor(date)))
+                    // Как под именем листа (P1053): «23 ноября ’26,
+                    // понедельник»; сначала число, справа день недели (P467).
+                    (Text(Ru.headDate(date) + ", ").foregroundColor(Look.ink)
+                     + Text(Ru.weekday(date)).foregroundColor(Ru.dayColor(date)))
                         .font(Look.sans(13, weight: .medium))
                     Spacer()
                     Button(T("Открыть день →", "Open day →")) { open(date) }
