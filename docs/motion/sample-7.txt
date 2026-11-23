@@ -1,17 +1,41 @@
 
 Sort by top of stack, same collapsed (when >= 5):
-        mach_msg2_trap  (in dyld)        645
-        PatchTableV2::clientsExportsForImageAndClient(unsigned int, unsigned int) const  (in dyld_sim)        83
-        mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim)        71
-        dyld3::MachOFile::trieWalk(Diagnostics&, unsigned char const*, unsigned char const*, char const*)  (in dyld_sim)        58
-        invocation function for block in dyld4::Loader::applyInterposingToDyldCache(dyld4::RuntimeState&)  (in dyld_sim)        53
-        invocation function for block in dyld4::Loader::applyCachePatchesToOverride(dyld4::RuntimeState&, dyld4::Loader const*, unsigned short, dyld4::Loader::DylibPatch const*, dyld4::DyldCacheDataConstLazyScopedWriter&) const  (in dyld_sim)        46
-        strcmp  (in dyld_sim)        41
-        PatchTableV4::forEachPatchableCacheUseOfExport(unsigned int, unsigned int, unsigned long long, unsigned long long (unsigned int) block_pointer, void (unsigned long long, dyld3::MachOFile::PointerMetaData, unsigned long long, bool) block_pointer) const  (in dyld_sim)        12
-        <deduplicated_symbol>  (in dyld)        6
-        dyld4::JustInTimeLoader::matchesPath(dyld4::RuntimeState const&, char const*) const  (in dyld_sim)        6
-        invocation function for block in mach_o::UnsafeHeader::getDylibInstallName(char const**, mach_o::Version32*, mach_o::Version32*) const  (in dyld_sim)        6
-        PatchTableV4::forEachPatchableUseOfExportInImage(unsigned int, unsigned int, unsigned int, void (unsigned int, dyld3::MachOFile::PointerMetaData, unsigned long long, bool) block_pointer) const  (in dyld_sim)        5
-
-Binary images description not available
-
+        __workq_kernreturn  (in libsystem_kernel.dylib)        8956
+        mach_msg2_trap  (in libsystem_kernel.dylib)        2412
+        semaphore_timedwait_trap  (in libsystem_kernel.dylib)        2050
+        semaphore_wait_trap  (in libsystem_kernel.dylib)        2021
+        __semwait_signal  (in libsystem_kernel.dylib)        211
+        writev  (in libsystem_kernel.dylib)        105
+        objc_msgSend  (in libobjc.A.dylib)        92
+        <deduplicated_symbol>  (in SwiftUICore)        55
+        pthread_getspecific  (in libsystem_pthread.dylib)        39
+        pthread_setspecific  (in libsystem_pthread.dylib)        32
+        <deduplicated_symbol>  (in SwiftUI)        26
+        __CFStringHash  (in CoreFoundation)        24
+        _platform_memmove  (in libsystem_platform.dylib)        24
+        __CFStringAppendFormatCore  (in CoreFoundation)        23
+        ___CFBasicHashFindBucket_Linear  (in CoreFoundation)        22
+        __CF_IS_OBJC  (in CoreFoundation)        19
+        _xzm_free  (in libsystem_malloc.dylib)        19
+        specialized find1<A>(_:key:filter:)  (in SwiftUICore)        19
+        swift_retain  (in libswiftCore.dylib)        18
+        swift::MetadataCacheKey::operator==(swift::MetadataCacheKey const&) const  (in libswiftCore.dylib)        17
+        swift_release  (in libswiftCore.dylib)        17
+        <deduplicated_symbol>  (in libswiftCore.dylib)        15
+        objc_retain  (in libobjc.A.dylib)        15
+        objc_autoreleaseReturnValue  (in libobjc.A.dylib)        13
+        _CFRelease  (in CoreFoundation)        11
+        __CFStringCreateImmutableFunnel3  (in CoreFoundation)        11
+        _xzm_xzone_malloc  (in libsystem_malloc.dylib)        11
+        customRR_retain  (in libobjc.A.dylib)        11
+        objc_retainAutoreleasedReturnValue  (in libobjc.A.dylib)        11
+        __trampolines  (in libMainThreadChecker.dylib)        10
+        objc_retain_x19  (in libobjc.A.dylib)        10
+        -[__NSDictionaryM objectForKey:]  (in CoreFoundation)        9
+        <deduplicated_symbol>  (in Foundation)        8
+        _platform_strcmp$VARIANT$Base  (in libsystem_platform.dylib)        8
+        getCache(swift::TargetTypeContextDescriptor<swift::InProcess> const&)  (in libswiftCore.dylib)        8
+        initializeWithCopy for AccessibilityAttachment  (in SwiftUICore)        8
+        objc::DenseMapBase<objc::DenseMap<DisguisedPtr<objc_object>, objc::DenseMap<void const*, objc::ObjcAssociation, objc::DenseMapValueInfo<objc::ObjcAssociation>, objc::DenseMapInfo<void const*>, objc::detail::DenseMapPair<void const*, objc::ObjcAssociation>>, objc::DenseMapValueInfo<objc::DenseMap<void const*, objc::ObjcAssociation, objc::DenseMapValueInfo<objc::ObjcAssociation>, objc::DenseMapInfo<void const*>, objc::detail::DenseMapPair<void const*, objc::ObjcAssociation>>>, objc::DenseMapInfo<DisguisedPtr<objc_object>>, objc::detail::DenseMapPair<DisguisedPtr<objc_object>, objc::DenseMap<void const*, objc::ObjcAssociation, objc::DenseMapValueInfo<objc::ObjcAssociation>, objc::DenseMapInfo<void const*>, objc::detail::DenseMapPair<void const*, objc::ObjcAssociation>>>>, DisguisedPtr<objc_object>, objc::DenseMap<void const*, objc::ObjcAssociation, objc::DenseMapValueInfo<objc::ObjcAssociation>, objc::DenseMapInfo<void const*>, objc::detail::DenseMapPair<void const*, objc::ObjcAssociation>>, objc::DenseMapValueInfo<objc::DenseMap<void const*, objc::ObjcAssociation, objc::DenseMapValueInfo<objc::ObjcAssociation>, objc::DenseMapInfo<void const*>, objc::detail::DenseMapPair<void const*, objc::ObjcAssociation>>>, objc::DenseMapInfo<DisguisedPtr<objc_object>>, objc::detail::DenseMapPair<DisguisedPtr<objc_object>, objc::DenseMap<void const*, objc::ObjcAssociation, objc::DenseMapValueInfo<objc::ObjcAssociation>, objc::DenseMapInfo<void const*>, objc::detail::DenseMapPair<void const*, objc::ObjcAssociation>>>>::LookupBucketFor<DisguisedPtr<objc_object>>(DisguisedPtr<objc_object> const&, objc::detail::DenseMapPair<DisguisedPtr<objc_object>, objc::DenseMap<void const*, objc::ObjcAssociation, objc::DenseMapValueInfo<objc::ObjcAssociation>, objc::DenseMapInfo<void const*>, objc::detail::DenseMapPair<void const*, objc::ObjcAssociation>>> const*&) const  (in libobjc.A.dylib)        8
+        objc_msgSendSuper2  (in libobjc.A.dylib)        8
+        object_getClass  (in libobjc.A.dylib)        8
