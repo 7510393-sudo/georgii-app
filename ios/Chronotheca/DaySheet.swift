@@ -174,14 +174,6 @@ struct DaySheet<Plan: View, Diary: View>: View {
                         settle(proxy, fresh: true)
                     }
                     .onChange(of: home) { _, _ in goHome(proxy) }
-                    // Лист закрывают в карточку (P1043): пока он сворачивается,
-                    // он докручивается к началу — в гнездо летит его верх, а
-                    // не середина прокрученной записи.
-                    .onReceive(NotificationCenter.default.publisher(for: FoldUp.toTop)) { _ in
-                        withAnimation(.easeInOut(duration: FoldUp.shut)) {
-                            proxy.scrollTo(Self.top, anchor: .top)
-                        }
-                    }
                     .onChange(of: land) { _, _ in settle(proxy, fresh: false) }
                 }
             }
