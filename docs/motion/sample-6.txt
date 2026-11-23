@@ -1,16 +1,41 @@
 
 Sort by top of stack, same collapsed (when >= 5):
-        mach_msg2_trap  (in dyld)        377
-        invocation function for block in dyld4::Loader::applyCachePatchesToOverride(dyld4::RuntimeState&, dyld4::Loader const*, unsigned short, dyld4::Loader::DylibPatch const*, dyld4::DyldCacheDataConstLazyScopedWriter&) const  (in dyld_sim)        75
-        mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim)        73
-        dyld3::MachOFile::forEachChainedFixupTarget(Diagnostics&, dyld_chained_fixups_header const*, linkedit_data_command const*, void (int, char const*, unsigned long long, bool, bool&) block_pointer)  (in dyld_sim)        58
-        strcmp  (in dyld_sim)        53
-        dyld3::MachOFile::trieWalk(Diagnostics&, unsigned char const*, unsigned char const*, char const*)  (in dyld_sim)        43
-        invocation function for block in dyld4::Loader::applyInterposingToDyldCache(dyld4::RuntimeState&)  (in dyld_sim)        38
-        PatchTableV2::clientsExportsForImageAndClient(unsigned int, unsigned int) const  (in dyld_sim)        23
-        <deduplicated_symbol>  (in dyld)        10
-        PatchTableV4::forEachPatchableCacheUseOfExport(unsigned int, unsigned int, unsigned long long, unsigned long long (unsigned int) block_pointer, void (unsigned long long, dyld3::MachOFile::PointerMetaData, unsigned long long, bool) block_pointer) const  (in dyld_sim)        7
-        invocation function for block in mach_o::UnsafeHeader::getDylibInstallName(char const**, mach_o::Version32*, mach_o::Version32*) const  (in dyld_sim)        7
+        __workq_kernreturn  (in libsystem_kernel.dylib)        1034
+        mach_msg2_trap  (in libsystem_kernel.dylib)        467
+        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        348
+        semaphore_timedwait_trap  (in libsystem_kernel.dylib)        221
+        writev  (in libsystem_kernel.dylib)        46
+        pthread_getspecific  (in libsystem_pthread.dylib)        24
+        objc_msgSend  (in libobjc.A.dylib)        22
+        pthread_setspecific  (in libsystem_pthread.dylib)        19
+        static PageTexture.smooth(_:_:_:_:_:)  (in Chronotheca.debug.dylib)        17
+        generationCountFromListOfSources  (in CoreFoundation)        15
+        __CF_IS_OBJC  (in CoreFoundation)        12
+        -[__NSDictionaryM objectForKey:]  (in CoreFoundation)        11
+        __ulock_wake  (in libsystem_kernel.dylib)        11
+        __CFStringHash  (in CoreFoundation)        10
+        _CFStringGetCStringPtrInternal  (in CoreFoundation)        9
+        min<A>(_:_:)  (in libswiftCore.dylib)        8
+        static PageTexture.grey.getter  (in Chronotheca.debug.dylib)        8
+        _platform_memmove  (in libsystem_platform.dylib)        7
+        _xzm_free  (in libsystem_malloc.dylib)        7
+        isEqualToString  (in CoreFoundation)        7
+        <deduplicated_symbol>  (in libswiftCore.dylib)        6
+        _CFRelease  (in CoreFoundation)        6
+        _swift_isClassOrObjCExistentialType  (in libswiftCore.dylib)        6
+        os_unfair_lock_lock  (in libsystem_platform.dylib)        6
+        static PageTexture.makeAgedFolder(size:band:seed:tab:share:light:)  (in Chronotheca.debug.dylib)        6
+        -[__NSCFString isEqual:]  (in CoreFoundation)        5
+        CFStringGetLength  (in CoreFoundation)        5
+        CFStringHashCString  (in CoreFoundation)        5
+        __CFStringDeallocate  (in CoreFoundation)        5
+        objc_release  (in libobjc.A.dylib)        5
+        objc_retain  (in libobjc.A.dylib)        5
+        os_log_type_enabled  (in libsystem_trace.dylib)        5
+        swift::MetadataCacheKey::operator==(swift::MetadataCacheKey const&) const  (in libswiftCore.dylib)        5
+        swift_bridgeObjectRetain  (in libswiftCore.dylib)        5
 
-Binary images description not available
-
+Binary Images:
+       0x102944000 -        0x102947507 +com.kobiashvili.diary (1.0 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/0C4DDFFD-AC57-4565-AC06-15DD0E01844B/Chronotheca.app/Chronotheca
+       0x102954000 -        0x1029a2e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x102a10000 -        0x102ac3523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
