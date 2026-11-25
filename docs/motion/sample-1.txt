@@ -1,42 +1,142 @@
-    591 Thread_33063   DispatchQueue_1: com.apple.main-thread  (serial)
+Analysis of sampling Chronotheca (pid 14121) every 1 millisecond
+Process:         Chronotheca [14121]
+Path:            /Users/USER/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/C97726CC-AD0F-4DAC-8B5B-0CDDC380387D/Chronotheca.app/Chronotheca
+Load Address:    0x102458000
+Identifier:      Chronotheca
+Version:         ???
+Code Type:       ARM64
+Platform:        iOS Simulator
+Parent Process:  launchd_sim [1490]
+Target Type:     live task
+
+Date/Time:       2026-11-25 22:37:11.017 +0000
+Launch Time:     2026-11-25 22:36:50.342 +0000
+OS Version:      macOS 26.7.2 (25G332)
+Report Version:  7
+Analysis Tool:   /usr/bin/sample
+
+Physical footprint:         27.7M
+Physical footprint (peak):  29.7M
+Idle exit:                  untracked
+----
+
+Call graph:
+    802 Thread_43792   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 802 start  (in dyld) + 6992  [0x1024c44e4]
+    +   802 start_sim  (in dyld_sim) + 20  [0x10274b0e4]
+    +     802 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x10468c9c0]  ChronothecaApp.swift:0
+    +       802 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x10468c914]  /<compiler-generated>:0
+    +         802 static App.main()  (in SwiftUI) + 132  [0x1d2c5f084]
+    +           802 protocol witness for App.init() in conformance ChronothecaApp  (in Chronotheca.debug.dylib) + 12  [0x10468c9ac]  /<compiler-generated>:0
+    +             802 ChronothecaApp.init()  (in Chronotheca.debug.dylib) + 796  [0x104688858]  ChronothecaApp.swift:33
+    +               802 Vault.__allocating_init()  (in Chronotheca.debug.dylib) + 44  [0x104cf334c]  Vault.swift:0
+    +                 802 Vault.init()  (in Chronotheca.debug.dylib) + 1688  [0x104cf39f0]  Vault.swift:219
+    +                   802 Vault.usePreviewFolder()  (in Chronotheca.debug.dylib) + 904  [0x104cf432c]  Vault.swift:258
+    +                     800 Vault.seedPreview()  (in Chronotheca.debug.dylib) + 1136  [0x104cf6ce0]  Vault.swift:283
+    +                     ! 800 Vault.write(_:to:for:)  (in Chronotheca.debug.dylib) + 316  [0x104cf8a0c]  Vault.swift:1251
+    +                     !   800 static Vault.write(_:to:)  (in Chronotheca.debug.dylib) + 116  [0x104cfd310]  Vault.swift:1259
+    +                     !     800 static Vault.write(data:to:)  (in Chronotheca.debug.dylib) + 1068  [0x104cfcf10]  Vault.swift:1282
+    +                     !       800 -[NSFileCoordinator coordinateWritingItemAtURL:options:error:byAccessor:]  (in Foundation) + 84  [0x1811c78b4]
+    +                     !         800 -[NSFileCoordinator(NSPrivate) _coordinateWritingItemAtURL:options:error:byAccessor:]  (in Foundation) + 540  [0x1811c9c3c]
+    +                     !           800 -[NSFileCoordinator(NSPrivate) _blockOnAccessClaim:withAccessArbiter:]  (in Foundation) + 320  [0x1811c8c0c]
+    +                     !             800 interposed_dispatch_semaphore_wait  (in libRPAC.dylib) + 124  [0x1029d8458]
+    +                     !               800 _dispatch_semaphore_wait_slow  (in libdispatch.dylib) + 128  [0x1801883c0]
+    +                     !                 800 _dispatch_sema4_wait  (in libdispatch.dylib) + 24  [0x180187d60]
+    +                     !                   800 semaphore_wait_trap  (in libsystem_kernel.dylib) + 8  [0x1025fcaec]
+    +                     2 Vault.seedPreview()  (in Chronotheca.debug.dylib) + 1296  [0x104cf6d80]  Vault.swift:310
+    +                       2 static Photo.sample()  (in Chronotheca.debug.dylib) + 92  [0x1049bf214]  Pictures.swift:132
+    +                         2 UIGraphicsImageRenderer.__allocating_init(size:)  (in Chronotheca.debug.dylib) + 52  [0x10469596c]  UIGraphicsImageRenderer.h:0
+    +                           2 @nonobjc UIGraphicsImageRenderer.init(size:)  (in Chronotheca.debug.dylib) + 36  [0x104695f10]  /<compiler-generated>:0
+    +                             2 -[UIGraphicsImageRenderer initWithSize:]  (in UIKitCore) + 40  [0x185f8f2c0]
+    +                               2 +[UIGraphicsImageRendererFormat defaultFormat]  (in UIKitCore) + 44  [0x185f8e4a8]
+    +                                 2 +[UIGraphicsRendererFormat defaultFormat]  (in UIKitCore) + 12  [0x185f95af8]
+    +                                   2 -[UIGraphicsImageRendererFormat init]  (in UIKitCore) + 76  [0x185f8e744]
+    +                                     2 _UIScreenForcedMainScreenScale  (in UIKitCore) + 40  [0x185fe7a50]
+    +                                       2 _objc_msgSend_uncached  (in libobjc.A.dylib) + 64  [0x18003af00]
+    +                                         2 lookUpImpOrForward  (in libobjc.A.dylib) + 208  [0x1800533a4]
+    +                                           2 initializeAndMaybeRelock(objc_class*, objc_object*, locker_mixin<lockdebug::lock_mixin<objc_lock_base_t>>&, bool)  (in libobjc.A.dylib) + 216  [0x1800410e0]
+    +                                             2 initializeNonMetaClass  (in libobjc.A.dylib) + 532  [0x18003fe70]
+    +                                               2 CALLING_SOME_+initialize_METHOD  (in libobjc.A.dylib) + 20  [0x18003f1ec]
+    +                                                 2 +[UIScreen initialize]  (in UIKitCore) + 140  [0x185fe19ac]
+    +                                                   2 -[_UIScreenInitialDisplayConfigurationLoader initialDisplayContext]  (in UIKitCore) + 140  [0x185fe16f0]
+    +                                                     2 -[_UIApplicationConfigurationLoader applicationInitializationContext]  (in UIKitCore) + 20  [0x186002c94]
+    +                                                       2 -[_UIApplicationConfigurationLoader _loadInitializationContext]  (in UIKitCore) + 128  [0x186002a3c]
+    +                                                         2 _dispatch_once_wait  (in libdispatch.dylib) + 60  [0x1801880e4]
+    +                                                           2 _dispatch_once_wait.cold.1  (in libdispatch.dylib) + 144  [0x1801bbaa8]
+    +                                                             2 _dlock_wait  (in libdispatch.dylib) + 52  [0x180188190]
+    +                                                               2 __ulock_wait  (in libsystem_kernel.dylib) + 8  [0x1025fe788]
+    800 Thread_45126
+    + 800 start_wqthread  (in libsystem_pthread.dylib) + 8  [0x1026e5a28]
+    +   800 _pthread_wqthread  (in libsystem_pthread.dylib) + 364  [0x1026e6c74]
+    +     800 __workq_kernreturn  (in libsystem_kernel.dylib) + 8  [0x1025fe698]
+    2 Thread_45126   DispatchQueue_41: com.apple.uikit.applicationSupportClient  (serial)
+    + 2 start_wqthread  (in libsystem_pthread.dylib) + 8  [0x1026e5a28]
+    +   2 _pthread_wqthread  (in libsystem_pthread.dylib) + 228  [0x1026e6bec]
+    +     2 _dispatch_worker_thread2  (in libdispatch.dylib) + 252  [0x180199eb0]
+    +       2 _dispatch_root_queue_drain  (in libdispatch.dylib) + 880  [0x1801996fc]
+    +         2 <deduplicated_symbol>  (in libdispatch.dylib) + 24  [0x1801bd748]
+    +           2 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +             2 _dispatch_call_block_and_release  (in libdispatch.dylib) + 24  [0x1801866a0]
+    +               2 __70-[_UIApplicationConfigurationLoader startPreloadInitializationContext]_block_invoke  (in UIKitCore) + 16  [0x186002c70]
+    +                 2 -[_UIApplicationConfigurationLoader _loadInitializationContext]  (in UIKitCore) + 128  [0x186002a3c]
+    +                   2 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +                     2 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                       2 __63-[_UIApplicationConfigurationLoader _loadInitializationContext]_block_invoke  (in UIKitCore) + 72  [0x186002a88]
+    +                         2 __UIAPPLICATION_IS_LOADING_INITIALIZATION_INFO_FROM_THE_SYSTEM__  (in UIKitCore) + 16  [0x186002aa4]
+    +                           2 __63-[_UIApplicationConfigurationLoader _loadInitializationContext]_block_invoke_2  (in UIKitCore) + 176  [0x186002b5c]
+    +                             2 -[UISApplicationSupportClient applicationInitializationContextWithParameters:]  (in UIKitServices) + 152  [0x18ccfc9ec]
+    +                               2 -[UISApplicationSupportClient _remoteTarget]  (in UIKitServices) + 140  [0x18ccfcf6c]
+    +                                 2 _dispatch_lane_barrier_sync_invoke_and_complete  (in libdispatch.dylib) + 92  [0x180196a10]
+    +                                   2 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                                     2 __44-[UISApplicationSupportClient _remoteTarget]_block_invoke  (in UIKitServices) + 296  [0x18ccfd0c8]
+    +                                       2 -[BSXPCServiceConnection remoteTargetWithAssertionAttributes:enforcingLaunchConstraints:]  (in BoardServices) + 416  [0x188266e50]
+    +                                         2 -[BSXPCServiceConnectionEventHandler remoteTargetWithHandshake:assertionAttributes:]  (in BoardServices) + 276  [0x188236bac]
+    +                                           2 +[BSXPCServiceConnectionProxy proxyForConnection:handshake:withProtocol:activationGeneration:activeXPCConnection:xpcConnectionTargetQueue:replyQueue:target:attributes:assertionProvider:]  (in BoardServices) + 544  [0x18821c3a8]
+    +                                             2 BSObjCClassCreate  (in BaseBoard) + 496  [0x18407346c]
+    +                                               2 __186+[BSXPCServiceConnectionProxy proxyForConnection:handshake:withProtocol:activationGeneration:activeXPCConnection:xpcConnectionTargetQueue:replyQueue:target:attributes:assertionProvider:]_block_invoke  (in BoardServices) + 432  [0x18821cbf0]
+    +                                                 2 imp_implementationWithBlock  (in libobjc.A.dylib) + 60  [0x18005dd2c]
+    +                                                   2 dyld4::APIs::dlopen_from(char const*, int, void*)  (in dyld_sim) + 344  [0x102743b1c]
+    +                                                     2 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const  (in dyld_sim) + 184  [0x102748390]
+    +                                                       2 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const::'lambda'()::operator()() const  (in dyld_sim) + 1884  [0x102749204]
+    +                                                         2 dyld4::RuntimeState::notifyDebuggerLoad(std::span<dyld4::Loader const*, 18446744073709551615ul> const&)  (in dyld_sim) + 408  [0x1027557b4]
+    +                                                           2 dyld4::ExternallyViewableState::addImages(lsl::Allocator&, lsl::Allocator&, std::span<dyld4::ExternallyViewableState::ImageInfo, 18446744073709551615ul> const&)  (in dyld_sim) + 496  [0x102758154]
+    +                                                             2 dyld4::ExternallyViewableState::triggerNotifications(dyld_image_mode, unsigned int, dyld_image_info const*)  (in dyld_sim) + 532  [0x102757ea0]
+    +                                                               2 dyld4::ExternallyViewableState::notifyMonitorOfImageListChangesSim(bool, unsigned int, mach_header const**, char const**)  (in dyld) + 792  [0x1024de36c]
+    +                                                                 2 invocation function for block in dyld4::ExternallyViewableState::notifyMonitorOfImageListChangesSim(bool, unsigned int, mach_header const**, char const**)  (in dyld) + 1148  [0x1024e1848]
+    +                                                                   2 dyld4::Atlas::ProcessSnapshot::serialize()  (in dyld) + 56  [0x10250e4a0]
+    +                                                                     1 dyld4::Atlas::ProcessSnapshot::Serializer::serialize()  (in dyld) + 1728  [0x10250ec58]
+    +                                                                     ! 1 <deduplicated_symbol>  (in dyld) + 84  [0x1024f3d70]
+    +                                                                     1 dyld4::Atlas::ProcessSnapshot::Serializer::serialize()  (in dyld) + 2240  [0x10250ee58]
+    +                                                                       1 <deduplicated_symbol>  (in dyld) + 20  [0x1024f4a7c]
+    2 Thread_47599   DispatchQueue_44: BSXPC(com.apple.frontboard.systemappservices[C:1])  (serial)
+    + 2 start_wqthread  (in libsystem_pthread.dylib) + 8  [0x1026e5a28]
+    +   2 _pthread_wqthread  (in libsystem_pthread.dylib) + 288  [0x1026e6c28]
+    +     2 _dispatch_workloop_worker_thread  (in libdispatch.dylib) + 692  [0x18019a608]
+    +       2 _dispatch_root_queue_drain_deferred_wlh  (in libdispatch.dylib) + 288  [0x18019aec0]
+    +         2 _dispatch_lane_invoke  (in libdispatch.dylib) + 396  [0x1801901e8]
+    +           2 _dispatch_lane_serial_drain  (in libdispatch.dylib) + 304  [0x18018f47c]
+    +             2 _dispatch_mach_msg_async_reply_invoke  (in libdispatch.dylib) + 508  [0x1801a563c]
+    +               2 <deduplicated_symbol>  (in libdispatch.dylib) + 12  [0x1801a0ec0]
+    +                 2 _xpc_connection_call_reply_async  (in libxpc.dylib) + 92  [0x1800d0c84]
+    +                   2 _xpc_connection_reply_callout  (in libxpc.dylib) + 60  [0x1800de338]
+    +                     2 __55-[BSXPCServiceConnectionMessage _actuallySendWithMode:]_block_invoke.33  (in BoardServices) + 104  [0x188261b44]
+    +                       2 -[BSServiceDispatchQueue _xpcReplyQueue_performReply:]  (in BoardServices) + 56  [0x188241b00]
+    +                         2 __55-[BSXPCServiceConnectionMessage _actuallySendWithMode:]_block_invoke  (in BoardServices) + 164  [0x188261a44]
+    +                           2 __55-[BSXPCServiceConnection _lock_activateNowOrWhenReady:]_block_invoke_2  (in BoardServices) + 572  [0x18826b83c]
+    +                             2 -[BSXPCServiceConnection _connection_consumeLock_runPendedEventsIfAppropriate]  (in BoardServices) + 496  [0x18826bd0c]
+    +                               2 __55-[BSXPCServiceConnection _lock_activateNowOrWhenReady:]_block_invoke.158  (in BoardServices) + 28  [0x18826ae1c]
+    +                                 2 _os_unfair_lock_lock_slow  (in libsystem_platform.dylib) + 168  [0x10246d258]
+    +                                   2 __ulock_wait2  (in libsystem_kernel.dylib) + 8  [0x102609b04]
+    2 Thread_47600
+      2 start_wqthread  (in libsystem_pthread.dylib) + 8  [0x1026e5a28]
+        2 _pthread_wqthread  (in libsystem_pthread.dylib) + 364  [0x1026e6c74]
+          2 __workq_kernreturn  (in libsystem_kernel.dylib) + 8  [0x1025fe698]
+
+Total number in stack (recursive counted multiple, when >=5):
 
 Sort by top of stack, same collapsed (when >= 5):
-        __wait4_nocancel  (in libsystem_kernel.dylib)        553
-        llvm::cl::opt<llvm::cl::boolOrDefault, false, llvm::cl::parser<llvm::cl::boolOrDefault>>::~opt()  (in clang)        9
-        clang::TextDiagnosticPrinter::~TextDiagnosticPrinter()  (in clang)        5
+        __workq_kernreturn  (in libsystem_kernel.dylib)        802
+        semaphore_wait_trap  (in libsystem_kernel.dylib)        800
 
-Binary Images:
-       0x104fa0000 -        0x10ba3b557 +clang (21.0.0 - 2100.1.1.101) <777BDC46-ED30-3304-BE16-8999AD75C762> /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
-       0x18564c000 -        0x18569eb4b  libobjc.A.dylib (951.7) <74772A34-83D8-3B3B-82A0-B5678E177C8D> /usr/lib/libobjc.A.dylib
-       0x18569f000 -        0x1856d4115  libdyld.dylib (1387.2) <41529082-1172-3CFC-8ADF-A682ABE693F8> /usr/lib/system/libdyld.dylib
-       0x1856d5000 -        0x185788523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
-       0x185789000 -        0x18578c228  libsystem_blocks.dylib (96) <974D6EDA-1213-3D11-B95D-267A66BADDCF> /usr/lib/system/libsystem_blocks.dylib
-       0x18578d000 -        0x1857e155f  libxpc.dylib (3102.160.5.700.1) <4E6ADFFF-C2F0-3404-B820-46F7AE2554FF> /usr/lib/system/libxpc.dylib
-       0x1857e2000 -        0x185802a1f  libsystem_trace.dylib (1861.160.4.700.1) <CFC3D51E-6886-3520-9DCB-C11E276E416D> /usr/lib/system/libsystem_trace.dylib
-       0x185803000 -        0x1858b16b7  libcorecrypto.dylib (1922.160.10.700.1) <1AB30A65-3FE6-3A5A-9078-796D9D590B7C> /usr/lib/system/libcorecrypto.dylib
-       0x1858b2000 -        0x185902257  libsystem_malloc.dylib (812.160.5) <8CF02A42-BC33-38BF-B14A-FA9B13B3CA3F> /usr/lib/system/libsystem_malloc.dylib
-       0x185903000 -        0x18594a23f  libdispatch.dylib (1542.160.2) <7202DA41-6AF6-3268-9EA3-00013AF42D10> /usr/lib/system/libdispatch.dylib
-       0x18594b000 -        0x18594dffb  libsystem_featureflags.dylib (103) <2E4939D0-6A88-38BC-B0A3-612870FBC436> /usr/lib/system/libsystem_featureflags.dylib
-       0x18594e000 -        0x1859cf1e7  libsystem_c.dylib (1752.160.4) <8CA64BC9-6B11-3685-84AE-F0AF4247B0C8> /usr/lib/system/libsystem_c.dylib
-       0x1859d0000 -        0x185a60ae7  libc++.1.dylib (2100.43) <04D82867-1CBD-3AC4-B744-B27DCD09692F> /usr/lib/libc++.1.dylib
-       0x185a61000 -        0x185a7b75f  libc++abi.dylib (2100.43) <45F8930E-87C7-3EE1-9638-31B9F476CF68> /usr/lib/libc++abi.dylib
-       0x185a7c000 -        0x185ab92f7  libsystem_kernel.dylib (12377.161.15.701.48) <ABE830C7-CBE9-3FEC-8F6D-97E5C691BD54> /usr/lib/system/libsystem_kernel.dylib
-       0x185aba000 -        0x185ac6b3b  libsystem_pthread.dylib (539.100.4) <275D7230-23C1-32EF-B22B-14F61E30AA89> /usr/lib/system/libsystem_pthread.dylib
-       0x185ac7000 -        0x185acf963  libsystem_platform.dylib (375.120.2) <8BC876D3-95BB-3D23-B7CB-0948531E49EB> /usr/lib/system/libsystem_platform.dylib
-       0x185ad0000 -        0x185aff6eb  libsystem_info.dylib (600) <309040CE-F9D3-3BC0-8464-C9F9C96B2F90> /usr/lib/system/libsystem_info.dylib
-       0x189aa7000 -        0x189ab0e5f  libsystem_darwin.dylib (1752.160.4) <51EF635C-A89E-336B-8409-4E44C2443F55> /usr/lib/system/libsystem_darwin.dylib
-       0x189f10000 -        0x189f221b6  libsystem_notify.dylib (348.160.3) <455CFD7F-6F0F-3F8B-83CC-C0B5172E4A00> /usr/lib/system/libsystem_notify.dylib
-       0x18c1e5000 -        0x18c1fff7b  libsystem_networkextension.dylib (2226.161.1.700.2) <76849D08-8FBB-3D8A-A1C5-23FE8D7EDD7D> /usr/lib/system/libsystem_networkextension.dylib
-       0x18c282000 -        0x18c299fdf  libsystem_asl.dylib (406) <C2379107-E507-325E-BADE-A9E32156D38A> /usr/lib/system/libsystem_asl.dylib
-       0x18de3f000 -        0x18de47387  libsystem_symptoms.dylib (2169.160.3.701.1) <23506ADC-641A-348A-BBEF-590787FD73FC> /usr/lib/system/libsystem_symptoms.dylib
-       0x1920e4000 -        0x19211c373  libsystem_containermanager.dylib (725.160.3.701.2) <FEB99D23-5EDA-3471-9982-D5EABEB0444B> /usr/lib/system/libsystem_containermanager.dylib
-       0x1934f8000 -        0x1934fc5d7  libsystem_configuration.dylib (1405.160.3.702.2) <2B64BA6F-6B26-3743-A977-D485645E6408> /usr/lib/system/libsystem_configuration.dylib
-       0x1934fd000 -        0x19350399f  libsystem_sandbox.dylib (2680.160.6.701.1) <48D7EC25-49F3-3557-B08C-58CBF6A9495B> /usr/lib/system/libsystem_sandbox.dylib
-       0x194b58000 -        0x194b5b1db  libquarantine.dylib (196.160.2.701.3) <DA61E1C2-CAC1-3573-84F7-C90BB204A615> /usr/lib/system/libquarantine.dylib
-       0x1952f7000 -        0x1952fdd03  libsystem_coreservices.dylib (191.5.1) <65440E1E-5462-330D-B538-F16B45F4275C> /usr/lib/system/libsystem_coreservices.dylib
-       0x195877000 -        0x195885d97  libz.1.dylib (100.120.1) <1CF4E698-325F-3ED4-84E3-7FFBA3ED965B> /usr/lib/libz.1.dylib
-       0x195886000 -        0x1958c3a77  libsystem_m.dylib (3312.100.1) <9BFFB8D5-AB8F-3396-AF0F-98A8A4BFBD42> /usr/lib/system/libsystem_m.dylib
-       0x1958c5000 -        0x1958c8527  libmacho.dylib (1387.2) <A482169A-B97C-30E5-8A3A-2E98DFBA74E7> /usr/lib/system/libmacho.dylib
-       0x1958e2000 -        0x1958ef3a7  libcommonCrypto.dylib (600035) <3F3A9815-0AB5-378D-BDF9-9981EE44AB03> /usr/lib/system/libcommonCrypto.dylib
-       0x1958f0000 -        0x1958f9ca3  libunwind.dylib (2100.2) <EF950883-F36C-3B59-9960-8FAD4BDD66D5> /usr/lib/system/libunwind.dylib
-       0x195902000 -        0x19590cd2b  libcopyfile.dylib (240.160.2.703.1) <8AB5AFDF-C952-3E66-8BE7-F1B22AE7B1E0> /usr/lib/system/libcopyfile.dylib
+Binary images description not available
+
