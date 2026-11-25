@@ -636,22 +636,40 @@ struct SafetySheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
+        // Бумага и чернила приложения, а не системный вид (P1059): своя
+        // шапка вместо строки навигации iPhone.
+        VStack(spacing: 0) {
+            ZStack {
+                Text(T("Данные в сохранности?", "Is my data safe?"))
+                    .font(Look.sans(16, weight: .semibold))
+                    .foregroundStyle(Look.ink)
+                HStack {
+                    Spacer()
+                    Button(T("Готово", "Done")) { dismiss() }
+                        .font(Look.sans(16, weight: .semibold))
+                        .foregroundStyle(Look.accent)
+                        .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 18)
+            ScrollView {
             VStack(spacing: 18) {
                 Image(systemName: onPhone ? "exclamationmark.triangle.fill" : "checkmark.seal.fill")
                     .font(.system(size: 40, weight: .light))
-                    .foregroundStyle(onPhone ? .red : Look.inkSoft)
+                    .foregroundStyle(onPhone ? Look.pin : Look.inkSoft)
 
                 Text(onPhone ? T("Данные не защищены", "Your data is not protected") : T("Данные в сохранности", "Your data is safe"))
-                    .font(.title2)
+                    .font(Look.serif(23, weight: .semibold))
+                    .foregroundStyle(Look.ink)
 
                 Text(onPhone
                      ? T("Записи лежат внутри самой «RollingDays», на этом iPhone. ", "Your entries are inside RollingDays itself, on this iPhone. ")
                        + T("Если приложение удалить, iPhone сотрёт их вместе с ним, без возврата.", "If the app is deleted, the iPhone erases them with it, for good.")
                      : T("Записи лежат вне приложения, в вашей папке. Если «RollingDays» удалить, ", "Your entries are outside the app, in your own folder. If RollingDays is deleted, ")
                        + T("они останутся на месте: в «Файлах», в облаке, на других устройствах.", "they stay where they are: in Files, in the cloud, on other devices."))
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+                    .font(Look.sans(15))
+                    .foregroundStyle(Look.inkSoft)
                     .multilineTextAlignment(.center)
 
                 if !onPhone, inCloud {
@@ -662,7 +680,7 @@ struct SafetySheet: View {
                                "Entries from these days have not reached iCloud yet, so other devices do not have "
                                + "them. Usually iCloud is out of space or iCloud Drive is off: see Settings › your "
                                + "name › iCloud. On this iPhone the entries are safe."))
-                            .font(.callout)
+                            .font(Look.sans(15))
                             .foregroundStyle(Look.ink)
                             .multilineTextAlignment(.center)
                     }
@@ -670,8 +688,8 @@ struct SafetySheet: View {
                            + "iCloud Drive держит там удалённое 30 дней.",
                            "Deleted something by mistake? Files has “Recently Deleted”: "
                            + "iCloud Drive keeps deleted items there for 30 days."))
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .font(Look.sans(13))
+                        .foregroundStyle(Look.inkSoft)
                         .multilineTextAlignment(.center)
                 }
 
@@ -682,17 +700,14 @@ struct SafetySheet: View {
                         Text(T("Перенести архив и писать в другое место", "Move the archive and write elsewhere"))
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(PaperButtonStyle())
                 }
             }
             .padding(28)
-            .navigationTitle(T("Данные в сохранности?", "Is my data safe?"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) { Button(T("Готово", "Done")) { dismiss() } }
             }
         }
         .presentationDetents([.medium, .large])
+        .presentationBackground { PaperBack() }
     }
 }
 
@@ -953,6 +968,44 @@ struct FileSheet: View {
 
 // MARK: - Первый запуск
 
+/// Бумага первого запуска и «Сохранности» (P1059, автор: «в общем
+/// стиле»): лист цвета «сегодня» с той же фактурой, что лист дня.
+struct PaperBack: View {
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        ZStack {
+            Scheme.current.today
+            Image(uiImage: PageTexture.paper)
+                .resizable(resizingMode: .tile)
+                .opacity(scheme == .dark ? 0.2 : 0.3)
+        }
+        .ignoresSafeArea()
+    }
+}
+
+/// Кнопка первого запуска и «Сохранности» (P1059): главная — залита
+/// чернилами, второстепенная — на записке с кромкой, как в настройках.
+struct PaperButtonStyle: ButtonStyle {
+    var prominent = true
+    @Environment(\.isEnabled) private var enabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(Look.sans(16, weight: .semibold))
+            .foregroundStyle(prominent ? Look.planBg : Look.accent)
+            .multilineTextAlignment(.center)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 16)
+            .frame(maxWidth: .infinity)
+            .background(RoundedRectangle(cornerRadius: 12).fill(prominent ? Look.accent : Look.sticker))
+            .overlay(RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(prominent ? Color.clear : Look.stickerEdge, lineWidth: 1))
+            .opacity(configuration.isPressed ? 0.75 : (enabled ? 1 : 0.6))
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
 struct WelcomeView: View {
 
     /// Проба первого запуска из настроек (P452): «Начать» ведёт в пробную
@@ -983,14 +1036,17 @@ struct WelcomeView: View {
         VStack(spacing: 18) {
             Image(systemName: "book.closed")
                 .font(.system(size: 44, weight: .light))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Look.accent)
                 .padding(.top, 24)
 
-            Text(T("RollingDays", "RollingDays")).font(.largeTitle.weight(.semibold))
+            Text(T("RollingDays", "RollingDays"))
+                .font(Look.serif(32, weight: .semibold))
+                .foregroundStyle(Look.ink)
 
             Text(T("Тетрадь дня: утром — план, вечером — итоги. Записи — ваши файлы.",
                    "A notebook for your day: a plan in the morning, the outcome in the evening. Your entries are your files."))
-                .font(.title3)
+                .font(Look.serif(19))
+                .foregroundStyle(Look.ink)
                 .multilineTextAlignment(.center)
 
             // Одна кнопка (P452): своя папка в iCloud Drive заводится сама,
@@ -998,13 +1054,11 @@ struct WelcomeView: View {
             if trial || (cloud && !manual) {
                 Button(action: start) {
                     Group {
-                        if starting { ProgressView() } else { Text(T("Начать", "Start")) }
+                        if starting { ProgressView().tint(Look.planBg) } else { Text(T("Начать", "Start")) }
                     }
-                    .font(.headline)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 6)
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(PaperButtonStyle())
                 .disabled(starting)
                 .padding(.top, 8)
 
@@ -1013,25 +1067,27 @@ struct WelcomeView: View {
                          "A trial: entries go into a separate trial folder. Your real entries stay where they are.")
                      : T("Записи лягут в iCloud Drive › RollingDays. Их видно в «Файлах», они есть на iPad и Mac и остаются, даже если удалить приложение.",
                          "Entries go to iCloud Drive › RollingDays. You can see them in Files, they are on your iPad and Mac, and they stay even if you delete the app."))
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .font(Look.sans(13))
+                    .foregroundStyle(Look.inkSoft)
                     .multilineTextAlignment(.center)
 
                 if trial {
                     Button(T("Отмена", "Cancel")) { shell.overlays.trialWelcome = false }
-                        .font(.footnote)
+                        .font(Look.sans(14, weight: .medium))
+                    .foregroundStyle(Look.accent)
                 } else {
                     Button(T("Выбрать папку самому", "Choose a folder myself")) {
                         withAnimation { manual = true }
                     }
-                    .font(.footnote)
+                    .font(Look.sans(14, weight: .medium))
+                    .foregroundStyle(Look.accent)
                 }
             } else {
                 if !cloud {
                     Text(T("iCloud Drive на этом iPhone недоступен — выберите, где хранить записи.",
                            "iCloud Drive is not available on this iPhone — choose where to keep your entries."))
-                        .font(.callout)
-                        .foregroundStyle(.orange)
+                        .font(Look.sans(15))
+                        .foregroundStyle(Look.pin)
                         .multilineTextAlignment(.center)
                 }
                 choices
@@ -1039,13 +1095,16 @@ struct WelcomeView: View {
 
             if let problem = vault.problem {
                 Text(problem)
-                    .font(.footnote)
-                    .foregroundStyle(.red)
+                    .font(Look.sans(13))
+                    .foregroundStyle(Look.pin)
                     .multilineTextAlignment(.center)
             }
         }
         .padding(28)
         }
+        // Бумага и чернила приложения (P1059): мультфильм кончается листом
+        // «Сегодня» во весь экран — под ним лист того же цвета.
+        .background(PaperBack())
         .onAppear {
             guard !trial else { return }
             Vault.cloudAvailable { ok in cloud = ok }
@@ -1070,11 +1129,12 @@ struct WelcomeView: View {
 
     /// Выбрать папку самому — прежние два пути (P366).
     @ViewBuilder private var choices: some View {
-            Text(T("Где хранить записи", "Where to keep entries")).font(.title2)
+            Text(T("Где хранить записи", "Where to keep entries")).font(Look.serif(23, weight: .semibold))
+                    .foregroundStyle(Look.ink)
 
             Text(Self.invitation)
-                .font(.callout)
-                .foregroundStyle(.secondary)
+                .font(Look.sans(15))
+                .foregroundStyle(Look.inkSoft)
                 .multilineTextAlignment(.center)
 
             // Два пути, и оба — папка человека, а не приложения (P366):
@@ -1086,7 +1146,7 @@ struct WelcomeView: View {
             } label: {
                 Text(T("Папка в iCloud Drive", "A folder in iCloud Drive")).frame(maxWidth: .infinity)
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(PaperButtonStyle())
             guide(T("В окне выберите «iCloud Drive» и нажмите «Открыть» вверху справа. Записи будут "
                     + "и на iPad, и на Mac; место берётся из вашего iCloud (бесплатно — 5 ГБ).",
                     "In the window choose “iCloud Drive” and tap “Open” at the top right. Your entries "
@@ -1101,7 +1161,7 @@ struct WelcomeView: View {
             } label: {
                 Text(T("Папка на этом iPhone", "A folder on this iPhone")).frame(maxWidth: .infinity)
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(PaperButtonStyle(prominent: false))
             guide(T("В окне выберите «На iPhone», нажмите значок новой папки, назовите её, например, "
                     + "«Мои записи», зайдите в неё и нажмите «Открыть». Места в iCloud не нужно, но "
                     + "записи будут только на этом iPhone — делайте резервные копии.",
@@ -1113,20 +1173,21 @@ struct WelcomeView: View {
                    + "с записями — зайдите в неё и нажмите «Открыть»: приложение узнает свой архив.",
                    "Either way the folder is yours and outlives deleting the app. Already have a "
                    + "folder with entries? Go into it and tap “Open”: the app will recognise its archive."))
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+                .font(Look.sans(13))
+                .foregroundStyle(Look.inkSoft)
                 .multilineTextAlignment(.center)
 
             if cloud {
                 Button(T("Назад", "Back")) { withAnimation { manual = false } }
-                    .font(.footnote)
+                    .font(Look.sans(14, weight: .medium))
+                    .foregroundStyle(Look.accent)
             }
     }
 
     private func guide(_ text: String) -> some View {
         Text(text)
-            .font(.footnote)
-            .foregroundStyle(.secondary)
+            .font(Look.sans(13))
+            .foregroundStyle(Look.inkSoft)
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.bottom, 6)
