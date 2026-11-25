@@ -125,19 +125,10 @@ struct CalendarView: View {
     /// его месяцем.
     private var stream: some View {
         let list = periods()
-        let near = nearby(list)
         return ScrollView {
-            // Не ленивая лента (P1062): соседние месяцы нарисованы заранее и
-            // въезжают вместе с пальцем, а не появляются щелчком, когда уже
-            // показались. Дальние — пустые страницы той же высоты: место
-            // держат, а рисовать нечего.
-            VStack(spacing: 0) {
+            LazyVStack(spacing: 0) {
                 ForEach(list, id: \.self) { p in
-                    if near.contains(p) {
-                        section(p)
-                    } else {
-                        Color.clear.containerRelativeFrame(.vertical)
-                    }
+                    section(p)
                 }
             }
             .scrollTargetLayout()
@@ -155,20 +146,6 @@ struct CalendarView: View {
         })
         // Тот же тёплый стол, что под поиском (P755).
         .background(Desk())
-    }
-
-    /// Какие страницы ленты нарисованы (P1062): по две с каждой стороны от
-    /// показанной и от той, к которой лента едет (стрелки, «домой») — так
-    /// и в конце дальнего хода страница уже на месте.
-    private func nearby(_ list: [Date]) -> Set<Date> {
-        var out = Set<Date>()
-        for anchor in [period(shown), top].compactMap({ $0 }) {
-            let unit: Calendar.Component = kind == .year ? .year : .month
-            guard let i = list.firstIndex(where: { cal.isDate($0, equalTo: anchor, toGranularity: unit) })
-            else { continue }
-            for j in max(0, i - 2)...min(list.count - 1, i + 2) { out.insert(list[j]) }
-        }
-        return out
     }
 
     /// Встал год — месяц остаётся прежним (P822): прежде `shown` становился
