@@ -11,6 +11,7 @@ struct RootView: View {
     @EnvironmentObject private var vault: Vault
     /// Покупка: месяц пробы и разовая покупка (P432).
     @ObservedObject private var purchase = Purchase.shared
+    @ObservedObject private var intro = Intro.shared
     @EnvironmentObject private var store: DayStore
     @EnvironmentObject private var archive: Archive
     @EnvironmentObject private var shell: Shell
@@ -153,6 +154,16 @@ struct RootView: View {
     var body: some View {
         Group {
             if vault.root == nil { WelcomeView() } else { app }
+        }
+        // Мультфильм первого запуска (P1057) — самым первым, до папки;
+        // кончился — тает, под ним выбор папки или день.
+        .overlay {
+            ZStack {
+                if intro.shown(noFolder: vault.root == nil) {
+                    IntroFilm().transition(.opacity)
+                }
+            }
+            .animation(.easeInOut(duration: 0.35), value: intro.shown(noFolder: vault.root == nil))
         }
         // Клавиатура с приставкой (P546) не сдвигает экран: со 140-й,
         // пока её смахивали, весь экран вместе с верхней строкой уезжал
@@ -333,14 +344,6 @@ struct RootView: View {
             // поверх листка больше нет.
             // Над клавиатурой разделы — частью самой клавиатуры (P613,
             // `KeyboardBar`): у полей дня. На карте и в поиске их там нет.
-            // Первое знакомство — курс жестов (P1036, вместо стикеров P427)
-            // — поверх всего, когда экран спокоен.
-            HintLayer(screen: shell.screen,
-                      restingToday: shell.deck == .day && store.isToday,
-                      file: shell.deck.isOpen ? shell.deck.side : nil,
-                      quiet: !overlays.showingSettings
-                          && overlays.movingTask == nil && keyboard.height == 0
-                          && vault.moving == nil)
             // Для проверок движения (P552): какой день открыт — невидимой
             // строкой, только когда приложение запустила проверка.
             if Vault.isUITest {

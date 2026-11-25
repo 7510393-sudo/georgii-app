@@ -125,12 +125,13 @@ struct SettingsSticker: View {
                             titleVisibility: .visible) {
             Button(T("Начать пробу", "Start the trial")) {
                 close()
-                shell.overlays.trialWelcome = true
+                // Как в первый раз: сначала мультфильм, потом приветствие (P1057).
+                Intro.shared.play { shell.overlays.trialWelcome = true }
             }
             Button(T("Отмена", "Cancel"), role: .cancel) { }
         } message: {
-            Text(T("Приложение откроется как в первый раз: приветствие, образцы дней, подсказки. Всё это — в отдельной пробной папке; ваши записи останутся на месте и не изменятся. Вернуться к ним — здесь же, в настройках: «К своим».",
-                   "The app opens as if for the first time: welcome, sample days, tips. All of it lives in a separate trial folder; your entries stay where they are, untouched. To return to them — here in the settings: “Back”."))
+            Text(T("Приложение откроется как в первый раз: мультфильм, приветствие, образцы дней. Всё это — в отдельной пробной папке; ваши записи останутся на месте и не изменятся. Вернуться к ним — здесь же, в настройках: «К своим».",
+                   "The app opens as if for the first time: the short film, welcome, sample days. All of it lives in a separate trial folder; your entries stay where they are, untouched. To return to them — here in the settings: “Back”."))
         }
         .confirmationDialog(T("Где хранить записи", "Where to keep entries"), isPresented: $choosingPlace,
                             titleVisibility: .visible) {
@@ -392,10 +393,8 @@ struct SettingsSticker: View {
                 Purchase.shared.asking = true
             }
         }
-        // Курс жестов сначала (P1041, вместо строки «Пройти первый запуск»
-        // P452/P1005, автор: «нужна ли эта настройка?»): пять подсказок,
-        // без пробной папки. Сама проба — только для автора: долгим
-        // нажатием на «Версию», в «Замерах».
+        // Проба первого запуска — только для автора: долгим нажатием на
+        // «Версию», в «Замерах» (P1041).
         if vault.inTrial {
             NoteRow(title: T("Идёт проба первого запуска", "Trying the first launch"),
                     detail: T("Образцы — в пробной папке. Ваши записи на месте.",
@@ -406,12 +405,14 @@ struct SettingsSticker: View {
                 }
             }
         }
-        NoteRow(title: T("Курс жестов", "Gesture tour"),
-                detail: T("Пять подсказок: прошлое, будущее, календарь, карта.",
-                          "Five tips: past, future, calendar, map.")) {
-            NoteButton(title: T("Сначала ›", "Again ›")) {
-                Hints.shared.startOver()
+        // Мультфильм первого запуска ещё раз (P1057, вместо курса жестов
+        // P1041).
+        NoteRow(title: T("Как устроено", "How it works"),
+                detail: T("Мультфильм: прошлое, будущее, карта, календарь.",
+                          "A short film: past, future, map, calendar.")) {
+            NoteButton(title: T("Показать ›", "Show ›")) {
                 close()
+                Intro.shared.play()
             }
         }
     }
@@ -1055,7 +1056,6 @@ struct WelcomeView: View {
         starting = true
         if trial {
             vault.startTrial()
-            Hints.shared.startOver()
             shell.overlays.trialWelcome = false
             shell.startOver(store)
             archive.reload()

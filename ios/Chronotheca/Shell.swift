@@ -221,8 +221,8 @@ final class Shell: ObservableObject {
         // его нет, иначе открытая страница не сойдётся с соседской
         // (P114, P408).
         hideCloud = !["remember", "diary"].contains(name)
-        // Курс жестов — только на своём снимке (P1036).
-        Hints.shared.endPreview()
+        // Мультфильм — только на своём снимке (P1057).
+        Intro.shared.endPreview()
         switch name {
         case "diary":     tab = .diary
         case "calendar":  CalendarView.previewStart = day(-7); screen = .calendar
@@ -244,7 +244,7 @@ final class Shell: ObservableObject {
             if store.date != day(1) { store.go(to: day(1)) }
             tab = .diary
         case "side":      probingSide = true
-        case "hint":      Hints.shared.showFirstForPreview()
+        case "intro":     Intro.shared.showStillForPreview()
         case "filefuture":
             // Картотека будущего (P771, P773): вместо снимка «Списка»
             // календаря, которого больше нет.

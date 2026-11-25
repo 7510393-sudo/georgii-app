@@ -414,15 +414,17 @@ struct CalendarView: View {
 
     // MARK: - Месяц
 
-    /// Сетка на пятую часть плотнее прежней: место внизу нужнее списку дел,
-    /// ради которого в календарь и заходят.
+    /// Клетки квадратные, почти вплотную (P1058, автор: «квадратные
+    /// окошечки, без лишнего промежутка между кадрами; закругление
+    /// оставить»): снимок дня в клетке — кадриком, а не полоской. Сетка от
+    /// этого выше прежней, место списку дел внизу — меньше.
     private func monthGrid(of date: Date, current: Bool) -> some View {
         let cells = MonthGrid.cells(of: date, calendar: cal, firstWeekday: cal.firstWeekday)
         let today = Vault.stamp(DayStore.today())
 
         return VStack(spacing: 0) {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 7),
-                      spacing: 4) {
+                      spacing: 2) {
                 ForEach(Array(header.enumerated()), id: \.offset) { i, name in
                     Text(name.uppercased())
                         .font(Look.sans(10, weight: .semibold))
@@ -431,7 +433,7 @@ struct CalendarView: View {
                         .padding(.bottom, 3)
                 }
                 ForEach(Array(cells.enumerated()), id: \.offset) { _, day in
-                    if let day { cell(day, today: today) } else { Color.clear.frame(height: 32) }
+                    if let day { cell(day, today: today) } else { Color.clear.aspectRatio(1, contentMode: .fit) }
                 }
             }
             .padding(.horizontal, 10)
@@ -473,12 +475,21 @@ struct CalendarView: View {
         let isToday = stamp == today
         let isSelected = stamp == selected
         let shot = isToday ? nil : snapshot(stamp, date)
+        let past = !isToday && Ru.isPast(date)
 
         // Сегодняшний день залит — он есть всегда и ни от чего не зависит.
         // Выбранный обведён лёгким ободком: внимание можно переставить, и
         // оно не должно выглядеть весомее самого дня.
         return Button { pick(stamp, date) } label: {
-            VStack(spacing: 1) {
+            // Число — в правом нижнем углу (P1058); точки дел — слева на
+            // той же высоте, только у сегодня и будущего: у прошлого их нет.
+            ZStack(alignment: .bottomTrailing) {
+                if !past {
+                    dots(count: entries(stamp, date).count, light: isToday)
+                        .padding(.leading, 6)
+                        .padding(.bottom, 8)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                }
                 Text("\(cal.component(.day, from: date))")
                     // Цифры плотнее, сегодняшняя — крупнее и жирнее всех
                     // (P247), белая; синим залита вся клетка, а не кружок
@@ -487,16 +498,17 @@ struct CalendarView: View {
                     .foregroundStyle(isToday || shot != nil ? Color.white : Look.ink)
                     // На снимке — белая с тенью, и у выходных тоже (P1056).
                     .shadow(color: .black.opacity(shot != nil ? 0.7 : 0), radius: 2, y: 0.5)
-                if shot == nil { dots(count: entries(stamp, date).count, light: isToday) }
+                    .padding(.trailing, 6)
+                    .padding(.bottom, 3)
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: 32)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .aspectRatio(1, contentMode: .fit)
             // Клетка — того же цвета, что страница этого дня: сегодня
             // абрикосовое, прошлое голубеет, будущее зеленеет (P245).
             // Прошедший день — на бумаге с рельефом, как его страница (P684),
             // со своим износом и травмами края (P723).
             .background {
-                if !isToday && Ru.isPast(date) {
+                if past {
                     // Износ — по числу месяца, один набор на все месяцы и годы (P798):
                     // готовая бумага берётся из запаса, а не рисуется на ходу.
                     OldPaper(seed: cal.component(.day, from: date), base: tint(date))
