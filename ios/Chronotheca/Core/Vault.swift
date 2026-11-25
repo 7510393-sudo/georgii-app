@@ -152,9 +152,17 @@ final class Vault: ObservableObject {
     /// Записи пишутся в папку, названную как наша подпапка, — «Видео»,
     /// «Дневник». Почти наверняка это промах на ступеньку: архив лежит
     /// уровнем выше. Возвращает имя папки уровнем выше (P201).
+    ///
+    /// Только если уровнем выше и правда архив (P1060): своя папка в iCloud
+    /// и папка на этом iPhone лежат в системной папке «Documents» — так же
+    /// зовётся подпапка вложений, и на новом телефоне после «Начать»
+    /// выходило ложное «это папка внутри архива» с советом перенести архив
+    /// в «iCloud~com~kobiashvili~diary».
     var nestedIn: String? {
         guard let root, Folder.named(root.lastPathComponent) != nil else { return nil }
-        return root.deletingLastPathComponent().lastPathComponent
+        let parent = root.deletingLastPathComponent()
+        guard isOurs(parent) else { return nil }
+        return parent.lastPathComponent
     }
 
     static func friendly(_ path: String) -> String {
