@@ -28,7 +28,29 @@ enum Samples {
         let before = cal.date(byAdding: .day, value: -2, to: today) ?? today
         let after = cal.date(byAdding: .day, value: 2, to: today) ?? today
 
-        put(vault, .diary, before, body: SamplesText.text(.howto) ?? T("""
+        put(vault, .diary, before, body: Samples.howto, title: Samples.howtoTitle)
+
+        put(vault, .planner, yesterday, body: Samples.yesterdayPlan)
+
+        var walk = Samples.walk
+        if let link = vault.addPhoto(Photo.sample(), for: yesterday) {
+            walk = walk.replacingOccurrences(of: "\n\n[", with: "\n\n" + Diary.line(link) + "\n\n[")
+        }
+        put(vault, .diary, yesterday, body: walk, title: Samples.walkTitle)
+
+        put(vault, .planner, today, body: Samples.todayPlan)
+
+        put(vault, .diary, today, body: Samples.todayDiary, title: Samples.todayTitle)
+
+        put(vault, .planner, tomorrow, body: Samples.tomorrowPlan)
+
+        put(vault, .planner, after, body: Samples.laterPlan)
+    }
+
+    // MARK: - Тексты образцов — и для мультфильма первого запуска (P1065)
+
+    static var howto: String {
+        SamplesText.text(.howto) ?? T("""
         Это образец прошлого дня. Каждый день — карточка в картотеке.
 
         Картотека. Потяните лист «Сегодня» вниз — откроется прошлое, вверх — будущее. Коснитесь карточки — откроется её день. Смахните открытый день вверх или вниз — он ляжет карточкой на своё место. «Сегодня» у края экрана вернёт в сегодняшний день.
@@ -52,9 +74,15 @@ enum Samples {
         Photos. Hold a photo and move your finger — it goes to another spot in the text or under a task.
 
         The day menu. Tap the day’s name at the top: “Share the day”, “PDF of the day”, “Move the day to the trash”.
-        """), title: SamplesText.text(.howtoTitle) ?? T("Как здесь всё устроено", "How it all works"))
+        """)
+    }
 
-        put(vault, .planner, yesterday, body: SamplesText.text(.yesterdayPlan) ?? T("""
+    static var howtoTitle: String {
+        SamplesText.text(.howtoTitle) ?? T("Как здесь всё устроено", "How it all works")
+    }
+
+    static var yesterdayPlan: String {
+        SamplesText.text(.yesterdayPlan) ?? T("""
         - [x] 08:30 Купить хлеб и кофе
         - [x] 19:00 Позвонить маме (remind 18:45)
         - [ ] Дочитать главу
@@ -62,9 +90,11 @@ enum Samples {
         - [x] 08:30 Buy bread and coffee
         - [x] 19:00 Call Mum (remind 18:45)
         - [ ] Finish the chapter
-        """))
+        """)
+    }
 
-        var walk = SamplesText.text(.walk) ?? T("""
+    static var walk: String {
+        SamplesText.text(.walk) ?? T("""
         ## How did it go?
 
         - Купить хлеб и кофе: взяли ещё круассаны — и не зря
@@ -89,12 +119,14 @@ enum Samples {
 
         This is a sample: this is what a lived day looks like — ticked tasks, the day's outcome, a photo and a place.
         """)
-        if let link = vault.addPhoto(Photo.sample(), for: yesterday) {
-            walk = walk.replacingOccurrences(of: "\n\n[", with: "\n\n" + Diary.line(link) + "\n\n[")
-        }
-        put(vault, .diary, yesterday, body: walk, title: SamplesText.text(.walkTitle) ?? T("Прогулка", "A walk"))
+    }
 
-        put(vault, .planner, today, body: SamplesText.text(.todayPlan) ?? T("""
+    static var walkTitle: String {
+        SamplesText.text(.walkTitle) ?? T("Прогулка", "A walk")
+    }
+
+    static var todayPlan: String {
+        SamplesText.text(.todayPlan) ?? T("""
         - [ ] 09:00 Это дело-образец: коснитесь его и пишите своё
               «Ввод» — к следующему делу.
         - [ ] Потяните лист вверх — в будущих днях всё о делах
@@ -102,9 +134,11 @@ enum Samples {
         - [ ] 09:00 This is a sample task: tap it and write your own
               Return takes you to the next task.
         - [ ] Pull the sheet up — the days ahead tell you all about tasks
-        """))
+        """)
+    }
 
-        put(vault, .diary, today, body: SamplesText.text(.todayDiary) ?? T("""
+    static var todayDiary: String {
+        SamplesText.text(.todayDiary) ?? T("""
         Сегодня начинается RollingDays. Утром — план, вечером — итоги дня: под каждым делом строка о том, что вышло.
 
         Места. Внизу — «Карта». Подержите палец на карте — встанет точка: назовите её и запишите в день. Справа сверху переключатель: «Мои места» — все ваши точки, «Записи» — дни на карте с превью снимков. В записи точку ставит «＋» → «Где я сейчас» — вот так:
@@ -128,9 +162,15 @@ enum Samples {
         Where your entries live. Everything is plain files in your folder: you can see them in Files, open them in any editor, and they stay even if you delete the app. Backup is in the settings, one button.
 
         The samples are two days in the past and two ahead. Erase them like any text, or move the whole day to the trash: tap the day’s name at the top → “Move the day to the trash”.
-        """), title: SamplesText.text(.todayTitle) ?? T("Начинаю RollingDays!", "Starting my RollingDays!"))
+        """)
+    }
 
-        put(vault, .planner, tomorrow, body: SamplesText.text(.tomorrowPlan) ?? T("""
+    static var todayTitle: String {
+        SamplesText.text(.todayTitle) ?? T("Начинаю RollingDays!", "Starting my RollingDays!")
+    }
+
+    static var tomorrowPlan: String {
+        SamplesText.text(.tomorrowPlan) ?? T("""
         - [ ] Коснитесь номера слева — дело сделано
               Коснитесь ещё раз — снова не сделано.
         - [ ] Подержите номер и ведите пальцем
@@ -144,9 +184,11 @@ enum Samples {
               Up or down to reorder. Right to move it to another day. Left to delete.
         - [ ] 10:00 Tap the time on the left for the time and repeats
               Repeat every day, week, month or year. The bell is a reminder.
-        """))
+        """)
+    }
 
-        put(vault, .planner, after, body: SamplesText.text(.laterPlan) ?? T("""
+    static var laterPlan: String {
+        SamplesText.text(.laterPlan) ?? T("""
         - [ ] Вечером ответить, как прошло
               Под каждым делом — одна строка о том, что вышло. Она ляжет в дневник дня.
         - [ ] Положить в план снимок или голос
@@ -160,7 +202,7 @@ enum Samples {
               “＋” at the bottom of the page: on a future day an attachment goes under a task.
         - [ ] Remove the samples when you no longer need them
               Erase them like any text, or tap the day’s name → “Move the day to the trash”.
-        """))
+        """)
     }
 
     /// Положить день — только если его файла ещё нет.
