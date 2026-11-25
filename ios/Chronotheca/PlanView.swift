@@ -1,4 +1,5 @@
 import EventKit
+import Combine
 import SwiftUI
 import UIKit
 import CoreLocation
@@ -215,6 +216,15 @@ struct PlanView: View {
         // События Календаря (P376): при появлении, после правки в
         // Календаре и при возвращении в приложение.
         .onAppear(perform: startEvents)
+        // Коснулись дневника будущего дня (P1063): курсор — в пустое дело,
+        // если оно уже есть, иначе в новое.
+        .onReceive(shell.asks.$newTask.dropFirst()) { _ in
+            if let blank = store.tasks.first(where: PlanRow.blank) {
+                typingIn = blank.id
+            } else {
+                add()
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: .EKEventStoreChanged)) { _ in
             reloadEvents()
         }

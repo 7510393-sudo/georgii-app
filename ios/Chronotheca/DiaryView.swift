@@ -37,11 +37,12 @@ struct DiaryView: View {
             // Будущий день: текста дневника ещё нет, а нижняя строка живёт —
             // вложения с неё несут в план (P994).
             stripEditable: store.canEditStrip,
-            // Касание по тексту будущего дня говорит почему, а не молчит
-            // (P424); нижнюю строку оно не закрывает (P994).
+            // Касание по тексту будущего дня — новое дело в плане, с курсором
+            // (P1063, вместо слов «день не наступил», P424: тестировщик решил,
+            // что и план не пишется). Нижнюю строку оно не закрывает (P994).
             onClosedTap: store.isFuture ? {
-                shell.say(T("Этот день ещё не наступил — дневник откроется в свой день",
-                            "This day hasn't come yet — the diary opens on the day itself"))
+                guard store.canEditPlan else { return shell.say(store.closedReason) }
+                shell.asks.newTask += 1
             } : nil,
             inCloud: store.away.contains(.diary),
             weather: store.weather,
