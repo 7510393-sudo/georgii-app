@@ -632,7 +632,8 @@ struct MapScreen: View {
 private struct SwipeTab: View {
     var body: some View {
         TabOutline()
-            .fill(Look.chrome.opacity(0.85))
+            // Полупрозрачная (P1066): карта под ней видна.
+            .fill(Look.chrome.opacity(0.45))
             .overlay(TabOutline().stroke(Look.inkSoft.opacity(0.5), lineWidth: 1))
             .overlay(
                 Image(systemName: "chevron.left")
