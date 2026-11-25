@@ -1,0 +1,81 @@
+    814 Thread_53323   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 814 start  (in dyld) + 6992  [0x1045684e4]
+    +   814 start_sim  (in dyld_sim) + 20  [0x1046ab0e4]
+    +     814 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x1066679a0]  ChronothecaApp.swift:0
+    +       814 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1066678f4]  /<compiler-generated>:0
+    +         814 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           814 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             814 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               814 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 814 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   814 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     814 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       812 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    +                       ! 812 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    +                       !   812 mach_msg  (in libsystem_kernel.dylib) + 20  [0x104380ef0]
+    +                       !     812 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x104388c44]
+    +                       !       812 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x104391e84]
+    +                       !         812 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x104380b70]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 760  [0x180421808]
+    +                       ! 1 __CFRunLoopDoSources0  (in CoreFoundation) + 220  [0x180422634]
+    +                       !   1 __CFRunLoopDoSource0  (in CoreFoundation) + 168  [0x180422ea4]
+    +                       !     1 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__  (in CoreFoundation) + 24  [0x180422f5c]
+    +                       !       1 UC::DriverCore::continueProcessing()  (in UpdateCycle) + 80  [0x2343d22c0]
+    +                       !         1 schedulerStepScheduledMainSectionContinue  (in UIKitCore) + 56  [0x1863b6064]
+    +                       !           1 _UIUpdateSequenceRunNext  (in UIKitCore) + 120  [0x18590339c]
+    +                       !             1 __setupUpdateSequence_block_invoke_2  (in UIKitCore) + 372  [0x1863b5c0c]
+    +                       !               1 _UIApplicationFlushCATransaction  (in UIKitCore) + 48  [0x1864a3b50]
+    +                       !                 1 CA::Transaction::flush_as_runloop_observer(bool)  (in QuartzCore) + 68  [0x18cefa1a4]
+    +                       !                   1 CA::Transaction::commit()  (in QuartzCore) + 632  [0x18cef88f0]
+    +                       !                     1 CA::Context::commit_transaction(CA::Transaction*, double, double*)  (in QuartzCore) + 560  [0x18cecacc8]
+    +                       !                       1 CA::Layer::layout_and_display_if_needed(CA::Transaction*)  (in QuartzCore) + 156  [0x18cfb2978]
+    +                       !                         1 CA::Layer::update_if_needed_(CA::Transaction*, CA::LayerUpdateReason)  (in QuartzCore) + 600  [0x18cfa6d94]
+    +                       !                           1 CA::Layer::perform_update_(CA::Layer*, CALayer*, unsigned int, CA::LayerUpdateReason, CA::Transaction*)  (in QuartzCore) + 456  [0x18cfa7548]
+    +                       !                             1 -[UIView(CALayerDelegate) layoutSublayersOfLayer:]  (in UIKitCore) + 236  [0x186aafbdc]
+    +                       !                               1 _UIScopedSignpostIntervalInit  (in UIKitCore) + 0  [0x186aa0d00]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 864  [0x180421870]
+    +                         1 __CFRunLoopDoObservers  (in CoreFoundation) + 556  [0x180421430]
+    +                           1 __CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__  (in CoreFoundation) + 32  [0x180421f4c]
+    +                             1 @objc closure #1 in static NSRunLoop.addObserver(_:)  (in SwiftUICore) + 16  [0x1d4365900]
+    +                               1 DYLD-STUB$$_objc_autoreleasePoolPush  (in SwiftUICore) + 0  [0x1d43eabc8]
+
+Sort by top of stack, same collapsed (when >= 5):
+        mach_msg2_trap  (in libsystem_kernel.dylib)        1626
+        __workq_kernreturn  (in libsystem_kernel.dylib)        1297
+        __semwait_signal  (in libsystem_kernel.dylib)        812
+        generationCountFromListOfSources  (in CoreFoundation)        47
+        objc_msgSend  (in libobjc.A.dylib)        33
+        pthread_getspecific  (in libsystem_pthread.dylib)        27
+        static PageTexture.smooth(_:_:_:_:_:)  (in Chronotheca.debug.dylib)        23
+        _xzm_free  (in libsystem_malloc.dylib)        22
+        _swift_isClassOrObjCExistentialType  (in libswiftCore.dylib)        20
+        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        19
+        __CF_IS_OBJC  (in CoreFoundation)        18
+        <deduplicated_symbol>  (in libsystem_malloc.dylib)        15
+        Array._checkSubscript(_:wasNativeTypeChecked:)  (in libswiftCore.dylib)        15
+        min<A>(_:_:)  (in libswiftCore.dylib)        12
+        static PageTexture.smoothField(width:height:cell:wrapX:wrapY:next:)  (in Chronotheca.debug.dylib)        12
+        swift::metadataimpl::ValueWitnesses<swift::metadataimpl::NativeBox<unsigned int, 4ul, 4ul, 4ul>>::initializeWithCopy(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        12
+        Array.subscript.getter  (in libswiftCore.dylib)        11
+        pthread_setspecific  (in libsystem_pthread.dylib)        11
+        static PageTexture.makeAgedFolder(size:band:seed:tab:share:light:)  (in Chronotheca.debug.dylib)        11
+        swift::LockingConcurrentMap<(anonymous namespace)::TupleCacheEntry, (anonymous namespace)::TupleCacheStorage>::getOrInsert<(anonymous namespace)::TupleCacheEntry::Key, swift::MetadataRequest&, swift::TargetValueWitnessTable<swift::InProcess> const*&>((anonymous namespace)::TupleCacheEntry::Key, swift::MetadataRequest&, swift::TargetValueWitnessTable<swift::InProcess> const*&)  (in libswiftCore.dylib)        11
+        _CFStringGetCStringPtrInternal  (in CoreFoundation)        10
+        os_unfair_lock_lock  (in libsystem_platform.dylib)        10
+        -[__NSDictionaryM objectForKey:]  (in CoreFoundation)        9
+        String._bridgeToObjectiveCImpl()  (in libswiftCore.dylib)        9
+        __CFStringHash  (in CoreFoundation)        9
+        _free  (in libsystem_malloc.dylib)        8
+        objc_retain_x8  (in libobjc.A.dylib)        8
+        -[__NSArrayM count]  (in CoreFoundation)        7
+        CFStringHashCString  (in CoreFoundation)        7
+        _platform_memset  (in libsystem_platform.dylib)        7
+        max<A>(_:_:)  (in libswiftCore.dylib)        7
+        <deduplicated_symbol>  (in libswiftCore.dylib)        6
+        _CFStringCreateIndirectASCIITaggedPointerString  (in CoreFoundation)        6
+        __swift_instantiateCanonicalPrespecializedGenericMetadata  (in libswiftCore.dylib)        6
+        _platform_memmove  (in libsystem_platform.dylib)        6
+        normalizeQuintuplet  (in CoreFoundation)        6
+        objc_autorelease  (in libobjc.A.dylib)        6
+        protocol witness for Collection.formIndex(after:) in conformance <> Range<A>  (in libswiftCore.dylib)        6
+        swift::metadataimpl::ValueWitnesses<swift::metadataimpl::NativeBox<unsigned long long, 8ul, 8ul, 8ul>>::destroy(swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        6
