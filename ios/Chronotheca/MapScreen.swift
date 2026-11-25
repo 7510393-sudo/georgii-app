@@ -626,8 +626,9 @@ struct MapScreen: View {
     }
 }
 
-/// Вкладка у правого края карты (P855): маленькая, со скошенными краями и
-/// стрелкой влево — заметна, но не мешает карте.
+/// Вкладка у правого края карты (P855): со скошенными краями и стрелкой
+/// влево — заметна, но не мешает карте. Выше и чуть шире прежней (P1064,
+/// автор: «очень маленькая, её практически не видно»).
 private struct SwipeTab: View {
     var body: some View {
         TabOutline()
@@ -635,10 +636,10 @@ private struct SwipeTab: View {
             .overlay(TabOutline().stroke(Look.inkSoft.opacity(0.5), lineWidth: 1))
             .overlay(
                 Image(systemName: "chevron.left")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(Look.inkSoft)
                     .offset(x: 1))
-            .frame(width: 16, height: 54)
+            .frame(width: 22, height: 96)
             .allowsHitTesting(false)
             .accessibilityHidden(true)
     }
@@ -647,7 +648,7 @@ private struct SwipeTab: View {
 /// Трапеция, прижатая к краю экрана: у края шире, внутрь скошена.
 private struct TabOutline: Shape {
     func path(in r: CGRect) -> Path {
-        let bevel: CGFloat = 8
+        let bevel: CGFloat = 12
         var p = Path()
         p.move(to: CGPoint(x: r.maxX + 1, y: r.minY))
         p.addLine(to: CGPoint(x: r.minX + 3, y: r.minY + bevel))
