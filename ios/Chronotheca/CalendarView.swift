@@ -501,7 +501,9 @@ struct CalendarView: View {
                     .padding(.trailing, 6)
                     .padding(.bottom, 3)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // Угол — у всей клетки: без него у прошлого, где точек нет,
+            // число вставало посередине.
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             .aspectRatio(1, contentMode: .fit)
             // Клетка — того же цвета, что страница этого дня: сегодня
             // абрикосовое, прошлое голубеет, будущее зеленеет (P245).

@@ -155,13 +155,19 @@ private struct IntroFrame: View {
         let side = w + gap
 
         ZStack {
-            // Прошлое и будущее выезжают из-под листа, по очереди.
+            // Прошлое и будущее выезжают из-под листа, по очереди. Как в
+            // картотеке, нижняя карточка лежит на верхней — корешки видны:
+            // у прошлого дальняя (верхняя) рисуется первой, у будущего —
+            // ближняя.
             ForEach((0..<3).reversed(), id: \.self) { i in
                 let p = ease(t, 0.6 + 0.12 * Double(i), 1.36 + 0.12 * Double(i))
                 IntroCard(past: true, tab: tabHeight(w))
                     .frame(width: w, height: cardH)
                     .offset(y: (nearPast - CGFloat(i) * cardStep) * p)
                     .opacity(Double(p * rest))
+            }
+            ForEach(0..<3, id: \.self) { i in
+                let p = ease(t, 0.6 + 0.12 * Double(i), 1.36 + 0.12 * Double(i))
                 IntroCard(past: false, tab: tabHeight(w))
                     .frame(width: w, height: cardH)
                     .offset(y: (-nearPast + CGFloat(i) * cardStep) * p)
