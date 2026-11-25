@@ -1,92 +1,280 @@
-    692 Thread_46111   DispatchQueue_1: com.apple.main-thread  (serial)
-    + 692 start  (in dyld) + 6992  [0x1027484e4]
-    +   692 start_sim  (in dyld_sim) + 20  [0x1029cf0e4]
-    +     692 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x1048a3e0c]  ChronothecaApp.swift:0
-    +       692 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1048a3d60]  /<compiler-generated>:0
-    +         692 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
-    +           692 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
-    +             692 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
-    +               692 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
-    +                 692 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
-    +                   692 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
-    +                     692 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
-    +                       689 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
-    +                       ! 689 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
-    +                       !   689 mach_msg  (in libsystem_kernel.dylib) + 20  [0x102880ef0]
-    +                       !     689 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x102888c44]
-    +                       !       689 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x102891e84]
-    +                       !         689 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x102880b70]
-    +                       2 __CFRunLoopRun  (in CoreFoundation) + 1884  [0x180421c6c]
-    +                       ! 2 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__  (in CoreFoundation) + 12  [0x180422a94]
-    +                       !   2 _dispatch_main_queue_callback_4CF  (in libdispatch.dylib) + 40  [0x180195890]
-    +                       !     2 _dispatch_main_queue_drain  (in libdispatch.dylib) + 1172  [0x180195d34]
-    +                       !       2 <deduplicated_symbol>  (in libdispatch.dylib) + 24  [0x1801bd748]
-    +                       !         2 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
-    +                       !           2 _dispatch_call_block_and_release  (in libdispatch.dylib) + 24  [0x1801866a0]
-    +                       !             2 __51-[GEOTileLoader proxyDidDownloadRegionalResources:]_block_invoke  (in GeoServices) + 60  [0x18a0439dc]
-    +                       !               2 -[NSNotificationCenter postNotificationName:object:userInfo:]  (in Foundation) + 88  [0x1810e2d7c]
-    +                       !                 2 _CFXNotificationPost  (in CoreFoundation) + 696  [0x1803eb844]
-    +                       !                   2 _CFXRegistrationPost  (in CoreFoundation) + 408  [0x1803ebe5c]
-    +                       !                     2 ___CFXRegistrationPost_block_invoke  (in CoreFoundation) + 88  [0x1803ec970]
-    +                       !                       2 __CFNOTIFICATIONCENTER_IS_CALLING_OUT_TO_AN_OBSERVER__  (in CoreFoundation) + 120  [0x1803eca38]
-    +                       !                         2 __53-[RegionalResourceObserver initWithResourceProvider:]_block_invoke  (in VectorKit) + 184  [0x19974afec]
-    +                       !                           2 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
-    +                       !                             2 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
-    +                       !                               2 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9820  [0x1800b68f4]
-    +                       !                                 2 _os_log_impl_stream  (in libsystem_trace.dylib) + 524  [0x1800b6e94]
-    +                       !                                   2 _os_activity_stream_reflect  (in libsystem_trace.dylib) + 336  [0x1800a605c]
-    +                       !                                     2 dyld4::APIs::dyld_image_path_containing_address(void const*)  (in dyld_sim) + 68  [0x1029c7184]
-    +                       !                                       2 dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 528  [0x1029c6ec0]
-    +                       !                                         2 dyld4::RuntimeLocks::withLoadersReadLock(void () block_pointer)  (in dyld_sim) + 60  [0x1029d539c]
-    +                       !                                           1 invocation function for block in dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 108  [0x1029c7004]
-    +                       !                                           : 1 dyld4::JustInTimeLoader::contains(dyld4::RuntimeState&, void const*, void const**, unsigned long long*, unsigned char*) const  (in dyld_sim) + 136  [0x1029dd064]
-    +                       !                                           :   1 mach_o::UnsafeHeader::preferredLoadAddress() const  (in dyld_sim) + 96  [0x102a04a04]
-    +                       !                                           :     1 mach_o::UnsafeHeader::forEachSegment(void (mach_o::UnsafeHeader::SegmentInfo const&, bool&) block_pointer) const  (in dyld_sim) + 96  [0x102a05460]
-    +                       !                                           :       1 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 44  [0x102a02980]
-    +                       !                                           1 invocation function for block in dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 52  [0x1029c6fcc]
-    +                       1 __CFRunLoopRun  (in CoreFoundation) + 864  [0x180421870]
-    +                         1 __CFRunLoopDoObservers  (in CoreFoundation) + 556  [0x180421430]
-    +                           1 __CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__  (in CoreFoundation) + 32  [0x180421f4c]
-    +                             1 _UIApplicationDrainManagedAutoreleasePool  (in UIKitCore) + 20  [0x185eaaac0]
-    +                               1 DYLD-STUB$$pthread_main_np  (in UIKitCore) + 0  [0x186ba9458]
+    734 Thread_64802   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 734 start  (in dyld) + 6992  [0x1011004e4]
+    +   734 start_sim  (in dyld_sim) + 20  [0x100fb30e4]
+    +     734 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x10323ee74]  ChronothecaApp.swift:0
+    +       734 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x10323edc8]  /<compiler-generated>:0
+    +         734 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           734 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             734 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               734 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 734 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   734 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     734 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       560 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    +                       ! 560 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    +                       !   560 mach_msg  (in libsystem_kernel.dylib) + 20  [0x101238ef0]
+    +                       !     560 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x101240c44]
+    +                       !       560 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x101249e84]
+    +                       !         560 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x101238b70]
+    +                       174 __CFRunLoopRun  (in CoreFoundation) + 2280  [0x180421df8]
+    +                         174 __CFRunLoopDoBlocks  (in CoreFoundation) + 340  [0x1804224b4]
+    +                           174 __CFRUNLOOP_IS_CALLING_OUT_TO_A_BLOCK__  (in CoreFoundation) + 20  [0x180422d28]
+    +                             174 __XCTPerformOnMainRunLoop_block_invoke  (in XCTAutomationSupport) + 392  [0x10301bca4]
+    +                               174 __90-[XCTElementQuery matchingSnapshotsInSnapshotTree:relatedElements:noMatchesMessage:error:]_block_invoke  (in XCTAutomationSupport) + 156  [0x102ffea24]
+    +                                 174 +[XCTRuntimeIssueContext captureIssuesWithContext:inScope:]  (in XCTAutomationSupport) + 196  [0x1030087ec]
+    +                                   174 __90-[XCTElementQuery matchingSnapshotsInSnapshotTree:relatedElements:noMatchesMessage:error:]_block_invoke_2  (in XCTAutomationSupport) + 328  [0x102ffeb90]
+    +                                     174 -[XCTElementQuery _firstMatchingSnapshotForInput:transformersSubarrays:relatedElements:noMatchesMessage:error:]  (in XCTAutomationSupport) + 256  [0x102fff23c]
+    +                                       163 -[XCTElementQuery _firstMatchingSnapshotForInput:transformers:relatedElements:noMatchesMessage:error:]  (in XCTAutomationSupport) + 848  [0x102fff884]
+    +                                       : 132 -[XCTFilteringTransformerIterator nextMatch]  (in XCTAutomationSupport) + 100  [0x102ff8758]
+    +                                       : | 98 -[NSComparisonPredicate evaluateWithObject:substitutionVariables:]  (in Foundation) + 276  [0x18104d1bc]
+    +                                       : | + 98 -[NSKeyPathExpression expressionValueWithObject:context:]  (in Foundation) + 216  [0x18109e7bc]
+    +                                       : | +   98 -[NSFunctionExpression expressionValueWithObject:context:]  (in Foundation) + 2388  [0x181085144]
+    +                                       : | +     98 -[NSObject(NSKeyValueCoding) valueForKey:]  (in Foundation) + 260  [0x1810aad78]
+    +                                       : | +       98 _NSGetUnsignedLongLongValueWithMethod  (in Foundation) + 72  [0x1810a5930]
+    +                                       : | +         58 -[XCElementSnapshot elementType]  (in XCTAutomationSupport) + 200  [0x103012a28]
+    +                                       : | +         ! 58 -[XCTAutomationSession attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 76  [0x103022ca4]
+    +                                       : | +         !   31 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 264  [0x102ffacc8]
+    +                                       : | +         !   : 31 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                       : | +         !   :   31 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       : | +         !   :     30 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                       : | +         !   :     | 30 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                       : | +         !   :     |   30 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                       : | +         !   :     |     30 writev  (in libsystem_kernel.dylib) + 8  [0x10123c600]
+    +                                       : | +         !   :     1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9820  [0x1800b68f4]
+    +                                       : | +         !   :       1 _os_log_impl_stream  (in libsystem_trace.dylib) + 524  [0x1800b6e94]
+    +                                       : | +         !   :         1 _os_activity_stream_reflect  (in libsystem_trace.dylib) + 336  [0x1800a605c]
+    +                                       : | +         !   :           1 dyld4::APIs::dyld_image_path_containing_address(void const*)  (in dyld_sim) + 68  [0x100fab184]
+    +                                       : | +         !   :             1 dyld4::APIs::findImageMappedAt(void const*, dyld3::MachOLoaded const**, bool*, char const**, void const**, unsigned long long*, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 288  [0x100faadd0]
+    +                                       : | +         !   :               1 dyld4::RuntimeState::inPermanentRange(unsigned long, unsigned long, unsigned char*, dyld4::Loader const**)  (in dyld_sim) + 0  [0x100fbb140]
+    +                                       : | +         !   27 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 524  [0x102ffadcc]
+    +                                       : | +         !     27 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                       : | +         !       27 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       : | +         !         27 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                       : | +         !           27 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                       : | +         !             27 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                       : | +         !               27 writev  (in libsystem_kernel.dylib) + 8  [0x10123c600]
+    +                                       : | +         35 -[XCElementSnapshot elementType]  (in XCTAutomationSupport) + 932  [0x103012d04]
+    +                                       : | +         ! 35 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                       : | +         !   35 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       : | +         !     35 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                       : | +         !       35 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                       : | +         !         35 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                       : | +         !           35 writev  (in libsystem_kernel.dylib) + 8  [0x10123c600]
+    +                                       : | +         5 -[XCElementSnapshot elementType]  (in XCTAutomationSupport) + 1248  [0x103012e40]
+    +                                       : | +           5 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                       : | +             5 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       : | +               5 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                       : | +                 5 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                       : | +                   5 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                       : | +                     5 writev  (in libsystem_kernel.dylib) + 8  [0x10123c600]
+    +                                       : | 34 -[NSComparisonPredicate evaluateWithObject:substitutionVariables:]  (in Foundation) + 300  [0x18104d1d4]
+    +                                       : |   34 -[NSKeyPathExpression expressionValueWithObject:context:]  (in Foundation) + 216  [0x18109e7bc]
+    +                                       : |     34 -[NSFunctionExpression expressionValueWithObject:context:]  (in Foundation) + 2388  [0x181085144]
+    +                                       : |       34 -[NSObject(NSKeyValueCoding) valueForKey:]  (in Foundation) + 260  [0x1810aad78]
+    +                                       : |         11 -[XCElementSnapshot identifiers]  (in XCTAutomationSupport) + 512  [0x103010050]
+    +                                       : |         ! 11 -[XCElementSnapshot identifier]  (in XCTAutomationSupport) + 68  [0x103014ae4]
+    +                                       : |         !   7 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 636  [0x1030123e4]
+    +                                       : |         !   : 7 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                       : |         !   :   7 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       : |         !   :     7 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                       : |         !   :       7 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                       : |         !   :         7 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                       : |         !   :           7 writev  (in libsystem_kernel.dylib) + 8  [0x10123c600]
+    +                                       : |         !   4 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 264  [0x103012270]
+    +                                       : |         !     4 -[XCTAutomationSession attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 76  [0x103022ca4]
+    +                                       : |         !       4 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 524  [0x102ffadcc]
+    +                                       : |         !         4 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                       : |         !           4 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       : |         !             4 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                       : |         !               4 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                       : |         !                 4 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                       : |         !                   4 writev  (in libsystem_kernel.dylib) + 8  [0x10123c600]
+    +                                       : |         10 -[XCElementSnapshot identifiers]  (in XCTAutomationSupport) + 292  [0x10300ff74]
+    +                                       : |         ! 10 -[XCElementSnapshot truncatedValueString]  (in XCTAutomationSupport) + 52  [0x103014250]
+    +                                       : |         !   10 -[XCElementSnapshot value]  (in XCTAutomationSupport) + 204  [0x103014398]
+    +                                       : |         !     7 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 636  [0x1030123e4]
+    +                                       : |         !     : 7 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                       : |         !     :   7 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       : |         !     :     7 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                       : |         !     :       7 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                       : |         !     :         7 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                       : |         !     :           7 writev  (in libsystem_kernel.dylib) + 8  [0x10123c600]
+    +                                       : |         !     3 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 264  [0x103012270]
+    +                                       : |         !       3 -[XCTAutomationSession attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 76  [0x103022ca4]
+    +                                       : |         !         3 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 524  [0x102ffadcc]
+    +                                       : |         !           3 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                       : |         !             3 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       : |         !               3 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                       : |         !                 3 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                       : |         !                   3 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                       : |         !                     3 writev  (in libsystem_kernel.dylib) + 8  [0x10123c600]
+    +                                       : |         9 -[XCElementSnapshot identifiers]  (in XCTAutomationSupport) + 168  [0x10300fef8]
+    +                                       : |         ! 9 -[XCElementSnapshot label]  (in XCTAutomationSupport) + 80  [0x10301498c]
+    +                                       : |         !   6 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 636  [0x1030123e4]
+    +                                       : |         !   : 6 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                       : |         !   :   6 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       : |         !   :     5 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                       : |         !   :     | 5 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                       : |         !   :     |   5 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                       : |         !   :     |     5 writev  (in libsystem_kernel.dylib) + 8  [0x10123c600]
+    +                                       : |         !   :     1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9820  [0x1800b68f4]
+    +                                       : |         !   :       1 _os_log_impl_stream  (in libsystem_trace.dylib) + 524  [0x1800b6e94]
+    +                                       : |         !   :         1 _os_activity_stream_reflect  (in libsystem_trace.dylib) + 540  [0x1800a6128]
+    +                                       : |         !   :           1 dispatch_block_perform  (in libdispatch.dylib) + 112  [0x18018b474]
+    +                                       : |         !   :             1 _dispatch_block_invoke_direct  (in libdispatch.dylib) + 376  [0x18018b5fc]
+    +                                       : |         !   :               1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                                       : |         !   :                 1 ___os_activity_stream_reflect_block_invoke_2  (in libsystem_trace.dylib) + 36  [0x1800a6884]
+    +                                       : |         !   :                   1 _xpc_pipe_simpleroutine  (in libxpc.dylib) + 136  [0x1800e72fc]
+    +                                       : |         !   :                     1 _xpc_send_serializer  (in libxpc.dylib) + 104  [0x1800e7570]
+    +                                       : |         !   :                       1 _xpc_pipe_mach_msg  (in libxpc.dylib) + 52  [0x1800e7b68]
+    +                                       : |         !   :                         1 mach_msg  (in libsystem_kernel.dylib) + 20  [0x101238ef0]
+    +                                       : |         !   :                           1 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x101240c44]
+    +                                       : |         !   :                             1 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x101249e84]
+    +                                       : |         !   :                               1 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x101238b70]
+    +                                       : |         !   3 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 264  [0x103012270]
+    +                                       : |         !     3 -[XCTAutomationSession attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 76  [0x103022ca4]
+    +                                       : |         !       2 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 264  [0x102ffacc8]
+    +                                       : |         !       | 2 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                       : |         !       |   2 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       : |         !       |     2 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                       : |         !       |       2 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                       : |         !       |         2 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                       : |         !       |           2 writev  (in libsystem_kernel.dylib) + 8  [0x10123c600]
+    +                                       : |         !       1 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 524  [0x102ffadcc]
+    +                                       : |         !         1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                       : |         !           1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       : |         !             1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                       : |         !               1 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                       : |         !                 1 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                       : |         !                   1 writev  (in libsystem_kernel.dylib) + 8  [0x10123c600]
+    +                                       : |         4 -[XCElementSnapshot identifiers]  (in XCTAutomationSupport) + 344  [0x10300ffa8]
+    +                                       : |           4 -[XCElementSnapshot placeholderValue]  (in XCTAutomationSupport) + 112  [0x10301472c]
+    +                                       : |             2 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 264  [0x103012270]
+    +                                       : |             : 2 -[XCTAutomationSession attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 76  [0x103022ca4]
+    +                                       : |             :   2 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 524  [0x102ffadcc]
+    +                                       : |             :     2 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                       : |             :       2 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       : |             :         2 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                       : |             :           2 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                       : |             :             2 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                       : |             :               2 writev  (in libsystem_kernel.dylib) + 8  [0x10123c600]
+    +                                       : |             2 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 636  [0x1030123e4]
+    +                                       : |               2 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                       : |                 2 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       : |                   2 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                       : |                     2 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                       : |                       2 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                       : |                         2 writev  (in libsystem_kernel.dylib) + 8  [0x10123c600]
+    +                                       : 27 -[XCTFilteringTransformerIterator nextMatch]  (in XCTAutomationSupport) + 124  [0x102ff8770]
+    +                                       : | 27 -[XCTElementSnapshotDescendantsEnumerator nextObject]  (in XCTAutomationSupport) + 140  [0x10301a334]
+    +                                       : |   27 -[XCElementSnapshot childEnumerator]  (in XCTAutomationSupport) + 16  [0x103017254]
+    +                                       : |     27 -[XCElementSnapshot children]  (in XCTAutomationSupport) + 124  [0x1030152f8]
+    +                                       : |       16 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 264  [0x103012270]
+    +                                       : |       + 16 -[XCTAutomationSession attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 76  [0x103022ca4]
+    +                                       : |       +   10 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 524  [0x102ffadcc]
+    +                                       : |       +   ! 10 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                       : |       +   !   10 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       : |       +   !     10 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                       : |       +   !       10 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                       : |       +   !         10 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                       : |       +   !           10 writev  (in libsystem_kernel.dylib) + 8  [0x10123c600]
+    +                                       : |       +   6 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 264  [0x102ffacc8]
+    +                                       : |       +     6 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                       : |       +       6 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       : |       +         5 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                       : |       +         : 5 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                       : |       +         :   5 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                       : |       +         :     5 writev  (in libsystem_kernel.dylib) + 8  [0x10123c600]
+    +                                       : |       +         1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9820  [0x1800b68f4]
+    +                                       : |       +           1 _os_log_impl_stream  (in libsystem_trace.dylib) + 524  [0x1800b6e94]
+    +                                       : |       +             1 _os_activity_stream_reflect  (in libsystem_trace.dylib) + 236  [0x1800a5ff8]
+    +                                       : |       +               1 dyld4::APIs::_dyld_get_image_uuid(mach_header const*, unsigned char*)  (in dyld_sim) + 0  [0x100faa7dc]
+    +                                       : |       11 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 636  [0x1030123e4]
+    +                                       : |         11 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                       : |           11 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       : |             11 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                       : |               11 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                       : |                 11 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                       : |                   11 writev  (in libsystem_kernel.dylib) + 8  [0x10123c600]
+    +                                       : 4 -[XCTFilteringTransformerIterator nextMatch]  (in XCTAutomationSupport) + 40  [0x102ff871c]
+    +                                       :   4 -[XCTElementSnapshotDescendantsEnumerator nextObject]  (in XCTAutomationSupport) + 140  [0x10301a334]
+    +                                       :     4 -[XCElementSnapshot childEnumerator]  (in XCTAutomationSupport) + 16  [0x103017254]
+    +                                       :       4 -[XCElementSnapshot children]  (in XCTAutomationSupport) + 124  [0x1030152f8]
+    +                                       :         3 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 636  [0x1030123e4]
+    +                                       :         + 3 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                       :         +   3 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       :         +     3 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                       :         +       3 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                       :         +         3 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                       :         +           3 writev  (in libsystem_kernel.dylib) + 8  [0x10123c600]
+    +                                       :         1 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 264  [0x103012270]
+    +                                       :           1 -[XCTAutomationSession attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 76  [0x103022ca4]
+    +                                       :             1 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 524  [0x102ffadcc]
+    +                                       :               1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                       :                 1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       :                   1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                       :                     1 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                       :                       1 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                       :                         1 writev  (in libsystem_kernel.dylib) + 8  [0x10123c600]
+    +                                       8 -[XCTElementQuery _firstMatchingSnapshotForInput:transformers:relatedElements:noMatchesMessage:error:]  (in XCTAutomationSupport) + 1076  [0x102fff968]
+    +                                       : 8 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                       :   8 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       :     8 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                       :       8 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                       :         8 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                       :           8 writev  (in libsystem_kernel.dylib) + 8  [0x10123c600]
+    +                                       2 -[XCTElementQuery _firstMatchingSnapshotForInput:transformers:relatedElements:noMatchesMessage:error:]  (in XCTAutomationSupport) + 284  [0x102fff650]
+    +                                       : 2 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                       :   2 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                       :     2 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                       :       2 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                       :         2 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                       :           2 writev  (in libsystem_kernel.dylib) + 8  [0x10123c600]
+    +                                       1 -[XCTElementQuery _firstMatchingSnapshotForInput:transformers:relatedElements:noMatchesMessage:error:]  (in XCTAutomationSupport) + 1216  [0x102fff9f4]
+    +                                         1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                                           1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                                             1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                                               1 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                                                 1 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                                                   1 writev  (in libsystem_kernel.dylib) + 8  [0x10123c600]
 
 Sort by top of stack, same collapsed (when >= 5):
-        mach_msg2_trap  (in libsystem_kernel.dylib)        1382
-        __workq_kernreturn  (in libsystem_kernel.dylib)        1154
-        __semwait_signal  (in libsystem_kernel.dylib)        685
-        generationCountFromListOfSources  (in CoreFoundation)        54
-        objc_msgSend  (in libobjc.A.dylib)        36
-        __CF_IS_OBJC  (in CoreFoundation)        29
-        pthread_getspecific  (in libsystem_pthread.dylib)        27
-        __CFStringHash  (in CoreFoundation)        22
-        -[__NSDictionaryM objectForKey:]  (in CoreFoundation)        21
-        pthread_setspecific  (in libsystem_pthread.dylib)        19
+        __workq_kernreturn  (in libsystem_kernel.dylib)        4224
+        mach_msg2_trap  (in libsystem_kernel.dylib)        1296
+        writev  (in libsystem_kernel.dylib)        175
+        semaphore_timedwait_trap  (in libsystem_kernel.dylib)        174
+        generationCountFromListOfSources  (in CoreFoundation)        61
+        objc_msgSend  (in libobjc.A.dylib)        38
+        pthread_getspecific  (in libsystem_pthread.dylib)        31
+        -[__NSDictionaryM objectForKey:]  (in CoreFoundation)        23
+        __CF_IS_OBJC  (in CoreFoundation)        23
         static PageTexture.smooth(_:_:_:_:_:)  (in Chronotheca.debug.dylib)        19
-        static PageTexture.makeAgedFolder(size:band:seed:tab:share:light:)  (in Chronotheca.debug.dylib)        14
-        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        13
-        CFStringHashCString  (in CoreFoundation)        13
-        _CFStringGetCStringPtrInternal  (in CoreFoundation)        13
-        static PageTexture.grey.getter  (in Chronotheca.debug.dylib)        13
-        CFEqual  (in CoreFoundation)        11
-        _swift_isClassOrObjCExistentialType  (in libswiftCore.dylib)        11
-        objc_autorelease  (in libobjc.A.dylib)        11
-        objc_retain_x8  (in libobjc.A.dylib)        11
-        <deduplicated_symbol>  (in libswiftCore.dylib)        10
+        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        16
+        specialized Array.init(repeating:count:)  (in libswiftCore.dylib)        16
+        pthread_setspecific  (in libsystem_pthread.dylib)        14
+        at #1 (_:_:) in static PageTexture.edgeDistance(_:width:height:)  (in Chronotheca.debug.dylib)        13
+        swift::metadataimpl::ValueWitnesses<swift::metadataimpl::NativeBox<unsigned char, 1ul, 1ul, 1ul>>::initializeWithCopy(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        13
+        _CFStringGetCStringPtrInternal  (in CoreFoundation)        12
+        -[__NSArrayM getObjects:range:]  (in CoreFoundation)        11
+        static PageTexture.grey.getter  (in Chronotheca.debug.dylib)        11
         objc_release  (in libobjc.A.dylib)        10
-        String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:)  (in libswiftCore.dylib)        9
-        os_log_type_enabled  (in libsystem_trace.dylib)        9
+        Array.subscript.getter  (in libswiftCore.dylib)        9
+        _swift_isClassOrObjCExistentialType  (in libswiftCore.dylib)        9
+        objc_retain_x8  (in libobjc.A.dylib)        9
+        CFStringGetLength  (in CoreFoundation)        8
+        CFStringHashCString  (in CoreFoundation)        8
+        objc_retainAutoreleasedReturnValue  (in libobjc.A.dylib)        8
+        os_log_type_enabled  (in libsystem_trace.dylib)        8
         os_unfair_lock_lock  (in libsystem_platform.dylib)        8
-        _CFStringCreateIndirectASCIITaggedPointerString  (in CoreFoundation)        7
-        getCache(swift::TargetTypeContextDescriptor<swift::InProcess> const&)  (in libswiftCore.dylib)        6
-        min<A>(_:_:)  (in libswiftCore.dylib)        6
-        os_unfair_lock_unlock  (in libsystem_platform.dylib)        6
-        swift_getAssociatedTypeWitness  (in libswiftCore.dylib)        6
-        -[__NSArrayM getObjects:range:]  (in CoreFoundation)        5
+        static PageTexture.edgeDistance(_:width:height:)  (in Chronotheca.debug.dylib)        8
+        swift_bridgeObjectRetain  (in libswiftCore.dylib)        8
+        DYLD-STUB$$pthread_getspecific  (in libswiftCore.dylib)        7
+        StrideThroughIterator.next()  (in libswiftCore.dylib)        7
+        String._bridgeToObjectiveCImpl()  (in libswiftCore.dylib)        7
+        objc_autorelease  (in libobjc.A.dylib)        6
+        static PageTexture.write(_:_:_:_:)  (in Chronotheca.debug.dylib)        6
+        swift::LockingConcurrentMap<(anonymous namespace)::TupleCacheEntry, (anonymous namespace)::TupleCacheStorage>::getOrInsert<(anonymous namespace)::TupleCacheEntry::Key, swift::MetadataRequest&, swift::TargetValueWitnessTable<swift::InProcess> const*&>((anonymous namespace)::TupleCacheEntry::Key, swift::MetadataRequest&, swift::TargetValueWitnessTable<swift::InProcess> const*&)  (in libswiftCore.dylib)        6
+        swift::runtime::AccessSet::insert(swift::runtime::Access*, void*, void*, swift::ExclusivityFlags)  (in libswiftCore.dylib)        6
+        -[CFPrefsSearchListSource alreadylocked_copyValueForKey:]  (in CoreFoundation)        5
+        -[_CFXPreferences withSearchListForIdentifier:container:cloudConfigurationURL:perform:]  (in CoreFoundation)        5
         Array._checkSubscript(_:wasNativeTypeChecked:)  (in libswiftCore.dylib)        5
-        Prefs.calendarTint.unsafeMutableAddressor  (in Chronotheca.debug.dylib)        5
-        __CFTSDGetTable  (in CoreFoundation)        5
-        expf  (in libsystem_m.dylib)        5
-        normalizeQuintuplet  (in CoreFoundation)        5
-        objc_retainAutoreleasedReturnValue  (in libobjc.A.dylib)        5
-        os_unfair_lock_assert_not_owner  (in libsystem_platform.dylib)        5
-        os_unfair_lock_assert_owner  (in libsystem_platform.dylib)        5

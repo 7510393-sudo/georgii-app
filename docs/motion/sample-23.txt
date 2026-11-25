@@ -1,87 +1,41 @@
-    747 Thread_126645   DispatchQueue_1: com.apple.main-thread  (serial)
-    + 747 start  (in dyld) + 6992  [0x1030204e4]
-    +   747 start_sim  (in dyld_sim) + 20  [0x102f370e4]
-    +     747 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x105143e0c]  ChronothecaApp.swift:0
-    +       747 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x105143d60]  /<compiler-generated>:0
-    +         747 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
-    +           747 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
-    +             747 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
-    +               747 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
-    +                 747 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
-    +                   747 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
-    +                     747 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
-    +                       745 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
-    +                       ! 745 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
-    +                       !   745 mach_msg  (in libsystem_kernel.dylib) + 20  [0x103158ef0]
-    +                       !     745 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x103160c44]
-    +                       !       745 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x103169e84]
-    +                       !         745 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x103158b70]
-    +                       1 __CFRunLoopRun  (in CoreFoundation) + 1756  [0x180421bec]
-    +                       ! 1 __CFRunLoopDoTimers  (in CoreFoundation) + 276  [0x1804229d4]
-    +                       !   1 __CFRunLoopDoTimer  (in CoreFoundation) + 916  [0x1804232f8]
-    +                       !     1 __CFRUNLOOP_IS_CALLING_OUT_TO_A_TIMER_CALLBACK_FUNCTION__  (in CoreFoundation) + 28  [0x1804235e8]
-    +                       !       1 __NSFireTimer  (in Foundation) + 56  [0x181156a2c]
-    +                       !         1 -[UIAccessibilityInformationLoader _loadAccessibilityInformationOnMainThread:]  (in UIAccessibility) + 180  [0x1952adf74]
-    +                       !           1 -[UIApplicationAccessibility _accessibilityLoadAccessibilityInformation]  (in UIKit) + 108  [0x10a432c0c]
-    +                       !             1 -[UIApplicationAccessibility _accessibilityConnectedScenes]  (in UIKit) + 40  [0x10a44b4a4]
-    +                       !               1 -[NSObject(UIAccessibilitySafeCategory) safeSetForKey:]  (in AXCoreUtilities) + 64  [0x192abbd30]
-    +                       !                 1 -[NSObject(UIAccessibilitySafeCategory_Private) _safeValidatedValueForKey:expectedClass:expectedTypeEncoding:]  (in AXCoreUtilities) + 20  [0x192abb02c]
-    +                       !                   1 -[NSObject(UIAccessibilitySafeCategory_Private) _safeValidatedValueForKey:expectedClass:possibleExpectedTypeEncodings:]  (in AXCoreUtilities) + 64  [0x192abb078]
-    +                       !                     1 -[NSObject(UIAccessibilitySafeCategory) safeValueForKey:]  (in AXCoreUtilities) + 188  [0x192abbecc]
-    +                       !                       1 -[NSObject(UIAccessibilitySafeCategory) _accessibilityPerformSafeValueKeyBlock:withKey:onClass:]  (in AXCoreUtilities) + 76  [0x192abc4e8]
-    +                       !                         1 __57-[NSObject(UIAccessibilitySafeCategory) safeValueForKey:]_block_invoke  (in AXCoreUtilities) + 28  [0x192abc208]
-    +                       !                           1 -[NSObject(NSKeyValueCoding) valueForKey:]  (in Foundation) + 260  [0x1810aad78]
-    +                       !                             1 _NSGetUsingKeyValueGetter  (in Foundation) + 76  [0x1810aae88]
-    +                       1 __CFRunLoopRun  (in CoreFoundation) + 1884  [0x180421c6c]
-    +                         1 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__  (in CoreFoundation) + 12  [0x180422a94]
-    +                           1 _dispatch_main_queue_callback_4CF  (in libdispatch.dylib) + 40  [0x180195890]
-    +                             1 _dispatch_main_queue_drain  (in libdispatch.dylib) + 644  [0x180195b24]
-    +                               1 _dispatch_source_invoke  (in libdispatch.dylib) + 1800  [0x18019df44]
-    +                                 1 _dispatch_continuation_pop  (in libdispatch.dylib) + 776  [0x18018b068]
-    +                                   1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
-    +                                     1 __60+[AXPhotoLibraryFrameworkGlue accessibilityInitializeBundle]_block_invoke_5  (in PhotoLibraryFramework) + 72  [0x11efd55dc]
-    +                                       1 -[AXValidationManager performValidations:withPreValidationHandler:postValidationHandler:safeCategoryInstallationHandler:]  (in AXCoreUtilities) + 280  [0x192ac0a10]
-    +                                         1 -[AXAccessQueue performSynchronousWritingBlock:]  (in AXCoreUtilities) + 36  [0x192acfc84]
-    +                                           1 -[AXAccessQueue behavesAsMainQueue]  (in AXCoreUtilities) + 12  [0x192acfbd8]
-    +                                             1 -[AXAccessQueue specialBehaviors]  (in AXCoreUtilities) + 0  [0x192ad0478]
 
 Sort by top of stack, same collapsed (when >= 5):
-        __workq_kernreturn  (in libsystem_kernel.dylib)        6720
-        mach_msg2_trap  (in libsystem_kernel.dylib)        1493
-        __semwait_signal  (in libsystem_kernel.dylib)        744
-        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        588
-        getattrlistbulk  (in libsystem_kernel.dylib)        105
-        __getattrlist  (in libsystem_kernel.dylib)        95
-        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib)        46
-        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        27
-        getContextDescriptor(swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        20
-        getSuperclassForMaybeIncompleteMetadata(swift::TargetMetadata<swift::InProcess> const*, std::optional<swift::MetadataState>, bool)  (in libswiftCore.dylib)        20
-        start_wqthread  (in libsystem_pthread.dylib)        20
-        _platform_memmove  (in libsystem_platform.dylib)        17
-        _swift_class_getSuperclass  (in libswiftCore.dylib)        14
-        _xzm_free  (in libsystem_malloc.dylib)        13
-        icu::UnicodeString::copyFrom(icu::UnicodeString const&, signed char)  (in libicucore.A.dylib)        13
-        objc_msgSend  (in libobjc.A.dylib)        12
-        CreateStringFromFileSystemRepresentationByAddingPercentEscapes  (in CoreFoundation)        10
-        icu::UnicodeString::~UnicodeString()  (in libicucore.A.dylib)        9
-        swift::MetadataCacheKey::operator==(swift::MetadataCacheKey const&) const  (in libswiftCore.dylib)        9
-        swift::equalContexts(swift::TargetContextDescriptor<swift::InProcess> const*, swift::TargetContextDescriptor<swift::InProcess> const*)  (in libswiftCore.dylib)        9
-        icu::CharString::ensureCapacity(int, int, UErrorCode&)  (in libicucore.A.dylib)        8
-        __mac_syscall  (in libsystem_kernel.dylib)        7
-        specialized UnsafeBufferPointer._decomposed<A>(_:as:into:nullTerminated:)  (in Foundation)        7
-        swift_retain  (in libswiftCore.dylib)        7
-        _CFRelease  (in CoreFoundation)        6
-        _NSTransmutePathSlashes  (in Foundation)        6
-        __CF_IS_OBJC  (in CoreFoundation)        6
-        __iopolicysys  (in libsystem_kernel.dylib)        6
-        _platform_strcmp$VARIANT$Base  (in libsystem_platform.dylib)        6
-        madvise  (in libsystem_kernel.dylib)        6
-        performOnMetadataCache<swift::MetadataResponse, swift_checkMetadataState::CheckStateCallbacks>(swift::TargetMetadata<swift::InProcess> const*, swift_checkMetadataState::CheckStateCallbacks&&)  (in libswiftCore.dylib)        6
-        swift_getObjCClassMetadata  (in libswiftCore.dylib)        6
-        <deduplicated_symbol>  (in dyld_sim)        5
-        <deduplicated_symbol>  (in libsystem_malloc.dylib)        5
-        __open  (in libsystem_kernel.dylib)        5
-        _stringCompareFastUTF8Abnormal(_:_:expecting:)  (in libswiftCore.dylib)        5
-        pthread_getspecific  (in libsystem_pthread.dylib)        5
-        swift::ConcurrentReadableHashMap<swift::HashMapElementWrapper<swift::GenericCacheEntry>, swift::Mutex>::find<swift::MetadataCacheKey>(swift::MetadataCacheKey const&, swift::ConcurrentReadableHashMap<swift::HashMapElementWrapper<swift::GenericCacheEntry>, swift::Mutex>::IndexStorage, unsigned long, swift::HashMapElementWrapper<swift::GenericCacheEntry>*)  (in libswiftCore.dylib)        5
+        __workq_kernreturn  (in libsystem_kernel.dylib)        1685
+        mach_msg2_trap  (in libsystem_kernel.dylib)        1073
+        semaphore_timedwait_trap  (in libsystem_kernel.dylib)        606
+        semaphore_wait_trap  (in libsystem_kernel.dylib)        550
+        __semwait_signal  (in libsystem_kernel.dylib)        283
+        writev  (in libsystem_kernel.dylib)        86
+        objc_msgSend  (in libobjc.A.dylib)        43
+        pthread_getspecific  (in libsystem_pthread.dylib)        25
+        pthread_setspecific  (in libsystem_pthread.dylib)        21
+        _platform_memmove  (in libsystem_platform.dylib)        15
+        __CF_IS_OBJC  (in CoreFoundation)        12
+        __CFStringAppendFormatCore  (in CoreFoundation)        11
+        __CFStringCreateImmutableFunnel3  (in CoreFoundation)        11
+        ___CFBasicHashFindBucket_Linear  (in CoreFoundation)        11
+        <deduplicated_symbol>  (in SwiftUICore)        10
+        swift_retain  (in libswiftCore.dylib)        10
+        objc_retainAutoreleasedReturnValue  (in libobjc.A.dylib)        9
+        objc_retain  (in libobjc.A.dylib)        8
+        specialized find1<A>(_:key:filter:)  (in SwiftUICore)        7
+        <deduplicated_symbol>  (in SwiftUI)        6
+        CFRelease  (in CoreFoundation)        6
+        objc_autoreleaseReturnValue  (in libobjc.A.dylib)        6
+        objc_release  (in libobjc.A.dylib)        6
+        os_unfair_lock_lock_with_options  (in libsystem_platform.dylib)        6
+        -[__NSDictionaryM objectForKey:]  (in CoreFoundation)        5
+        _CFRelease  (in CoreFoundation)        5
+        __CFStringEqual  (in CoreFoundation)        5
+        _xzm_xzone_malloc_tiny  (in libsystem_malloc.dylib)        5
+        customRR_retain  (in libobjc.A.dylib)        5
+        static String._unconditionallyBridgeFromObjectiveC(_:)  (in Foundation)        5
         swift_release  (in libswiftCore.dylib)        5
+
+Binary Images:
+       0x1045a4000 -        0x1045a7507 +com.kobiashvili.diary (1.0 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/F5F5329C-ADEF-4EC9-ADFF-E5A07914882F/Chronotheca.app/Chronotheca
+       0x1045b8000 -        0x1045c03d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
+       0x104618000 -        0x1046cb523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
+       0x104770000 -        0x1047aaee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
+       0x104858000 -        0x10486410b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
+       0x1048b4000 -        0x104902e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
