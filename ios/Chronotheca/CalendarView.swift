@@ -21,6 +21,7 @@ struct CalendarView: View {
 
     @EnvironmentObject private var store: DayStore
     @EnvironmentObject private var archive: Archive
+    @EnvironmentObject private var vault: Vault
     @EnvironmentObject private var shell: Shell
 
     /// Вид запоминается между заходами. Оставленный прежде «Список» (его
@@ -471,6 +472,7 @@ struct CalendarView: View {
         let stamp = Vault.stamp(date)
         let isToday = stamp == today
         let isSelected = stamp == selected
+        let shot = isToday ? nil : snapshot(stamp, date)
 
         // Сегодняшний день залит — он есть всегда и ни от чего не зависит.
         // Выбранный обведён лёгким ободком: внимание можно переставить, и
@@ -482,8 +484,10 @@ struct CalendarView: View {
                     // (P247), белая; синим залита вся клетка, а не кружок
                     // под цифрой (P442, прежде P431).
                     .font(Look.sans(isToday ? 16 : 14.5, weight: isToday ? .bold : .medium))
-                    .foregroundStyle(isToday ? Color.white : Look.ink)
-                dots(count: entries(stamp, date).count, light: isToday)
+                    .foregroundStyle(isToday || shot != nil ? Color.white : Look.ink)
+                    // На снимке — белая с тенью, и у выходных тоже (P1056).
+                    .shadow(color: .black.opacity(shot != nil ? 0.7 : 0), radius: 2, y: 0.5)
+                if shot == nil { dots(count: entries(stamp, date).count, light: isToday) }
             }
             .frame(maxWidth: .infinity)
             .frame(height: 32)
@@ -496,6 +500,7 @@ struct CalendarView: View {
                     // Износ — по числу месяца, один набор на все месяцы и годы (P798):
                     // готовая бумага берётся из запаса, а не рисуется на ходу.
                     OldPaper(seed: cal.component(.day, from: date), base: tint(date))
+                        .overlay { if let shot { CalendarShot(url: shot.url, video: shot.video) } }
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                 } else {
                     RoundedRectangle(cornerRadius: 8).fill(isToday ? Look.accent : tint(date))
@@ -505,6 +510,19 @@ struct CalendarView: View {
                 .strokeBorder(isSelected ? Look.accent : .clear, lineWidth: 1.5))
         }
         .buttonStyle(.plain)
+    }
+
+    /// Кадрик прошедшего дня (P1056, автор: «как в Diarium»): первый снимок
+    /// дня, иначе кадр первого видео; голос, файлы, места — нет, клетка
+    /// бумажная. Снимок ещё в iCloud — тоже бумага: календарь не тянет
+    /// файлы из облака.
+    private func snapshot(_ stamp: String, _ date: Date) -> (url: URL, video: Bool)? {
+        guard Ru.isPast(date), let day = archive.day(stamp) else { return nil }
+        let link = day.attachments.first { Diary.kind(of: $0) == .photo }
+            ?? day.attachments.first { Diary.kind(of: $0) == .video }
+        guard let link, let url = vault.mediaURL(link, for: date),
+              FileManager.default.fileExists(atPath: url.path) else { return nil }
+        return (url, Diary.kind(of: link) == .video)
     }
 
     /// Дела дня вместе с событиями Календаря iPhone — как на странице дня
@@ -602,3 +620,62 @@ struct CalendarView: View {
         shell.screen = .today
     }
 }
+
+/// Снимок дня во всю клетку месяца (P1056). Читается из папки уменьшенным и
+/// держится только в памяти, как превью в тексте: приложение ничего своего
+/// не хранит. Проявляется плавно (P893): пока читается — бумага клетки.
+/// Видео — его первый кадр и треугольник «играть».
+private struct CalendarShot: View {
+    let url: URL
+    let video: Bool
+    @State private var image: UIImage?
+
+    init(url: URL, video: Bool) {
+        self.url = url
+        self.video = video
+        _image = State(initialValue: Photo.cache.object(forKey: url.path as NSString))
+    }
+
+    var body: some View {
+        ZStack {
+            if let image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    // Низ темнее — белое число читается на любом снимке.
+                    .overlay(LinearGradient(colors: [.clear, .black.opacity(0.35)],
+                                            startPoint: .center, endPoint: .bottom))
+                    .overlay(alignment: .topTrailing) {
+                        if video {
+                            Image(systemName: "play.fill")
+                                .font(.system(size: 6))
+                                .foregroundStyle(.white)
+                                .padding(2.5)
+                                .background(.black.opacity(0.45), in: Circle())
+                                .padding(2)
+                        }
+                    }
+                    .transition(.opacity)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .clipped()
+        .allowsHitTesting(false)
+        .task(id: url) {
+            guard image == nil else { return }
+            let got: UIImage?
+            if video {
+                got = await Photo.poster(url, side: 160)
+            } else {
+                let at = url
+                got = await Task.detached(priority: .userInitiated) {
+                    Photo.load(at, side: Photo.thumbSide)
+                }.value
+            }
+            guard let got else { return }
+            Photo.cache.setObject(got, forKey: url.path as NSString)
+            withAnimation(.easeOut(duration: 0.25)) { image = got }
+        }
+    }
+}
+
