@@ -115,9 +115,12 @@ final class TourTests: XCTestCase {
         sleep(3)
         step("«Сегодня» кнопкой: \(openScreen)")
 
-        // Картотека будущего: лист вверх, карточка, касание дневника.
-        drag(CGVector(dx: 0.5, dy: 0.80), CGVector(dx: 0.5, dy: 0.20), speed: 700)
-        sleep(3)
+        // Картотека будущего: лист вверх, карточка, касание дневника. Первая
+        // тяга докручивает лист «Сегодня» до низа, следующие — за край.
+        for _ in 0..<4 where openScreen != "search" {
+            drag(CGVector(dx: 0.5, dy: 0.80), CGVector(dx: 0.5, dy: 0.20), speed: 700)
+            sleep(2)
+        }
         step("картотека будущего: \(openScreen)")
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.3, dy: 0.35)).tap()
         sleep(3)
