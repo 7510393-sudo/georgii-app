@@ -1,0 +1,60 @@
+    228 Thread_49095   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 228 start  (in dyld) + 6992  [0x100aa44e4]
+    +   228 start_sim  (in dyld_sim) + 20  [0x100d2b0e4]
+    +     228 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x102d246e8]  ChronothecaApp.swift:0
+    +       228 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x102d2463c]  /<compiler-generated>:0
+    +         228 static App.main()  (in SwiftUI) + 132  [0x1d2c5f084]
+    +           228 protocol witness for App.init() in conformance ChronothecaApp  (in Chronotheca.debug.dylib) + 12  [0x102d246d4]  /<compiler-generated>:0
+    +             228 ChronothecaApp.init()  (in Chronotheca.debug.dylib) + 796  [0x102d20580]  ChronothecaApp.swift:33
+    +               228 Vault.__allocating_init()  (in Chronotheca.debug.dylib) + 44  [0x1033ad900]  Vault.swift:0
+    +                 228 Vault.init()  (in Chronotheca.debug.dylib) + 1688  [0x1033adfa4]  Vault.swift:219
+    +                   228 Vault.usePreviewFolder()  (in Chronotheca.debug.dylib) + 904  [0x1033ae8e0]  Vault.swift:258
+    +                     228 Vault.seedPreview()  (in Chronotheca.debug.dylib) + 1412  [0x1033b13a8]  Vault.swift:283
+    +                       228 Vault.write(_:to:for:)  (in Chronotheca.debug.dylib) + 316  [0x1033b3778]  Vault.swift:1268
+    +                         228 static Vault.write(_:to:)  (in Chronotheca.debug.dylib) + 116  [0x1033b838c]  Vault.swift:1276
+    +                           228 static Vault.write(data:to:)  (in Chronotheca.debug.dylib) + 1068  [0x1033b7f8c]  Vault.swift:1299
+    +                             228 -[NSFileCoordinator coordinateWritingItemAtURL:options:error:byAccessor:]  (in Foundation) + 84  [0x1811c78b4]
+    +                               225 -[NSFileCoordinator(NSPrivate) _coordinateWritingItemAtURL:options:error:byAccessor:]  (in Foundation) + 540  [0x1811c9c3c]
+    +                               ! 225 -[NSFileCoordinator(NSPrivate) _blockOnAccessClaim:withAccessArbiter:]  (in Foundation) + 320  [0x1811c8c0c]
+    +                               !   225 interposed_dispatch_semaphore_wait  (in libRPAC.dylib) + 124  [0x100fb8458]
+    +                               !     225 _dispatch_semaphore_wait_slow  (in libdispatch.dylib) + 128  [0x1801883c0]
+    +                               !       225 _dispatch_sema4_wait  (in libdispatch.dylib) + 24  [0x180187d60]
+    +                               !         225 semaphore_wait_trap  (in libsystem_kernel.dylib) + 8  [0x100bdcaec]
+    +                               3 -[NSFileCoordinator(NSPrivate) _coordinateWritingItemAtURL:options:error:byAccessor:]  (in Foundation) + 620  [0x1811c9c8c]
+    +                                 2 -[NSFileCoordinator(NSPrivate) _withAccessArbiter:invokeAccessor:orDont:andRelinquishAccessClaim:]  (in Foundation) + 492  [0x1811c9264]
+    +                                 : 2 __85-[NSFileCoordinator(NSPrivate) _coordinateWritingItemAtURL:options:error:byAccessor:]_block_invoke.194  (in Foundation) + 208  [0x1811c9e88]
+    +                                 :   2 __73-[NSFileCoordinator coordinateWritingItemAtURL:options:error:byAccessor:]_block_invoke  (in Foundation) + 96  [0x1811c793c]
+    +                                 :     2 -[NSFileCoordinator _invokeAccessor:thenCompletionHandler:]  (in Foundation) + 84  [0x1811c76ec]
+    +                                 :       2 thunk for @escaping @callee_guaranteed (@in_guaranteed URL) -> ()  (in Chronotheca.debug.dylib) + 152  [0x102c4b1c8]  /<compiler-generated>:0
+    +                                 :         2 thunk for @callee_guaranteed (@in_guaranteed URL) -> ()  (in Chronotheca.debug.dylib) + 20  [0x102c4b124]  /<compiler-generated>:0
+    +                                 :           2 closure #1 in static Vault.write(data:to:)  (in Chronotheca.debug.dylib) + 116  [0x1033c9e9c]  Vault.swift:1300
+    +                                 :             1 Data.write(to:options:)  (in Foundation) + 2372  [0x180aa5a28]
+    +                                 :             | 1 closure #1 in writeToFileAux(path:buffer:options:attributes:reportProgress:)  (in Foundation) + 2328  [0x180ac44f4]
+    +                                 :             |   1 write(buffer:toFileDescriptor:path:parentProgress:)  (in Foundation) + 640  [0x180ac02d8]
+    +                                 :             |     1 fsync  (in libsystem_kernel.dylib) + 8  [0x100be02cc]
+    +                                 :             1 Data.write(to:options:)  (in Foundation) + 0  [0x180aa50e4]
+    +                                 1 -[NSFileCoordinator(NSPrivate) _withAccessArbiter:invokeAccessor:orDont:andRelinquishAccessClaim:]  (in Foundation) + 308  [0x1811c91ac]
+    +                                   1 -[NSFileAccessClaim _protectIfNecessaryFileAtURL:withOptions:forReading:]  (in Foundation) + 160  [0x1811db650]
+    +                                     1 -[NSURL getResourceValue:forKey:error:]  (in CoreFoundation) + 100  [0x1804f00b4]
+    +                                       1 CFURLCopyResourcePropertyForKey  (in CoreFoundation) + 104  [0x180484940]
+    +                                         1 _FSURLCopyResourcePropertyForKeyInternal(__CFURL const*, __CFString const*, void*, void*, __CFError**, unsigned char)  (in CoreServicesInternal) + 236  [0x18267c9a0]
+    +                                           1 prepareValuesForBitmap(__CFURL const*, __FileCache*, _FilePropertyBitmap*, __CFError**)  (in CoreServicesInternal) + 400  [0x18267e50c]
+    +                                             1 volumePropertyProviderPrepareValues(__CFURL const*, __FileCache*, __CFString const* const*, void const**, long, void const*, __CFError**)  (in CoreServicesInternal) + 292  [0x182687c4c]
+    +                                               1 _FSURLCreateStandardError  (in CoreServicesInternal) + 304  [0x18267e19c]
+    +                                                 1 CFErrorCreate  (in CoreFoundation) + 52  [0x1803d9d70]
+    +                                                   1 _CFRuntimeCreateInstance  (in CoreFoundation) + 748  [0x180424228]
+    +                                                     1 object_setClass  (in libobjc.A.dylib) + 124  [0x18003d4d0]
+    +                                                       1 lookUpImpOrForward  (in libobjc.A.dylib) + 208  [0x1800533a4]
+    +                                                         1 initializeAndMaybeRelock(objc_class*, objc_object*, locker_mixin<lockdebug::lock_mixin<objc_lock_base_t>>&, bool)  (in libobjc.A.dylib) + 216  [0x1800410e0]
+    +                                                           1 initializeNonMetaClass  (in libobjc.A.dylib) + 532  [0x18003fe70]
+    +                                                             1 CALLING_SOME_+initialize_METHOD  (in libobjc.A.dylib) + 20  [0x18003f1ec]
+    +                                                               1 _objc_msgSend_uncached  (in libobjc.A.dylib) + 64  [0x18003af00]
+    +                                                                 1 lookUpImpOrForward  (in libobjc.A.dylib) + 312  [0x18005340c]
+    +                                                                   1 getMethodFromRelativeList(relative_list_list_t<method_list_t>*, objc_selector*)  (in libobjc.A.dylib) + 164  [0x180047484]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        226
+        semaphore_wait_trap  (in libsystem_kernel.dylib)        225
+
+Binary images description not available
+
