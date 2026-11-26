@@ -219,7 +219,7 @@ jobs:
           # она и есть самая свежая.
           # Снимки откладываем в сторону: на них мы будем ставить заново.
           FRESH=$(mktemp -d)   # имя латиницей: кириллицу bash в именах не принимает
-          cp docs/appstore/* "$FRESH"/
+          cp docs/appstore/*.png "$FRESH"/
 
           for try in 1 2 3 4; do
             git add docs/appstore
@@ -236,7 +236,7 @@ jobs:
             # Встаём ровно на чужой конец ветки — со всем, что там появилось,
             # — и кладём свои снимки поверх. Ничего чужого не теряется.
             git reset --hard "origin/$GITHUB_REF_NAME" || exit 1
-            cp "$FRESH"/* docs/appstore/
+            cp "$FRESH"/*.png docs/appstore/
           done
           echo "::warning::снимки не удалось отправить в репозиторий"
 
