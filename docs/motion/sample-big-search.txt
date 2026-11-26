@@ -1,0 +1,147 @@
+    3952 Thread_68407   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 3951 start  (in dyld) + 6992  [0x1044384e4]
+    + ! 3951 start_sim  (in dyld_sim) + 20  [0x1046bf0e4]
+    + !   3951 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x10667b9a0]  ChronothecaApp.swift:0
+    + !     3951 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x10667b8f4]  /<compiler-generated>:0
+    + !       3951 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    + !         3951 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    + !           3951 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    + !             3951 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    + !               3951 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    + !                 3951 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    + !                   3951 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    + !                     3943 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    + !                     : 3943 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    + !                     :   3943 mach_msg  (in libsystem_kernel.dylib) + 20  [0x104570ef0]
+    + !                     :     3943 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x104578c44]
+    + !                     :       3943 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x104581e84]
+    + !                     :         3943 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x104570b70]
+    + !                     3 __CFRunLoopRun  (in CoreFoundation) + 760  [0x180421808]
+    + !                     : 2 __CFRunLoopDoSources0  (in CoreFoundation) + 220  [0x180422634]
+    + !                     : | 2 __CFRunLoopDoSource0  (in CoreFoundation) + 168  [0x180422ea4]
+    + !                     : |   2 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__  (in CoreFoundation) + 24  [0x180422f5c]
+    + !                     : |     2 UC::DriverCore::continueProcessing()  (in UpdateCycle) + 80  [0x2343d22c0]
+    + !                     : |       2 schedulerStepScheduledMainSectionContinue  (in UIKitCore) + 56  [0x1863b6064]
+    + !                     : |         2 _UIUpdateSequenceRunNext  (in UIKitCore) + 120  [0x18590339c]
+    + !                     : |           2 __setupUpdateSequence_block_invoke_2  (in UIKitCore) + 372  [0x1863b5c0c]
+    + !                     : |             2 _UIApplicationFlushCATransaction  (in UIKitCore) + 48  [0x1864a3b50]
+    + !                     : |               2 CA::Transaction::flush_as_runloop_observer(bool)  (in QuartzCore) + 68  [0x18cefa1a4]
+    + !                     : |                 2 CA::Transaction::commit()  (in QuartzCore) + 632  [0x18cef88f0]
+    + !                     : |                   1 CA::Context::commit_transaction(CA::Transaction*, double, double*)  (in QuartzCore) + 560  [0x18cecacc8]
+    + !                     : |                   + 1 CA::Layer::layout_and_display_if_needed(CA::Transaction*)  (in QuartzCore) + 156  [0x18cfb2978]
+    + !                     : |                   +   1 CA::Layer::update_if_needed_(CA::Transaction*, CA::LayerUpdateReason)  (in QuartzCore) + 600  [0x18cfa6d94]
+    + !                     : |                   +     1 CA::Layer::perform_update_(CA::Layer*, CALayer*, unsigned int, CA::LayerUpdateReason, CA::Transaction*)  (in QuartzCore) + 456  [0x18cfa7548]
+    + !                     : |                   +       1 -[UIView(CALayerDelegate) layoutSublayersOfLayer:]  (in UIKitCore) + 2648  [0x186ab0548]
+    + !                     : |                   +         1 ???  (in UIKitCore)  load address 0x185289000 + 0x3c511c  [0x18564e11c]
+    + !                     : |                   +           1 ???  (in UIKitCore)  load address 0x185289000 + 0x3c4d74  [0x18564dd74]
+    + !                     : |                   +             1 @objc _UIHostingView.layoutSubviews()  (in SwiftUI) + 32  [0x1d3474ac0]
+    + !                     : |                   +               1 _UIHostingView.layoutSubviews()  (in SwiftUI) + 80  [0x1d3474a8c]
+    + !                     : |                   +                 1 ???  (in UIKitCore)  load address 0x185289000 + 0x14c250  [0x1853d5250]
+    + !                     : |                   +                   1 ViewGraphRootValueUpdater.render(interval:updateDisplayList:targetTimestamp:)  (in SwiftUICore) + 460  [0x1d43be2c0]
+    + !                     : |                   +                     1 closure #1 in ViewGraphRootValueUpdater.render(interval:updateDisplayList:targetTimestamp:)  (in SwiftUICore) + 712  [0x1d43bfbc0]
+    + !                     : |                   +                       1 ViewGraph.updateOutputs(at:)  (in SwiftUICore) + 156  [0x1d43c5ac0]
+    + !                     : |                   +                         1 specialized GraphHost.runTransaction(_:do:id:)  (in SwiftUICore) + 324  [0x1d3f37cfc]
+    + !                     : |                   +                           1 AG::Subgraph::update(unsigned int)  (in AttributeGraph) + 1196  [0x1c42da684]
+    + !                     : |                   1 CA::Context::commit_transaction(CA::Transaction*, double, double*)  (in QuartzCore) + 10984  [0x18cecd580]
+    + !                     : |                     1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 244  [0x18cfb3050]
+    + !                     : |                       1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 244  [0x18cfb3050]
+    + !                     : |                         1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 244  [0x18cfb3050]
+    + !                     : |                           1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 244  [0x18cfb3050]
+    + !                     : |                             1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 244  [0x18cfb3050]
+    + !                     : |                               1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 244  [0x18cfb3050]
+    + !                     : |                                 1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 244  [0x18cfb3050]
+    + !                     : |                                   1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 244  [0x18cfb3050]
+    + !                     : |                                     1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 244  [0x18cfb3050]
+    + !                     : |                                       1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 244  [0x18cfb3050]
+    + !                     : |                                         1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 244  [0x18cfb3050]
+    + !                     : |                                           1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 244  [0x18cfb3050]
+    + !                     : |                                             1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 244  [0x18cfb3050]
+    + !                     : |                                               1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 244  [0x18cfb3050]
+    + !                     : |                                                 1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 244  [0x18cfb3050]
+    + !                     : |                                                   1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 244  [0x18cfb3050]
+    + !                     : |                                                     1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 244  [0x18cfb3050]
+    + !                     : |                                                       1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 288  [0x18cfb307c]
+    + !                     : |                                                         1 CA::Layer::commit_if_needed(CA::Transaction*, void (CA::Layer*, unsigned int, unsigned int) block_pointer)  (in QuartzCore) + 348  [0x18cfb30b8]
+    + !                     : |                                                           1 invocation function for block in CA::Context::commit_transaction(CA::Transaction*, double, double*)  (in QuartzCore) + 340  [0x18ced07f0]
+    + !                     : |                                                             1 CA::Render::Layer::~Layer()  (in QuartzCore) + 20  [0x18ce17b44]
+    + !                     : |                                                               1 CA::Render::Layer::~Layer()  (in QuartzCore) + 208  [0x18ce1b6d0]
+    + !                     : |                                                                 1 _xzm_free  (in libsystem_malloc.dylib) + 1340  [0x1801ea94c]
+    + !                     : |                                                                   1 <deduplicated_symbol>  (in libsystem_malloc.dylib) + 12  [0x1801d9ea4]
+    + !                     : |                                                                     1 madvise  (in libsystem_kernel.dylib) + 8  [0x104573554]
+    + !                     : 1 __CFRunLoopDoSources0  (in CoreFoundation) + 168  [0x180422600]
+    + !                     :   1 CFSetApplyFunction  (in CoreFoundation) + 184  [0x18042ca6c]
+    + !                     :     1 CFBasicHashApply  (in CoreFoundation) + 100  [0x1804f26a0]
+    + !                     :       1 CFBasicHashGetBucket  (in CoreFoundation) + 40  [0x1804f2120]
+    + !                     1 __CFRunLoopRun  (in CoreFoundation) + 864  [0x180421870]
+    + !                     : 1 __CFRunLoopDoObservers  (in CoreFoundation) + 556  [0x180421430]
+    + !                     :   1 __CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__  (in CoreFoundation) + 32  [0x180421f4c]
+    + !                     :     1 CA::Transaction::observer_callback(__CFRunLoopObserver*, unsigned long, void*)  (in QuartzCore) + 0  [0x18cefa11c]
+    + !                     1 __CFRunLoopRun  (in CoreFoundation) + 1456  [0x180421ac0]
+    + !                     : 1 mach_port_extract_member  (in libsystem_kernel.dylib) + 32  [0x104573ed0]
+    + !                     :   1 _kernelrpc_mach_port_extract_member_trap  (in libsystem_kernel.dylib) + 8  [0x104570a5c]
+    + !                     1 __CFRunLoopRun  (in CoreFoundation) + 1528  [0x180421b08]
+    + !                     : 1 __CFRunLoopDoObservers  (in CoreFoundation) + 228  [0x1804212e8]
+    + !                     :   1 -[__NSArrayM objectAtIndex:]  (in CoreFoundation) + 0  [0x1803a0738]
+    + !                     1 __CFRunLoopRun  (in CoreFoundation) + 2388  [0x180421e64]
+    + !                     : 1 DYLD-STUB$$voucher_mach_msg_revert  (in CoreFoundation) + 0  [0x180555078]
+    + !                     1 __CFRunLoopRun  (in CoreFoundation) + 2396  [0x180421e6c]
+    + !                       1 DYLD-STUB$$objc_release_x8  (in CoreFoundation) + 0  [0x1805541fc]
+    + 1 completeTaskWithClosure(swift::AsyncContext*, swift::SwiftError*)  (in libswift_Concurrency.dylib) + 1  [0x2378c9555]
+    +   1 <deduplicated_symbol>  (in SwiftUI) + 1  [0x1d29403c5]
+    +     1 <deduplicated_symbol>  (in SwiftUI) + 1  [0x1d2ad9c09]
+    +       1 <deduplicated_symbol>  (in SwiftUI) + 1  [0x1d29403c5]
+    +         1 <deduplicated_symbol>  (in SwiftUI) + 1  [0x1d29403c5]
+    +           1 partial apply for closure #3 in closure #1 in CardPaper.body.getter  (in Chronotheca.debug.dylib) + 1  [0x106c02d79]  /<compiler-generated>:0
+    +             1 closure #3 in closure #1 in CardPaper.body.getter  (in Chronotheca.debug.dylib) + 148  [0x106bd0994]  SearchView.swift:1276
+    +               1 State.wrappedValue.setter  (in SwiftUICore) + 28  [0x1d4274f64]
+    +                 1 <deduplicated_symbol>  (in SwiftUICore) + 40  [0x1d4064818]
+    +                   1 StoredLocationBase.set(_:transaction:)  (in SwiftUICore) + 348  [0x1d4166318]
+    +                     1 StoredLocation.commit(transaction:id:mutation:)  (in SwiftUICore) + 116  [0x1d4166ec4]
+    +                       1 GraphHost.asyncTransaction<A>(_:id:mutation:style:mayDeferUpdate:)  (in SwiftUICore) + 700  [0x1d3f36f64]
+    +                         1 _UIHostingView.beginTransaction()  (in SwiftUI) + 136  [0x1d2954660]
+    +                           1 onMainThread(do:)  (in SwiftUICore) + 56  [0x1d432b424]
+    +                             1 closure #1 in _UIHostingView.beginTransaction()  (in SwiftUI) + 120  [0x1d29546f4]
+    +                               1 ???  (in UIKitCore)  load address 0x185289000 + 0x14cc60  [0x1853d5c60]
+    +                                 1 -[UIView(Hierarchy) setNeedsLayout]  (in UIKitCore) + 244  [0x186a9fef8]
+    +                                   1 objc_msgSend$_viewsJostledDuringUpdateConstraintsPass  (in UIKitCore) + 0  [0x18743b640]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        14463
+        mach_msg2_trap  (in libsystem_kernel.dylib)        7905
+        __semwait_signal  (in libsystem_kernel.dylib)        3915
+        generationCountFromListOfSources  (in CoreFoundation)        250
+        pthread_getspecific  (in libsystem_pthread.dylib)        182
+        objc_msgSend  (in libobjc.A.dylib)        138
+        __CF_IS_OBJC  (in CoreFoundation)        104
+        _swift_isClassOrObjCExistentialType  (in libswiftCore.dylib)        98
+        static PageTexture.smooth(_:_:_:_:_:)  (in Chronotheca.debug.dylib)        87
+        _CFStringGetCStringPtrInternal  (in CoreFoundation)        86
+        _xzm_free  (in libsystem_malloc.dylib)        65
+        at #1 (_:_:) in static PageTexture.edgeDistance(_:width:height:)  (in Chronotheca.debug.dylib)        65
+        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        61
+        -[__NSDictionaryM objectForKey:]  (in CoreFoundation)        60
+        os_unfair_lock_lock  (in libsystem_platform.dylib)        55
+        Array._checkSubscript(_:wasNativeTypeChecked:)  (in libswiftCore.dylib)        54
+        pthread_setspecific  (in libsystem_pthread.dylib)        51
+        Array.subscript.getter  (in libswiftCore.dylib)        46
+        min<A>(_:_:)  (in libswiftCore.dylib)        45
+        static PageTexture.makeAgedFolder(size:band:seed:tab:share:light:)  (in Chronotheca.debug.dylib)        45
+        static PageTexture.edgeDistance(_:width:height:)  (in Chronotheca.debug.dylib)        43
+        String._bridgeToObjectiveC()  (in Foundation)        42
+        protocol witness for Collection.formIndex(after:) in conformance <> Range<A>  (in libswiftCore.dylib)        41
+        static PageTexture.grey.getter  (in Chronotheca.debug.dylib)        41
+        swift::LockingConcurrentMap<(anonymous namespace)::TupleCacheEntry, (anonymous namespace)::TupleCacheStorage>::getOrInsert<(anonymous namespace)::TupleCacheEntry::Key, swift::MetadataRequest&, swift::TargetValueWitnessTable<swift::InProcess> const*&>((anonymous namespace)::TupleCacheEntry::Key, swift::MetadataRequest&, swift::TargetValueWitnessTable<swift::InProcess> const*&)  (in libswiftCore.dylib)        38
+        swift::metadataimpl::ValueWitnesses<swift::metadataimpl::NativeBox<unsigned int, 4ul, 4ul, 4ul>>::initializeWithCopy(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        38
+        -[__NSArrayM getObjects:range:]  (in CoreFoundation)        37
+        <deduplicated_symbol>  (in libswiftCore.dylib)        37
+        outlined destroy of (String?, String?)  (in Chronotheca.debug.dylib)        37
+        _platform_memmove  (in libsystem_platform.dylib)        36
+        objc_release  (in libobjc.A.dylib)        35
+        os_log_type_enabled  (in libsystem_trace.dylib)        35
+        __CFStringHash  (in CoreFoundation)        34
+        swift::metadataimpl::ValueWitnesses<swift::metadataimpl::NativeBox<unsigned long long, 8ul, 8ul, 8ul>>::initializeWithCopy(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        34
+        os_unfair_lock_unlock  (in libsystem_platform.dylib)        33
+        CFStringHashCString  (in CoreFoundation)        32
+        IndexingIterator.next()  (in libswiftCore.dylib)        29
+        String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:)  (in libswiftCore.dylib)        28
+        _CFStringCreateIndirectASCIITaggedPointerString  (in CoreFoundation)        28
