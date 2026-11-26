@@ -468,12 +468,19 @@ final class EdgePull: NSObject, ObservableObject, UIGestureRecognizerDelegate {
     /// Туже прежних 90 (P797: «слишком легко преодолевается»).
     static let threshold: CGFloat = 150
 
-    /// До порога лист идёт туго — вчетверо медленнее пальца, — после порога
-    /// за пальцем (P779): картотека не выезжает от лёгкого касания, сперва
-    /// нужно усилие, на пороге — толчок в руку.
+    /// До порога лист идёт за пальцем вдвое медленнее, после порога — вровень
+    /// (P779; P1074, автор: «как принято в таких приложениях» — у Apple лист
+    /// идёт за пальцем почти вровень, прежде было впятеро медленнее, и лист
+    /// будто «смещался на 2 см» и стоял). На пороге — толчок в руку.
     static func resisted(_ over: CGFloat) -> CGFloat {
-        over < threshold ? over * 0.2 : threshold * 0.2 + (over - threshold)
+        over < threshold ? over * 0.5 : threshold * 0.5 + (over - threshold)
     }
+
+    /// Короткое быстрое смахивание тоже закрывает (P1074), как в окнах и
+    /// «Фото» у Apple: протянули хотя бы на столько и отпустили с такой
+    /// скоростью (точек в секунду) — порог не нужен.
+    static let flickReach: CGFloat = 40
+    static let flickSpeed: CGFloat = 800
 
     /// 1 — тянут вниз за верх, -1 — вверх за низ, 0 — не тянут.
     private var dir = 0
@@ -594,7 +601,15 @@ final class EdgePull: NSObject, ObservableObject, UIGestureRecognizerDelegate {
             }
             armed = over
         case .ended:
-            let go = armed ? dir : 0
+            var go = armed ? dir : 0
+            if go == 0, let start = anchor, dir != 0 {
+                let reach = (t.y - start) * CGFloat(dir)
+                let speed = pan.velocity(in: view.window ?? view).y * CGFloat(dir)
+                if reach >= Self.flickReach, speed >= Self.flickSpeed {
+                    Feel.light()
+                    go = dir
+                }
+            }
             if go != 0 {
                 reset(quiet: true)
                 commit?(go)

@@ -704,6 +704,58 @@ struct DiaryEditor: UIViewRepresentable {
             }
             dictatedLine = (line.location, stamp)
             StampTrace.note("диктовка: строка запомнена")
+            showGhost(view, stamp: stamp)
+        }
+
+        /// Время на надиктованной строке, пока идёт диктовка (P1073, автор:
+        /// «во время диктовки не ставится время — только когда уводишь
+        /// курсор»). Сам текст во время диктовки трогать нельзя — правка
+        /// обрывает её (P815, P881), поэтому время сперва нарисовано: строка
+        /// начинается с отступа ровно под него (вырез в поле набора, текст
+        /// не меняется), а в отступе — то же время тем же шрифтом. Диктовка
+        /// кончилась — вырез снят, время вписано в текст на то же место, и
+        /// ничто не сдвигается.
+        private var ghost: UILabel?
+
+        private func showGhost(_ view: UITextView, stamp: String) {
+            let label = ghost ?? UILabel()
+            label.attributedText = NSAttributedString(string: stamp,
+                                                      attributes: DiaryEditor.stampLook(parent.size))
+            label.sizeToFit()
+            if ghost == nil {
+                label.alpha = 0
+                view.addSubview(label)
+                ghost = label
+                UIView.animate(withDuration: 0.2) { label.alpha = 1 }
+            }
+            placeGhost(view)
+        }
+
+        /// Вырез и время — к началу строки диктовки.
+        private func placeGhost(_ view: UITextView) {
+            guard let label = ghost else { return }
+            guard let d = dictatedLine, d.at <= view.textStorage.length,
+                  let pos = view.position(from: view.beginningOfDocument, offset: d.at) else {
+                return clearGhost(view)
+            }
+            let caret = view.caretRect(for: pos)
+            guard caret.height > 0, caret.minY.isFinite else { return }
+            let inset = view.textContainerInset
+            let cut = CGRect(x: 0, y: caret.minY - inset.top,
+                             width: ceil(label.bounds.width), height: max(caret.height - 2, 1))
+            let now = view.textContainer.exclusionPaths.first?.bounds
+            if now != cut { view.textContainer.exclusionPaths = [UIBezierPath(rect: cut)] }
+            label.frame.origin = CGPoint(x: inset.left,
+                                         y: caret.minY + (caret.height - label.bounds.height) * 0.7)
+        }
+
+        /// Время вписано или диктовку бросили — нарисованное время и вырез
+        /// уходят.
+        private func clearGhost(_ view: UITextView) {
+            guard ghost != nil || !view.textContainer.exclusionPaths.isEmpty else { return }
+            ghost?.removeFromSuperview()
+            ghost = nil
+            view.textContainer.exclusionPaths = []
         }
 
         /// Проверить надиктованную строку, когда пройдёт «хвост» диктовки
@@ -732,6 +784,7 @@ struct DiaryEditor: UIViewRepresentable {
         func stampDictated(_ view: UITextView) -> Bool {
             guard let d = dictatedLine, !Self.dictating(view) else { return false }
             dictatedLine = nil
+            clearGhost(view)
             let storage = view.textStorage
             let ns = storage.string as NSString
             guard parent.stamped, parent.editable, d.at <= ns.length,
@@ -2193,6 +2246,7 @@ struct DiaryEditor: UIViewRepresentable {
         }
 
         func textViewDidChange(_ view: UITextView) {
+            if ghost != nil { placeGhost(view) }
             // Диктовка пишет — запомнить её строку; отпустила — время в
             // начало строки, если его там нет (P869).
             if Self.dictating(view), !placing {
