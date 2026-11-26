@@ -115,16 +115,31 @@ final class TourTests: XCTestCase {
         sleep(3)
         step("«Сегодня» кнопкой: \(openScreen)")
 
-        // Картотека будущего: лист вверх, карточка, касание дневника. Первая
-        // тяга докручивает лист «Сегодня» до низа, следующие — за край.
-        for _ in 0..<4 where openScreen != "search" {
-            drag(CGVector(dx: 0.5, dy: 0.80), CGVector(dx: 0.5, dy: 0.20), speed: 700)
-            sleep(2)
+        // Картотека будущего (P1087): как в «Проверках движения» — лист
+        // докрутить до низа смахиваниями, затем медленная тяга за край;
+        // карточку выбрать по подписи, а не по месту на экране: прежде тур
+        // попадал в прошлый день.
+        for _ in 0..<4 { app.swipeUp() }
+        sleep(1)
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
+            .press(forDuration: 0.05,
+                   thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3)),
+                   withVelocity: .slow, thenHoldForDuration: 0.1)
+        _ = wait(4) { openScreen == "search" }
+        sleep(2)
+        let height = app.windows.firstMatch.frame.height
+        let cards = app.staticTexts.matching(NSPredicate(format: "label MATCHES %@", "^[0-9]{4} .*"))
+            .allElementsBoundByIndex
+            .map { (label: $0.label, top: $0.frame.minY) }
+            .filter { $0.top > 0 && $0.top < height - 60 }
+        step("картотека будущего: \(openScreen); карточки: " + cards.map(\.label).joined(separator: ", "))
+        if let picked = cards.min(by: { abs($0.top - height * 0.45) < abs($1.top - height * 0.45) }) {
+            app.coordinate(withNormalizedOffset: .zero)
+                .withOffset(CGVector(dx: 120, dy: picked.top + 50)).tap()
+            _ = wait(5) { openScreen == "today" }
+            step("карточка \(picked.label): \(openScreen), день \(app.staticTexts["openDay"].firstMatch.label)")
         }
-        step("картотека будущего: \(openScreen)")
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.3, dy: 0.35)).tap()
-        sleep(3)
-        step("будущий день открыт: \(openScreen)")
+        sleep(2)
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.72)).tap()
         sleep(3)
         step("касание дневника будущего дня; клавиатура: \(app.keyboards.firstMatch.exists ? "да" : "нет")")
