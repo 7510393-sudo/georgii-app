@@ -970,6 +970,16 @@ private struct VerticalPan: UIViewRepresentable {
             pan = nil
         }
 
+        /// Корень экрана календаря — вид, которым владеет его контроллер.
+        private var hostRoot: UIView? {
+            var view: UIView? = self
+            while let now = view {
+                if now.next is UIViewController { return now }
+                view = now.superview
+            }
+            return nil
+        }
+
         @objc private func moved(_ pan: UIPanGestureRecognizer) {
             let t = pan.translation(in: pan.view).y
             switch pan.state {
@@ -992,6 +1002,15 @@ private struct VerticalPan: UIViewRepresentable {
             guard let pan = g as? UIPanGestureRecognizer, let window else { return false }
             let at = pan.location(in: self)
             guard bounds.contains(at) else { return false }
+            // Под пальцем — сам календарь, а не то, что лежит поверх него
+            // (P1084, автор: «когда настройки открыты над календарём,
+            // календарь реагирует на свайп, который относится к настройкам»).
+            guard let root = hostRoot,
+                  let hit = window.hitTest(pan.location(in: window), with: nil),
+                  hit.isDescendant(of: root) else {
+                Trace.note("месяц: поверх календаря что-то лежит")
+                return false
+            }
             // Полоса видна целиком — не уехала вбок вместе с разделами.
             let onScreen = convert(bounds, to: nil).intersection(window.bounds)
             guard onScreen.width > bounds.width * 0.9 else {
