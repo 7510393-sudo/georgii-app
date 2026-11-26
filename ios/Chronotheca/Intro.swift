@@ -219,7 +219,7 @@ private struct IntroFrame: View {
 
     var body: some View {
         let W = Self.screenW, H = Self.screenH
-        let frameW = min(size.width * 0.58, 250)
+        let frameW = min(size.width * 0.48, 205)
         let k = frameW / W
         let frameH = H * k
         let cam = IntroPlan.camera(t)
@@ -249,7 +249,7 @@ private struct IntroFrame: View {
             // Вне рамки крест притушен: видно, где он лежит, а смотреть —
             // в рамку.
             Veil(hole: CGSize(width: frameW, height: frameH), corner: corner)
-                .fill(Look.chrome.opacity(0.84), style: FillStyle(eoFill: true))
+                .fill(Look.chrome.opacity(0.5), style: FillStyle(eoFill: true))
                 .frame(width: size.width * 3, height: size.height * 3)
                 .allowsHitTesting(false)
 
@@ -337,13 +337,17 @@ private struct IntroHand: View {
     var body: some View {
         ZStack(alignment: .topLeading) {
             Circle()
-                .fill(Look.accent.opacity(0.28 * Double(pressed)))
-                .frame(width: 34, height: 34)
-                .offset(x: -17, y: -17)
+                .fill(Look.accent.opacity(0.32 * Double(pressed)))
+                .frame(width: 44, height: 44)
+                .offset(x: -22, y: -22)
+            // Крупнее (P1070): на пёстром кресте рука не теряется — тёмная,
+            // с белой обводкой.
             Image(systemName: "hand.point.up.left.fill")
-                .font(.system(size: 46))
-                .foregroundStyle(Look.ink.opacity(0.85))
-                .shadow(color: .white.opacity(0.7), radius: 2)
+                .font(.system(size: 64))
+                .foregroundStyle(Look.ink)
+                .shadow(color: .white, radius: 0, x: 1.5, y: 1.5)
+                .shadow(color: .white, radius: 0, x: -1.5, y: -1.5)
+                .shadow(color: .black.opacity(0.3), radius: 4, y: 2)
                 // Кончик пальца — в точке касания.
                 .offset(x: -6, y: -4)
                 .scaleEffect(1 - 0.08 * pressed, anchor: .topLeading)
