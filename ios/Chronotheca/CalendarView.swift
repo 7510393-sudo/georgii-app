@@ -891,64 +891,59 @@ private struct MonthPager: View, Equatable {
 
 /// Вертикальное ведение полосы «Месяца» (P1076): распознаватель iPhone на
 /// окне, слушающий только касания внутри своей полосы. Начинается лишь при
-/// движении по вертикали, с другими распознавателями уживается и касаний
-/// не отменяет — свайп вбок листает разделы, касание клетки выбирает день.
+/// движении по вертикали, с другими распознавателями уживается — свайп
+/// вбок листает разделы, касание клетки выбирает день.
+///
+/// Распознаватель принадлежит самой полосе (P1079, автор по 360: «после
+/// одного свайпа календарь зависает, и после „Сегодня“ тоже»): прежде он
+/// был общим, и когда календарь пересобирал полосу после хода, уходящая
+/// полоса снимала распознаватель новой — листать было больше нечем.
 private struct VerticalPan: UIViewRepresentable {
     var changed: (CGFloat) -> Void
     /// Сдвиг и скорость (точек в секунду) в миг отпускания; отменили — 0, 0.
     var ended: (CGFloat, CGFloat) -> Void
 
-    func makeCoordinator() -> Coordinator { Coordinator() }
-
     func makeUIView(context: Context) -> Probe {
         let probe = Probe()
         probe.isUserInteractionEnabled = false
         probe.backgroundColor = .clear
-        probe.coordinator = context.coordinator
+        probe.changed = changed
+        probe.ended = ended
         return probe
     }
 
     func updateUIView(_ probe: Probe, context: Context) {
-        context.coordinator.changed = changed
-        context.coordinator.ended = ended
+        probe.changed = changed
+        probe.ended = ended
     }
 
-    static func dismantleUIView(_ probe: Probe, coordinator: Coordinator) {
-        coordinator.detach()
+    static func dismantleUIView(_ probe: Probe, coordinator: ()) {
+        probe.drop()
     }
 
-    final class Probe: UIView {
-        weak var coordinator: Coordinator?
-        override func didMoveToWindow() {
-            super.didMoveToWindow()
-            if window != nil { coordinator?.attach(self) } else { coordinator?.detach() }
-        }
-    }
-
-    final class Coordinator: NSObject, UIGestureRecognizerDelegate {
+    final class Probe: UIView, UIGestureRecognizerDelegate {
         var changed: ((CGFloat) -> Void)?
         var ended: ((CGFloat, CGFloat) -> Void)?
-        private weak var probe: UIView?
+        /// Свой распознаватель — только этой полосы.
         private var pan: UIPanGestureRecognizer?
 
-        func attach(_ view: UIView) {
-            detach()
-            guard let window = view.window else { return }
-            probe = view
+        override func didMoveToWindow() {
+            super.didMoveToWindow()
+            drop()
+            guard let window else { return }
             let pan = UIPanGestureRecognizer(target: self, action: #selector(moved(_:)))
             pan.delegate = self
             // Повели по вертикали — касание у клетки отменяется, как в
-            // прокрутке iPhone (P1078: проверка движения на 360 — свайп,
-            // начатый на клетке, месяц не листал: клетка-кнопка держала
-            // касание). Простое касание клетки по-прежнему выбирает день.
+            // прокрутке iPhone (P1078); простое касание выбирает день.
             pan.cancelsTouchesInView = true
             pan.delaysTouchesBegan = false
             pan.delaysTouchesEnded = false
             window.addGestureRecognizer(pan)
             self.pan = pan
+            Trace.note("месяц: распознаватель поставлен")
         }
 
-        func detach() {
+        func drop() {
             if let pan { pan.view?.removeGestureRecognizer(pan) }
             pan = nil
         }
@@ -970,29 +965,28 @@ private struct VerticalPan: UIViewRepresentable {
         }
 
         /// Только в своей полосе, когда она на экране, и по вертикали.
-        func gestureRecognizerShouldBegin(_ g: UIGestureRecognizer) -> Bool {
-            guard let pan = g as? UIPanGestureRecognizer, let probe,
-                  let window = probe.window else { return false }
-            let at = pan.location(in: probe)
-            guard probe.bounds.contains(at) else { return false }
+        override func gestureRecognizerShouldBegin(_ g: UIGestureRecognizer) -> Bool {
+            guard g === pan else { return super.gestureRecognizerShouldBegin(g) }
+            guard let pan = g as? UIPanGestureRecognizer, let window else { return false }
+            let at = pan.location(in: self)
+            guard bounds.contains(at) else { return false }
             // Полоса видна целиком — не уехала вбок вместе с разделами.
-            let onScreen = probe.convert(probe.bounds, to: nil).intersection(window.bounds)
-            guard onScreen.width > probe.bounds.width * 0.9 else {
+            let onScreen = convert(bounds, to: nil).intersection(window.bounds)
+            guard onScreen.width > bounds.width * 0.9 else {
                 Trace.note("месяц: полоса не на экране")
                 return false
             }
-            let v = pan.velocity(in: probe)
+            let v = pan.velocity(in: self)
             let go = abs(v.y) > abs(v.x)
             Trace.note(String(format: "месяц: начать? в %.0f из %.0f, скорость %.0f/%.0f — %@",
-                              at.y, probe.bounds.height, v.x, v.y, go ? "да" : "нет"))
+                              at.y, bounds.height, v.x, v.y, go ? "да" : "нет"))
             return go
         }
 
         func gestureRecognizer(_ g: UIGestureRecognizer,
                                shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool { true }
 
-        /// Ничьего провала не ждать и своим провалом никого не держать:
-        /// кнопки клеток и лента разделов идут сами по себе.
+        /// Ничьего провала не ждать и своим провалом никого не держать.
         func gestureRecognizer(_ g: UIGestureRecognizer,
                                shouldRequireFailureOf other: UIGestureRecognizer) -> Bool { false }
 
