@@ -656,8 +656,10 @@ final class MovementTests: XCTestCase {
         var steps: [String] = []
         func mark(_ what: String) { steps.append(what + " — " + title.label) }
         func flick(up: Bool) {
-            let a = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: up ? 0.72 : 0.38))
-            let b = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: up ? 0.38 : 0.72))
+            // По сетке месяца (P1067, P1068): ниже неё — список дел дня,
+            // он прокручивается сам и месяцы не листает.
+            let a = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: up ? 0.58 : 0.28))
+            let b = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: up ? 0.28 : 0.58))
             a.press(forDuration: 0.05, thenDragTo: b, withVelocity: 1200, thenHoldForDuration: 0)
             sleep(2)
         }

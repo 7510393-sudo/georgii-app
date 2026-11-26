@@ -40,6 +40,10 @@ struct CalendarView: View {
     /// Вид сменили, лента собирается заново (P840): пока она не встала на
     /// нужный месяц (год), её промежуточные остановки — не выбор человека.
     @State private var switching = false
+    /// «Месяц» (P1068): насколько полосу увёл палец или ход, и высота полосы.
+    @State private var pull: CGFloat = 0
+    @State private var settling = false
+    @State private var stripHeight: CGFloat = 0
 
     private var cal: Calendar { Prefs.calendar }
 
@@ -135,7 +139,11 @@ struct CalendarView: View {
             // полосы, на месте. «Год» — по-прежнему страницей на экран.
             let strip = kind == .month ? min(geo.size.height, monthHeight(width: geo.size.width)) : geo.size.height
             VStack(spacing: 0) {
-                months.frame(height: strip)
+                if kind == .month {
+                    monthPager(height: strip)
+                } else {
+                    months.frame(height: strip)
+                }
                 if kind == .month {
                     Rectangle().fill(Look.rule).frame(height: 1).padding(.vertical, 8)
                     // Дела дня — своей прокруткой в остатке экрана (P792).
@@ -160,6 +168,78 @@ struct CalendarView: View {
         let cell = (width - 6 - 6) / 7
         let words: CGFloat = 70 * max(1, Prefs.textScale)
         return 10 + words + cell * 6 + 6
+    }
+
+    /// «Месяц» листается своим ходом (P1068, автор по 357: «месяцы должны
+    /// листаться плавнее и уходить не под резкий край, а под растушёванную
+    /// кромку»; прежде — лента iPhone страницами, P792, она доводит
+    /// страницу коротким рывком). Нарисованы три месяца — прежний, нынешний
+    /// и следующий — вплотную; полоса идёт за пальцем, а отпущенная доезжает
+    /// мягкой пружиной без отскока. Сверху и снизу полоса тает в стол.
+    private func monthPager(height h: CGFloat) -> some View {
+        let here = period(shown)
+        let pages = [-1, 0, 1].map { shift(here, by: $0) }
+        return ZStack(alignment: .top) {
+            ForEach(Array(pages.enumerated()), id: \.element) { i, p in
+                monthGrid(of: p)
+                    .padding(.top, 10)
+                    .frame(height: h, alignment: .top)
+                    .offset(y: CGFloat(i - 1) * h + pull)
+            }
+        }
+        .frame(height: h, alignment: .top)
+        .clipped()
+        .mask(
+            LinearGradient(stops: [
+                .init(color: .clear, location: 0),
+                .init(color: .black, location: min(0.5, 18 / max(h, 1))),
+                .init(color: .black, location: max(0.5, 1 - 26 / max(h, 1))),
+                .init(color: .clear, location: 1),
+            ], startPoint: .top, endPoint: .bottom))
+        .contentShape(Rectangle())
+        .gesture(
+            DragGesture(minimumDistance: 8)
+                .onChanged { v in
+                    guard !settling else { return }
+                    pull = v.translation.height
+                }
+                .onEnded { v in
+                    guard !settling else { return }
+                    let moved = v.translation.height
+                    let flung = v.predictedEndTranslation.height
+                    let step = (moved < -h * 0.5 || flung < -h * 0.3) ? 1
+                             : (moved > h * 0.5 || flung > h * 0.3) ? -1 : 0
+                    turn(by: step)
+                })
+        .onAppear { stripHeight = h }
+        .onChange(of: h) { _, now in stripHeight = now }
+    }
+
+    /// Перевернуть полосу на месяц вперёд (1), назад (−1) или вернуть на
+    /// место (0): ход доезжает до соседа, и тогда сосед становится нынешним
+    /// — уже без движения, на том же месте, так что ничего не прыгает.
+    private func turn(by step: Int) {
+        let h = stripHeight
+        guard h > 0 else {
+            if step != 0 { shown = shift(period(shown), by: step); top = period(shown) }
+            return
+        }
+        settling = true
+        withAnimation(.spring(response: 0.5, dampingFraction: 1), completionCriteria: .removed) {
+            pull = -CGFloat(step) * h
+        } completion: {
+            var still = Transaction()
+            still.disablesAnimations = true
+            withTransaction(still) {
+                if step != 0 {
+                    shown = shift(period(shown), by: step)
+                    top = period(shown)
+                }
+                pull = 0
+            }
+            settling = false
+            if step != 0 { Feel.light() }
+        }
     }
 
     private var months: some View {
@@ -257,7 +337,20 @@ struct CalendarView: View {
             }
             return
         }
-        withAnimation(.easeInOut(duration: 0.35)) { top = period(DayStore.today()) }
+        if kind == .month {
+            // Дальний месяц — сперва без хода встаёт соседом нынешнего,
+            // потом один ход: траектория та же, что у пальца (P1068).
+            if abs(steps) > 1 {
+                var still = Transaction()
+                still.disablesAnimations = true
+                withTransaction(still) {
+                    shown = shift(period(DayStore.today()), by: steps > 0 ? -1 : 1)
+                }
+            }
+            turn(by: steps > 0 ? 1 : -1)
+        } else {
+            withAnimation(.easeInOut(duration: 0.35)) { top = period(DayStore.today()) }
+        }
         shell.say(kind == .year ? T("Вернулись на этот год", "Back to this year")
                                 : T("Вернулись на этот месяц", "Back to this month"))
     }
@@ -312,7 +405,12 @@ struct CalendarView: View {
                         in: RoundedRectangle(cornerRadius: 8))
             .contentShape(Rectangle())
             .onTapGesture {
-                withAnimation(.easeInOut(duration: 0.3)) { top = shift(period(shown), by: step) }
+                if kind == .month {
+                    guard !settling else { return }
+                    turn(by: step)
+                } else {
+                    withAnimation(.easeInOut(duration: 0.3)) { top = shift(period(shown), by: step) }
+                }
             }
             .accessibilityLabel(label)
     }
