@@ -678,11 +678,18 @@ struct DiaryEditor: UIViewRepresentable {
         /// Идёт диктовка — запомнить строку, куда она пишет, если это чистая
         /// строка в конце записи без отметки и время ставить пора.
         func noteDictation(_ view: UITextView, at location: Int, end: Int) {
-            guard dictatedLine == nil, parent.stamped, parent.editable else { return }
+            guard dictatedLine == nil else { return }
+            guard parent.stamped, parent.editable else {
+                StampTrace.note("диктовка: время в этой записи не ставится")
+                return
+            }
             let storage = view.textStorage
             let ns = storage.string as NSString
             guard location <= ns.length, end <= ns.length,
-                  Self.atEnd(storage, from: end) else { return }
+                  Self.atEnd(storage, from: end) else {
+                StampTrace.note("диктовка: не в конце записи")
+                return
+            }
             let line = ns.lineRange(for: NSRange(location: location, length: 0))
             // Строка уже с отметкой — время на месте; но запомнить её (P956):
             // если отметку потом снимет сама диктовка, она встанет обратно.
@@ -2252,8 +2259,24 @@ struct DiaryEditor: UIViewRepresentable {
             return true
         }
 
+        /// Длина текста при прошлой правке — для следа диктовки (P1088).
+        private var lastLength = 0
+
         func textViewDidChange(_ view: UITextView) {
             if stampGhost != nil { placeGhost(view) }
+            // След (P1088, «Замеры» автора по 363: строка запомнена, время
+            // нарисовано и поставлено — всё в одну секунду, в конце
+            // диктовки). Что поле видит, пока говорят: сколько букв пришло
+            // разом, есть ли временный текст, какой способ ввода.
+            let length = view.textStorage.length
+            let marked = view.markedTextRange != nil
+            let mode = view.textInputMode?.primaryLanguage ?? "—"
+            if dictatedLine == nil, marked || mode == "dictation" || abs(length - lastLength) > 1 {
+                StampTrace.note("поле: \(length - lastLength >= 0 ? "+" : "")\(length - lastLength) зн., "
+                                + "временный текст \(marked ? "да" : "нет"), ввод \(mode), "
+                                + "диктовка \(Self.dictating(view) ? "да" : "нет")")
+            }
+            lastLength = length
             // Диктовка пишет — запомнить её строку; отпустила — время в
             // начало строки, если его там нет (P869).
             if Self.dictating(view), !placing {
