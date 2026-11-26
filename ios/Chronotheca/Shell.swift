@@ -245,6 +245,9 @@ final class Shell: ObservableObject {
             tab = .diary
         case "side":      probingSide = true
         case "intro":     Intro.shared.showStillForPreview()
+        // Первый запуск — «Начать» и «Где хранить записи» (P1072): прежний
+        // снимок голого запуска давно показывал окно покупки.
+        case "welcome":   overlays.trialWelcome = true
         case "filefuture":
             // Картотека будущего (P771, P773): вместо снимка «Списка»
             // календаря, которого больше нет.
