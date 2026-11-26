@@ -491,18 +491,32 @@ struct CalendarView: View {
 
         return VStack(spacing: 0) {
             // Промежуток в точку и поля по 3 точки у краёв экрана (P1061):
-            // место — снимкам дней.
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 1), count: 7),
-                      spacing: 1) {
-                ForEach(Array(header.enumerated()), id: \.offset) { i, name in
-                    Text(name.uppercased())
-                        .font(Look.sans(10, weight: .semibold))
-                        .tracking(0.8)
-                        .foregroundStyle(Ru.dayColor(dateOfWeekday(i)))
-                        .padding(.bottom, 3)
+            // место — снимкам дней. Сетка рисуется вся сразу (P1080, автор:
+            // «перескок рядов, когда месяц встал»): прежняя «ленивая» сетка
+            // рисовала ряд, только когда он показывался, — у въезжающего
+            // месяца верхние ряды запаздывали и съезжали на место.
+            VStack(spacing: 1) {
+                HStack(spacing: 1) {
+                    ForEach(Array(header.enumerated()), id: \.offset) { i, name in
+                        Text(name.uppercased())
+                            .font(Look.sans(10, weight: .semibold))
+                            .tracking(0.8)
+                            .foregroundStyle(Ru.dayColor(dateOfWeekday(i)))
+                            .frame(maxWidth: .infinity)
+                    }
                 }
-                ForEach(Array(cells.enumerated()), id: \.offset) { _, day in
-                    if let day { cell(day, today: today) } else { Color.clear.aspectRatio(1, contentMode: .fit) }
+                .padding(.bottom, 3)
+                ForEach(Array(stride(from: 0, to: cells.count, by: 7)), id: \.self) { row in
+                    HStack(spacing: 1) {
+                        // Последняя неделя — тоже семь мест, клетки той же ширины.
+                        ForEach(row..<row + 7, id: \.self) { i in
+                            if i < cells.count, let day = cells[i] {
+                                cell(day, today: today)
+                            } else {
+                                Color.clear.aspectRatio(1, contentMode: .fit).frame(maxWidth: .infinity)
+                            }
+                        }
+                    }
                 }
             }
             .padding(.horizontal, 3)
