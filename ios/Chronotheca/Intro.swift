@@ -77,20 +77,16 @@ final class Intro: ObservableObject {
 struct IntroFilm: View {
 
     @ObservedObject private var intro = Intro.shared
-    /// «Уменьшение движения» в iPhone: вместо хода — неподвижный крест.
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var start = Date()
 
     /// Длина, с: семь смахиваний, точка на карте, растворение.
     static let length: Double = IntroPlan.end
     /// Для снимка CI: середина первого смахивания — видны рука и ход креста.
     static let snapshotMoment: Double = IntroPlan.first + IntroPlan.reach + IntroPlan.swipe / 2
-    /// Сколько стоит неподвижный крест при «Уменьшении движения», с.
-    private static let stillHold: Double = 3.0
 
     var body: some View {
         GeometryReader { geo in
-            TimelineView(.animation(paused: intro.still || reduceMotion)) { line in
+            TimelineView(.animation(paused: intro.still)) { line in
                 IntroFrame(t: time(at: line.date), size: geo.size)
             }
         }
@@ -112,8 +108,10 @@ struct IntroFilm: View {
         .onAppear { start = Date() }
         .task {
             guard !intro.still else { return }
-            let hold = reduceMotion ? Self.stillHold : Self.length
-            try? await Task.sleep(nanoseconds: UInt64(hold * 1_000_000_000))
+            // Ход — всегда, и при «Уменьшении движения» (P1069): это урок,
+            // который человек открыл сам, а не украшение; неподвижный кадр
+            // ничего не объяснял.
+            try? await Task.sleep(nanoseconds: UInt64(Self.length * 1_000_000_000))
             guard !Task.isCancelled else { return }
             intro.finish()
         }
@@ -121,8 +119,6 @@ struct IntroFilm: View {
 
     private func time(at date: Date) -> Double {
         if intro.still { return Self.snapshotMoment }
-        // Неподвижно: «Сегодня» в рамке, крест вокруг, руки нет.
-        if reduceMotion { return IntroPlan.first }
         return min(Self.length, max(0, date.timeIntervalSince(start)))
     }
 }
@@ -253,7 +249,7 @@ private struct IntroFrame: View {
             // Вне рамки крест притушен: видно, где он лежит, а смотреть —
             // в рамку.
             Veil(hole: CGSize(width: frameW, height: frameH), corner: corner)
-                .fill(Look.chrome.opacity(0.62), style: FillStyle(eoFill: true))
+                .fill(Look.chrome.opacity(0.84), style: FillStyle(eoFill: true))
                 .frame(width: size.width * 3, height: size.height * 3)
                 .allowsHitTesting(false)
 
