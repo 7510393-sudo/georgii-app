@@ -851,9 +851,19 @@ private struct MonthPager: View, Equatable {
             },
             ended: { dy, speed in
                 guard !settling else { return }
-                let flung = dy + speed * 0.25
-                let step = (dy < -h * 0.5 || flung < -h * 0.3) ? 1
-                         : (dy > h * 0.5 || flung > h * 0.3) ? -1 : 0
+                // Как листание страницами у iPhone (P1081, автор: «ты настроил
+                // чувствительность так же, как у Apple?»): куда полоса
+                // докатилась бы по инерции с обычным замедлением прокрутки
+                // (0,998 за тысячную секунды — путь v·0,998/0,002/1000 ≈ v/2),
+                // и если дальше половины месяца — переворот.
+                let rate: CGFloat = 0.998
+                let coast = speed * rate / (1 - rate) / 1000
+                let landed = dy + coast
+                let step = landed < -h / 2 ? 1 : landed > h / 2 ? -1 : 0
+                // Толчок — в миг отпускания, когда ясно, что месяц сменится,
+                // а не когда он доехал (P1081, автор: «виброотклик слишком
+                // поздно»).
+                if step != 0 { Feel.light() }
                 turn(by: step)
             }))
         .onChange(of: ask) { _, now in
@@ -864,6 +874,7 @@ private struct MonthPager: View, Equatable {
                 still.disablesAnimations = true
                 withTransaction(still) { own = shift(current, now.step - (now.step > 0 ? 1 : -1)) }
             }
+            Feel.light()
             turn(by: now.step > 0 ? 1 : -1)
         }
         // Месяц поменяли снаружи (смена вида, «домой» без хода) — полоса
@@ -894,10 +905,7 @@ private struct MonthPager: View, Equatable {
                 pull = 0
             }
             settling = false
-            if step != 0 {
-                shown = next
-                Feel.light()
-            }
+            if step != 0 { shown = next }
         }
     }
 }
