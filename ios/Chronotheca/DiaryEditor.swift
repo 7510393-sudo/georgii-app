@@ -730,6 +730,9 @@ struct DiaryEditor: UIViewRepresentable {
                 UIView.animate(withDuration: 0.2) { label.alpha = 1 }
             }
             placeGhost(view)
+            StampTrace.note(String(format: "диктовка: время нарисовано у %.0f,%.0f, %.0f×%.0f",
+                                   label.frame.minX, label.frame.minY,
+                                   label.bounds.width, label.bounds.height))
         }
 
         /// Вырез и время — к началу строки диктовки.
@@ -740,7 +743,10 @@ struct DiaryEditor: UIViewRepresentable {
                 return clearGhost(view)
             }
             let caret = view.caretRect(for: pos)
-            guard caret.height > 0, caret.minY.isFinite else { return }
+            guard caret.height > 0, caret.minY.isFinite else {
+                StampTrace.note("диктовка: нет места для времени (курсор без высоты)")
+                return
+            }
             let inset = view.textContainerInset
             let cut = CGRect(x: 0, y: caret.minY - inset.top,
                              width: ceil(label.bounds.width), height: max(caret.height - 2, 1))
