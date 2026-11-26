@@ -19,8 +19,34 @@ struct TimeWheel: UIViewRepresentable {
     /// молча вернётся к минуте.
     var step: Int = 5
 
-    func makeUIView(context: Context) -> UIDatePicker {
+    /// Рамка ролика (P1089, автор по 363: «выставляя повтор, нажимается не
+    /// кнопка, а колёсико с часами — нарушена зона касания»). Системный ролик
+    /// не сжимается уже своей ширины: снаружи он был обрезан только видом, а
+    /// касания ловил по всей ширине — и над кнопками повтора и напоминания.
+    /// Теперь он внутри рамки ровно того размера, что отвёл экран: что за
+    /// рамкой, того не видно и того не коснуться.
+    final class Frame: UIView {
         let picker = UIDatePicker()
+        override init(frame: CGRect) {
+            super.init(frame: frame)
+            clipsToBounds = true
+            picker.translatesAutoresizingMaskIntoConstraints = false
+            addSubview(picker)
+            NSLayoutConstraint.activate([
+                picker.centerXAnchor.constraint(equalTo: centerXAnchor),
+                picker.centerYAnchor.constraint(equalTo: centerYAnchor),
+            ])
+        }
+        required init?(coder: NSCoder) { nil }
+        /// Высота — своя у ролика, ширина — какую даст экран.
+        override var intrinsicContentSize: CGSize {
+            CGSize(width: UIView.noIntrinsicMetric, height: picker.intrinsicContentSize.height)
+        }
+    }
+
+    func makeUIView(context: Context) -> Frame {
+        let frame = Frame()
+        let picker = frame.picker
         picker.datePickerMode = .time
         picker.preferredDatePickerStyle = .wheels
         picker.minuteInterval = step
@@ -29,10 +55,11 @@ struct TimeWheel: UIViewRepresentable {
         picker.addTarget(context.coordinator,
                          action: #selector(Coordinator.spun(_:)),
                          for: .valueChanged)
-        return picker
+        return frame
     }
 
-    func updateUIView(_ picker: UIDatePicker, context: Context) {
+    func updateUIView(_ frame: Frame, context: Context) {
+        let picker = frame.picker
         context.coordinator.time = $time
         if picker.minuteInterval != step { picker.minuteInterval = step }
         // Сравнение нужно: без него ролик дёргался бы обратно на каждом
