@@ -936,7 +936,11 @@ private struct VerticalPan: UIViewRepresentable {
             probe = view
             let pan = UIPanGestureRecognizer(target: self, action: #selector(moved(_:)))
             pan.delegate = self
-            pan.cancelsTouchesInView = false
+            // Повели по вертикали — касание у клетки отменяется, как в
+            // прокрутке iPhone (P1078: проверка движения на 360 — свайп,
+            // начатый на клетке, месяц не листал: клетка-кнопка держала
+            // касание). Простое касание клетки по-прежнему выбирает день.
+            pan.cancelsTouchesInView = true
             pan.delaysTouchesBegan = false
             pan.delaysTouchesEnded = false
             window.addGestureRecognizer(pan)
@@ -972,5 +976,13 @@ private struct VerticalPan: UIViewRepresentable {
 
         func gestureRecognizer(_ g: UIGestureRecognizer,
                                shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool { true }
+
+        /// Ничьего провала не ждать и своим провалом никого не держать:
+        /// кнопки клеток и лента разделов идут сами по себе.
+        func gestureRecognizer(_ g: UIGestureRecognizer,
+                               shouldRequireFailureOf other: UIGestureRecognizer) -> Bool { false }
+
+        func gestureRecognizer(_ g: UIGestureRecognizer,
+                               shouldBeRequiredToFailBy other: UIGestureRecognizer) -> Bool { false }
     }
 }
