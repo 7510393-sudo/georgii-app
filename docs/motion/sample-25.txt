@@ -1,0 +1,270 @@
+    2012 Thread_127089   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 2012 start  (in dyld) + 6992  [0x1044ec4e4]
+    +   2012 start_sim  (in dyld_sim) + 20  [0x1043cf0e4]
+    +     2012 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x106574168]  ChronothecaApp.swift:0
+    +       2012 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1065740bc]  /<compiler-generated>:0
+    +         2012 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           2012 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             2012 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               2012 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 2012 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   2012 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     2012 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       2001 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    +                       ! 2001 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    +                       !   2001 mach_msg  (in libsystem_kernel.dylib) + 20  [0x104284ef0]
+    +                       !     2001 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x10428cc44]
+    +                       !       2001 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x104295e84]
+    +                       !         2001 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x104284b70]
+    +                       9 __CFRunLoopRun  (in CoreFoundation) + 864  [0x180421870]
+    +                       ! 9 __CFRunLoopDoObservers  (in CoreFoundation) + 556  [0x180421430]
+    +                       !   9 __CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__  (in CoreFoundation) + 32  [0x180421f4c]
+    +                       !     9 @objc closure #1 in static NSRunLoop.addObserver(_:)  (in SwiftUICore) + 24  [0x1d4365908]
+    +                       !       9 specialized static NSRunLoop.flushObservers()  (in SwiftUICore) + 388  [0x1d4365de0]
+    +                       !         9 <deduplicated_symbol>  (in SwiftUICore) + 20  [0x1d3c3ddc8]
+    +                       !           9 partial apply for closure #1 in closure #1 in _UIHostingView.beginTransaction()  (in SwiftUI) + 64  [0x1d295e28c]
+    +                       !             9 static Update.ensure<A>(_:)  (in SwiftUICore) + 96  [0x1d3d0a2f0]
+    +                       !               9 closure #1 in static Update.ensure<A>(_:)  (in SwiftUICore) + 48  [0x1d3d0b718]
+    +                       !                 9 partial apply for closure #1 in closure #1 in closure #1 in _UIHostingView.beginTransaction()  (in SwiftUI) + 20  [0x1d295e2b0]
+    +                       !                   9 closure #1 in closure #1 in closure #1 in _UIHostingView.beginTransaction()  (in SwiftUI) + 144  [0x1d2954830]
+    +                       !                     9 ViewGraphRootValueUpdater.updateGraph<A>(body:)  (in SwiftUICore) + 136  [0x1d43bf084]
+    +                       !                       9 ViewGraphRootValueUpdater._updateViewGraph<A>(body:)  (in SwiftUICore) + 200  [0x1d43c079c]
+    +                       !                         9 <deduplicated_symbol>  (in SwiftUICore) + 20  [0x1d41904c0]
+    +                       !                           9 <deduplicated_symbol>  (in SwiftUI) + 20  [0x1d2954860]
+    +                       !                             9 GraphHost.flushTransactions()  (in SwiftUICore) + 176  [0x1d3f322dc]
+    +                       !                               9 specialized GraphHost.runTransaction(_:do:id:)  (in SwiftUICore) + 352  [0x1d3f4ca50]
+    +                       !                                 9 AG::Subgraph::update(unsigned int)  (in AttributeGraph) + 952  [0x1c42da590]
+    +                       !                                   9 AG::Graph::UpdateStack::update()  (in AttributeGraph) + 488  [0x1c42cb6c0]
+    +                       !                                     6 specialized implicit closure #1 in closure #1 in closure #1 in Attribute.init<A>(_:)  (in SwiftUICore) + 60  [0x1d3e47710]
+    +                       !                                     : 6 SecondaryLayerGeometryQuery.value.getter  (in SwiftUICore) + 532  [0x1d3b7264c]
+    +                       !                                     :   6 LayoutEngineBox.sizeThatFits(_:)  (in SwiftUICore) + 76  [0x1d418fa80]
+    +                       !                                     :     6 ViewLayoutEngine.sizeThatFits(_:)  (in SwiftUICore) + 712  [0x1d3dd240c]
+    +                       !                                     :       6 closure #1 in ViewLayoutEngine.sizeThatFits(_:)  (in SwiftUICore) + 164  [0x1d3dd2680]
+    +                       !                                     :         6 _ZStackLayout.sizeThatFits(proposal:subviews:cache:)  (in SwiftUICore) + 376  [0x1d393ea88]
+    +                       !                                     :           6 specialized Sequence.reduce<A>(_:_:)  (in SwiftUICore) + 360  [0x1d393dce8]
+    +                       !                                     :             6 partial apply for closure #3 in _ZStackLayout.sizeThatFits(proposal:subviews:cache:)  (in SwiftUICore) + 76  [0x1d3941018]
+    +                       !                                     :               6 LayoutProxy.dimensions(in:)  (in SwiftUICore) + 228  [0x1d3bc186c]
+    +                       !                                     :                 6 LayoutEngineBox.sizeThatFits(_:)  (in SwiftUICore) + 76  [0x1d418fa80]
+    +                       !                                     :                   6 protocol witness for LayoutEngine.sizeThatFits(_:) in conformance AlignmentModifiedLayoutComputer.Engine  (in SwiftUICore) + 140  [0x1d3e5ef18]
+    +                       !                                     :                     6 LayoutEngineBox.sizeThatFits(_:)  (in SwiftUICore) + 76  [0x1d418fa80]
+    +                       !                                     :                       6 ViewLayoutEngine.sizeThatFits(_:)  (in SwiftUICore) + 712  [0x1d3dd240c]
+    +                       !                                     :                         6 closure #1 in ViewLayoutEngine.sizeThatFits(_:)  (in SwiftUICore) + 164  [0x1d3dd2680]
+    +                       !                                     :                           6 _ZStackLayout.sizeThatFits(proposal:subviews:cache:)  (in SwiftUICore) + 376  [0x1d393ea88]
+    +                       !                                     :                             6 specialized Sequence.reduce<A>(_:_:)  (in SwiftUICore) + 400  [0x1d393dd10]
+    +                       !                                     :                               6 closure #4 in _ZStackLayout.sizeThatFits(proposal:subviews:cache:)  (in SwiftUICore) + 100  [0x1d393ed48]
+    +                       !                                     :                                 6 ViewDimensions.subscript.getter  (in SwiftUICore) + 144  [0x1d3a0e28c]
+    +                       !                                     :                                   6 LayoutEngineBox.explicitAlignment(_:at:)  (in SwiftUICore) + 52  [0x1d418fb64]
+    +                       !                                     :                                     6 UnaryLayoutEngine.explicitAlignment(_:at:)  (in SwiftUICore) + 72  [0x1d3d9e03c]
+    +                       !                                     :                                       6 UnaryLayoutEngine.childPlacement(at:)  (in SwiftUICore) + 544  [0x1d3d9e33c]
+    +                       !                                     :                                         6 protocol witness for UnaryLayout.placement(of:in:) in conformance _FrameLayout  (in SwiftUICore) + 204  [0x1d3fa51dc]
+    +                       !                                     :                                           6 specialized FrameLayoutCommon.commonPlacement(of:in:childProposal:)  (in SwiftUICore) + 556  [0x1d3fa48ac]
+    +                       !                                     :                                             6 ViewDimensions.subscript.getter  (in SwiftUICore) + 144  [0x1d3a0e28c]
+    +                       !                                     :                                               6 LayoutEngineBox.explicitAlignment(_:at:)  (in SwiftUICore) + 52  [0x1d418fb64]
+    +                       !                                     :                                                 6 UnaryLayoutEngine.explicitAlignment(_:at:)  (in SwiftUICore) + 72  [0x1d3d9e03c]
+    +                       !                                     :                                                   6 UnaryLayoutEngine.childPlacement(at:)  (in SwiftUICore) + 544  [0x1d3d9e33c]
+    +                       !                                     :                                                     6 protocol witness for UnaryLayout.placement(of:in:) in conformance _FrameLayout  (in SwiftUICore) + 204  [0x1d3fa51dc]
+    +                       !                                     :                                                       6 specialized FrameLayoutCommon.commonPlacement(of:in:childProposal:)  (in SwiftUICore) + 288  [0x1d3fa47a0]
+    +                       !                                     :                                                         6 LayoutProxy.dimensions(in:)  (in SwiftUICore) + 228  [0x1d3bc186c]
+    +                       !                                     :                                                           6 LayoutEngineBox.sizeThatFits(_:)  (in SwiftUICore) + 76  [0x1d418fa80]
+    +                       !                                     :                                                             6 ViewLayoutEngine.sizeThatFits(_:)  (in SwiftUICore) + 712  [0x1d3dd240c]
+    +                       !                                     :                                                               6 closure #1 in ViewLayoutEngine.sizeThatFits(_:)  (in SwiftUICore) + 164  [0x1d3dd2680]
+    +                       !                                     :                                                                 6 _ZStackLayout.sizeThatFits(proposal:subviews:cache:)  (in SwiftUICore) + 376  [0x1d393ea88]
+    +                       !                                     :                                                                   6 specialized Sequence.reduce<A>(_:_:)  (in SwiftUICore) + 360  [0x1d393dce8]
+    +                       !                                     :                                                                     6 partial apply for closure #3 in _ZStackLayout.sizeThatFits(proposal:subviews:cache:)  (in SwiftUICore) + 76  [0x1d3941018]
+    +                       !                                     :                                                                       6 LayoutProxy.dimensions(in:)  (in SwiftUICore) + 228  [0x1d3bc186c]
+    +                       !                                     :                                                                         6 LayoutEngineBox.sizeThatFits(_:)  (in SwiftUICore) + 76  [0x1d418fa80]
+    +                       !                                     :                                                                           6 ???  (in SwiftUICore)  load address 0x1d38ba000 + 0x4e4400  [0x1d3d9e400]
+    +                       !                                     :                                                                             6 UnaryLayoutEngine.sizeThatFits(_:)  (in SwiftUICore) + 944  [0x1d3d9e7d4]
+    +                       !                                     :                                                                               6 _FrameLayout.sizeThatFits(in:context:child:)  (in SwiftUICore) + 148  [0x1d3fa4578]
+    +                       !                                     :                                                                                 6 LayoutProxy.size(in:)  (in SwiftUICore) + 116  [0x1d3bc0da4]
+    +                       !                                     :                                                                                   6 AGGraphGetInputValue  (in AttributeGraph) + 248  [0x1c42ea860]
+    +                       !                                     :                                                                                     6 AG::Graph::input_value_ref_slow(AG::data::ptr<AG::Node>, AG::AttributeID, unsigned int, unsigned int, AGSwiftMetadata const*, unsigned char&, long)  (in AttributeGraph) + 236  [0x1c42d3280]
+    +                       !                                     :                                                                                       6 AG::Graph::update_attribute(AG::data::ptr<AG::Node>, unsigned int)  (in AttributeGraph) + 352  [0x1c42cbda8]
+    +                       !                                     :                                                                                         6 AG::Graph::UpdateStack::update()  (in AttributeGraph) + 488  [0x1c42cb6c0]
+    +                       !                                     :                                                                                           6 specialized implicit closure #1 in closure #1 in closure #1 in Attribute.init<A>(_:)  (in SwiftUICore) + 48  [0x1d404ef88]
+    +                       !                                     :                                                                                             6 AGGraphGetValue  (in AttributeGraph) + 236  [0x1c42eaaa4]
+    +                       !                                     :                                                                                               6 AG::Graph::input_value_ref_slow(AG::data::ptr<AG::Node>, AG::AttributeID, unsigned int, unsigned int, AGSwiftMetadata const*, unsigned char&, long)  (in AttributeGraph) + 676  [0x1c42d3438]
+    +                       !                                     :                                                                                                 6 AG::Graph::update_attribute(AG::data::ptr<AG::Node>, unsigned int)  (in AttributeGraph) + 352  [0x1c42cbda8]
+    +                       !                                     :                                                                                                   6 AG::Graph::UpdateStack::update()  (in AttributeGraph) + 488  [0x1c42cb6c0]
+    +                       !                                     :                                                                                                     6 implicit closure #1 in closure #1 in closure #1 in Attribute.init<A>(_:)  (in SwiftUICore) + 148  [0x1d3d9ed8c]
+    +                       !                                     :                                                                                                       6 TextChildQuery.value.getter  (in SwiftUICore) + 68  [0x1d3c4af0c]
+    +                       !                                     :                                                                                                         6 AGGraphGetValue  (in AttributeGraph) + 236  [0x1c42eaaa4]
+    +                       !                                     :                                                                                                           6 AG::Graph::input_value_ref_slow(AG::data::ptr<AG::Node>, AG::AttributeID, unsigned int, unsigned int, AGSwiftMetadata const*, unsigned char&, long)  (in AttributeGraph) + 676  [0x1c42d3438]
+    +                       !                                     :                                                                                                             6 AG::Graph::update_attribute(AG::data::ptr<AG::Node>, unsigned int)  (in AttributeGraph) + 352  [0x1c42cbda8]
+    +                       !                                     :                                                                                                               6 AG::Graph::UpdateStack::update()  (in AttributeGraph) + 488  [0x1c42cb6c0]
+    +                       !                                     :                                                                                                                 6 specialized implicit closure #1 in closure #1 in closure #1 in Attribute.init<A>(_:)  (in SwiftUICore) + 20  [0x1d404eae8]
+    +                       !                                     :                                                                                                                   6 ResolvedTextFilter.updateValue()  (in SwiftUICore) + 940  [0x1d3c4a754]
+    +                       !                                     :                                                                                                                     6 ResolvedTextHelper.resolve(_:with:sizeFitting:)  (in SwiftUICore) + 2672  [0x1d3c464a8]
+    +                       !                                     :                                                                                                                       6 Text.resolveAttributedStringAndProperties(in:includeDefaultAttributes:options:idiom:)  (in SwiftUICore) + 760  [0x1d3c0ebcc]
+    +                       !                                     :                                                                                                                         6 specialized Text.resolve<A>(into:in:with:)  (in SwiftUICore) + 396  [0x1d3990dc0]
+    +                       !                                     :                                                                                                                           6 specialized ResolvedTextContainer.append<A>(_:in:with:)  (in SwiftUICore) + 368  [0x1d41b32c8]
+    +                       !                                     :                                                                                                                             6 Text.Style.nsAttributes(content:environment:includeDefaultAttributes:with:properties:)  (in SwiftUICore) + 2664  [0x1d3c0bbc4]
+    +                       !                                     :                                                                                                                               6 specialized ObjectCache.subscript.getter  (in SwiftUICore) + 184  [0x1d39f6c44]
+    +                       !                                     :                                                                                                                                 6 closure #1 in variable initialization expression of static Font.FontCache.shared  (in SwiftUICore) + 268  [0x1d3b75490]
+    +                       !                                     :                                                                                                                                   6 CTFontCreateWithFontDescriptor  (in CoreText) + 100  [0x181efde54]
+    +                       !                                     :                                                                                                                                     6 TCFBase_NEW<CTFont, __CTFontDescriptor const*, double&, CGAffineTransform const*&, __CTFontDescriptor const*&>(__CTFontDescriptor const*&&, double&, CGAffineTransform const*&, __CTFontDescriptor const*&)  (in CoreText) + 96  [0x181efdee4]
+    +                       !                                     :                                                                                                                                       6 TFont::TFont(__CTFontDescriptor const*, double, CGAffineTransform const*, __CTFontDescriptor const*)  (in CoreText) + 340  [0x181f0a304]
+    +                       !                                     :                                                                                                                                         6 TFont::SetOpticalSize(__CTFontDescriptor const*)  (in CoreText) + 120  [0x181f132f0]
+    +                       !                                     :                                                                                                                                           6 TBaseFont::HasTable(unsigned int) const  (in CoreText) + 76  [0x181fb0e60]
+    +                       !                                     :                                                                                                                                             6 TBaseFont::GetInitializedGraphicsFont() const  (in CoreText) + 84  [0x181eb96f0]
+    +                       !                                     :                                                                                                                                               6 TBaseFont::CopyNativeFont() const  (in CoreText) + 180  [0x181fb2bc4]
+    +                       !                                     :                                                                                                                                                 6 TCGFontCache::CopyFont(__CFURL const*, __CFString const*, __CFString const*)  (in CoreText) + 140  [0x181fe7e98]
+    +                       !                                     :                                                                                                                                                   6 CreateFontWithFontURL(__CFURL const*, __CFString const*, __CFString const*)  (in CoreText) + 72  [0x181fe544c]
+    +                       !                                     :                                                                                                                                                     6 CGFontCreateWithPathAndName  (in CoreGraphics) + 60  [0x18d1f1648]
+    +                       !                                     :                                                                                                                                                       6 create_private_data_with_path_and_name  (in CoreGraphics) + 16  [0x18d5423b8]
+    +                       !                                     :                                                                                                                                                         6 FPFontCreateWithPathAndName  (in libFontParser.dylib) + 360  [0x1937e0a14]
+    +                       !                                     :                                                                                                                                                           6 TFont::CreateFontEntitiesForFile(char const*, timespec, bool, short, char const*)  (in libFontParser.dylib) + 320  [0x1937d50a0]
+    +                       !                                     :                                                                                                                                                             6 TFont::CreateFontEntities(char const*, timespec, bool&, short, char const*, FontKind*)  (in libFontParser.dylib) + 400  [0x1937d4394]
+    +                       !                                     :                                                                                                                                                               6 TSFNTFont::GetFormat() const  (in libFontParser.dylib) + 120  [0x193655db4]
+    +                       !                                     3 partial apply for implicit closure #1 in closure #1 in closure #1 in Attribute.init<A>(_:)  (in SwiftUICore) + 28  [0x1d3a882d4]
+    +                       !                                       2 DynamicViewList.updateValue()  (in SwiftUICore) + 1236  [0x1d41954b8]
+    +                       !                                       | 2 closure #1 in DynamicViewList.updateValue()  (in SwiftUICore) + 532  [0x1d4195b24]
+    +                       !                                       |   2 Optional<A>.makeChildViewList(metadata:view:inputs:)  (in SwiftUICore) + 96  [0x1d423e288]
+    +                       !                                       |     2 <deduplicated_symbol>  (in SwiftUICore) + 72  [0x1d3a7a600]
+    +                       !                                       |       2 partial apply for closure #1 in Optional<A>.makeChildViewList(metadata:view:inputs:)  (in SwiftUICore) + 100  [0x1d423e2fc]
+    +                       !                                       |         2 ConditionalMetadata<>.makeViewList<A>(ptr:view:inputs:)  (in SwiftUICore) + 220  [0x1d3a6869c]
+    +                       !                                       |           2 specialized ConditionalTypeDescriptor.project(at:baseIndex:_:)  (in SwiftUICore) + 304  [0x1d3a67bd8]
+    +                       !                                       |             2 specialized ConditionalTypeDescriptor.project(at:baseIndex:_:)  (in SwiftUICore) + 132  [0x1d3a67b2c]
+    +                       !                                       |               2 closure #1 in ConditionalMetadata<>.makeViewList<A>(ptr:view:inputs:)  (in SwiftUICore) + 84  [0x1d3a687b4]
+    +                       !                                       |                 2 TypeConformance<>.visitType<A>(visitor:)  (in SwiftUICore) + 44  [0x1d41841d8]
+    +                       !                                       |                   2 ConditionalMetadata<>.MakeList.visit<A>(type:)  (in SwiftUICore) + 508  [0x1d3a68538]
+    +                       !                                       |                     2 static ModifiedContent<>._makeViewList(view:inputs:)  (in SwiftUICore) + 244  [0x1d42594e0]
+    +                       !                                       |                       2 static _AppearanceActionModifier._makeViewList(modifier:inputs:body:)  (in SwiftUICore) + 268  [0x1d3efe914]
+    +                       !                                       |                         2 closure #2 in static ModifiedContent<>._makeViewList(view:inputs:)  (in SwiftUICore) + 176  [0x1d42595c8]
+    +                       !                                       |                           2 static ModifiedContent<>._makeViewList(view:inputs:)  (in SwiftUICore) + 244  [0x1d42594e0]
+    +                       !                                       |                             2 static _TraitWritingModifier._makeViewList(modifier:inputs:body:)  (in SwiftUICore) + 68  [0x1d3bb124c]
+    +                       !                                       |                               2 static _TraitWritingModifier._makeViewList(modifier:inputs:body:)  (in SwiftUICore) + 472  [0x1d3bb18b8]
+    +                       !                                       |                                 2 closure #2 in static ModifiedContent<>._makeViewList(view:inputs:)  (in SwiftUICore) + 176  [0x1d42595c8]
+    +                       !                                       |                                   2 static ModifiedContent<>._makeViewList(view:inputs:)  (in SwiftUICore) + 244  [0x1d42594e0]
+    +                       !                                       |                                     2 protocol witness for static ViewModifier._makeViewList(modifier:inputs:body:) in conformance _AllowsHitTestingModifier  (in SwiftUICore) + 36  [0x1d425a82c]
+    +                       !                                       |                                       2 closure #2 in static ModifiedContent<>._makeViewList(view:inputs:)  (in SwiftUICore) + 176  [0x1d42595c8]
+    +                       !                                       |                                         2 static ModifiedContent<>._makeViewList(view:inputs:)  (in SwiftUICore) + 244  [0x1d42594e0]
+    +                       !                                       |                                           2 protocol witness for static ViewModifier._makeViewList(modifier:inputs:body:) in conformance _OffsetEffect  (in SwiftUICore) + 36  [0x1d3b9e75c]
+    +                       !                                       |                                             2 closure #2 in static ModifiedContent<>._makeViewList(view:inputs:)  (in SwiftUICore) + 176  [0x1d42595c8]
+    +                       !                                       |                                               2 static ModifiedContent<>._makeViewList(view:inputs:)  (in SwiftUICore) + 244  [0x1d42594e0]
+    +                       !                                       |                                                 2 protocol witness for static ViewModifier._makeViewList(modifier:inputs:body:) in conformance _FrameLayout  (in SwiftUICore) + 36  [0x1d4255ea0]
+    +                       !                                       |                                                   2 closure #2 in static ModifiedContent<>._makeViewList(view:inputs:)  (in SwiftUICore) + 176  [0x1d42595c8]
+    +                       !                                       |                                                     2 protocol witness for static View._makeViewList(view:inputs:) in conformance RememberCloud  (in Chronotheca.debug.dylib) + 12  [0x1069c8520]  /<compiler-generated>:0
+    +                       !                                       |                                                       2 static View._makeViewList(view:inputs:)  (in SwiftUICore) + 28  [0x1d3bdefa4]
+    +                       !                                       |                                                         1 static View.makeViewList(view:inputs:)  (in SwiftUICore) + 156  [0x1d3be0838]
+    +                       !                                       |                                                         + 1 static View.makeBody(view:inputs:fields:)  (in SwiftUICore) + 176  [0x1d3be0b3c]
+    +                       !                                       |                                                         +   1 BodyAccessor.makeBody(container:inputs:fields:)  (in SwiftUICore) + 92  [0x1d3d05504]
+    +                       !                                       |                                                         +     1 swift_getAssociatedTypeWitnessSlowImpl(swift::MetadataRequest, swift::TargetWitnessTable<swift::InProcess>*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolRequirement<swift::InProcess> const*, swift::TargetProtocolRequirement<swift::InProcess> const*)  (in libswiftCore.dylib) + 360  [0x1981a66f8]
+    +                       !                                       |                                                         +       1 swift_getTypeByMangledName  (in libswiftCore.dylib) + 272  [0x1981b7090]
+    +                       !                                       |                                                         +         1 swift_getTypeByMangledNameImpl(swift::MetadataRequest, __swift::__runtime::llvm::StringRef, void const* const*, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>)  (in libswiftCore.dylib) + 1016  [0x1981bcd58]
+    +                       !                                       |                                                         +           1 swift_getTypeByMangledNode  (in libswiftCore.dylib) + 272  [0x1981b8ab0]
+    +                       !                                       |                                                         +             1 swift_getTypeByMangledNodeImpl(swift::MetadataRequest, swift::Demangle::__runtime::Demangler&, swift::Demangle::__runtime::Node*, void const* const*, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>)  (in libswiftCore.dylib) + 576  [0x1981bc55c]
+    +                       !                                       |                                                         +               1 swift::Demangle::__runtime::TypeDecoder<(anonymous namespace)::DecodedMetadataBuilder>::decodeMangledType(swift::Demangle::__runtime::Node*, unsigned int, bool)  (in libswiftCore.dylib) + 18536  [0x1981c4ef8]
+    +                       !                                       |                                                         +                 1 (anonymous namespace)::DecodedMetadataBuilder::createDependentMemberType(__swift::__runtime::llvm::StringRef, swift::MetadataPackOrValue, swift::TargetProtocolDescriptorRef<swift::InProcess>) const  (in libswiftCore.dylib) + 316  [0x1981c971c]
+    +                       !                                       |                                                         +                   1 swift_conformsToProtocolCommon  (in libswiftCore.dylib) + 60  [0x1981d1978]
+    +                       !                                       |                                                         +                     1 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib) + 3292  [0x1981d3cbc]
+    +                       !                                       |                                                         +                       1 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib) + 64  [0x1981d4e84]
+    +                       !                                       |                                                         1 static View.makeViewList(view:inputs:)  (in SwiftUICore) + 300  [0x1d3be08c8]
+    +                       !                                       |                                                           1 static ModifiedContent<>._makeViewList(view:inputs:)  (in SwiftUICore) + 244  [0x1d42594e0]
+    +                       !                                       |                                                             1 static MultiViewModifier._makeViewList(modifier:inputs:body:)  (in SwiftUICore) + 52  [0x1d4250e38]
+    +                       !                                       |                                                               1 closure #2 in static ModifiedContent<>._makeViewList(view:inputs:)  (in SwiftUICore) + 176  [0x1d42595c8]
+    +                       !                                       |                                                                 1 static ModifiedContent<>._makeViewList(view:inputs:)  (in SwiftUICore) + 244  [0x1d42594e0]
+    +                       !                                       |                                                                   1 static ViewModifier._makeViewList(modifier:inputs:body:)  (in SwiftUICore) + 28  [0x1d3a43d80]
+    +                       !                                       |                                                                     1 static ViewModifier.makeViewList(modifier:inputs:body:)  (in SwiftUICore) + 392  [0x1d3a43f14]
+    +                       !                                       |                                                                       1 static ModifiedContent<>._makeViewList(view:inputs:)  (in SwiftUICore) + 244  [0x1d42594e0]
+    +                       !                                       |                                                                         1 static StyleModifier._makeViewList(modifier:inputs:body:)  (in SwiftUICore) + 268  [0x1d3f949e0]
+    +                       !                                       |                                                                           1 closure #2 in static ModifiedContent<>._makeViewList(view:inputs:)  (in SwiftUICore) + 176  [0x1d42595c8]
+    +                       !                                       |                                                                             1 static ModifiedContent<>._makeViewList(view:inputs:)  (in SwiftUICore) + 244  [0x1d42594e0]
+    +                       !                                       |                                                                               1 static ViewModifier<>._makeViewList(modifier:inputs:body:)  (in SwiftUICore) + 112  [0x1d4251c68]
+    +                       !                                       |                                                                                 1 closure #2 in static ModifiedContent<>._makeViewList(view:inputs:)  (in SwiftUICore) + 176  [0x1d42595c8]
+    +                       !                                       |                                                                                   1 static ModifiedContent<>._makeViewList(view:inputs:)  (in SwiftUICore) + 244  [0x1d42594e0]
+    +                       !                                       |                                                                                     1 static StyleModifier._makeViewList(modifier:inputs:body:)  (in SwiftUICore) + 268  [0x1d3f949e0]
+    +                       !                                       |                                                                                       1 closure #2 in static ModifiedContent<>._makeViewList(view:inputs:)  (in SwiftUICore) + 176  [0x1d42595c8]
+    +                       !                                       |                                                                                         1 static _ViewModifier_Content._makeViewList(view:inputs:)  (in SwiftUICore) + 84  [0x1d3a42604]
+    +                       !                                       |                                                                                           1 static ViewModifierContentProvider.providerMakeViewList(view:inputs:)  (in SwiftUICore) + 140  [0x1d3a426a4]
+    +                       !                                       |                                                                                             1 closure #2 in static ModifiedContent<>._makeViewList(view:inputs:)  (in SwiftUICore) + 176  [0x1d42595c8]
+    +                       !                                       |                                                                                               1 static View._makeViewList(view:inputs:)  (in SwiftUICore) + 28  [0x1d3bdefa4]
+    +                       !                                       |                                                                                                 1 static View.makeViewList(view:inputs:)  (in SwiftUICore) + 80  [0x1d3be07ec]
+    +                       !                                       |                                                                                                   1 static DynamicPropertyCache.fields(of:)  (in SwiftUICore) + 276  [0x1d3d0524c]
+    +                       !                                       |                                                                                                     1 AGTypeApplyFields2  (in AttributeGraph) + 124  [0x1c42ce7f0]
+    +                       !                                       |                                                                                                       1 AG::swift::metadata::visit(AG::swift::metadata_visitor&) const  (in AttributeGraph) + 780  [0x1c42c8384]
+    +                       !                                       |                                                                                                         1 AGTypeApplyFields2::Visitor::visit_field(AG::swift::metadata const*, AG::swift::field_record const&, unsigned long, unsigned long)  (in AttributeGraph) + 116  [0x1c42ced14]
+    +                       !                                       |                                                                                                           1 closure #1 in static DynamicPropertyCache.fields(of:)  (in SwiftUICore) + 56  [0x1d3d06028]
+    +                       !                                       |                                                                                                             1 swift_conformsToProtocol2  (in libswiftCore.dylib) + 60  [0x1981d17c8]
+    +                       !                                       |                                                                                                               1 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib) + 3296  [0x1981d3cc0]
+    +                       !                                       1 DynamicBody.updateValue()  (in SwiftUICore) + 840  [0x1d3d0744c]
+    +                       !                                         1 closure #1 in DynamicBody.updateValue()  (in SwiftUICore) + 936  [0x1d3d07af4]
+    +                       !                                           1 protocol witness for BodyAccessor.updateBody(of:changed:) in conformance ViewBodyAccessor<A>  (in SwiftUICore) + 12  [0x1d3be116c]
+    +                       !                                             1 ViewBodyAccessor.updateBody(of:changed:)  (in SwiftUICore) + 180  [0x1d3be0cc4]
+    +                       !                                               1 closure #1 in ViewBodyAccessor.updateBody(of:changed:)  (in SwiftUICore) + 864  [0x1d3be1054]
+    +                       !                                                 1 protocol witness for View.body.getter in conformance DayCloud  (in Chronotheca.debug.dylib) + 12  [0x1065c1840]  /<compiler-generated>:0
+    +                       !                                                   1 DayCloud.body.getter  (in Chronotheca.debug.dylib) + 208  [0x1065bfda8]  DayPager.swift:945
+    +                       !                                                     1 ZStack.init(alignment:content:)  (in SwiftUICore) + 60  [0x1d393dec0]
+    +                       !                                                       1 _VariadicView.Tree.init(_:content:)  (in SwiftUICore) + 112  [0x1d3cfd904]
+    +                       !                                                         1 <deduplicated_symbol>  (in SwiftUICore) + 88  [0x1d393df24]
+    +                       !                                                           1 closure #1 in DayCloud.body.getter  (in Chronotheca.debug.dylib) + 1284  [0x1065c02fc]  DayPager.swift:951
+    +                       !                                                             1 static NSTimer.publish(every:tolerance:on:in:options:)  (in Foundation) + 0  [0x180fcc2f4]
+    +                       2 __CFRunLoopRun  (in CoreFoundation) + 1884  [0x180421c6c]
+    +                         2 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__  (in CoreFoundation) + 12  [0x180422a94]
+    +                           2 _dispatch_main_queue_callback_4CF  (in libdispatch.dylib) + 40  [0x180195890]
+    +                             2 _dispatch_main_queue_drain  (in libdispatch.dylib) + 1172  [0x180195d34]
+    +                               2 <deduplicated_symbol>  (in libdispatch.dylib) + 24  [0x1801bd748]
+    +                                 2 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                                   2 _dispatch_call_block_and_release  (in libdispatch.dylib) + 24  [0x1801866a0]
+    +                                     2 thunk for @escaping @callee_guaranteed () -> ()  (in Chronotheca.debug.dylib) + 48  [0x10649bf90]  /<compiler-generated>:0
+    +                                       2 partial apply for closure #1 in closure #1 in Archive.reloadSoon()  (in Chronotheca.debug.dylib) + 100  [0x1064a8524]  /<compiler-generated>:0
+    +                                         2 closure #1 in closure #1 in Archive.reloadSoon()  (in Chronotheca.debug.dylib) + 460  [0x10649be90]  Archive.swift:129
+    +                                           2 Archive.publish(_:root:)  (in Chronotheca.debug.dylib) + 2388  [0x10649a68c]  Archive.swift:150
+    +                                             2 Archive.days.setter  (in Chronotheca.debug.dylib) + 128  [0x1064944cc]  Archive.swift:0
+    +                                               2 Archive.days.didset  (in Chronotheca.debug.dylib) + 256  [0x1064945e0]  Archive.swift:70
+    +                                                 2 Sequence.sorted(by:)  (in libswiftCore.dylib) + 260  [0x1983d4104]
+    +                                                   2 UnsafeMutableBufferPointer._stableSortImpl(by:)  (in libswiftCore.dylib) + 152  [0x1983d42fc]
+    +                                                     2 specialized ContiguousArray.init<A>(unsafeUninitializedCapacity:initializingWith:)  (in libswiftCore.dylib) + 88  [0x198265200]
+    +                                                       2 partial apply for closure #1 in UnsafeMutableBufferPointer._stableSortImpl(by:)  (in libswiftCore.dylib) + 28  [0x1984fad28]
+    +                                                         1 closure #1 in UnsafeMutableBufferPointer._stableSortImpl(by:)  (in libswiftCore.dylib) + 600  [0x1983d7040]
+    +                                                         : 1 MutableCollection<>._insertionSort(within:sortedEnd:by:)  (in libswiftCore.dylib) + 580  [0x1983d55dc]
+    +                                                         :   1 protocol witness for Collection.subscript.read in conformance UnsafeMutableBufferPointer<A>  (in libswiftCore.dylib) + 68  [0x19848f4c4]
+    +                                                         :     1 UnsafeMutableBufferPointer.subscript.read  (in libswiftCore.dylib) + 108  [0x19848f550]
+    +                                                         :       1 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 332  [0x1064a3e00]  /<compiler-generated>:0
+    +                                                         :         1 DYLD-STUB$$swift_bridgeObjectRetain  (in Chronotheca.debug.dylib) + 0  [0x106c30c4c]
+    +                                                         1 closure #1 in UnsafeMutableBufferPointer._stableSortImpl(by:)  (in libswiftCore.dylib) + 708  [0x1983d70ac]
+    +                                                           1 UnsafeMutableBufferPointer._mergeTopRuns(_:buffer:by:)  (in libswiftCore.dylib) + 672  [0x1983d6aa0]
+    +                                                             1 _merge<A>(low:mid:high:buffer:by:)  (in libswiftCore.dylib) + 516  [0x1983d5c84]
+    +                                                               1 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 376  [0x1064a3e2c]  /<compiler-generated>:0
+    +                                                                 1 swift_retain  (in libswiftCore.dylib) + 0  [0x19818cae4]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        10047
+        mach_msg2_trap  (in libsystem_kernel.dylib)        4014
+        CFAllocatorDeallocate  (in CoreFoundation)        2013
+        __getdirentries64  (in libsystem_kernel.dylib)        2007
+        __semwait_signal  (in libsystem_kernel.dylib)        2004
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        1762
+        specialized BidirectionalCollection._range<A>(of:anchored:backwards:)  (in Foundation)        87
+        Substring.subscript.getter  (in libswiftCore.dylib)        77
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib)        63
+        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        54
+        <deduplicated_symbol>  (in libswiftCore.dylib)        45
+        getContextDescriptor(swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        41
+        icu::RegexMatcher::MatchAt(long long, signed char, UErrorCode&)  (in libicucore.A.dylib)        41
+        swift_retain  (in libswiftCore.dylib)        37
+        Substring.index(_:offsetBy:)  (in libswiftCore.dylib)        36
+        specialized static String._uncheckedFromUTF8(_:isASCII:)  (in libswiftCore.dylib)        36
+        getSuperclassForMaybeIncompleteMetadata(swift::TargetMetadata<swift::InProcess> const*, std::optional<swift::MetadataState>, bool)  (in libswiftCore.dylib)        35
+        swift_bridgeObjectRelease  (in libswiftCore.dylib)        32
+        swift::MetadataCacheKey::operator==(swift::MetadataCacheKey const&) const  (in libswiftCore.dylib)        29
+        _StringGutsSlice._fastNFCCheck(_:_:)  (in libswiftCore.dylib)        27
+        _allASCII(_:)  (in libswiftCore.dylib)        26
+        _platform_memmove  (in libsystem_platform.dylib)        24
+        _swift_class_getSuperclass  (in libswiftCore.dylib)        24
+        icu::RegexMatcher::find(UErrorCode&)  (in libicucore.A.dylib)        23
+        swift_bridgeObjectRetain  (in libswiftCore.dylib)        22
+        Substring.UnicodeScalarView.index(_:offsetBy:)  (in libswiftCore.dylib)        21
+        _stringCompareWithSmolCheck(_:_:expecting:)  (in libswiftCore.dylib)        21
+        _xzm_free  (in libsystem_malloc.dylib)        19
+        __RawDictionaryStorage.find<A>(_:hashValue:)  (in libswiftCore.dylib)        18
+        _StringGuts.validateInclusiveScalarIndex(_:)  (in libswiftCore.dylib)        17
+        objc_msgSend  (in libobjc.A.dylib)        17
+        swift_release  (in libswiftCore.dylib)        16
+        pthread_getspecific  (in libsystem_pthread.dylib)        15
+        swift::MetadataCacheEntryBase<(anonymous namespace)::SingletonMetadataCacheEntry, int>::awaitSatisfyingState(swift::ConcurrencyControl&, swift::MetadataRequest)  (in libswiftCore.dylib)        14
+        swift::equalContexts(swift::TargetContextDescriptor<swift::InProcess> const*, swift::TargetContextDescriptor<swift::InProcess> const*)  (in libswiftCore.dylib)        14
+        generate  (in libcorecrypto.dylib)        13
+        _xzm_xzone_malloc  (in libsystem_malloc.dylib)        11
+        getattrlistbulk  (in libsystem_kernel.dylib)        11
+        swift::ConcurrentReadableHashMap<swift::HashMapElementWrapper<swift::GenericCacheEntry>, swift::Mutex>::find<swift::MetadataCacheKey>(swift::MetadataCacheKey const&, swift::ConcurrentReadableHashMap<swift::HashMapElementWrapper<swift::GenericCacheEntry>, swift::Mutex>::IndexStorage, unsigned long, swift::HashMapElementWrapper<swift::GenericCacheEntry>*)  (in libswiftCore.dylib)        11

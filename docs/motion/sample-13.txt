@@ -1,0 +1,204 @@
+    737 Thread_82573   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 737 start  (in dyld) + 6992  [0x10271c4e4]
+    +   737 start_sim  (in dyld_sim) + 20  [0x1026330e4]
+    +     737 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x10496c168]  ChronothecaApp.swift:0
+    +       737 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x10496c0bc]  /<compiler-generated>:0
+    +         737 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           737 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             737 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               737 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 737 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   737 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     737 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       737 __CFRunLoopRun  (in CoreFoundation) + 760  [0x180421808]
+    +                         737 __CFRunLoopDoSources0  (in CoreFoundation) + 220  [0x180422634]
+    +                           737 __CFRunLoopDoSource0  (in CoreFoundation) + 168  [0x180422ea4]
+    +                             737 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__  (in CoreFoundation) + 24  [0x180422f5c]
+    +                               737 UC::DriverCore::continueProcessing()  (in UpdateCycle) + 80  [0x2343d22c0]
+    +                                 737 schedulerStepScheduledMainSectionContinue  (in UIKitCore) + 56  [0x1863b6064]
+    +                                   737 _UIUpdateSequenceRunNext  (in UIKitCore) + 120  [0x18590339c]
+    +                                     737 updateCycleEntry  (in UIKitCore) + 172  [0x186359f9c]
+    +                                       737 __processEventQueue  (in UIKitCore) + 4916  [0x186361bc4]
+    +                                         737 __dispatchPreprocessedEventFromEventQueue  (in UIKitCore) + 3528  [0x18635f730]
+    +                                           737 __NSDictionaryEnumerate  (in CoreFoundation) + 468  [0x18040bd40]
+    +                                             737 CFBasicHashApply  (in CoreFoundation) + 136  [0x1804f26c4]
+    +                                               737 ____NSDictionaryEnumerate_block_invoke_2  (in CoreFoundation) + 52  [0x18040c04c]
+    +                                                 737 __NSDICTIONARY_IS_CALLING_OUT_TO_A_BLOCK__  (in CoreFoundation) + 16  [0x18040baf4]
+    +                                                   737 ____updateTouchesWithDigitizerEventAndDetermineIfShouldSend_block_invoke.50  (in UIKitCore) + 108  [0x18635dd5c]
+    +                                                     737 _AddTouchToEventAndDetermineIfNeedsCancel  (in UIKitCore) + 304  [0x18635d864]
+    +                                                       737 -[UITouchesEvent _addTouch:forDelayedDelivery:]  (in UIKitCore) + 756  [0x1869cbfdc]
+    +                                                         737 -[UITouchesEvent _addGestureRecognizersFromContainer:toTouch:forContinuation:]  (in UIKitCore) + 124  [0x1869cbb14]
+    +                                                           737 -[UITouchesEvent _collectGestureRecognizersFromContainer:withBlock:]  (in UIKitCore) + 240  [0x1869cb398]
+    +                                                             737 __68-[UITouchesEvent _collectGestureRecognizersFromContainer:withBlock:]_block_invoke  (in UIKitCore) + 272  [0x1869cb7d8]
+    +                                                               736 __78-[UITouchesEvent _addGestureRecognizersFromContainer:toTouch:forContinuation:]_block_invoke  (in UIKitCore) + 328  [0x1869cbc88]
+    +                                                               ! 736 -[UIGestureRecognizer _shouldReceiveTouch:forEvent:recognizerView:]  (in UIKitCore) + 576  [0x185f218d4]
+    +                                                               !   735 -[UIGestureRecognizer _delegateShouldReceiveTouch:forEvent:]  (in UIKitCore) + 372  [0x185f21dac]
+    +                                                               !   : 735 -[UITextInteraction gestureRecognizer:shouldReceiveTouch:]  (in UIKitCore) + 212  [0x1867be1f8]
+    +                                                               !   :   735 -[UITextSelectionInteraction interaction_gestureRecognizer:shouldReceiveTouch:]  (in UIKitCore) + 236  [0x1867c863c]
+    +                                                               !   :     735 -[UITextInteraction interaction_gestureRecognizer:shouldReceiveTouch:]  (in UIKitCore) + 400  [0x1867be088]
+    +                                                               !   :       735 -[UITextSelectionDisplayInteraction _isManagedSelectionSubview:]  (in UIKitCore) + 72  [0x185ef7cd4]
+    +                                                               !   :         735 -[UITextSelectionDisplayInteraction _allManagedSubviews]  (in UIKitCore) + 44  [0x185ef3fdc]
+    +                                                               !   :           735 -[UITextSelectionDisplayInteraction _managedSubviewsBelowText]  (in UIKitCore) + 68  [0x185ef3f60]
+    +                                                               !   :             735 -[UITextSelectionDisplayInteraction _managedViewForType:]  (in UIKitCore) + 48  [0x185ef3dec]
+    +                                                               !   :               735 -[UITextSelectionDisplayInteraction(Dictation) _trailingGlowView]  (in UIKitCore) + 60  [0x185e80ec0]
+    +                                                               !   :                 501 -[_UITextCursorTrailingGlowView initWithFrame:]  (in UIKitCore) + 156  [0x1866ae7c0]
+    +                                                               !   :                 | 467 -[UIDictationGlowEffect initWithView:]  (in UIKitCore) + 64  [0x186660c94]
+    +                                                               !   :                 | + 467 +[UIKeyboard isInlineDictationGlowEffectEnabled]  (in UIKitCore) + 40  [0x18624007c]
+    +                                                               !   :                 | +   466 _os_feature_enabled_SLOWPATH  (in libsystem_featureflags.dylib) + 1088  [0x1cc2c1ed8]
+    +                                                               !   :                 | +   ! 466 _os_feature_enabled_load  (in libsystem_featureflags.dylib) + 248  [0x1cc2c2380]
+    +                                                               !   :                 | +   !   466 pread  (in libsystem_kernel.dylib) + 8  [0x10285634c]
+    +                                                               !   :                 | +   1 _os_feature_enabled_SLOWPATH  (in libsystem_featureflags.dylib) + 1472  [0x1cc2c2058]
+    +                                                               !   :                 | +     1 _os_feature_enabled_load  (in libsystem_featureflags.dylib) + 172  [0x1cc2c2334]
+    +                                                               !   :                 | +       1 open  (in libsystem_kernel.dylib) + 60  [0x10285f984]
+    +                                                               !   :                 | +         1 __open  (in libsystem_kernel.dylib) + 8  [0x102855588]
+    +                                                               !   :                 | 33 -[UIDictationGlowEffect initWithView:]  (in UIKitCore) + 140  [0x186660ce0]
+    +                                                               !   :                 | + 33 getTUIGlowEffectClass  (in UIKitCore) + 108  [0x186660f18]
+    +                                                               !   :                 | +   33 __getTUIGlowEffectClass_block_invoke  (in UIKitCore) + 92  [0x186661574]
+    +                                                               !   :                 | +     33 _sl_dlopen  (in SoftLinking) + 88  [0x23206b550]
+    +                                                               !   :                 | +       33 dyld4::APIs::dlopen_from(char const*, int, void*)  (in dyld_sim) + 344  [0x10262bb1c]
+    +                                                               !   :                 | +         31 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const  (in dyld_sim) + 184  [0x102630390]
+    +                                                               !   :                 | +         ! 26 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const::'lambda'()::operator()() const  (in dyld_sim) + 1884  [0x102631204]
+    +                                                               !   :                 | +         ! : 26 dyld4::RuntimeState::notifyDebuggerLoad(std::span<dyld4::Loader const*, 18446744073709551615ul> const&)  (in dyld_sim) + 408  [0x10263d7b4]
+    +                                                               !   :                 | +         ! :   26 dyld4::ExternallyViewableState::addImages(lsl::Allocator&, lsl::Allocator&, std::span<dyld4::ExternallyViewableState::ImageInfo, 18446744073709551615ul> const&)  (in dyld_sim) + 496  [0x102640154]
+    +                                                               !   :                 | +         ! :     26 dyld4::ExternallyViewableState::triggerNotifications(dyld_image_mode, unsigned int, dyld_image_info const*)  (in dyld_sim) + 532  [0x10263fea0]
+    +                                                               !   :                 | +         ! :       25 dyld4::ExternallyViewableState::notifyMonitorOfImageListChangesSim(bool, unsigned int, mach_header const**, char const**)  (in dyld) + 792  [0x10273636c]
+    +                                                               !   :                 | +         ! :       | 24 invocation function for block in dyld4::ExternallyViewableState::notifyMonitorOfImageListChangesSim(bool, unsigned int, mach_header const**, char const**)  (in dyld) + 2852  [0x102739ef0]
+    +                                                               !   :                 | +         ! :       | + 24 dyld4::ExternallyViewableState::triggerNotifications(dyld_image_mode, unsigned int, dyld_image_info const*)  (in dyld) + 296  [0x102737524]
+    +                                                               !   :                 | +         ! :       | +   24 dyld4::RemoteNotificationResponder::blockOnSynchronousEvent(unsigned int)  (in dyld) + 48  [0x10277dc90]
+    +                                                               !   :                 | +         ! :       | +     24 dyld4::RemoteNotificationResponder::sendMessage(int, unsigned int, mach_msg_header_t*)  (in dyld) + 244  [0x10277d904]
+    +                                                               !   :                 | +         ! :       | +       24 mach_msg_overwrite  (in dyld) + 244  [0x10279718c]
+    +                                                               !   :                 | +         ! :       | +         24 mach_msg2_internal  (in dyld) + 76  [0x102796fe4]
+    +                                                               !   :                 | +         ! :       | +           24 mach_msg2_trap  (in dyld) + 8  [0x1026fd72c]
+    +                                                               !   :                 | +         ! :       | 1 invocation function for block in dyld4::ExternallyViewableState::notifyMonitorOfImageListChangesSim(bool, unsigned int, mach_header const**, char const**)  (in dyld) + 3228  [0x10273a068]
+    +                                                               !   :                 | +         ! :       |   1 lsl::Allocator::~Allocator()  (in dyld) + 36  [0x10277bb2c]
+    +                                                               !   :                 | +         ! :       |     1 mach_vm_deallocate  (in dyld) + 40  [0x1026ffde4]
+    +                                                               !   :                 | +         ! :       |       1 _kernelrpc_mach_vm_deallocate_trap  (in dyld) + 8  [0x1026fd5a0]
+    +                                                               !   :                 | +         ! :       1 dyld4::ExternallyViewableState::notifyMonitorOfImageListChangesSim(bool, unsigned int, mach_header const**, char const**)  (in dyld) + 760  [0x10273634c]
+    +                                                               !   :                 | +         ! :         1 lsl::MemoryManager::writeProtect(bool)  (in dyld) + 848  [0x10277b880]
+    +                                                               !   :                 | +         ! :           1 lsl::Allocator::forEachVMAllocatedBuffer(void (lsl::MemoryManager::Buffer const&) block_pointer)  (in dyld) + 116  [0x10277bbe8]
+    +                                                               !   :                 | +         ! :             1 invocation function for block in lsl::Allocator::forEachVMAllocatedBuffer(void (lsl::MemoryManager::Buffer const&) block_pointer)  (in dyld) + 0  [0x10277bc00]
+    +                                                               !   :                 | +         ! 3 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const::'lambda'()::operator()() const  (in dyld_sim) + 996  [0x102630e8c]
+    +                                                               !   :                 | +         ! : 3 dyld4::JustInTimeLoader::applyFixups(Diagnostics&, dyld4::RuntimeState&, dyld4::DyldCacheDataConstLazyScopedWriter&, bool, lsl::Vector<std::pair<dyld4::Loader const*, char const*>>*) const  (in dyld_sim) + 84  [0x102642384]
+    +                                                               !   :                 | +         ! :   3 dyld4::Loader::applyFixupsCheckCachePatching(dyld4::RuntimeState&, dyld4::DyldCacheDataConstLazyScopedWriter&) const  (in dyld_sim) + 92  [0x10264b2c0]
+    +                                                               !   :                 | +         ! :     3 dyld4::Loader::applyCachePatchesTo(dyld4::RuntimeState&, dyld4::Loader const*, dyld4::DyldCacheDataConstLazyScopedWriter&) const  (in dyld_sim) + 96  [0x10264b33c]
+    +                                                               !   :                 | +         ! :       2 dyld4::Loader::applyCachePatchesToOverride(dyld4::RuntimeState&, dyld4::Loader const*, unsigned short, dyld4::Loader::DylibPatch const*, dyld4::DyldCacheDataConstLazyScopedWriter&) const  (in dyld_sim) + 264  [0x10264aef8]
+    +                                                               !   :                 | +         ! :       | 2 DyldSharedCache::forEachPatchableExport(unsigned int, void (unsigned int, char const*, PatchKind) block_pointer) const  (in dyld_sim) + 328  [0x10264e8e8]
+    +                                                               !   :                 | +         ! :       |   2 PatchTableV2::forEachPatchableExport(unsigned int, void (unsigned int, char const*, PatchKind) block_pointer) const  (in dyld_sim) + 156  [0x10264c870]
+    +                                                               !   :                 | +         ! :       |     2 invocation function for block in dyld4::Loader::applyCachePatchesToOverride(dyld4::RuntimeState&, dyld4::Loader const*, unsigned short, dyld4::Loader::DylibPatch const*, dyld4::DyldCacheDataConstLazyScopedWriter&) const  (in dyld_sim) + 248  [0x10264b084]
+    +                                                               !   :                 | +         ! :       |       2 DyldSharedCache::forEachPatchableUseOfExportInImage(unsigned int, unsigned int, unsigned int, void (unsigned int, dyld3::MachOFile::PointerMetaData, unsigned long long, bool) block_pointer) const  (in dyld_sim) + 972  [0x10264ed28]
+    +                                                               !   :                 | +         ! :       |         1 PatchTableV4::forEachPatchableUseOfExportInImage(unsigned int, unsigned int, unsigned int, void (unsigned int, dyld3::MachOFile::PointerMetaData, unsigned long long, bool) block_pointer) const  (in dyld_sim) + 200  [0x10264cab0]
+    +                                                               !   :                 | +         ! :       |         + 1 invocation function for block in dyld4::Loader::applyCachePatchesToOverride(dyld4::RuntimeState&, dyld4::Loader const*, unsigned short, dyld4::Loader::DylibPatch const*, dyld4::DyldCacheDataConstLazyScopedWriter&) const  (in dyld_sim) + 52  [0x10264b0d0]
+    +                                                               !   :                 | +         ! :       |         +   1 dyld4::ProcessConfig::DyldCache::makeDataConstWritable(dyld4::ProcessConfig::Logging const&, dyld4::SyscallDelegate const&, bool) const  (in dyld_sim) + 96  [0x102636920]
+    +                                                               !   :                 | +         ! :       |         +     1 DyldSharedCache::forEachCache(void (DyldSharedCache const*, bool&) block_pointer) const  (in dyld_sim) + 56  [0x10264d9a4]
+    +                                                               !   :                 | +         ! :       |         +       1 invocation function for block in dyld4::ProcessConfig::DyldCache::makeDataConstWritable(dyld4::ProcessConfig::Logging const&, dyld4::SyscallDelegate const&, bool) const  (in dyld_sim) + 96  [0x102636b44]
+    +                                                               !   :                 | +         ! :       |         +         1 DyldSharedCache::forEachRegion(void (void const*, unsigned long long, unsigned long long, unsigned int, unsigned int, unsigned long long, unsigned long long, bool&) block_pointer) const  (in dyld_sim) + 268  [0x10264d954]
+    +                                                               !   :                 | +         ! :       |         +           1 invocation function for block in dyld4::ProcessConfig::DyldCache::makeDataConstWritable(dyld4::ProcessConfig::Logging const&, dyld4::SyscallDelegate const&, bool) const  (in dyld_sim) + 124  [0x102636bcc]
+    +                                                               !   :                 | +         ! :       |         +             1 vm_protect  (in dyld) + 52  [0x1027013ec]
+    +                                                               !   :                 | +         ! :       |         +               1 _kernelrpc_mach_vm_protect_trap  (in dyld) + 8  [0x1026fd5b8]
+    +                                                               !   :                 | +         ! :       |         1 PatchTableV4::forEachPatchableUseOfExportInImage(unsigned int, unsigned int, unsigned int, void (unsigned int, dyld3::MachOFile::PointerMetaData, unsigned long long, bool) block_pointer) const  (in dyld_sim) + 84  [0x10264ca3c]
+    +                                                               !   :                 | +         ! :       1 dyld4::Loader::applyCachePatchesToOverride(dyld4::RuntimeState&, dyld4::Loader const*, unsigned short, dyld4::Loader::DylibPatch const*, dyld4::DyldCacheDataConstLazyScopedWriter&) const  (in dyld_sim) + 100  [0x10264ae54]
+    +                                                               !   :                 | +         ! :         1 DyldSharedCache::shouldPatchClientOfImage(unsigned int, unsigned int) const  (in dyld_sim) + 76  [0x10264e950]
+    +                                                               !   :                 | +         ! :           1 PatchTableV2::imageHasClient(unsigned int, unsigned int) const  (in dyld_sim) + 40  [0x10264c768]
+    +                                                               !   :                 | +         ! 1 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const::'lambda'()::operator()() const  (in dyld_sim) + 280  [0x102630bc0]
+    +                                                               !   :                 | +         ! : 1 dyld4::Loader::getLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 828  [0x102645a70]
+    +                                                               !   :                 | +         ! :   1 dyld4::Loader::forEachPath(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer)  (in dyld_sim) + 236  [0x102645378]
+    +                                                               !   :                 | +         ! :     1 dyld4::ProcessConfig::PathOverrides::forEachPathVariant(char const*, mach_o::Platform, bool, bool, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer) const  (in dyld_sim) + 356  [0x1026385d0]
+    +                                                               !   :                 | +         ! :       1 dyld4::ProcessConfig::PathOverrides::forEachInColonList(char const*, char const*, bool&, void (char const*, bool&) block_pointer)  (in dyld_sim) + 224  [0x102637860]
+    +                                                               !   :                 | +         ! :         1 invocation function for block in dyld4::ProcessConfig::PathOverrides::forEachPathVariant(char const*, mach_o::Platform, bool, bool, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer) const  (in dyld_sim) + 164  [0x102638dfc]
+    +                                                               !   :                 | +         ! :           1 dyld4::Loader::forEachResolvedAtPathVar(dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&, dyld4::ProcessConfig::PathOverrides::Type, bool&, void (char const*, dyld4::ProcessConfig::PathOverrides::Type, bool&) block_pointer)  (in dyld_sim) + 468  [0x1026456f4]
+    +                                                               !   :                 | +         ! :             1 invocation function for block in dyld4::Loader::getLoader(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 252  [0x102645f00]
+    +                                                               !   :                 | +         ! :               1 dyld4::JustInTimeLoader::matchesPath(dyld4::RuntimeState const&, char const*) const  (in dyld_sim) + 56  [0x102641168]
+    +                                                               !   :                 | +         ! :                 1 mach_o::UnsafeHeader::installName() const  (in dyld_sim) + 40  [0x102666d70]
+    +                                                               !   :                 | +         ! :                   1 mach_o::UnsafeHeader::getDylibInstallName(char const**, mach_o::Version32*, mach_o::Version32*) const  (in dyld_sim) + 104  [0x102668170]
+    +                                                               !   :                 | +         ! :                     1 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 44  [0x102666980]
+    +                                                               !   :                 | +         ! 1 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const::'lambda'()::operator()() const  (in dyld_sim) + 656  [0x102630d38]
+    +                                                               !   :                 | +         !   1 dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 136  [0x102641bec]
+    +                                                               !   :                 | +         !     1 mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 144  [0x1026683f4]
+    +                                                               !   :                 | +         !       1 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x102666a1c]
+    +                                                               !   :                 | +         !         1 invocation function for block in mach_o::UnsafeHeader::forEachLinkedDylib(void (char const*, mach_o::LinkedDylibAttributes, mach_o::Version32, mach_o::Version32, bool, bool&) block_pointer) const  (in dyld_sim) + 128  [0x1026686a8]
+    +                                                               !   :                 | +         !           1 invocation function for block in dyld4::JustInTimeLoader::loadDependents(Diagnostics&, dyld4::RuntimeState&, dyld4::Loader::LoadOptions const&)  (in dyld_sim) + 232  [0x102641dd8]
+    +                                                               !   :                 | +         !             1 dyld4::JustInTimeLoader::matchesPath(dyld4::RuntimeState const&, char const*) const  (in dyld_sim) + 56  [0x102641168]
+    +                                                               !   :                 | +         !               1 mach_o::UnsafeHeader::installName() const  (in dyld_sim) + 40  [0x102666d70]
+    +                                                               !   :                 | +         !                 1 mach_o::UnsafeHeader::getDylibInstallName(char const**, mach_o::Version32*, mach_o::Version32*) const  (in dyld_sim) + 104  [0x102668170]
+    +                                                               !   :                 | +         !                   1 mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim) + 200  [0x102666a1c]
+    +                                                               !   :                 | +         !                     1 invocation function for block in mach_o::UnsafeHeader::getDylibInstallName(char const**, mach_o::Version32*, mach_o::Version32*) const  (in dyld_sim) + 16  [0x1026681b0]
+    +                                                               !   :                 | +         2 dyld4::APIs::dlopen_from(char const*, int, void*)::$_0::operator()() const  (in dyld_sim) + 1032  [0x1026306e0]
+    +                                                               !   :                 | +           2 dyld4::RuntimeState::notifyLoad(std::span<dyld4::Loader const*, 18446744073709551615ul> const&)  (in dyld_sim) + 852  [0x10263dd6c]
+    +                                                               !   :                 | +             2 map_images  (in libobjc.A.dylib) + 72  [0x1800492fc]
+    +                                                               !   :                 | +               1 map_images_nolock  (in libobjc.A.dylib) + 5388  [0x18005c92c]
+    +                                                               !   :                 | +               : 1 load_categories_nolock(header_info*)  (in libobjc.A.dylib) + 224  [0x180049640]
+    +                                                               !   :                 | +               :   1 load_categories_nolock(header_info*)::$_0::operator()(category_t* const*, bool) const  (in libobjc.A.dylib) + 404  [0x1800498b0]
+    +                                                               !   :                 | +               :     1 attachCategories(objc_class*, locstamped_category_t const*, unsigned int, objc_class*, int)  (in libobjc.A.dylib) + 696  [0x1800440f0]
+    +                                                               !   :                 | +               :       1 attachCategories(objc_class*, locstamped_category_t const*, unsigned int, objc_class*, int)::$_0::operator()(attachCategories(objc_class*, locstamped_category_t const*, unsigned int, objc_class*, int)::Lists*, bool) const  (in libobjc.A.dylib) + 200  [0x18004453c]
+    +                                                               !   :                 | +               :         1 flushCaches(objc_class*, char const*, bool (objc_class*) block_pointer)  (in libobjc.A.dylib) + 148  [0x180044c48]
+    +                                                               !   :                 | +               :           1 invocation function for block in flushCaches(objc_class*, char const*, bool (objc_class*) block_pointer)  (in libobjc.A.dylib) + 48  [0x180044dc0]
+    +                                                               !   :                 | +               1 map_images_nolock  (in libobjc.A.dylib) + 4340  [0x18005c514]
+    +                                                               !   :                 | 1 -[UIDictationGlowEffect initWithView:]  (in UIKitCore) + 164  [0x186660cf8]
+    +                                                               !   :                 |   1 _objc_msgSend_uncached  (in libobjc.A.dylib) + 64  [0x18003af00]
+    +                                                               !   :                 |     1 lookUpImpOrForward  (in libobjc.A.dylib) + 312  [0x18005340c]
+    +                                                               !   :                 |       1 getMethodNoSuper_nolock(objc_class*, objc_selector*)  (in libobjc.A.dylib) + 1136  [0x180045d00]
+    +                                                               !   :                 234 -[_UITextCursorTrailingGlowView initWithFrame:]  (in UIKitCore) + 308  [0x1866ae858]
+    +                                                               !   :                   234 -[UIDictationGlowEffect setTintColor:]  (in UIKitCore) + 292  [0x186661080]
+    +                                                               !   :                     234 -[UIDynamicColor CGColor]  (in UIKitCore) + 60  [0x185f74574]
+    +                                                               !   :                       234 -[UIDynamicModifiedColor _resolvedColorWithTraitCollection:]  (in UIKitCore) + 276  [0x185f74d64]
+    +                                                               !   :                         234 -[UIDynamicCatalogSystemColor _resolvedColorWithTraitCollection:]  (in UIKitCore) + 264  [0x185f75cb8]
+    +                                                               !   :                           234 +[CUIDesignLibrary colorWithTraits:error:]  (in CoreUI) + 48  [0x197996d34]
+    +                                                               !   :                             234 +[CUIDesignLibrary colorWithName:designSystem:palette:colorScheme:contrast:styling:displayGamut:hierarchyLevel:error:]  (in CoreUI) + 180  [0x197996e58]
+    +                                                               !   :                               234 -[CUIDesignLibraryCompositeCatalog colorWithName:palette:displayGamut:hierarchyLevel:error:]  (in CoreUI) + 184  [0x1979c16e8]
+    +                                                               !   :                                 234 -[CUIDesignLibraryCatalog colorWithName:palette:displayGamut:hierarchyLevel:error:]  (in CoreUI) + 284  [0x1979c0e08]
+    +                                                               !   :                                   234 -[CUIStructuredThemeStore getPhysicalColor:withName:]  (in CoreUI) + 64  [0x1979d8d40]
+    +                                                               !   :                                     234 -[CUICommonAssetStorage getColor:forName:]  (in CoreUI) + 264  [0x1979cd870]
+    +                                                               !   :                                       234 BOMTreeReadValue  (in CoreUI) + 236  [0x197a1e63c]
+    +                                                               !   :                                         234 BOMStorageReadFromBlock  (in CoreUI) + 120  [0x197a1afac]
+    +                                                               !   1 -[UIGestureRecognizer _delegateShouldReceiveTouch:forEvent:]  (in UIKitCore) + 128  [0x185f21cb8]
+    +                                                               !     1 -[UIScrollView _gestureRecognizer:shouldReceiveTouch:]  (in UIKitCore) + 144  [0x186a29b14]
+    +                                                               !       1 -[UIEventEnvironment _touchesEventForWindow:]  (in UIKitCore) + 28  [0x1863578c4]
+    +                                                               !         1 -[UIEventEnvironment _findTouchesEventWindowSceneForKeyboardWindowIfNeeded:]  (in UIKitCore) + 84  [0x18635974c]
+    +                                                               !           1 +[_UIRemoteKeyboards enabled]  (in UIKitCore) + 60  [0x1862b5cb4]
+    +                                                               !             1 _UIMainBundleIdentifier  (in UIKitCore) + 0  [0x186924ce8]
+    +                                                               1 __78-[UITouchesEvent _addGestureRecognizersFromContainer:toTouch:forContinuation:]_block_invoke  (in UIKitCore) + 52  [0x1869cbb74]
+    +                                                                 1 -[UIGestureRecognizer isEnabled]  (in UIKitCore) + 56  [0x185f1ce58]
+    +                                                                   1 ???  (in Gestures)  load address 0x1dd53d000 + 0x66c8  [0x1dd5436c8]
+    +                                                                     1 ???  (in Gestures)  load address 0x1dd53d000 + 0x716c  [0x1dd54416c]
+    +                                                                       1 ???  (in Gestures)  load address 0x1dd53d000 + 0xc790  [0x1dd549790]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        2874
+        mach_msg2_trap  (in libsystem_kernel.dylib)        737
+        semaphore_wait_trap  (in libsystem_kernel.dylib)        737
+        pread  (in libsystem_kernel.dylib)        466
+        BOMStorageReadFromBlock  (in CoreUI)        234
+        __getdirentries64  (in libsystem_kernel.dylib)        70
+        mach_msg2_trap  (in dyld)        24
+
+Binary Images:
+       0x102618000 -        0x10261b507 +com.kobiashvili.diary (1.0 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/B6FC2556-D5C5-4D58-A9C7-6E2B604BC1CD/Chronotheca.app/Chronotheca
+       0x102628000 -        0x102676e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x1026fc000 -        0x1027af523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
+       0x102854000 -        0x10288eee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
+       0x1028e4000 -        0x10292765f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x102a38000 -        0x102a403d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
+       0x102ae0000 -        0x102aec10b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
+       0x102b70000 -        0x102c092af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x1032f4000 -        0x1032f6dff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x103310000 -        0x10331803f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x103424000 -        0x103424b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x103434000 -        0x10343f39f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x103458000 -        0x10345be5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x103478000 -        0x10348149f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x10349c000 -        0x1034a2b7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x1034e4000 -        0x1034e86ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
+       0x103850000 -        0x1038572df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
+       0x103870000 -        0x103875407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
+       0x10396c000 -        0x10398527f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
+       0x1039e0000 -        0x1039e31ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
+       0x103a90000 -        0x103cebbbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+       0x104344000 -        0x1043977bf  com.apple.dt.XCTAutomationSupport (26.5 - 24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
+       0x104800000 -        0x104826f5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
+       0x104888000 -        0x105136e9f +Chronotheca.debug.dylib (0) <7969DAA6-235A-3D9C-8F96-4375093AE44B> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/B6FC2556-D5C5-4D58-A9C7-6E2B604BC1CD/Chronotheca.app/Chronotheca.debug.dylib
+       0x105efc000 -        0x105f3615f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
+       0x108af8000 -        0x108b1acff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
+       0x108b50000 -        0x108b845bf  com.apple.MTLSimDriver (373.2 - 373.2) <8339CA77-3986-3588-9DF9-8B8D511AE608> /Volumes/*/MTLSimDriver.framework/MTLSimDriver
+       0x109000000 -        0x10902e27f  com.apple.gpusw.MetalSerializer (1.0 - 1) <19460939-4BCE-3E8D-8868-5388DD78ACE3> /Volumes/*/MetalSerializer.framework/MetalSerializer
+       0x109184000 -        0x1091f3cbf  com.apple.UIUnderstanding (1.0 - 1) <576E64EB-8AA4-3B1E-A89D-365C4DE0C7C8> /Volumes/*/UIUnderstanding.framework/UIUnderstanding
+       0x1097ec000 -        0x1099dfd3f  com.apple.UIKit.axbundle (1.0.0 - 1.0) <D3D808D1-AB02-3566-B2DD-1B139F8E9569> /Volumes/*/UIKit
