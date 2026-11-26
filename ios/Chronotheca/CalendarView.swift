@@ -124,6 +124,45 @@ struct CalendarView: View {
     /// вверх-вниз; что вверху — то в шапке. Список дел выбранного дня — под
     /// его месяцем.
     private var stream: some View {
+        GeometryReader { geo in
+            // «Месяц» (P1067, автор по записи экрана: «следующие месяцы
+            // появляются щелчком, скачком, будто подскакивают снизу»):
+            // листается только полоса высотой с сетку месяца — месяцы лежат
+            // вплотную, и следующий въезжает сразу за текущим. Прежде страница
+            // была во весь экран: под сеткой — пустой низ, и при ходе вниз
+            // сначала въезжала пустота, а сетка нового месяца появлялась
+            // наверху в самом конце хода. Список дел выбранного дня — ниже
+            // полосы, на месте. «Год» — по-прежнему страницей на экран.
+            let strip = kind == .month ? min(geo.size.height, monthHeight(width: geo.size.width)) : geo.size.height
+            VStack(spacing: 0) {
+                months.frame(height: strip)
+                if kind == .month {
+                    Rectangle().fill(Look.rule).frame(height: 1).padding(.vertical, 8)
+                    // Дела дня — своей прокруткой в остатке экрана (P792).
+                    ZStack(alignment: .top) {
+                        if listHere(period(shown)) {
+                            ScrollView { dayList.padding(.bottom, 12) }
+                                .transition(.opacity)
+                        }
+                    }
+                    .frame(maxHeight: .infinity, alignment: .top)
+                    .animation(.easeOut(duration: 0.2), value: period(shown))
+                }
+            }
+        }
+        // Тот же тёплый стол, что под поиском (P755).
+        .background(Desk())
+    }
+
+    /// Высота полосы «Месяца»: шесть недель квадратных клеток, строка дней
+    /// недели и сводка — у всех месяцев одна, лента не дёргается (P792).
+    private func monthHeight(width: CGFloat) -> CGFloat {
+        let cell = (width - 6 - 6) / 7
+        let words: CGFloat = 70 * max(1, Prefs.textScale)
+        return 10 + words + cell * 6 + 6
+    }
+
+    private var months: some View {
         let list = periods()
         return ScrollView {
             LazyVStack(spacing: 0) {
@@ -144,8 +183,6 @@ struct CalendarView: View {
             let keep = keepMonth(now)
             if shown != keep { shown = keep }
         })
-        // Тот же тёплый стол, что под поиском (P755).
-        .background(Desk())
     }
 
     /// Встал год — месяц остаётся прежним (P822): прежде `shown` становился
@@ -167,9 +204,9 @@ struct CalendarView: View {
         return (-back...ahead).compactMap { cal.date(byAdding: unit, value: $0, to: home) }
     }
 
-    /// Один месяц или год ленты — ровно на экран (P792): сетка, под ней
-    /// дела выбранного дня. Высота у всех страниц одна, и ленте не
-    /// приходится угадывать её на ходу — не дёргается. Своего названия у
+    /// Один месяц или год ленты — ровно на полосу (P792, P1067): у месяца
+    /// сетка и сводка, у года — весь экран. Высота у всех страниц одна, и
+    /// ленте не приходится угадывать её на ходу — не дёргается. Своего названия у
     /// страницы нет (P1007): месяц или год уже написан в шапке со
     /// стрелками, вторая такая же строка под «Год / Месяц» была повтором.
     private func section(_ p: Date) -> some View {
@@ -180,7 +217,7 @@ struct CalendarView: View {
                 yearGrid(of: p)
                 Spacer(minLength: 0)
             case .month:
-                monthGrid(of: p, current: listHere(p))
+                monthGrid(of: p)
             }
         }
         .containerRelativeFrame(.vertical, alignment: .top)
@@ -418,7 +455,7 @@ struct CalendarView: View {
     /// окошечки, без лишнего промежутка между кадрами; закругление
     /// оставить»): снимок дня в клетке — кадриком, а не полоской. Сетка от
     /// этого выше прежней, место списку дел внизу — меньше.
-    private func monthGrid(of date: Date, current: Bool) -> some View {
+    private func monthGrid(of date: Date) -> some View {
         let cells = MonthGrid.cells(of: date, calendar: cal, firstWeekday: cal.firstWeekday)
         let today = Vault.stamp(DayStore.today())
 
@@ -441,15 +478,8 @@ struct CalendarView: View {
             .padding(.horizontal, 3)
 
             monthStats(cells)
-            Rectangle().fill(Look.rule).frame(height: 1).padding(.vertical, 10)
-            // Дела дня — своей прокруткой в остатке страницы (P792).
-            if current {
-                ScrollView { dayList.padding(.bottom, 12) }
-            } else {
-                Spacer(minLength: 0)
-            }
+            Spacer(minLength: 0)
         }
-        .padding(.bottom, 20)
     }
 
     /// Тихая сводка месяца (P466): сколько дней записано и сколько дел
