@@ -831,6 +831,8 @@ struct DiaryEditor: UIViewRepresentable {
                                          length: moved.length)
             placing = false
             parent.onWrite?()
+            // Своя правка — не диктовка (P1091).
+            asked = true
             textViewDidChange(view)
             return true
         }
@@ -846,8 +848,18 @@ struct DiaryEditor: UIViewRepresentable {
             // а правка поля в этот миг выключала диктовку через несколько букв
             // (P881, автор по 269). Пока с последнего её следа не прошло двух
             // секунд, она всё ещё идёт.
+            // Тихая диктовка (P1091) знака о себе не подаёт, кроме самих
+            // слов: между фразами бывают паузы в несколько секунд, а правка
+            // поля посреди диктовки её обрывает (P815). Время уже нарисовано
+            // — вписать его в текст можно и позже.
             return now || Date().timeIntervalSince(dictationSeen) < dictationTail
+                || Date().timeIntervalSince(spokenSeen) < spokenTail
         }
+
+        /// Когда последний раз пришли слова тихой диктовки (P1091).
+        static var spokenSeen = Date.distantPast
+        /// Сколько после них поле ещё не правит текст.
+        static let spokenTail: TimeInterval = 8
 
         /// Когда последний раз видели диктовку в поле.
         private static var dictationSeen = Date.distantPast
@@ -2261,6 +2273,9 @@ struct DiaryEditor: UIViewRepresentable {
 
         /// Длина текста при прошлой правке — для следа диктовки (P1088).
         private var lastLength = 0
+        /// Правку спрашивали через `shouldChangeTextIn` — значит, она с
+        /// клавиатуры, вставка или подсказка, а не тихая диктовка (P1091).
+        private var asked = false
 
         func textViewDidChange(_ view: UITextView) {
             if stampGhost != nil { placeGhost(view) }
@@ -2276,6 +2291,21 @@ struct DiaryEditor: UIViewRepresentable {
                                 + "временный текст \(marked ? "да" : "нет"), ввод \(mode), "
                                 + "диктовка \(Self.dictating(view) ? "да" : "нет")")
             }
+            // Диктовка нынешнего iPhone (P1091, автор: «слова появляются
+            // постепенно, по ходу речи»): слова ложатся в поле без
+            // временного текста и без смены способа ввода, и мимо вопроса
+            // «можно ли вписать» — поле узнавало о диктовке только по её
+            // последней правке, в конце. Теперь: прибыло несколько знаков
+            // разом, а вопроса не было — это диктовка; запомнить строку и
+            // нарисовать время сразу.
+            let grown = length - lastLength
+            if !asked, !placing, grown > 1 {
+                Self.spokenSeen = Date()
+                StampTrace.note("диктовка: слова пришли без клавиатуры")
+                let sel = view.selectedRange
+                noteDictation(view, at: max(0, sel.location - grown), end: NSMaxRange(sel))
+            }
+            asked = false
             lastLength = length
             // Диктовка пишет — запомнить её строку; отпустила — время в
             // начало строки, если его там нет (P869).
@@ -2330,6 +2360,7 @@ struct DiaryEditor: UIViewRepresentable {
         /// первая буква должна вести себя так же.
         func textView(_ view: UITextView, shouldChangeTextIn range: NSRange,
                       replacementText text: String) -> Bool {
+            asked = true
             typedLetters = text.contains { !$0.isWhitespace && $0 != "\u{FFFC}" }
             // Диктовка пишет сама (P815): правка вместо неё и «нет» в ответ
             // сбивали ей место — слова ложились вокруг других слов, а первая
