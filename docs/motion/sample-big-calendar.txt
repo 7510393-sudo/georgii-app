@@ -1,0 +1,103 @@
+    1158 Thread_50502   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 1158 start  (in dyld) + 6992  [0x1005244e4]
+    +   1158 start_sim  (in dyld_sim) + 20  [0x1003a70e4]
+    +     1158 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x1025a46e8]  ChronothecaApp.swift:0
+    +       1158 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1025a463c]  /<compiler-generated>:0
+    +         1158 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           1158 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             1158 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               1158 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 1158 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   1158 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     1158 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       1156 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    +                       ! 1156 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    +                       !   1156 mach_msg  (in libsystem_kernel.dylib) + 20  [0x10025cef0]
+    +                       !     1156 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x100264c44]
+    +                       !       1156 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x10026de84]
+    +                       !         1156 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x10025cb70]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 1412  [0x180421a94]
+    +                       ! 1 CFAbsoluteTimeGetCurrent  (in CoreFoundation) + 44  [0x1804bbec4]
+    +                       !   1 clock_gettime  (in libsystem_c.dylib) + 252  [0x1801091bc]
+    +                       !     1 gettimeofday  (in libsystem_c.dylib) + 52  [0x18011b468]
+    +                       !       1 __commpage_gettimeofday_internal  (in libsystem_kernel.dylib) + 40  [0x10025e894]
+    +                       !         1 mach_absolute_time  (in libsystem_kernel.dylib) + 28  [0x10025cfe0]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 2100  [0x180421d44]
+    +                         1 __CFRunLoopDoSource1  (in CoreFoundation) + 476  [0x180422c78]
+    +                           1 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE1_PERFORM_FUNCTION__  (in CoreFoundation) + 56  [0x180423628]
+    +                             1 __CFMachPortPerform  (in CoreFoundation) + 164  [0x1803e6c50]
+    +                               1 UC::DriverCore::continueProcessing()  (in UpdateCycle) + 80  [0x2343d22c0]
+    +                                 1 schedulerStepScheduledMainSectionContinue  (in UIKitCore) + 56  [0x1863b6064]
+    +                                   1 _UIUpdateSequenceRunNext  (in UIKitCore) + 120  [0x18590339c]
+    +                                     1 ???  (in UIKitCore)  load address 0x185289000 + 0x169788  [0x1853f2788]
+    +                                       1 ???  (in UIKitCore)  load address 0x185289000 + 0x169c88  [0x1853f2c88]
+    +                                         1 static ViewGraphHostUpdate.dispatchImmediately<A>(_:)  (in SwiftUICore) + 40  [0x1d3a49218]
+    +                                           1 static Update.dispatchImmediately<A>(reason:_:)  (in SwiftUICore) + 332  [0x1d3d0a8c4]
+    +                                             1 ???  (in UIKitCore)  load address 0x185289000 + 0x1ea30  [0x1852a7a30]
+    +                                               1 ???  (in UIKitCore)  load address 0x185289000 + 0x169994  [0x1853f2994]
+    +                                                 1 ???  (in UIKitCore)  load address 0x185289000 + 0xac264  [0x185335264]
+    +                                                   1 partial apply for closure #1 in closure #1 in _UIHostingView.beginTransaction()  (in SwiftUI) + 64  [0x1d295e28c]
+    +                                                     1 static Update.ensure<A>(_:)  (in SwiftUICore) + 96  [0x1d3d0a2f0]
+    +                                                       1 closure #1 in static Update.ensure<A>(_:)  (in SwiftUICore) + 48  [0x1d3d0b718]
+    +                                                         1 partial apply for closure #1 in closure #1 in closure #1 in _UIHostingView.beginTransaction()  (in SwiftUI) + 20  [0x1d295e2b0]
+    +                                                           1 closure #1 in closure #1 in closure #1 in _UIHostingView.beginTransaction()  (in SwiftUI) + 144  [0x1d2954830]
+    +                                                             1 ViewGraphRootValueUpdater.updateGraph<A>(body:)  (in SwiftUICore) + 136  [0x1d43bf084]
+    +                                                               1 ViewGraphRootValueUpdater._updateViewGraph<A>(body:)  (in SwiftUICore) + 200  [0x1d43c079c]
+    +                                                                 1 <deduplicated_symbol>  (in SwiftUICore) + 20  [0x1d41904c0]
+    +                                                                   1 <deduplicated_symbol>  (in SwiftUI) + 20  [0x1d2954860]
+    +                                                                     1 GraphHost.flushTransactions()  (in SwiftUICore) + 176  [0x1d3f322dc]
+    +                                                                       1 specialized GraphHost.runTransaction(_:do:id:)  (in SwiftUICore) + 352  [0x1d3f4ca50]
+    +                                                                         1 AG::Subgraph::update(unsigned int)  (in AttributeGraph) + 952  [0x1c42da590]
+    +                                                                           1 AG::Graph::UpdateStack::update()  (in AttributeGraph) + 488  [0x1c42cb6c0]
+    +                                                                             1 partial apply for implicit closure #1 in closure #1 in closure #1 in Attribute.init<A>(_:)  (in SwiftUICore) + 28  [0x1d3a882d4]
+    +                                                                               1 DynamicBody.updateValue()  (in SwiftUICore) + 840  [0x1d3d0744c]
+    +                                                                                 1 closure #1 in DynamicBody.updateValue()  (in SwiftUICore) + 936  [0x1d3d07af4]
+    +                                                                                   1 protocol witness for BodyAccessor.updateBody(of:changed:) in conformance ViewBodyAccessor<A>  (in SwiftUICore) + 12  [0x1d3be116c]
+    +                                                                                     1 ViewBodyAccessor.updateBody(of:changed:)  (in SwiftUICore) + 180  [0x1d3be0cc4]
+    +                                                                                       1 closure #1 in ViewBodyAccessor.updateBody(of:changed:)  (in SwiftUICore) + 864  [0x1d3be1054]
+    +                                                                                         1 protocol witness for View.body.getter in conformance SearchView  (in Chronotheca.debug.dylib) + 52  [0x102af63f8]  /<compiler-generated>:0
+    +                                                                                           1 SearchView.body.getter  (in Chronotheca.debug.dylib) + 532  [0x102ad5f0c]  SearchView.swift:38
+    +                                                                                             1 SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 556  [0x102ad668c]  SearchView.swift:263
+    +                                                                                               1 _ArrayProtocol.filter(_:)  (in libswiftCore.dylib) + 504  [0x1982709dc]
+    +                                                                                                 1 _platform_memmove  (in libsystem_platform.dylib) + 12  [0x1002df0bc]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        5784
+        mach_msg2_trap  (in libsystem_kernel.dylib)        2317
+        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        1187
+        __semwait_signal  (in libsystem_kernel.dylib)        1153
+        generationCountFromListOfSources  (in CoreFoundation)        109
+        objc_msgSend  (in libobjc.A.dylib)        46
+        __CF_IS_OBJC  (in CoreFoundation)        44
+        pthread_getspecific  (in libsystem_pthread.dylib)        41
+        pthread_setspecific  (in libsystem_pthread.dylib)        31
+        _CFStringGetCStringPtrInternal  (in CoreFoundation)        28
+        static PageTexture.smooth(_:_:_:_:_:)  (in Chronotheca.debug.dylib)        28
+        -[__NSDictionaryM objectForKey:]  (in CoreFoundation)        27
+        CFStringHashCString  (in CoreFoundation)        21
+        os_log_type_enabled  (in libsystem_trace.dylib)        21
+        os_unfair_lock_lock  (in libsystem_platform.dylib)        19
+        __CFStringHash  (in CoreFoundation)        17
+        objc_release  (in libobjc.A.dylib)        15
+        objc_retain_x8  (in libobjc.A.dylib)        15
+        CFStringGetLength  (in CoreFoundation)        14
+        static PageTexture.grey.getter  (in Chronotheca.debug.dylib)        14
+        normalizeQuintuplet  (in CoreFoundation)        13
+        os_unfair_lock_unlock  (in libsystem_platform.dylib)        13
+        expf  (in libsystem_m.dylib)        12
+        -[CFPrefsSearchListSource alreadylocked_copyValueForKey:]  (in CoreFoundation)        11
+        -[CFPrefsSearchListSource alreadylocked_getDictionary:]  (in CoreFoundation)        11
+        _Block_object_dispose  (in libsystem_blocks.dylib)        11
+        _platform_memmove  (in libsystem_platform.dylib)        11
+        -[__NSArrayM getObjects:range:]  (in CoreFoundation)        10
+        CFStringGetCharactersPtr  (in CoreFoundation)        10
+        String._bridgeToObjectiveCImpl()  (in libswiftCore.dylib)        9
+        String.init(_builtinStringLiteral:utf8CodeUnitCount:isASCII:)  (in libswiftCore.dylib)        9
+        _CFSetTSD  (in CoreFoundation)        9
+        _swift_isClassOrObjCExistentialType  (in libswiftCore.dylib)        9
+        min<A>(_:_:)  (in libswiftCore.dylib)        9
+        -[__NSCFString isEqual:]  (in CoreFoundation)        8
+        CFEqual  (in CoreFoundation)        8
+        CFRelease  (in CoreFoundation)        8
+        _CFPreferencesCopyAppValueWithContainerAndConfiguration  (in CoreFoundation)        8
+        _CFStringCreateIndirectASCIITaggedPointerString  (in CoreFoundation)        8
