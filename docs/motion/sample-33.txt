@@ -1,0 +1,142 @@
+    565 Thread_174230   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 565 start  (in dyld) + 6992  [0x10241c4e4]
+    +   565 start_sim  (in dyld_sim) + 20  [0x10255f0e4]
+    +     565 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x10454f474]  ChronothecaApp.swift:0
+    +       565 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x10454f3c8]  /<compiler-generated>:0
+    +         565 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           565 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             565 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               565 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 565 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   565 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     565 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       556 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    +                       ! 556 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    +                       !   556 mach_msg  (in libsystem_kernel.dylib) + 20  [0x102248ef0]
+    +                       !     556 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x102250c44]
+    +                       !       556 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x102259e84]
+    +                       !         556 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x102248b70]
+    +                       3 __CFRunLoopRun  (in CoreFoundation) + 1884  [0x180421c6c]
+    +                       ! 3 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__  (in CoreFoundation) + 12  [0x180422a94]
+    +                       !   3 _dispatch_main_queue_callback_4CF  (in libdispatch.dylib) + 40  [0x180195890]
+    +                       !     3 _dispatch_main_queue_drain  (in libdispatch.dylib) + 1172  [0x180195d34]
+    +                       !       3 <deduplicated_symbol>  (in libdispatch.dylib) + 24  [0x1801bd748]
+    +                       !         3 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                       !           3 _dispatch_call_block_and_release  (in libdispatch.dylib) + 24  [0x1801866a0]
+    +                       !             2 __104+[UIAccessibilityLoader _performInitialAccessibilityBundleLoad:monitorForFutureLoadEvents:trackingMode:]_block_invoke_3  (in UIAccessibility) + 168  [0x195264a5c]
+    +                       !             : 1 +[AXMobileSafariFrameworkGlue accessibilityInitializeBundle]  (in MobileSafariFramework) + 32  [0x125921990]
+    +                       !             : | 1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +                       !             : |   1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                       !             : |     1 __60+[AXMobileSafariFrameworkGlue accessibilityInitializeBundle]_block_invoke  (in MobileSafariFramework) + 68  [0x1259219dc]
+    +                       !             : |       1 -[AXValidationManager performValidations:withPreValidationHandler:postValidationHandler:safeCategoryInstallationHandler:]  (in AXCoreUtilities) + 280  [0x192ac0a10]
+    +                       !             : |         1 -[AXAccessQueue performSynchronousWritingBlock:]  (in AXCoreUtilities) + 48  [0x192acfc90]
+    +                       !             : |           1 AXPerformBlockSynchronouslyOnMainThread  (in AXCoreUtilities) + 56  [0x192ac8b90]
+    +                       !             : |             1 __121-[AXValidationManager performValidations:withPreValidationHandler:postValidationHandler:safeCategoryInstallationHandler:]_block_invoke  (in AXCoreUtilities) + 612  [0x192ac0cc4]
+    +                       !             : |               1 __60+[AXMobileSafariFrameworkGlue accessibilityInitializeBundle]_block_invoke_4  (in MobileSafariFramework) + 684  [0x125921cf0]
+    +                       !             : |                 1 -[AXValidationManager installSafeCategory:canInteractWithTargetClass:]  (in AXCoreUtilities) + 164  [0x192ac4f88]
+    +                       !             : |                   1 NSClassFromString  (in Foundation) + 152  [0x1810eef20]
+    +                       !             : |                     1 look_up_class  (in libobjc.A.dylib) + 100  [0x180049030]
+    +                       !             : |                       1 realizeClassMaybeSwiftMaybeRelock(objc_class*, locker_mixin<lockdebug::lock_mixin<objc_lock_base_t>>&, bool)  (in libobjc.A.dylib) + 132  [0x180040f4c]
+    +                       !             : |                         1 ???  (in MobileSafari)  load address 0x1e32f1000 + 0x1730a0  [0x1e34640a0]
+    +                       !             : |                           1 swift_getSingletonMetadata  (in libswiftCore.dylib) + 796  [0x198199218]
+    +                       !             : |                             1 swift::MetadataCacheEntryBase<(anonymous namespace)::SingletonMetadataCacheEntry, int>::doInitialization(swift::MetadataWaitQueue::Worker&, swift::MetadataRequest)  (in libswiftCore.dylib) + 272  [0x1981ad074]
+    +                       !             : |                               1 ???  (in MobileSafari)  load address 0x1e32f1000 + 0x17315c  [0x1e346415c]
+    +                       !             : |                                 1 _swift_updateClassMetadataImpl(swift::TargetClassMetadata<swift::InProcess, swift::TargetAnyClassMetadataObjCInterop<swift::InProcess>>*, swift::ClassLayoutFlags, unsigned long, swift::TargetTypeLayout<swift::InProcess> const* const*, unsigned long*, bool)  (in libswiftCore.dylib) + 76  [0x19819e558]
+    +                       !             : |                                   1 getSuperclassMetadata  (in libswiftCore.dylib) + 276  [0x19819d090]
+    +                       !             : |                                     1 swift_getTypeByMangledName  (in libswiftCore.dylib) + 272  [0x1981b7090]
+    +                       !             : |                                       1 swift_getTypeByMangledNameImpl(swift::MetadataRequest, __swift::__runtime::llvm::StringRef, void const* const*, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>)  (in libswiftCore.dylib) + 1016  [0x1981bcd58]
+    +                       !             : |                                         1 swift_getTypeByMangledNode  (in libswiftCore.dylib) + 272  [0x1981b8ab0]
+    +                       !             : |                                           1 swift_getTypeByMangledNodeImpl(swift::MetadataRequest, swift::Demangle::__runtime::Demangler&, swift::Demangle::__runtime::Node*, void const* const*, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>)  (in libswiftCore.dylib) + 576  [0x1981bc55c]
+    +                       !             : |                                             1 swift::Demangle::__runtime::TypeDecoder<(anonymous namespace)::DecodedMetadataBuilder>::decodeMangledType(swift::Demangle::__runtime::Node*, unsigned int, bool)  (in libswiftCore.dylib) + 6884  [0x1981c2174]
+    +                       !             : |                                               1 (anonymous namespace)::DecodedMetadataBuilder::createBoundGenericType(swift::TargetContextDescriptor<swift::InProcess> const*, __swift::__runtime::llvm::ArrayRef<swift::MetadataPackOrValue>, swift::MetadataPackOrValue) const  (in libswiftCore.dylib) + 520  [0x1981c6114]
+    +                       !             : |                                                 1 ???  (in MobileSafari)  load address 0x1e32f1000 + 0x15a54c  [0x1e344b54c]
+    +                       !             : 1 +[AXVisionKitCoreGlue accessibilityInitializeBundle]  (in VisionKitCore) + 92  [0x11cea4dc4]
+    +                       !             :   1 -[AXValidationManager performValidations:withPreValidationHandler:postValidationHandler:safeCategoryInstallationHandler:]  (in AXCoreUtilities) + 280  [0x192ac0a10]
+    +                       !             :     1 -[AXAccessQueue performSynchronousWritingBlock:]  (in AXCoreUtilities) + 48  [0x192acfc90]
+    +                       !             :       1 AXPerformBlockSynchronouslyOnMainThread  (in AXCoreUtilities) + 56  [0x192ac8b90]
+    +                       !             :         1 __121-[AXValidationManager performValidations:withPreValidationHandler:postValidationHandler:safeCategoryInstallationHandler:]_block_invoke  (in AXCoreUtilities) + 612  [0x192ac0cc4]
+    +                       !             :           1 __52+[AXVisionKitCoreGlue accessibilityInitializeBundle]_block_invoke_3  (in VisionKitCore) + 184  [0x11cea4efc]
+    +                       !             :             1 -[AXValidationManager installSafeCategory:canInteractWithTargetClass:]  (in AXCoreUtilities) + 1128  [0x192ac534c]
+    +                       !             :               1 +[UIAccessibilitySafeCategory _initializeSafeCategoryFromValidationManager]  (in libAXSafeCategoryBundle.dylib) + 48  [0x19394fb40]
+    +                       !             :                 1 +[UIAccessibilitySafeCategory _installSafeCategoryOnClass:isManaged:]  (in libAXSafeCategoryBundle.dylib) + 196  [0x1939501a4]
+    +                       !             :                   1 _objc_msgSend_uncached  (in libobjc.A.dylib) + 64  [0x18003af00]
+    +                       !             :                     1 lookUpImpOrForward  (in libobjc.A.dylib) + 312  [0x18005340c]
+    +                       !             :                       1 method_t* getMethodFromListArray<method_list_t**>(method_list_t**, unsigned int, objc_selector*)  (in libobjc.A.dylib) + 264  [0x180047a08]
+    +                       !             1 __104+[UIAccessibilityLoader _performInitialAccessibilityBundleLoad:monitorForFutureLoadEvents:trackingMode:]_block_invoke_3  (in UIAccessibility) + 48  [0x1952649e4]
+    +                       !               1 -[NSBundle principalClass]  (in Foundation) + 20  [0x18103e008]
+    +                       !                 1 -[NSBundleAccessibility loadAndReturnError:]  (in UIAccessibility) + 84  [0x1952b9ba8]
+    +                       !                   1 AXSettingsReturnBoolValue  (in AccessibilityUtilities) + 68  [0x1933d8d7c]
+    +                       !                     1 ???  (in AXCoreUtilities)  load address 0x192aa5000 + 0xa31f0  [0x192b481f0]
+    +                       !                       1 ???  (in AXCoreUtilities)  load address 0x192aa5000 + 0xa3188  [0x192b48188]
+    +                       !                         1 -[AXBaseSettings_Legacy boolValueForPreferenceKey:defaultValue:]  (in AXCoreUtilities) + 20  [0x192ac9dc4]
+    +                       !                           1 -[AXSettings(LegacyImplementation) valueForPreferenceKey:]  (in AccessibilityUtilities) + 64  [0x1933d0094]
+    +                       !                             1 ???  (in AXCoreUtilities)  load address 0x192aa5000 + 0xa2bdc  [0x192b47bdc]
+    +                       !                               1 ???  (in AXCoreUtilities)  load address 0x192aa5000 + 0xa2b04  [0x192b47b04]
+    +                       !                                 1 -[AXBaseSettings_Legacy valueForPreferenceKey:]  (in AXCoreUtilities) + 196  [0x192ac9b40]
+    +                       !                                   1 -[AXSettings(LegacyImplementation) _domainNameForDomain:]  (in AccessibilityUtilities) + 264  [0x1933cff18]
+    +                       !                                     1 AXCPCopySharedResourcesPreferencesDomainForDomain  (in libAccessibility.dylib) + 60  [0x192a7a3e4]
+    +                       !                                       1 CFStringCreateWithFormat  (in CoreFoundation) + 44  [0x18044c514]
+    +                       !                                         1 CFStringCreateWithFormatAndArguments  (in CoreFoundation) + 144  [0x18044c32c]
+    +                       !                                           1 _CFStringCreateWithFormatAndArgumentsReturningMetadata  (in CoreFoundation) + 104  [0x18044c3dc]
+    +                       !                                             1 CFStringCreateMutable  (in CoreFoundation) + 76  [0x180448e28]
+    +                       !                                               1 _CFRuntimeCreateInstance  (in CoreFoundation) + 388  [0x1804240c0]
+    +                       3 __CFRunLoopRun  (in CoreFoundation) + 2100  [0x180421d44]
+    +                       ! 3 __CFRunLoopDoSource1  (in CoreFoundation) + 476  [0x180422c78]
+    +                       !   3 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE1_PERFORM_FUNCTION__  (in CoreFoundation) + 56  [0x180423628]
+    +                       !     2 __CFMachPortPerform  (in CoreFoundation) + 164  [0x1803e6c50]
+    +                       !     : 2 UC::DriverCore::continueProcessing()  (in UpdateCycle) + 80  [0x2343d22c0]
+    +                       !     :   1 schedulerModeScheduledWaitingMainInputs  (in UIKitCore) + 176  [0x1863b5ef0]
+    +                       !     :   | 1 mach_absolute_time  (in libsystem_kernel.dylib) + 0  [0x102248fc4]
+    +                       !     :   1 schedulerModeScheduling  (in UIKitCore) + 84  [0x1863b4ef8]
+    +                       !     1 __CFMachPortPerform  (in CoreFoundation) + 0  [0x1803e6bac]
+    +                       2 __CFRunLoopRun  (in CoreFoundation) + 2444  [0x180421e9c]
+    +                       ! 2 __CFRunLoopModeIsEmpty  (in CoreFoundation) + 296  [0x18041c6e8]
+    +                       !   2 CFSetContainsValue  (in CoreFoundation) + 76  [0x18042c82c]
+    +                       !     2 CFBasicHashGetCountOfKey  (in CoreFoundation) + 180  [0x1804f244c]
+    +                       !       1 ___CFBasicHashFindBucket_Linear  (in CoreFoundation) + 104  [0x1804f60a8]
+    +                       !       : 1 __CFStringHash  (in CoreFoundation) + 184  [0x1804477b0]
+    +                       !       1 ___CFBasicHashFindBucket_Linear  (in CoreFoundation) + 172  [0x1804f60ec]
+    +                       1 __CFRunLoopRun  (in CoreFoundation) + 924  [0x1804218ac]
+    +                         1 mach_port_insert_member  (in libsystem_kernel.dylib) + 32  [0x10224abc4]
+    +                           1 _kernelrpc_mach_port_insert_member_trap  (in libsystem_kernel.dylib) + 8  [0x102248a50]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        6153
+        mach_msg2_trap  (in libsystem_kernel.dylib)        1571
+        __semwait_signal  (in libsystem_kernel.dylib)        560
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        472
+        __getdirentries64  (in libsystem_kernel.dylib)        259
+        read  (in libsystem_kernel.dylib)        168
+        mach_msg2_trap  (in dyld)        93
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib)        24
+        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        21
+        <deduplicated_symbol>  (in dyld)        19
+        getattrlistbulk  (in libsystem_kernel.dylib)        18
+        getContextDescriptor(swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        14
+        _swift_class_getSuperclass  (in libswiftCore.dylib)        13
+        swift::equalContexts(swift::TargetContextDescriptor<swift::InProcess> const*, swift::TargetContextDescriptor<swift::InProcess> const*)  (in libswiftCore.dylib)        8
+        getSuperclassForMaybeIncompleteMetadata(swift::TargetMetadata<swift::InProcess> const*, std::optional<swift::MetadataState>, bool)  (in libswiftCore.dylib)        7
+        mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim)        5
+
+Binary Images:
+       0x102234000 -        0x102237507 +com.kobiashvili.diary (1.0 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/6478AFFB-AE17-412A-A1E5-51BCFFD300B6/data/Containers/Bundle/Application/E09D50E8-92E8-4F49-9C4E-28F279E732F2/Chronotheca.app/Chronotheca
+       0x102248000 -        0x102282ee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
+       0x1022c8000 -        0x1022d03d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
+       0x102370000 -        0x10237c10b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
+       0x1023fc000 -        0x1024af523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
+       0x102554000 -        0x1025a2e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x102610000 -        0x10265365f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x102764000 -        0x1027fd2af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x102f10000 -        0x102f10b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x102f24000 -        0x102f2c03f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x103040000 -        0x103043e5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x10305c000 -        0x10305edff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x10307c000 -        0x10308549f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x1030a0000 -        0x1030a6b7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x1030f4000 -        0x1030f9407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
+       0x103514000 -        0x10351f39f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x103538000 -        0x10353c6ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
+       0x103624000 -        0x10363d27f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
+       0x103684000 -        0x1038dfbbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+       0x103f00000 -        0x103f072df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
+       0x103fec000 -        0x103fef1ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
