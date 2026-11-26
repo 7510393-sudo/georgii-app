@@ -795,10 +795,18 @@ private struct MonthPager: View, Equatable {
 
     @State private var pull: CGFloat = 0
     @State private var settling = false
+    /// Какой месяц полоса показывает (P1077). Свой, а не `shown` снаружи:
+    /// календарь лежит в рамке, и `shown` доходит до полосы на такт позже —
+    /// на 359 ход кончался на октябре, а полоса ещё секунды стояла на
+    /// ноябре и потом перелетала. Меняется вместе с ходом, наружу —
+    /// следом, для шапки и списка дел.
+    @State private var own: Date?
+
+    private var current: Date { own ?? period(shown) }
 
     var body: some View {
         let h = height
-        let here = period(shown)
+        let here = current
         let pages = [-1, 0, 1].map { shift(here, $0) }
         ZStack(alignment: .top) {
             ForEach(Array(pages.enumerated()), id: \.element) { i, p in
@@ -840,25 +848,41 @@ private struct MonthPager: View, Equatable {
             if abs(now.step) > 1 {
                 var still = Transaction()
                 still.disablesAnimations = true
-                withTransaction(still) { shown = shift(period(shown), now.step - (now.step > 0 ? 1 : -1)) }
+                withTransaction(still) { own = shift(current, now.step - (now.step > 0 ? 1 : -1)) }
             }
             turn(by: now.step > 0 ? 1 : -1)
+        }
+        // Месяц поменяли снаружи (смена вида, «домой» без хода) — полоса
+        // встаёт на него.
+        .onChange(of: period(shown)) { _, now in
+            guard !settling, own != now else { return }
+            var still = Transaction()
+            still.disablesAnimations = true
+            withTransaction(still) { own = now }
         }
     }
 
     private func turn(by step: Int) {
         settling = true
-        withAnimation(.spring(response: 0.5, dampingFraction: 1), completionCriteria: .removed) {
+        // Доводка — ровно за 0,45 с (P1077): мягкая пружина без отскока
+        // считалась законченной только через секунды, и смена месяца ждала.
+        withAnimation(.timingCurve(0.2, 0.8, 0.3, 1, duration: 0.45), completionCriteria: .removed) {
             pull = -CGFloat(step) * height
         } completion: {
+            let next = shift(current, step)
             var still = Transaction()
             still.disablesAnimations = true
             withTransaction(still) {
-                if step != 0 { shown = shift(period(shown), step) }
+                // Свой месяц и сдвиг — одним тактом: сосед встаёт на место
+                // нынешнего, ничего не прыгает.
+                if step != 0 { own = next }
                 pull = 0
             }
             settling = false
-            if step != 0 { Feel.light() }
+            if step != 0 {
+                shown = next
+                Feel.light()
+            }
         }
     }
 }
