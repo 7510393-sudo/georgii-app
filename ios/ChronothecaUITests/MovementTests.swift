@@ -647,7 +647,7 @@ final class MovementTests: XCTestCase {
     /// месяц сами уходили на 2020-й. В замеры пишется, что в шапке после
     /// каждого шага.
     func testCalendarStaysPut() {
-        launch()
+        launch(trace: "след-календарь")
         app.buttons["bottom.calendar"].firstMatch.tap()
         XCTAssertTrue(wait(6) { openScreen == "calendar" }, "календарь не открылся")
         sleep(2)

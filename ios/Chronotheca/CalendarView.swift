@@ -863,6 +863,7 @@ private struct MonthPager: View, Equatable {
     }
 
     private func turn(by step: Int) {
+        Trace.note("месяц: ход \(step), от \(Vault.stamp(current))")
         settling = true
         // Доводка — ровно за 0,45 с (P1077): мягкая пружина без отскока
         // считалась законченной только через секунды, и смена месяца ждала.
@@ -955,9 +956,15 @@ private struct VerticalPan: UIViewRepresentable {
         @objc private func moved(_ pan: UIPanGestureRecognizer) {
             let t = pan.translation(in: pan.view).y
             switch pan.state {
+            case .began: Trace.note("месяц: палец пошёл")
             case .changed: changed?(t)
-            case .ended: ended?(t, pan.velocity(in: pan.view).y)
-            case .cancelled, .failed: ended?(0, 0)
+            case .ended:
+                let v = pan.velocity(in: pan.view).y
+                Trace.note(String(format: "месяц: отпустили, сдвиг %.0f, скорость %.0f", t, v))
+                ended?(t, v)
+            case .cancelled, .failed:
+                Trace.note("месяц: касание отменено")
+                ended?(0, 0)
             default: break
             }
         }
@@ -966,12 +973,19 @@ private struct VerticalPan: UIViewRepresentable {
         func gestureRecognizerShouldBegin(_ g: UIGestureRecognizer) -> Bool {
             guard let pan = g as? UIPanGestureRecognizer, let probe,
                   let window = probe.window else { return false }
-            guard probe.bounds.contains(pan.location(in: probe)) else { return false }
+            let at = pan.location(in: probe)
+            guard probe.bounds.contains(at) else { return false }
             // Полоса видна целиком — не уехала вбок вместе с разделами.
             let onScreen = probe.convert(probe.bounds, to: nil).intersection(window.bounds)
-            guard onScreen.width > probe.bounds.width * 0.9 else { return false }
+            guard onScreen.width > probe.bounds.width * 0.9 else {
+                Trace.note("месяц: полоса не на экране")
+                return false
+            }
             let v = pan.velocity(in: probe)
-            return abs(v.y) > abs(v.x)
+            let go = abs(v.y) > abs(v.x)
+            Trace.note(String(format: "месяц: начать? в %.0f из %.0f, скорость %.0f/%.0f — %@",
+                              at.y, probe.bounds.height, v.x, v.y, go ? "да" : "нет"))
+            return go
         }
 
         func gestureRecognizer(_ g: UIGestureRecognizer,
