@@ -586,6 +586,7 @@ struct RootView: View {
             // Уголок тянут вниз, и бумажка идёт за пальцем (P233).
             .simultaneousGesture(pull(\.showingSettings, \.settingsPull))
             .accessibilityLabel(T("Настройки", "Settings"))
+            .accessibilityIdentifier("corner.settings")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }

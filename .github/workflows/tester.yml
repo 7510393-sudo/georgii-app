@@ -1,0 +1,115 @@
+# Робот-тестировщик (P1085): проходит приложение в симуляторе, как человек,
+# и пишет видео. Видео, шаги со временем и кадры кладутся в docs/tester/ —
+# по ним скачки и перелёты разбираются кадр за кадром. Запускается вручную
+# (и при правке этого сценария или тура): машин Apple мало (P974).
+name: Тестировщик
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/tester.yml'
+      - 'ios/ChronothecaUITests/TourTests.swift'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tester-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tour:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Взять самый новый Xcode
+        run: |
+          latest=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
+          sudo xcode-select -s "$latest/Contents/Developer"
+          xcodebuild -version
+
+      - name: Поставить XcodeGen и ffmpeg
+        run: brew install xcodegen ffmpeg
+
+      - name: Собрать проект Xcode из project.yml
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Выбрать симулятор
+        id: sim
+        run: |
+          udid=$(xcrun simctl list devices available -j | python3 -c "
+          import json, sys
+          runtimes = json.load(sys.stdin)['devices']
+          for runtime in sorted(runtimes, reverse=True):
+              for device in runtimes[runtime]:
+                  if device.get('isAvailable') and device['name'].startswith('iPhone'):
+                      print(device['udid']); raise SystemExit
+          sys.exit('нет доступного симулятора iPhone')
+          ")
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+
+      - name: Собрать для проверки
+        working-directory: ios
+        env:
+          UDID: ${{ steps.sim.outputs.udid }}
+        run: |
+          set -o pipefail
+          xcodebuild build-for-testing \
+            -project Chronotheca.xcodeproj \
+            -scheme Movement \
+            -destination "id=$UDID" \
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tail -20
+
+      - name: Тур с видео
+        working-directory: ios
+        env:
+          UDID: ${{ steps.sim.outputs.udid }}
+          TEST_RUNNER_TOUR_DIR: ${{ github.workspace }}/docs/tester
+        run: |
+          rm -rf ../docs/tester && mkdir -p ../docs/tester
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl privacy "$UDID" revoke location com.kobiashvili.diary || true
+          xcrun simctl status_bar "$UDID" override --time "9:41" || true
+          xcrun simctl io "$UDID" recordVideo --codec h264 --force /tmp/tour.mov &
+          recorder=$!
+          sleep 2
+          echo "видео началось: $(date -u +%Y-%m-%dT%H:%M:%SZ)" > ../docs/tester/начало.txt
+          status=0
+          xcodebuild test-without-building \
+            -project Chronotheca.xcodeproj \
+            -scheme Movement \
+            -destination "id=$UDID" \
+            -only-testing:ChronothecaUITests/TourTests \
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee tour.log || status=$?
+          kill -INT $recorder 2>/dev/null || true
+          wait $recorder 2>/dev/null || true
+          # Видео — узкое и редкое по кадрам, чтобы не раздувать репозиторий:
+          # 300 точек в ширину, 15 кадров в секунду.
+          ffmpeg -v error -y -i /tmp/tour.mov -vf "fps=15,scale=300:-2" \
+            -c:v libx264 -crf 30 -preset veryfast -an ../docs/tester/тур.mp4 || true
+          grep -E "Test Case .*(passed|failed)|error: -\[" tour.log > ../docs/tester/итог.txt || true
+          ls -la ../docs/tester >> "$GITHUB_STEP_SUMMARY"
+          exit 0
+
+      - name: Положить видео и шаги в репозиторий
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          FRESH=$(mktemp -d)
+          cp -R docs/tester/. "$FRESH"/ 2>/dev/null || exit 0
+          for try in 1 2 3 4; do
+            git add docs/tester
+            if git diff --cached --quiet; then exit 0; fi
+            git commit -m "docs: тестировщик [skip ci]"
+            if git push; then exit 0; fi
+            sleep $((try * 5))
+            git fetch origin "$GITHUB_REF_NAME" || exit 1
+            git reset --hard "origin/$GITHUB_REF_NAME" || exit 1
+            rm -rf docs/tester && mkdir -p docs/tester
+            cp -R "$FRESH"/. docs/tester/
+          done

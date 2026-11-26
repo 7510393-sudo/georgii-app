@@ -688,6 +688,54 @@ final class MovementTests: XCTestCase {
         note("календарь", steps.joined(separator: " · "))
     }
 
+    /// Месяцы листаются много раз подряд и в обе стороны (P1079, P1085:
+    /// на 360 после первого свайпа месяцы застывали — эта проверка
+    /// покраснела бы).
+    func testCalendarManySwipes() {
+        launch(trace: "след-календарь-много")
+        app.buttons["bottom.calendar"].firstMatch.tap()
+        XCTAssertTrue(wait(6) { openScreen == "calendar" }, "календарь не открылся")
+        sleep(2)
+        let title = app.staticTexts["calendarTitle"].firstMatch
+        let start = title.label
+        var seen: [String] = [start]
+        func flick(up: Bool, _ y: CGFloat) {
+            let a = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: up ? y + 0.25 : y))
+            let b = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: up ? y : y + 0.25))
+            a.press(forDuration: 0.05, thenDragTo: b, withVelocity: 1200, thenHoldForDuration: 0)
+            sleep(2)
+            seen.append(title.label)
+        }
+        // На клетках (0.28–0.53) и ниже них (0.33–0.58): три вверх, три вниз.
+        flick(up: true, 0.28); flick(up: true, 0.33); flick(up: true, 0.28)
+        flick(up: false, 0.28); flick(up: false, 0.33); flick(up: false, 0.28)
+        note("календарь много", seen.joined(separator: " → "))
+        XCTAssertEqual(Set(seen.dropFirst().prefix(3)).count, 3, "три свайпа вверх — не три разных месяца: \(seen)")
+        XCTAssertEqual(title.label, start, "после трёх вверх и трёх вниз месяц не вернулся: \(seen)")
+    }
+
+    /// Свайп по настройкам поверх календаря месяц не листает (P1084).
+    func testSettingsOverCalendar() {
+        launch()
+        app.buttons["bottom.calendar"].firstMatch.tap()
+        XCTAssertTrue(wait(6) { openScreen == "calendar" }, "календарь не открылся")
+        sleep(2)
+        let title = app.staticTexts["calendarTitle"].firstMatch
+        let month = title.label
+        app.buttons["corner.settings"].firstMatch.tap()
+        sleep(3)
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.55))
+            .press(forDuration: 0.05,
+                   thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.30)),
+                   withVelocity: 1200, thenHoldForDuration: 0)
+        sleep(2)
+        save("29-настройки-над-календарём")
+        app.buttons["corner.settings"].firstMatch.tap()
+        sleep(3)
+        note("настройки над календарём", "было \(month), стало \(title.label)")
+        XCTAssertEqual(title.label, month, "свайп по настройкам перелистнул месяц календаря")
+    }
+
     /// Свайп как живым пальцем (P787): палец лёг и чуть постоял, ведут с
     /// обычной скоростью — с дела в плане и с записи дневника. На телефоне
     /// свайп почти не брался, а быстрый свайп проверки проходил.
