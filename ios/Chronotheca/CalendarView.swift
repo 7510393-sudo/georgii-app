@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Календарь: год и месяц. «Список» перешёл в картотеку будущего (P773).
 ///
@@ -794,9 +795,6 @@ private struct MonthPager: View, Equatable {
 
     @State private var pull: CGFloat = 0
     @State private var settling = false
-    /// Палец пошёл вбок — это свайп разделов, не листание месяца. Сам
-    /// забывается, когда касание кончилось или его забрали разделы.
-    @GestureState private var sideways: Bool?
 
     var body: some View {
         let h = height
@@ -819,31 +817,23 @@ private struct MonthPager: View, Equatable {
                 .init(color: .black, location: max(0.5, 1 - 26 / max(h, 1))),
                 .init(color: .clear, location: 1),
             ], startPoint: .top, endPoint: .bottom))
-        .contentShape(Rectangle())
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 10)
-                .updating($sideways) { v, axis, _ in
-                    if axis == nil { axis = abs(v.translation.width) > abs(v.translation.height) }
-                }
-                .onChanged { v in
-                    guard sideways == false, !settling else { return }
-                    pull = v.translation.height
-                }
-                .onEnded { v in
-                    guard abs(v.translation.height) >= abs(v.translation.width), !settling else { return }
-                    let moved = v.translation.height
-                    let flung = v.predictedEndTranslation.height
-                    let step = (moved < -h * 0.5 || flung < -h * 0.3) ? 1
-                             : (moved > h * 0.5 || flung > h * 0.3) ? -1 : 0
-                    turn(by: step)
-                })
-        // Касание забрали (свайп разделов) — полоса возвращается на место.
-        .onChange(of: sideways) { _, now in
-            guard now == nil else { return }
-            DispatchQueue.main.async {
-                if !settling, pull != 0 { turn(by: 0) }
-            }
-        }
+        // Ведёт полосу распознаватель iPhone, а не жест SwiftUI (P1076,
+        // автор по 359: «по-прежнему нет свайпа с календаря»): тот, даже
+        // «одновременный», забирал касание у ленты разделов. Этот начинается,
+        // только если палец пошёл по вертикали, — вбок касание целиком
+        // достаётся разделам, касания клеток проходят как прежде.
+        .background(VerticalPan(
+            changed: { dy in
+                guard !settling else { return }
+                pull = dy
+            },
+            ended: { dy, speed in
+                guard !settling else { return }
+                let flung = dy + speed * 0.25
+                let step = (dy < -h * 0.5 || flung < -h * 0.3) ? 1
+                         : (dy > h * 0.5 || flung > h * 0.3) ? -1 : 0
+                turn(by: step)
+            }))
         .onChange(of: ask) { _, now in
             guard !settling, now.step != 0 else { return }
             // Дальний месяц — сперва без хода соседом, потом один ход.
@@ -870,5 +860,93 @@ private struct MonthPager: View, Equatable {
             settling = false
             if step != 0 { Feel.light() }
         }
+    }
+}
+
+
+/// Вертикальное ведение полосы «Месяца» (P1076): распознаватель iPhone на
+/// окне, слушающий только касания внутри своей полосы. Начинается лишь при
+/// движении по вертикали, с другими распознавателями уживается и касаний
+/// не отменяет — свайп вбок листает разделы, касание клетки выбирает день.
+private struct VerticalPan: UIViewRepresentable {
+    var changed: (CGFloat) -> Void
+    /// Сдвиг и скорость (точек в секунду) в миг отпускания; отменили — 0, 0.
+    var ended: (CGFloat, CGFloat) -> Void
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    func makeUIView(context: Context) -> Probe {
+        let probe = Probe()
+        probe.isUserInteractionEnabled = false
+        probe.backgroundColor = .clear
+        probe.coordinator = context.coordinator
+        return probe
+    }
+
+    func updateUIView(_ probe: Probe, context: Context) {
+        context.coordinator.changed = changed
+        context.coordinator.ended = ended
+    }
+
+    static func dismantleUIView(_ probe: Probe, coordinator: Coordinator) {
+        coordinator.detach()
+    }
+
+    final class Probe: UIView {
+        weak var coordinator: Coordinator?
+        override func didMoveToWindow() {
+            super.didMoveToWindow()
+            if window != nil { coordinator?.attach(self) } else { coordinator?.detach() }
+        }
+    }
+
+    final class Coordinator: NSObject, UIGestureRecognizerDelegate {
+        var changed: ((CGFloat) -> Void)?
+        var ended: ((CGFloat, CGFloat) -> Void)?
+        private weak var probe: UIView?
+        private var pan: UIPanGestureRecognizer?
+
+        func attach(_ view: UIView) {
+            detach()
+            guard let window = view.window else { return }
+            probe = view
+            let pan = UIPanGestureRecognizer(target: self, action: #selector(moved(_:)))
+            pan.delegate = self
+            pan.cancelsTouchesInView = false
+            pan.delaysTouchesBegan = false
+            pan.delaysTouchesEnded = false
+            window.addGestureRecognizer(pan)
+            self.pan = pan
+        }
+
+        func detach() {
+            if let pan { pan.view?.removeGestureRecognizer(pan) }
+            pan = nil
+        }
+
+        @objc private func moved(_ pan: UIPanGestureRecognizer) {
+            let t = pan.translation(in: pan.view).y
+            switch pan.state {
+            case .changed: changed?(t)
+            case .ended: ended?(t, pan.velocity(in: pan.view).y)
+            case .cancelled, .failed: ended?(0, 0)
+            default: break
+            }
+        }
+
+        /// Только в своей полосе, когда она на экране, и по вертикали.
+        func gestureRecognizerShouldBegin(_ g: UIGestureRecognizer) -> Bool {
+            guard let pan = g as? UIPanGestureRecognizer, let probe,
+                  let window = probe.window else { return false }
+            guard probe.bounds.contains(pan.location(in: probe)) else { return false }
+            // Полоса видна целиком — не уехала вбок вместе с разделами.
+            let onScreen = probe.convert(probe.bounds, to: nil).intersection(window.bounds)
+            guard onScreen.width > probe.bounds.width * 0.9 else { return false }
+            let v = pan.velocity(in: probe)
+            return abs(v.y) > abs(v.x)
+        }
+
+        func gestureRecognizer(_ g: UIGestureRecognizer,
+                               shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool { true }
     }
 }
