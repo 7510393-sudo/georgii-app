@@ -391,8 +391,10 @@ final class Vault: ObservableObject {
         // клетках календаря, P1056, на снимках магазина и CI были не видны:
         // у образцовых дней не было фото). Через день-два, с позавчера и
         // раньше; вчерашний день — свой, для снимка прошедшего. Только один
-        // раз: при повторном запуске снимки не множатся.
-        let pictures = SeedPictures.make()
+        // раз: при повторном запуске снимки не множатся. Для App Store —
+        // настоящие фото автора, если они переданы (P1086).
+        let real = SeedPictures.real()
+        let pictures = real.isEmpty ? SeedPictures.make() : real
         for (n, back) in [2, 3, 5, 6, 8, 10, 11, 13, 15, 16, 18, 20].enumerated() where !pictures.isEmpty {
             guard let date = Calendar.current.date(byAdding: .day, value: -back, to: today),
                   let url = file(.diary, for: date),

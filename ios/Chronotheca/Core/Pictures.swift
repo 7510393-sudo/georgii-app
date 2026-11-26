@@ -169,6 +169,19 @@ enum CameraShots {
 /// обычный снимок iPhone после сжатия приложения — с полосами и пятнами,
 /// чтобы сжатие не сводило их к нескольким байтам.
 enum SeedPictures {
+    /// Настоящие фото автора для снимков App Store (P1086): папка на машине
+    /// CI, путь — в переменной окружения; симулятор читает её напрямую. В
+    /// приложение фото не входят; в руках человека переменной нет.
+    static func real() -> [Data] {
+        guard Vault.isPreview,
+              let path = ProcessInfo.processInfo.environment["CHRONOTHECA_PHOTOS"],
+              let names = try? FileManager.default.contentsOfDirectory(atPath: path)
+        else { return [] }
+        return names.filter { $0.hasSuffix(".jpg") }.sorted().compactMap {
+            try? Data(contentsOf: URL(fileURLWithPath: path).appendingPathComponent($0))
+        }
+    }
+
     static func make() -> [Data] {
         let size = CGSize(width: 1200, height: 900)
         let format = UIGraphicsImageRendererFormat()

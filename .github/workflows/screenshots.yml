@@ -117,6 +117,7 @@ jobs:
               xcrun simctl terminate "$UDID" "$APP_ID" >/dev/null 2>&1 || true
               sleep 1
               SIMCTL_CHILD_CHRONOTHECA_PREVIEW=1 \
+              SIMCTL_CHILD_CHRONOTHECA_PHOTOS="$GITHUB_WORKSPACE/docs/appstore/photos" \
               SIMCTL_CHILD_CHRONOTHECA_SCREEN="$screen" \
                 xcrun simctl launch "$UDID" "$APP_ID" || true
               sleep $((6 + try * 3))
