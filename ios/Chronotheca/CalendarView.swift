@@ -122,10 +122,9 @@ struct CalendarView: View {
         }
     }
 
-    /// Лента календаря (P784): месяцы (или годы) друг под другом, от
-    /// десяти лет назад до пяти вперёд (годы — двадцать назад). Листают
-    /// вверх-вниз; что вверху — то в шапке. Список дел выбранного дня — под
-    /// его месяцем.
+    /// Календарь (P784): «Месяц» — полоса с сеткой и ниже дела выбранного
+    /// дня (P1067, P1068); «Год» — лента годов друг под другом, двадцать
+    /// назад и пять вперёд. Что стоит — то в шапке.
     private var stream: some View {
         GeometryReader { geo in
             // «Месяц» (P1067, автор по записи экрана: «следующие месяцы
@@ -141,7 +140,7 @@ struct CalendarView: View {
                 if kind == .month {
                     monthPager(height: strip)
                 } else {
-                    months.frame(height: strip)
+                    years.frame(height: strip)
                 }
                 if kind == .month {
                     Rectangle().fill(Look.rule).frame(height: 1).padding(.vertical, 8)
@@ -174,7 +173,7 @@ struct CalendarView: View {
     /// правке подменяет своё содержимое целиком, и ход, заведённый снаружи,
     /// в ней не играл — месяц менялся скачком, снимки клеток слетали.
     private func monthPager(height h: CGFloat) -> some View {
-        MonthPager(shown: $shown, top: $top, ask: turnAsk, height: h,
+        MonthPager(shown: $shown, ask: turnAsk, height: h,
                    token: "\(selected ?? "")|\(archive.revision)|\(Vault.stamp(DayStore.today()))|\(Prefs.textScale)|\(UserDefaults.standard.string(forKey: Prefs.calendarTint) ?? "")|\(UserDefaults.standard.bool(forKey: Prefs.plainPast))",
                    period: { period($0) }, shift: { shift($0, by: $1) },
                    grid: { AnyView(monthGrid(of: $0)) })
@@ -190,7 +189,7 @@ struct CalendarView: View {
         turnAsk = TurnAsk(id: turnAsk.id + 1, step: step)
     }
 
-    private var months: some View {
+    private var years: some View {
         let list = periods()
         return ScrollView {
             LazyVStack(spacing: 0) {
@@ -223,30 +222,22 @@ struct CalendarView: View {
                                              month: month, day: 1)) ?? landed
     }
 
-    /// Начала месяцев или лет ленты — от нынешнего.
+    /// Начала лет ленты «Года» — от нынешнего, двадцать назад и пять вперёд.
     private func periods() -> [Date] {
-        let unit: Calendar.Component = kind == .year ? .year : .month
-        let back = kind == .year ? 20 : 120
-        let ahead = kind == .year ? 5 : 60
         let home = period(DayStore.today())
-        return (-back...ahead).compactMap { cal.date(byAdding: unit, value: $0, to: home) }
+        return (-20...5).compactMap { cal.date(byAdding: .year, value: $0, to: home) }
     }
 
-    /// Один месяц или год ленты — ровно на полосу (P792, P1067): у месяца
-    /// сетка и сводка, у года — весь экран. Высота у всех страниц одна, и
-    /// ленте не приходится угадывать её на ходу — не дёргается. Своего названия у
-    /// страницы нет (P1007): месяц или год уже написан в шапке со
-    /// стрелками, вторая такая же строка под «Год / Месяц» была повтором.
+    /// Один год ленты — ровно на экран (P792). «Месяц» листается своей
+    /// полосой (`MonthPager`, P1068), лента — только у «Года» (расчистка
+    /// P1075). Высота у всех страниц одна, и ленте не приходится угадывать
+    /// её на ходу — не дёргается. Своего названия у страницы нет (P1007):
+    /// год уже написан в шапке со стрелками.
     private func section(_ p: Date) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Color.clear.frame(height: 4)
-            switch kind {
-            case .year:
-                yearGrid(of: p)
-                Spacer(minLength: 0)
-            case .month:
-                monthGrid(of: p)
-            }
+            yearGrid(of: p)
+            Spacer(minLength: 0)
         }
         .containerRelativeFrame(.vertical, alignment: .top)
         .clipped()
@@ -788,7 +779,6 @@ struct TurnAsk: Equatable {
 /// сегодняшний день поверх окошечек месяца»).
 private struct MonthPager: View, Equatable {
     @Binding var shown: Date
-    @Binding var top: Date?
     let ask: TurnAsk
     let height: CGFloat
     /// Что видно в клетках: выбранный день, правка описи, сегодня, размер
@@ -874,10 +864,7 @@ private struct MonthPager: View, Equatable {
             var still = Transaction()
             still.disablesAnimations = true
             withTransaction(still) {
-                if step != 0 {
-                    shown = shift(period(shown), step)
-                    top = period(shown)
-                }
+                if step != 0 { shown = shift(period(shown), step) }
                 pull = 0
             }
             settling = false
