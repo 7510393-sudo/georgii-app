@@ -715,17 +715,17 @@ struct DiaryEditor: UIViewRepresentable {
         /// не меняется), а в отступе — то же время тем же шрифтом. Диктовка
         /// кончилась — вырез снят, время вписано в текст на то же место, и
         /// ничто не сдвигается.
-        private var ghost: UILabel?
+        private var stampGhost: UILabel?
 
         private func showGhost(_ view: UITextView, stamp: String) {
-            let label = ghost ?? UILabel()
+            let label = stampGhost ?? UILabel()
             label.attributedText = NSAttributedString(string: stamp,
                                                       attributes: DiaryEditor.stampLook(parent.size))
             label.sizeToFit()
-            if ghost == nil {
+            if stampGhost == nil {
                 label.alpha = 0
                 view.addSubview(label)
-                ghost = label
+                stampGhost = label
                 UIView.animate(withDuration: 0.2) { label.alpha = 1 }
             }
             placeGhost(view)
@@ -733,7 +733,7 @@ struct DiaryEditor: UIViewRepresentable {
 
         /// Вырез и время — к началу строки диктовки.
         private func placeGhost(_ view: UITextView) {
-            guard let label = ghost else { return }
+            guard let label = stampGhost else { return }
             guard let d = dictatedLine, d.at <= view.textStorage.length,
                   let pos = view.position(from: view.beginningOfDocument, offset: d.at) else {
                 return clearGhost(view)
@@ -752,9 +752,9 @@ struct DiaryEditor: UIViewRepresentable {
         /// Время вписано или диктовку бросили — нарисованное время и вырез
         /// уходят.
         private func clearGhost(_ view: UITextView) {
-            guard ghost != nil || !view.textContainer.exclusionPaths.isEmpty else { return }
-            ghost?.removeFromSuperview()
-            ghost = nil
+            guard stampGhost != nil || !view.textContainer.exclusionPaths.isEmpty else { return }
+            stampGhost?.removeFromSuperview()
+            stampGhost = nil
             view.textContainer.exclusionPaths = []
         }
 
@@ -2246,7 +2246,7 @@ struct DiaryEditor: UIViewRepresentable {
         }
 
         func textViewDidChange(_ view: UITextView) {
-            if ghost != nil { placeGhost(view) }
+            if stampGhost != nil { placeGhost(view) }
             // Диктовка пишет — запомнить её строку; отпустила — время в
             // начало строки, если его там нет (P869).
             if Self.dictating(view), !placing {
