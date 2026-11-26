@@ -40,10 +40,9 @@ struct CalendarView: View {
     /// Вид сменили, лента собирается заново (P840): пока она не встала на
     /// нужный месяц (год), её промежуточные остановки — не выбор человека.
     @State private var switching = false
-    /// «Месяц» (P1068): насколько полосу увёл палец или ход, и высота полосы.
-    @State private var pull: CGFloat = 0
-    @State private var settling = false
-    @State private var stripHeight: CGFloat = 0
+    /// «Месяц»: просьба полосе перевернуть месяц — от стрелок и «домой»
+    /// (P1071). Сама полоса со своим ходом — `MonthPager`.
+    @State private var turnAsk = TurnAsk(id: 0, step: 0)
 
     private var cal: Calendar { Prefs.calendar }
 
@@ -170,76 +169,25 @@ struct CalendarView: View {
         return 10 + words + cell * 6 + 6
     }
 
-    /// «Месяц» листается своим ходом (P1068, автор по 357: «месяцы должны
-    /// листаться плавнее и уходить не под резкий край, а под растушёванную
-    /// кромку»; прежде — лента iPhone страницами, P792, она доводит
-    /// страницу коротким рывком). Нарисованы три месяца — прежний, нынешний
-    /// и следующий — вплотную; полоса идёт за пальцем, а отпущенная доезжает
-    /// мягкой пружиной без отскока. Сверху и снизу полоса тает в стол.
+    /// «Месяц» листается своим ходом (P1068) — в отдельной полосе
+    /// (`MonthPager`, P1071): календарь лежит в рамке, которая при каждой
+    /// правке подменяет своё содержимое целиком, и ход, заведённый снаружи,
+    /// в ней не играл — месяц менялся скачком, снимки клеток слетали.
     private func monthPager(height h: CGFloat) -> some View {
-        let here = period(shown)
-        let pages = [-1, 0, 1].map { shift(here, by: $0) }
-        return ZStack(alignment: .top) {
-            ForEach(Array(pages.enumerated()), id: \.element) { i, p in
-                monthGrid(of: p)
-                    .padding(.top, 10)
-                    .frame(height: h, alignment: .top)
-                    .offset(y: CGFloat(i - 1) * h + pull)
-            }
-        }
-        .frame(height: h, alignment: .top)
-        .clipped()
-        .mask(
-            LinearGradient(stops: [
-                .init(color: .clear, location: 0),
-                .init(color: .black, location: min(0.5, 18 / max(h, 1))),
-                .init(color: .black, location: max(0.5, 1 - 26 / max(h, 1))),
-                .init(color: .clear, location: 1),
-            ], startPoint: .top, endPoint: .bottom))
-        .contentShape(Rectangle())
-        .gesture(
-            DragGesture(minimumDistance: 8)
-                .onChanged { v in
-                    guard !settling else { return }
-                    pull = v.translation.height
-                }
-                .onEnded { v in
-                    guard !settling else { return }
-                    let moved = v.translation.height
-                    let flung = v.predictedEndTranslation.height
-                    let step = (moved < -h * 0.5 || flung < -h * 0.3) ? 1
-                             : (moved > h * 0.5 || flung > h * 0.3) ? -1 : 0
-                    turn(by: step)
-                })
-        .onAppear { stripHeight = h }
-        .onChange(of: h) { _, now in stripHeight = now }
+        MonthPager(shown: $shown, top: $top, ask: turnAsk, height: h,
+                   token: "\(selected ?? "")|\(archive.revision)|\(Vault.stamp(DayStore.today()))|\(Prefs.textScale)|\(UserDefaults.standard.string(forKey: Prefs.calendarTint) ?? "")|\(UserDefaults.standard.bool(forKey: Prefs.plainPast))",
+                   period: { period($0) }, shift: { shift($0, by: $1) },
+                   grid: { AnyView(monthGrid(of: $0)) })
+            // Три месяца клеток со снимками — не перерисовывать от каждой
+            // правки экрана (смена раздела, картотека): только когда
+            // поменялось то, что в них видно (P1071; на 358 смена раздела
+            // показывала первый кадр через 0,3–0,4 с, на 334 — через 0,07).
+            .equatable()
     }
 
-    /// Перевернуть полосу на месяц вперёд (1), назад (−1) или вернуть на
-    /// место (0): ход доезжает до соседа, и тогда сосед становится нынешним
-    /// — уже без движения, на том же месте, так что ничего не прыгает.
+    /// Перевернуть «Месяц» стрелкой или «домой».
     private func turn(by step: Int) {
-        let h = stripHeight
-        guard h > 0 else {
-            if step != 0 { shown = shift(period(shown), by: step); top = period(shown) }
-            return
-        }
-        settling = true
-        withAnimation(.spring(response: 0.5, dampingFraction: 1), completionCriteria: .removed) {
-            pull = -CGFloat(step) * h
-        } completion: {
-            var still = Transaction()
-            still.disablesAnimations = true
-            withTransaction(still) {
-                if step != 0 {
-                    shown = shift(period(shown), by: step)
-                    top = period(shown)
-                }
-                pull = 0
-            }
-            settling = false
-            if step != 0 { Feel.light() }
-        }
+        turnAsk = TurnAsk(id: turnAsk.id + 1, step: step)
     }
 
     private var months: some View {
@@ -338,16 +286,9 @@ struct CalendarView: View {
             return
         }
         if kind == .month {
-            // Дальний месяц — сперва без хода встаёт соседом нынешнего,
-            // потом один ход: траектория та же, что у пальца (P1068).
-            if abs(steps) > 1 {
-                var still = Transaction()
-                still.disablesAnimations = true
-                withTransaction(still) {
-                    shown = shift(period(DayStore.today()), by: steps > 0 ? -1 : 1)
-                }
-            }
-            turn(by: steps > 0 ? 1 : -1)
+            // Дальний месяц — полоса сперва без хода ставит соседа, потом
+            // один ход: траектория та же, что у пальца (P1068).
+            turn(by: steps)
         } else {
             withAnimation(.easeInOut(duration: 0.35)) { top = period(DayStore.today()) }
         }
@@ -406,7 +347,6 @@ struct CalendarView: View {
             .contentShape(Rectangle())
             .onTapGesture {
                 if kind == .month {
-                    guard !settling else { return }
                     turn(by: step)
                 } else {
                     withAnimation(.easeInOut(duration: 0.3)) { top = shift(period(shown), by: step) }
@@ -773,11 +713,14 @@ private struct CalendarShot: View {
     let url: URL
     let video: Bool
     @State private var image: UIImage?
+    @State private var visible: Bool
 
     init(url: URL, video: Bool) {
         self.url = url
         self.video = video
-        _image = State(initialValue: Photo.cache.object(forKey: url.path as NSString))
+        let cached = Photo.cache.object(forKey: url.path as NSString)
+        _image = State(initialValue: cached)
+        _visible = State(initialValue: cached != nil)
     }
 
     var body: some View {
@@ -799,7 +742,10 @@ private struct CalendarShot: View {
                                 .padding(2)
                         }
                     }
-                    .transition(.opacity)
+                    // Проступает только сам снимок (P1071): прежде общий ход
+                    // подхватывал и место клетки, и снимок слетал в неё.
+                    .opacity(visible ? 1 : 0)
+                    .animation(.easeOut(duration: 0.25), value: visible)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -818,8 +764,124 @@ private struct CalendarShot: View {
             }
             guard let got else { return }
             Photo.cache.setObject(got, forKey: url.path as NSString)
-            withAnimation(.easeOut(duration: 0.25)) { image = got }
+            var still = Transaction()
+            still.disablesAnimations = true
+            withTransaction(still) { image = got }
+            DispatchQueue.main.async { visible = true }
         }
     }
 }
 
+
+
+/// Просьба полосе «Месяца» перевернуться (P1071).
+struct TurnAsk: Equatable {
+    let id: Int
+    let step: Int
+}
+
+/// Полоса «Месяца» (P1068, P1071): три месяца вплотную — прежний, нынешний,
+/// следующий. Идёт за пальцем по вертикали; отпущенная доезжает мягкой
+/// пружиной без отскока, и сосед становится нынешним уже без движения.
+/// Сверху и снизу тает в стол. Смахивание вбок сетка не забирает — по нему
+/// листаются разделы (P1071, автор по 358: «невозможно сделать свайп на
+/// сегодняшний день поверх окошечек месяца»).
+private struct MonthPager: View, Equatable {
+    @Binding var shown: Date
+    @Binding var top: Date?
+    let ask: TurnAsk
+    let height: CGFloat
+    /// Что видно в клетках: выбранный день, правка описи, сегодня, размер
+    /// шрифта. Пока это то же, полоса не перерисовывается.
+    let token: String
+    let period: (Date) -> Date
+    let shift: (Date, Int) -> Date
+    let grid: (Date) -> AnyView
+
+    static func == (a: MonthPager, b: MonthPager) -> Bool {
+        a.shown == b.shown && a.ask == b.ask && a.height == b.height && a.token == b.token
+    }
+
+    @State private var pull: CGFloat = 0
+    @State private var settling = false
+    /// Палец пошёл вбок — это свайп разделов, не листание месяца. Сам
+    /// забывается, когда касание кончилось или его забрали разделы.
+    @GestureState private var sideways: Bool?
+
+    var body: some View {
+        let h = height
+        let here = period(shown)
+        let pages = [-1, 0, 1].map { shift(here, $0) }
+        ZStack(alignment: .top) {
+            ForEach(Array(pages.enumerated()), id: \.element) { i, p in
+                grid(p)
+                    .padding(.top, 10)
+                    .frame(height: h, alignment: .top)
+                    .offset(y: CGFloat(i - 1) * h + pull)
+            }
+        }
+        .frame(height: h, alignment: .top)
+        .clipped()
+        .mask(
+            LinearGradient(stops: [
+                .init(color: .clear, location: 0),
+                .init(color: .black, location: min(0.5, 18 / max(h, 1))),
+                .init(color: .black, location: max(0.5, 1 - 26 / max(h, 1))),
+                .init(color: .clear, location: 1),
+            ], startPoint: .top, endPoint: .bottom))
+        .contentShape(Rectangle())
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 10)
+                .updating($sideways) { v, axis, _ in
+                    if axis == nil { axis = abs(v.translation.width) > abs(v.translation.height) }
+                }
+                .onChanged { v in
+                    guard sideways == false, !settling else { return }
+                    pull = v.translation.height
+                }
+                .onEnded { v in
+                    guard abs(v.translation.height) >= abs(v.translation.width), !settling else { return }
+                    let moved = v.translation.height
+                    let flung = v.predictedEndTranslation.height
+                    let step = (moved < -h * 0.5 || flung < -h * 0.3) ? 1
+                             : (moved > h * 0.5 || flung > h * 0.3) ? -1 : 0
+                    turn(by: step)
+                })
+        // Касание забрали (свайп разделов) — полоса возвращается на место.
+        .onChange(of: sideways) { _, now in
+            guard now == nil else { return }
+            DispatchQueue.main.async {
+                if !settling, pull != 0 { turn(by: 0) }
+            }
+        }
+        .onChange(of: ask) { _, now in
+            guard !settling, now.step != 0 else { return }
+            // Дальний месяц — сперва без хода соседом, потом один ход.
+            if abs(now.step) > 1 {
+                var still = Transaction()
+                still.disablesAnimations = true
+                withTransaction(still) { shown = shift(period(shown), now.step - (now.step > 0 ? 1 : -1)) }
+            }
+            turn(by: now.step > 0 ? 1 : -1)
+        }
+    }
+
+    private func turn(by step: Int) {
+        settling = true
+        withAnimation(.spring(response: 0.5, dampingFraction: 1), completionCriteria: .removed) {
+            pull = -CGFloat(step) * height
+        } completion: {
+            var still = Transaction()
+            still.disablesAnimations = true
+            withTransaction(still) {
+                if step != 0 {
+                    shown = shift(period(shown), step)
+                    top = period(shown)
+                }
+                pull = 0
+            }
+            settling = false
+            if step != 0 { Feel.light() }
+        }
+    }
+}

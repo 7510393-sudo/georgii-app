@@ -69,8 +69,14 @@ final class Archive: ObservableObject {
         didSet {
             newestFirst = days.values.filter { $0.hasSomething }.sorted { $0.stamp > $1.stamp }
             withPoints = days.values.filter { !$0.points.isEmpty }
+            revision &+= 1
         }
     }
+
+    /// Номер правки описи: растёт при каждой смене `days`. По нему полоса
+    /// «Месяца» узнаёт, что пора перерисоваться (P1071), и не рисуется
+    /// заново от каждой правки экрана.
+    private(set) var revision = 0
 
     /// Дни с записями, от новых к старым.
     private(set) var newestFirst: [Day] = []
