@@ -387,6 +387,23 @@ final class Vault: ObservableObject {
         old.set("title", T("Иней на перилах", "Frost on the railings"))
         write(old.text, to: .diary, for: lastYear)
 
+        // Снимки прошедших дней месяца (P1083, автор: «делай» — снимки дня в
+        // клетках календаря, P1056, на снимках магазина и CI были не видны:
+        // у образцовых дней не было фото). Через день-два, с позавчера и
+        // раньше; вчерашний день — свой, для снимка прошедшего. Только один
+        // раз: при повторном запуске снимки не множатся.
+        let pictures = SeedPictures.make()
+        for (n, back) in [2, 3, 5, 6, 8, 10, 11, 13, 15, 16, 18, 20].enumerated() where !pictures.isEmpty {
+            guard let date = Calendar.current.date(byAdding: .day, value: -back, to: today),
+                  let url = file(.diary, for: date),
+                  !FileManager.default.fileExists(atPath: url.path),
+                  let link = addPhoto(pictures[n % pictures.count], for: date)
+            else { continue }
+            var day = DayFile(body: Diary.line(link))
+            day.set("date", Vault.stamp(date))
+            write(day.text, to: .diary, for: date)
+        }
+
         // Копия будто сделана (P530): на снимке настроек — спокойная строка
         // «Сделать», а не красное «Пора сделать». Только во временной
         // папке снимков; настоящую копию это не трогает.
