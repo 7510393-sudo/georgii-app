@@ -127,7 +127,14 @@ enum Photo {
     }
 
     /// Снимок для показа: туман над полем. Нужен только снимкам экрана.
+    /// Для снимков App Store — настоящее фото автора (P1102): нарисованный
+    /// туман на витрине выглядел заглушкой.
     static func sample() -> Data {
+        if Vault.isPreview,
+           let path = ProcessInfo.processInfo.environment["CHRONOTHECA_PHOTOS"],
+           let real = try? Data(contentsOf: URL(fileURLWithPath: path).appendingPathComponent("today.jpeg")) {
+            return real
+        }
         let size = CGSize(width: 1200, height: 900)
         let image = UIGraphicsImageRenderer(size: size).image { ctx in
             let colors = [UIColor(red: 0.80, green: 0.83, blue: 0.84, alpha: 1).cgColor,

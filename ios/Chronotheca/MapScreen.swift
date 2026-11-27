@@ -402,7 +402,14 @@ struct MapScreen: View {
             show(point)
         } else if Vault.isPreview {
             // Снимок карты (P534): все свои места разом, без вопроса о месте.
-            showAll()
+            // Для App Store — ближе (P1102): издали места — точки без
+            // названий (P1099), а на витрине видны стрелки с названиями.
+            if Shell.appStoreShots {
+                focus = MapFocus(center: CLLocationCoordinate2D(latitude: 51.515, longitude: -0.125),
+                                 meters: 7000)
+            } else {
+                showAll()
+            }
         } else {
             // Где человек сейчас (P281, P294).
             Locator.shared.current { location in
