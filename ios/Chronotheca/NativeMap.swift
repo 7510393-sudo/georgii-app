@@ -112,12 +112,7 @@ struct NativeMap: UIViewRepresentable {
             map.mapType = kind
             // На спутнике плашки названий плотнее (P420) — перерисовать
             // те, что уже стоят.
-            for case let mark as PlaceMark in map.annotations {
-                guard let view = map.view(for: mark) else { continue }
-                let shown = mark.place.name == Geo.text(mark.place.coordinate) ? "" : mark.place.name
-                view.image = PlaceLabel.draw(shown, solid: satellite,
-                                             chosen: mark.place.file != nil && selected?.file == mark.place.file)
-            }
+            keeper.repaint(map)
         }
         keeper.sync(map)
         if let focus, focus != keeper.focused {
@@ -220,13 +215,7 @@ struct NativeMap: UIViewRepresentable {
                 // светлой плашке — его не спутать с подписями самой карты
                 // (P234).
                 let view = MKAnnotationView(annotation: mark, reuseIdentifier: "место")
-                // Названием остались координаты — на карте их не пишем (P404).
-                let shown = mark.place.name == Geo.text(mark.place.coordinate) ? "" : mark.place.name
-                let chosen = mark.place.file != nil && parent.selected?.file == mark.place.file
-                let picture = PlaceLabel.draw(shown, solid: map.mapType != .standard, chosen: chosen)
-                view.image = picture
-                // Метка стоит на точке значком.
-                view.centerOffset = CGPoint(x: 0, y: picture.size.height / 2 - PlaceLabel.dot / 2)
+                paint(view, mark, map)
                 view.displayPriority = .required
                 view.collisionMode = .rectangle
                 quick(view)
@@ -328,6 +317,46 @@ struct NativeMap: UIViewRepresentable {
 
         func mapView(_ map: MKMapView, regionDidChangeAnimated animated: Bool) {
             parent.onRegion(map.region)
+            // Отъехали далеко или вернулись — названия под стрелками
+            // проступают или тают (P1098, как у карт Apple и Google: вдали —
+            // только метки, вблизи — с подписями).
+            let now = Self.isFar(map)
+            if now != far {
+                far = now
+                repaint(map, fade: true)
+            }
+        }
+
+        /// Карта показывает много — больше 20 км по высоте: названия своих
+        /// мест прячутся, остаются стрелки (P1098).
+        private var far = false
+        static func isFar(_ map: MKMapView) -> Bool { map.region.span.latitudeDelta > 0.18 }
+
+        /// Метка своего места: стрелка, под ней — название (вдали — без него).
+        func paint(_ view: MKAnnotationView, _ mark: PlaceMark, _ map: MKMapView) {
+            // Названием остались координаты — на карте их не пишем (P404).
+            let shown = mark.place.name == Geo.text(mark.place.coordinate) ? "" : mark.place.name
+            let chosen = mark.place.file != nil && parent.selected?.file == mark.place.file
+            // Выбранное место подписано всегда.
+            let name = far && !chosen ? "" : shown
+            let picture = PlaceLabel.draw(name, solid: map.mapType != .standard, chosen: chosen)
+            view.image = picture
+            // Метка стоит на точке значком.
+            view.centerOffset = CGPoint(x: 0, y: picture.size.height / 2 - PlaceLabel.dot / 2)
+        }
+
+        /// Перерисовать стоящие метки своих мест; `fade` — плавно (P893).
+        func repaint(_ map: MKMapView, fade: Bool = false) {
+            for case let mark as PlaceMark in map.annotations {
+                guard let view = map.view(for: mark) else { continue }
+                if fade {
+                    UIView.transition(with: view, duration: 0.2, options: .transitionCrossDissolve) {
+                        self.paint(view, mark, map)
+                    }
+                } else {
+                    paint(view, mark, map)
+                }
+            }
         }
 
         func mapView(_ map: MKMapView, didSelect view: MKAnnotationView) {
