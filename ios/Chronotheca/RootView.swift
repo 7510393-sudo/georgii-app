@@ -766,10 +766,14 @@ struct RootView: View {
     private func mapPage(width: CGFloat) -> some View {
         ZStack(alignment: .trailing) {
             if mapReady || shell.screen == .map { MapScreen() } else { Color.clear }
+            // Полоска — ниже кнопок карты справа сверху (P1103, автор: «очень
+            // плохо нажимаются кнопки спутника и режима»): с P1016 кнопки
+            // стоят у самого края, и полоска шириной 18 лежала поверх их
+            // правой трети — касание там уходило полоске, а не кнопке.
             Color.clear
                 .frame(width: 18)
                 .contentShape(Rectangle())
-                // Мерить в окне: полоска едет вместе с лентой.
+                .padding(.top, MapSide.column + 70)
                 .gesture(DragGesture(minimumDistance: 8, coordinateSpace: .global)
                     .onChanged { drag in
                         if mapPull.x == 0 { Feel.warm() }

@@ -61,7 +61,8 @@ enum GlyphArt {
     /// Стрелка с узким древком и острым наконечником.
     private static func arrow(in r: CGRect) {
         let mid = r.midX
-        let shaft = r.width * 0.12, head = r.width * 0.42
+        // Древко толще (P1103, автор: «вернуть толщину — видно не очень хорошо»).
+        let shaft = r.width * 0.17, head = r.width * 0.42
         let top = r.minY + 0.5, waist = r.minY + r.height * 0.5, tip = r.maxY - 0.5
         let p = UIBezierPath()
         p.move(to: CGPoint(x: mid - shaft, y: top))
@@ -74,7 +75,7 @@ enum GlyphArt {
         p.close()
         p.lineJoinStyle = .miter
         p.miterLimit = 8
-        p.lineWidth = 1
+        p.lineWidth = 1.2
         let context = UIGraphicsGetCurrentContext()
         context?.saveGState()
         // Лёгкая тень — метка лежит над картой, а не в ней.
@@ -90,6 +91,7 @@ enum GlyphArt {
 
 /// Размер кружка значка — общий для карты и списков.
 enum PlaceLabelSize {
-    /// Мельче прежних 24 (P1098).
-    static let dot: CGFloat = 20
+    /// Мельче прежних 24 (P1098), но крупнее 20 (P1103: на карте было
+    /// видно плохо).
+    static let dot: CGFloat = 23
 }

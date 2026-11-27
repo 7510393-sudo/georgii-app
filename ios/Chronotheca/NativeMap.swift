@@ -395,6 +395,10 @@ enum MapSide {
     static let segment: CGFloat = 40
     static var top: CGFloat { Corner.size + 6 }
     static var bottom: CGFloat { top + 2 * segment + 1 + 8 + button + 10 }
+    /// Низ столбика кнопок справа сверху: «места / записи», «схема /
+    /// спутник», «все места». Полоска возврата к «Дневнику» у правого края
+    /// начинается ниже (P1103).
+    static var column: CGFloat { top + 2 * segment + 1 + 8 + button + 8 + button }
 }
 
 /// День на карте «Записи» — на одном из своих мест (P451).
