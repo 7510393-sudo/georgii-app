@@ -703,10 +703,17 @@ struct DiaryEditor: UIViewRepresentable {
             // До места диктовки в строке — только пробелы.
             let before = ns.substring(with: NSRange(location: line.location,
                                                     length: location - line.location))
-            guard before.allSatisfy({ $0 == " " || $0 == "\t" || $0 == "\u{00A0}" }) else {
+            // Или строка была пустой несколько секунд назад (P1095, «Замеры»
+            // автора по 365: первые слова диктовки пришли как с клавиатуры —
+            // «+7 зн., диктовка нет», — а следующие считались серединой
+            // строки, и время ставилось только в конце).
+            let blank = before.allSatisfy({ $0 == " " || $0 == "\t" || $0 == "\u{00A0}" })
+            let fresh = freshLine.map { $0.at == line.location && Date().timeIntervalSince($0.when) < 10 } ?? false
+            guard blank || fresh else {
                 StampTrace.note("диктовка: не с начала строки")
                 return
             }
+            if !blank { StampTrace.note("диктовка: строка начата недавно — время в её начало") }
             guard let stamp = parent.peekStamp?() else {
                 StampTrace.note("диктовка: время не пора (писали меньше часа назад)")
                 return
@@ -2310,6 +2317,10 @@ struct DiaryEditor: UIViewRepresentable {
         private var lastLength = 0
         /// Текст при прошлой правке — откуда началась тихая диктовка (P1092).
         private var lastText: NSString = ""
+        /// Строка, которая была пустой, когда в неё начали писать (P1095):
+        /// где она и когда. Первые слова диктовки иногда приходят как с
+        /// клавиатуры — по ней видно, что строка начата ими.
+        private var freshLine: (at: Int, when: Date)?
 
         /// Поле переписано из записи — запомнить его как «прежний текст»,
         /// чтобы первая правка после этого не казалась диктовкой (P1092).
@@ -2357,6 +2368,20 @@ struct DiaryEditor: UIViewRepresentable {
                 while from < common, lastText.character(at: from) == now.character(at: from) { from += 1 }
                 let sel = view.selectedRange
                 noteDictation(view, at: min(from, sel.location), end: NSMaxRange(sel))
+            }
+            // Правка легла в пустую строку — запомнить её начало (P1095).
+            if !placing {
+                let now = view.textStorage.string as NSString
+                var from = 0
+                let common = min(lastText.length, now.length)
+                while from < common, lastText.character(at: from) == now.character(at: from) { from += 1 }
+                if from <= lastText.length {
+                    let was = lastText.lineRange(for: NSRange(location: from, length: 0))
+                    let old = lastText.substring(with: was)
+                    if old.allSatisfy({ $0 == " " || $0 == "\t" || $0 == "\u{00A0}" || $0 == "\n" }) {
+                        freshLine = (was.location, Date())
+                    }
+                }
             }
             asked = false
             lastLength = length
