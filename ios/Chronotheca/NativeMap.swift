@@ -339,12 +339,12 @@ struct NativeMap: UIViewRepresentable {
             let chosen = mark.place.file != nil && parent.selected?.file == mark.place.file
             // Вдали — маленькая жёлтая точка без названия (P1099); выбранное
             // место — всегда стрелкой с названием.
-            if far && !chosen {
-                view.image = GlyphArt.far
-                view.centerOffset = .zero
-                return
-            }
-            let picture = PlaceLabel.draw(shown, solid: map.mapType != .standard, chosen: chosen)
+            // Точка рисуется на том же поле, что стрелка с названием, и на том
+            // же месте (P1100, автор: «появление происходит со смещением по
+            // горизонтали»): поле метки не меняет размер, и смена — одно
+            // плавное проступание на месте.
+            let picture = PlaceLabel.draw(shown, solid: map.mapType != .standard, chosen: chosen,
+                                          far: far && !chosen)
             view.image = picture
             // Метка стоит на точке значком.
             view.centerOffset = CGPoint(x: 0, y: picture.size.height / 2 - PlaceLabel.dot / 2)
@@ -355,7 +355,7 @@ struct NativeMap: UIViewRepresentable {
             for case let mark as PlaceMark in map.annotations {
                 guard let view = map.view(for: mark) else { continue }
                 if fade {
-                    UIView.transition(with: view, duration: 0.2, options: .transitionCrossDissolve) {
+                    UIView.transition(with: view, duration: 0.3, options: [.transitionCrossDissolve, .curveEaseInOut]) {
                         self.paint(view, mark, map)
                     }
                 } else {
@@ -562,7 +562,10 @@ enum PlaceLabel {
     /// прозрачную плашку мешает читать — плашка плотнее.
     /// `chosen` — место выбрано (P428): плашка непрозрачная. Стрелка
     /// выбором не меняется.
-    static func draw(_ name: String, solid: Bool = false, chosen: Bool = false) -> UIImage {
+    /// `far` — вдали (P1099): на том же поле вместо стрелки и названия —
+    /// точка на месте стрелки (P1100).
+    static func draw(_ name: String, solid: Bool = false, chosen: Bool = false,
+                     far: Bool = false) -> UIImage {
         let font = UIFont.systemFont(ofSize: 12, weight: .semibold)
         let words: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: UIColor(Look.ink)]
         let given = name.trimmingCharacters(in: .whitespaces)
@@ -577,7 +580,12 @@ enum PlaceLabel {
                           height: named ? above + plate.height + 3 : dot + 4)
         return UIGraphicsImageRenderer(size: size).image { ctx in
             let mid = size.width / 2
-            GlyphArt.draw(in: CGRect(x: mid - dot / 2, y: 1, width: dot, height: dot))
+            let glyph = CGRect(x: mid - dot / 2, y: 1, width: dot, height: dot)
+            if far {
+                GlyphArt.drawFar(in: glyph)
+                return
+            }
+            GlyphArt.draw(in: glyph)
             guard named else { return }
             let box = CGRect(x: mid - plate.width / 2, y: above,
                              width: plate.width, height: plate.height)
