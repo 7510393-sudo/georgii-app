@@ -78,42 +78,107 @@ struct IntroFilm: View {
 
     @ObservedObject private var intro = Intro.shared
     @State private var start = Date()
+    /// Мультфильм дошёл до конца (P1094): последний кадр стоит, внизу —
+    /// «Повторить» и «Закрыть», как у ролика в конце показа.
+    @State private var ended = false
+    /// Перед повтором кадр тает, и крест проступает с начала (P893).
+    @State private var dimmed = false
+    /// Какой раз показывают — с каждым повтором счёт времени заново.
+    @State private var round = 0
 
-    /// Длина, с: семь смахиваний, точка на карте, растворение.
+    /// Длина, с: семь смахиваний и точка на карте.
     static let length: Double = IntroPlan.end
     /// Для снимка CI: середина первого смахивания — видны рука и ход креста.
     static let snapshotMoment: Double = IntroPlan.first + IntroPlan.reach + IntroPlan.swipe / 2
 
     var body: some View {
-        GeometryReader { geo in
-            TimelineView(.animation(paused: intro.still)) { line in
-                IntroFrame(t: time(at: line.date), size: geo.size)
+        ZStack {
+            film
+            if ended {
+                endButtons.transition(.opacity)
             }
         }
-        .background(Desk())
-        .overlay(alignment: .bottom) {
-            Text(T("Пропустить", "Skip"))
-                .font(Look.sans(14))
-                .foregroundStyle(Look.inkSoft)
-                .padding(.bottom, 30)
-                .allowsHitTesting(false)
-        }
-        .ignoresSafeArea()
-        .contentShape(Rectangle())
-        .onTapGesture { intro.finish() }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(T("Как устроено: вверху прошлое, внизу будущее, слева карта, справа календарь. Коснитесь, чтобы начать.",
-                              "How it works: the past is above, the future below, the map on the left, the calendar on the right. Tap to begin."))
-        .accessibilityAddTraits(.isButton)
-        .onAppear { start = Date() }
-        .task {
+        .animation(.easeInOut(duration: 0.3), value: ended)
+        .task(id: round) {
             guard !intro.still else { return }
             // Ход — всегда, и при «Уменьшении движения» (P1069): это урок,
             // который человек открыл сам, а не украшение; неподвижный кадр
             // ничего не объяснял.
             try? await Task.sleep(nanoseconds: UInt64(Self.length * 1_000_000_000))
             guard !Task.isCancelled else { return }
-            intro.finish()
+            ended = true
+        }
+    }
+
+    private var film: some View {
+        GeometryReader { geo in
+            TimelineView(.animation(paused: intro.still || ended)) { line in
+                IntroFrame(t: time(at: line.date), size: geo.size)
+            }
+        }
+        .opacity(dimmed ? 0 : 1)
+        .background(Desk())
+        .overlay(alignment: .bottom) {
+            Text(T("Пропустить", "Skip"))
+                .font(Look.sans(14))
+                .foregroundStyle(Look.inkSoft)
+                .padding(.bottom, 30)
+                .opacity(ended ? 0 : 1)
+                .allowsHitTesting(false)
+        }
+        .ignoresSafeArea()
+        .contentShape(Rectangle())
+        // Пока идёт — касание пропускает; в конце — только кнопки.
+        .onTapGesture { if !ended { intro.finish() } }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(T("Как устроено: вверху прошлое, внизу будущее, слева карта, справа календарь. Коснитесь, чтобы начать.",
+                              "How it works: the past is above, the future below, the map on the left, the calendar on the right. Tap to begin."))
+        .accessibilityAddTraits(.isButton)
+        .accessibilityHidden(ended)
+        .onAppear { start = Date() }
+    }
+
+    /// Конец показа (P1094): так кончаются ролики и обучающие показы —
+    /// последний кадр остаётся, внизу «Повторить» и главная «Закрыть».
+    private var endButtons: some View {
+        VStack {
+            Spacer(minLength: 0)
+            HStack(spacing: 14) {
+                Button(action: replay) {
+                    Label(T("Повторить", "Watch again"), systemImage: "arrow.counterclockwise")
+                        .font(Look.sans(16, weight: .medium))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                        .modifier(Tag())
+                }
+                Button { intro.finish() } label: {
+                    Text(T("Закрыть", "Close"))
+                        .font(Look.sans(16, weight: .semibold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                        .modifier(Tag(look: .chosen))
+                }
+            }
+            .buttonStyle(.plain)
+            .frame(maxWidth: 360)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 18)
+        }
+    }
+
+    /// Сначала: кадр тает, счёт времени заново — крест проступает, как в
+    /// первый раз.
+    private func replay() {
+        withAnimation(.easeIn(duration: 0.25)) { dimmed = true }
+        ended = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            start = Date()
+            dimmed = false
+            round += 1
         }
     }
 
@@ -153,9 +218,9 @@ enum IntroPlan {
     /// Точка падает на карту.
     static var pinStart: Double { first + Double(stops.count) * step }
     static var pinEnd: Double { pinStart + 0.6 }
-    /// Растворение в выбор папки.
-    static var fadeStart: Double { pinEnd + 0.7 }
-    static var end: Double { fadeStart + 0.35 }
+    /// Точка легла — кадр стоит, появляются кнопки (P1094; прежде кадр
+    /// растворялся сам).
+    static var end: Double { pinEnd + 0.5 }
 
     /// Где рамка в миг `t`.
     static func camera(_ t: Double) -> Spot {
@@ -219,12 +284,12 @@ private struct IntroFrame: View {
 
     var body: some View {
         let W = Self.screenW, H = Self.screenH
-        let frameW = min(size.width * 0.48, 205)
+        // На десятую мельче (P1094): было 48 % ширины, не больше 205.
+        let frameW = min(size.width * 0.432, 185)
         let k = frameW / W
         let frameH = H * k
         let cam = IntroPlan.camera(t)
         let born = IntroPlan.ease(t, 0, IntroPlan.first)
-        let gone = 1 - IntroPlan.ease(t, IntroPlan.fadeStart, IntroPlan.end)
         let pin = IntroPlan.ease(t, IntroPlan.pinStart, IntroPlan.pinEnd)
         let stepX = W + Self.gap, stepY = H + Self.gap
         let corner = 46 * k
@@ -247,11 +312,29 @@ private struct IntroFrame: View {
             .frame(width: frameW, height: frameH)
 
             // Вне рамки крест притушен: видно, где он лежит, а смотреть —
-            // в рамку.
+            // в рамку. Слабее, чем было (P1094: 32 % вместо 50 %) — экраны
+            // за рамкой читаются, а не сливаются с фоном.
             Veil(hole: CGSize(width: frameW, height: frameH), corner: corner)
-                .fill(Look.chrome.opacity(0.5), style: FillStyle(eoFill: true))
+                .fill(Look.chrome.opacity(0.32), style: FillStyle(eoFill: true))
                 .frame(width: size.width * 3, height: size.height * 3)
                 .allowsHitTesting(false)
+
+            // Тонкий контур каждого экрана креста — поверх покрывала (P1094):
+            // края экранов не тонут в столе.
+            ZStack {
+                ForEach(Array([IntroPlan.past, IntroPlan.future, IntroPlan.map,
+                               IntroPlan.calendar, IntroPlan.today].enumerated()), id: \.offset) { _, spot in
+                    RoundedRectangle(cornerRadius: 46, style: .continuous)
+                        .strokeBorder(Look.ink.opacity(0.5), lineWidth: 1 / k)
+                        .frame(width: W, height: H)
+                        .offset(x: spot.x * stepX, y: spot.y * stepY)
+                }
+            }
+            .frame(width: W, height: H)
+            .offset(x: -cam.x * stepX, y: -cam.y * stepY)
+            .scaleEffect(k)
+            .frame(width: frameW, height: frameH)
+            .allowsHitTesting(false)
 
             // Неподвижное в телефоне: нижняя строка разделов и уголок с
             // шестерёнкой — как в приложении, крест едет под ними.
@@ -288,10 +371,10 @@ private struct IntroFrame: View {
                 caption(T("Прошлое", "Past"), IntroPlan.past, cam)
                 caption(T("Будущее", "Future"), IntroPlan.future, cam)
             }
-            .offset(y: frameH / 2 + 30)
+            .offset(y: frameH / 2 + 27)
         }
         .offset(y: lift)
-        .opacity(Double(born * gone))
+        .opacity(Double(born))
         .scaleEffect(0.96 + 0.04 * born)
         .frame(width: size.width, height: size.height)
         .clipped()
@@ -301,7 +384,7 @@ private struct IntroFrame: View {
     private func caption(_ text: String, _ spot: CGPoint, _ cam: CGPoint) -> some View {
         let d = Double(hypot(cam.x - spot.x, cam.y - spot.y))
         return Text(text)
-            .font(Look.sans(17, weight: .medium))
+            .font(Look.sans(15.5, weight: .medium))
             .foregroundStyle(Look.ink)
             .opacity(max(0, 1 - d * 2.5))
     }
@@ -325,7 +408,8 @@ private enum IntroScreen {
     /// Экран — на своё место в кресте.
     static func place<V: View>(_ v: V, _ spot: CGPoint, _ stepX: CGFloat, _ stepY: CGFloat) -> some View {
         v.frame(width: IntroFrame.screenW, height: IntroFrame.screenH)
-            .clipped()
+            // Углы — как у телефона и контура (P1094).
+            .clipShape(RoundedRectangle(cornerRadius: 46, style: .continuous))
             .offset(x: spot.x * stepX, y: spot.y * stepY)
     }
 }
@@ -338,12 +422,12 @@ private struct IntroHand: View {
         ZStack(alignment: .topLeading) {
             Circle()
                 .fill(Look.accent.opacity(0.32 * Double(pressed)))
-                .frame(width: 44, height: 44)
-                .offset(x: -22, y: -22)
+                .frame(width: 40, height: 40)
+                .offset(x: -20, y: -20)
             // Крупнее (P1070): на пёстром кресте рука не теряется — тёмная,
             // с белой обводкой.
             Image(systemName: "hand.point.up.left.fill")
-                .font(.system(size: 64))
+                .font(.system(size: 58))
                 .foregroundStyle(Look.ink)
                 .shadow(color: .white, radius: 0, x: 1.5, y: 1.5)
                 .shadow(color: .white, radius: 0, x: -1.5, y: -1.5)

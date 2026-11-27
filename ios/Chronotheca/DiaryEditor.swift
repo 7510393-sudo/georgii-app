@@ -738,10 +738,14 @@ struct DiaryEditor: UIViewRepresentable {
                 UIView.animate(withDuration: 0.2) { label.alpha = 1 }
             }
             placeGhost(view)
-            StampTrace.note(String(format: "диктовка: время нарисовано у %.0f,%.0f, %.0f×%.0f",
+            StampTrace.note(String(format: "диктовка: время нарисовано у %.0f,%.0f, %.0f×%.0f (знак %ld из %ld)",
                                    label.frame.minX, label.frame.minY,
-                                   label.bounds.width, label.bounds.height))
+                                   label.bounds.width, label.bounds.height,
+                                   dictatedLine?.at ?? -1, view.textStorage.length))
         }
+
+        /// Сверка места времени уже назначена (P1093).
+        private var replacePending = false
 
         /// Вырез и время — к началу строки диктовки.
         private func placeGhost(_ view: UITextView) {
@@ -749,6 +753,13 @@ struct DiaryEditor: UIViewRepresentable {
             guard let d = dictatedLine, d.at <= view.textStorage.length,
                   let pos = view.position(from: view.beginningOfDocument, offset: d.at) else {
                 return clearGhost(view)
+            }
+            // Раскладка строк — свежая (P1093, снимки автора по 364: время
+            // нарисовано строкой ниже надиктованной, а в текст встало
+            // верно). Поле раскладывает строки лениво: сразу после слов
+            // диктовки место знака бывает прикидкой, и время уезжало.
+            if let layout = view.textLayoutManager {
+                layout.ensureLayout(for: layout.documentRange)
             }
             let caret = view.caretRect(for: pos)
             guard caret.height > 0, caret.minY.isFinite else {
@@ -759,9 +770,32 @@ struct DiaryEditor: UIViewRepresentable {
             let cut = CGRect(x: 0, y: caret.minY - inset.top,
                              width: ceil(label.bounds.width), height: max(caret.height - 2, 1))
             let now = view.textContainer.exclusionPaths.first?.bounds
-            if now != cut { view.textContainer.exclusionPaths = [UIBezierPath(rect: cut)] }
-            label.frame.origin = CGPoint(x: inset.left,
-                                         y: caret.minY + (caret.height - label.bounds.height) * 0.7)
+            let y = caret.minY + (caret.height - label.bounds.height) * 0.7
+            if abs(label.frame.minY - y) > 1, label.frame.minY != 0 {
+                StampTrace.note(String(format: "диктовка: время перенесено к y %.0f (знак %ld из %ld)",
+                                       y, d.at, view.textStorage.length))
+            }
+            let spot = CGPoint(x: inset.left, y: y)
+            if label.frame.origin != spot {
+                // Уже видно — переезжает плавно, а не скачком (P893).
+                if label.frame.minY != 0 {
+                    UIView.animate(withDuration: 0.15) { label.frame.origin = spot }
+                } else {
+                    label.frame.origin = spot
+                }
+            }
+            if now != cut {
+                view.textContainer.exclusionPaths = [UIBezierPath(rect: cut)]
+                // Вырез сдвигает строки — сверить место ещё раз, когда
+                // поле их переложит.
+                guard !replacePending else { return }
+                replacePending = true
+                DispatchQueue.main.async { [weak self, weak view] in
+                    guard let self else { return }
+                    self.replacePending = false
+                    if let view { self.placeGhost(view) }
+                }
+            }
         }
 
         /// Время вписано или диктовку бросили — нарисованное время и вырез
