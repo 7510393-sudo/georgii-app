@@ -613,23 +613,25 @@ struct SearchView: View {
             // полоску «Сегодня» (P1018, видео автора к 333: в гнездо летела
             // вторая полоска «Сегодня» — снимок брал её). Полоса — от низа
             // полоски, а лист сворачивается до низа полосы.
-            // Пока сворачивается, лист возвращается на своё место (P1043;
-            // докрутка к началу снята — ломала посадку, проверка testPastCardBottom; видео автора к 346: смахнутый
-            // вверх прокрученный лист улетал в гнездо серединой записи, без
-            // шапки дня — и в гнезде его сменяла совсем другая картинка).
-            // Отменяет «лист стоит, где его отпустили» P1015.
+            // Лист сворачивается там, где сработал порог (P1096, автор:
+            // «движение карточки вверх после виброотклика лишнее, отнимает
+            // время и создаёт впечатление неконтролируемого движения»;
+            // отменяет возврат листа на место P1043). Одинаково у прошлого и
+            // будущего: утянутый вниз — полоса там, где его верх с шапкой
+            // дня; утянутый вверх — у верха экрана, где кончается видимое
+            // (верх листа ушёл за край).
             let shown = side < 0 ? max(under, FollowRibbon.peekTop) : under
-            let keep = shown - under + band
+            let top = max(lead, 0) + shown
+            let keep = top + band - lead - under
             fold.glide.run(FoldUp.shut, step: { p in
                 guard alive() else { return }
-                fold.at = lead * (1 - p)
                 fold.visible = full + (keep - full) * p
             }, then: {
                 guard alive() else { return }
-                let rect = CGRect(x: 0, y: shown, width: width, height: band)
+                let rect = CGRect(x: 0, y: top, width: width, height: band)
                 let area = ribbon.unfold.area
                 let shot = FoldUp.picture(rect.offsetBy(dx: area.minX, dy: area.minY))
-                    .map { FoldUp.shaped($0, top: under - shown) }
+                    .map { FoldUp.shaped($0, top: lead + under - top) }
                 withTransaction(quiet) {
                     // Полоса летит — карточка под ней садится без схемы
                     // (P1018): её сменяет полоса, а не бледный контур.
@@ -638,7 +640,7 @@ struct SearchView: View {
                     fold.card = picture
                     fold.notch = ribbon.unfold.notches[closed] ?? 0
                     fold.cardWidth = cardWidth
-                    fold.lift = shown - under
+                    fold.lift = top - lead - under
                     // Снимка нет — летит схема с места полосы.
                     if shot == nil { fold.visible = nil }
                     fold.gone = true
