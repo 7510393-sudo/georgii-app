@@ -35,6 +35,24 @@ enum GlyphArt {
         arrow(in: circle.insetBy(dx: 3, dy: 1))
     }
 
+    /// Метка вдали (P1099, автор: «вдали — маленькие точки»): жёлтая точка
+    /// с той же кромкой и тенью — меньше всего загораживает карту.
+    static let far: UIImage = {
+        let side: CGFloat = 12
+        return UIGraphicsImageRenderer(size: CGSize(width: side, height: side)).image { context in
+            let round = UIBezierPath(ovalIn: CGRect(x: 2, y: 1.5, width: 8, height: 8))
+            context.cgContext.saveGState()
+            context.cgContext.setShadow(offset: CGSize(width: 0, height: 0.6), blur: 1.2,
+                                        color: UIColor.black.withAlphaComponent(0.35).cgColor)
+            fill.setFill()
+            round.fill()
+            context.cgContext.restoreGState()
+            round.lineWidth = 1
+            edge.setStroke()
+            round.stroke()
+        }
+    }()
+
     /// Тёплый жёлтый — заметен на зелени парков, сером городе и снимке со
     /// спутника; одинаков днём и ночью.
     static let fill = UIColor(red: 0.98, green: 0.77, blue: 0.20, alpha: 1)

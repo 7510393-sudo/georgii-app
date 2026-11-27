@@ -317,9 +317,9 @@ struct NativeMap: UIViewRepresentable {
 
         func mapView(_ map: MKMapView, regionDidChangeAnimated animated: Bool) {
             parent.onRegion(map.region)
-            // Отъехали далеко или вернулись — названия под стрелками
-            // проступают или тают (P1098, как у карт Apple и Google: вдали —
-            // только метки, вблизи — с подписями).
+            // Отъехали далеко или вернулись — стрелки с названиями плавно
+            // сменяются маленькими точками и обратно (P1098, P1099, как у карт
+            // Apple и Google: вдали — только метки, вблизи — с подписями).
             let now = Self.isFar(map)
             if now != far {
                 far = now
@@ -327,19 +327,24 @@ struct NativeMap: UIViewRepresentable {
             }
         }
 
-        /// Карта показывает много — больше 20 км по высоте: названия своих
-        /// мест прячутся, остаются стрелки (P1098).
+        /// Карта показывает много — больше 20 км по высоте: свои места —
+        /// маленькими точками, без названий (P1098, P1099).
         private var far = false
         static func isFar(_ map: MKMapView) -> Bool { map.region.span.latitudeDelta > 0.18 }
 
-        /// Метка своего места: стрелка, под ней — название (вдали — без него).
+        /// Метка своего места: стрелка, под ней — название; вдали — точка.
         func paint(_ view: MKAnnotationView, _ mark: PlaceMark, _ map: MKMapView) {
             // Названием остались координаты — на карте их не пишем (P404).
             let shown = mark.place.name == Geo.text(mark.place.coordinate) ? "" : mark.place.name
             let chosen = mark.place.file != nil && parent.selected?.file == mark.place.file
-            // Выбранное место подписано всегда.
-            let name = far && !chosen ? "" : shown
-            let picture = PlaceLabel.draw(name, solid: map.mapType != .standard, chosen: chosen)
+            // Вдали — маленькая жёлтая точка без названия (P1099); выбранное
+            // место — всегда стрелкой с названием.
+            if far && !chosen {
+                view.image = GlyphArt.far
+                view.centerOffset = .zero
+                return
+            }
+            let picture = PlaceLabel.draw(shown, solid: map.mapType != .standard, chosen: chosen)
             view.image = picture
             // Метка стоит на точке значком.
             view.centerOffset = CGPoint(x: 0, y: picture.size.height / 2 - PlaceLabel.dot / 2)
