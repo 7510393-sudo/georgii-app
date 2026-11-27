@@ -831,10 +831,8 @@ struct DiaryEditor: UIViewRepresentable {
         }
 
         /// Диктовка отпустила поле (P869): строка, которую она начала в
-        /// конце записи, — с отметкой времени в начале. Прежние способы
-        /// (P711, P766) ставят время до первых слов; на телефоне автора
-        /// надиктованные строки всё равно оставались без времени. Это —
-        /// запасное правило: что бы ни сняло отметку, она встаёт потом.
+        /// конце записи, — с отметкой времени в начале. Пока говорят, время
+        /// только нарисовано (P1073); вписывается здесь.
         /// `true` — отметка поставлена (и поле уже обновлено).
         @discardableResult
         func stampDictated(_ view: UITextView) -> Bool {
@@ -2322,6 +2320,14 @@ struct DiaryEditor: UIViewRepresentable {
         /// клавиатуры — по ней видно, что строка начата ими.
         private var freshLine: (at: Int, when: Date)?
 
+        /// Первый знак, где прежний текст и новый расходятся (P1092).
+        private func changeStart(_ now: NSString) -> Int {
+            var from = 0
+            let common = min(lastText.length, now.length)
+            while from < common, lastText.character(at: from) == now.character(at: from) { from += 1 }
+            return from
+        }
+
         /// Поле переписано из записи — запомнить его как «прежний текст»,
         /// чтобы первая правка после этого не казалась диктовкой (P1092).
         func remember(_ view: UITextView) {
@@ -2334,18 +2340,18 @@ struct DiaryEditor: UIViewRepresentable {
 
         func textViewDidChange(_ view: UITextView) {
             if stampGhost != nil { placeGhost(view) }
-            // След (P1088, «Замеры» автора по 363: строка запомнена, время
-            // нарисовано и поставлено — всё в одну секунду, в конце
-            // диктовки). Что поле видит, пока говорят: сколько букв пришло
-            // разом, есть ли временный текст, какой способ ввода.
+            // След (P1088, P1100): сколько знаков пришло или ушло разом —
+            // и пока строка диктовки запомнена (у автора по 368 слова на
+            // миг пропадали, а в следе этого не было).
             let length = view.textStorage.length
             let marked = view.markedTextRange != nil
-            let mode = view.textInputMode?.primaryLanguage ?? "—"
-            if dictatedLine == nil, marked || mode == "dictation" || abs(length - lastLength) > 1 {
-                StampTrace.note("поле: \(length - lastLength >= 0 ? "+" : "")\(length - lastLength) зн., "
-                                + "временный текст \(marked ? "да" : "нет"), ввод \(mode), "
-                                + "диктовка \(Self.dictating(view) ? "да" : "нет")")
+            if marked || abs(length - lastLength) > 1 {
+                StampTrace.note("поле: \(length - lastLength >= 0 ? "+" : "")\(length - lastLength) зн."
+                                + (marked ? ", временный текст" : "")
+                                + (dictatedLine != nil ? ", строка диктовки" : ""))
             }
+            let now = view.textStorage.string as NSString
+            let from = changeStart(now)
             // Диктовка нынешнего iPhone (P1091, автор: «слова появляются
             // постепенно, по ходу речи»): слова ложатся в поле без
             // временного текста и без смены способа ввода, и мимо вопроса
@@ -2358,34 +2364,21 @@ struct DiaryEditor: UIViewRepresentable {
                 Self.spokenSeen = Date()
                 StampTrace.note("диктовка: слова пришли без клавиатуры")
                 // Где правка началась — по совпадающему началу прежнего и
-                // нового текста (P1092, «Замеры» автора по 364: «не с начала
-                // строки»): диктовка не дописывает слова в хвост, а
-                // переписывает всю фразу заново, и «курсор минус прибавка»
-                // попадал в середину первой строки.
-                let now = view.textStorage.string as NSString
-                var from = 0
-                let common = min(lastText.length, now.length)
-                while from < common, lastText.character(at: from) == now.character(at: from) { from += 1 }
+                // нового текста (P1092): диктовка переписывает фразу целиком.
                 let sel = view.selectedRange
                 noteDictation(view, at: min(from, sel.location), end: NSMaxRange(sel))
             }
             // Правка легла в пустую строку — запомнить её начало (P1095).
-            if !placing {
-                let now = view.textStorage.string as NSString
-                var from = 0
-                let common = min(lastText.length, now.length)
-                while from < common, lastText.character(at: from) == now.character(at: from) { from += 1 }
-                if from <= lastText.length {
-                    let was = lastText.lineRange(for: NSRange(location: from, length: 0))
-                    let old = lastText.substring(with: was)
-                    if old.allSatisfy({ $0 == " " || $0 == "\t" || $0 == "\u{00A0}" || $0 == "\n" }) {
-                        freshLine = (was.location, Date())
-                    }
+            if !placing, from <= lastText.length {
+                let was = lastText.lineRange(for: NSRange(location: from, length: 0))
+                let old = lastText.substring(with: was)
+                if old.allSatisfy({ $0 == " " || $0 == "\t" || $0 == "\u{00A0}" || $0 == "\n" }) {
+                    freshLine = (was.location, Date())
                 }
             }
             asked = false
             lastLength = length
-            lastText = NSString(string: view.textStorage.string)
+            lastText = now
             // Диктовка пишет — запомнить её строку; отпустила — время в
             // начало строки, если его там нет (P869).
             if Self.dictating(view), !placing {
@@ -2399,12 +2392,9 @@ struct DiaryEditor: UIViewRepresentable {
                 }
                 if dictatedLine != nil { checkDictationSoon() }
             }
-            // Время надиктованной строке — только когда диктовку выключили
-            // или ушли из записи (P881): правка поля посреди фразы
-            // выключала диктовку.
-            let now = DiaryEditor.plain(view.attributedText)
-            pushed = now
-            parent.text = now
+            let text = DiaryEditor.plain(view.attributedText)
+            pushed = text
+            parent.text = text
             if typedLetters, view.isFirstResponder,
                Self.atEnd(view.textStorage, from: view.selectedRange.location) {
                 parent.onWrite?()
@@ -2415,7 +2405,7 @@ struct DiaryEditor: UIViewRepresentable {
                 // картинкой. Курсор остаётся примерно там, где был.
                 StampTrace.note("поле переписано: ссылка стала картинкой")
                 let at = view.selectedRange.location
-                view.attributedText = DiaryEditor.styled(now, size: parent.size,
+                view.attributedText = DiaryEditor.styled(text, size: parent.size,
                                                          serif: parent.serif,
                                                          stamped: parent.stamped,
                                                          resolve: resolve)
@@ -2425,10 +2415,7 @@ struct DiaryEditor: UIViewRepresentable {
             } else {
                 restyle(view)
             }
-            // Букву за отметкой здесь не поднимать (P960): правка поля сразу
-            // за первыми надиктованными словами выключала диктовку — признак
-            // диктовки у нынешнего iPhone, видно, не срабатывает. Буква
-            // встаёт, когда курсор ушёл со строки или из записи.
+            // Букву за отметкой поднимает уход со строки (P960), не правка.
             // Строка прибавилась — курсор мог уйти под клавиатуру.
             DispatchQueue.main.async { [weak self] in self?.showCaret(animated: false) }
         }
