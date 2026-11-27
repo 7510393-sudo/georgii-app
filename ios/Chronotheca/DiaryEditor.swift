@@ -2340,7 +2340,7 @@ struct DiaryEditor: UIViewRepresentable {
 
         func textViewDidChange(_ view: UITextView) {
             if stampGhost != nil { placeGhost(view) }
-            // След (P1088, P1100): сколько знаков пришло или ушло разом —
+            // След (P1088, P1101): сколько знаков пришло или ушло разом —
             // и пока строка диктовки запомнена (у автора по 368 слова на
             // миг пропадали, а в следе этого не было).
             let length = view.textStorage.length

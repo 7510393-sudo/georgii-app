@@ -36,27 +36,27 @@ enum GlyphArt {
     }
 
     /// Метка вдали (P1099, автор: «вдали — маленькие точки»): жёлтая точка
-    /// с той же кромкой и тенью — меньше всего загораживает карту.
-    static let far: UIImage = {
-        let side: CGFloat = 12
-        return UIGraphicsImageRenderer(size: CGSize(width: side, height: side)).image { context in
-            let round = UIBezierPath(ovalIn: CGRect(x: 2, y: 1.5, width: 8, height: 8))
-            context.cgContext.saveGState()
-            context.cgContext.setShadow(offset: CGSize(width: 0, height: 0.6), blur: 1.2,
-                                        color: UIColor.black.withAlphaComponent(0.35).cgColor)
-            GlyphArt.fill.setFill()
-            round.fill()
-            context.cgContext.restoreGState()
-            round.lineWidth = 1
-            GlyphArt.edge.setStroke()
-            round.stroke()
-        }
-    }()
+    /// с той же кромкой и тенью, на месте середины стрелки.
+    static func drawFar(in circle: CGRect) {
+        let round = UIBezierPath(ovalIn: CGRect(x: circle.midX - 4, y: circle.midY - 4, width: 8, height: 8))
+        let context = UIGraphicsGetCurrentContext()
+        context?.saveGState()
+        context?.setShadow(offset: CGSize(width: 0, height: 0.6), blur: 1.2,
+                           color: UIColor.black.withAlphaComponent(0.35).cgColor)
+        fill.setFill()
+        round.fill()
+        context?.restoreGState()
+        round.lineWidth = 1
+        edge.setStroke()
+        round.stroke()
+    }
 
-    /// Тёплый жёлтый — заметен на зелени парков, сером городе и снимке со
-    /// спутника; одинаков днём и ночью.
-    static let fill = UIColor(red: 0.98, green: 0.77, blue: 0.20, alpha: 1)
-    static let edge = UIColor(red: 0.22, green: 0.15, blue: 0.06, alpha: 0.9)
+    /// Яркий жёлтый (P1100, автор: «более яркого цвета; сейчас какие-то
+    /// морковно приглушённые»; было 0,98 · 0,77 · 0,20 с тёмно-коричневой
+    /// кромкой) — заметен на зелени парков, сером городе и снимке со
+    /// спутника; одинаков днём и ночью. Кромка — тёмно-оливковая, тоньше.
+    static let fill = UIColor(red: 1.0, green: 0.87, blue: 0.08, alpha: 1)
+    static let edge = UIColor(red: 0.36, green: 0.28, blue: 0.0, alpha: 0.85)
 
     /// Стрелка с узким древком и острым наконечником.
     private static func arrow(in r: CGRect) {
@@ -74,7 +74,7 @@ enum GlyphArt {
         p.close()
         p.lineJoinStyle = .miter
         p.miterLimit = 8
-        p.lineWidth = 1.2
+        p.lineWidth = 1
         let context = UIGraphicsGetCurrentContext()
         context?.saveGState()
         // Лёгкая тень — метка лежит над картой, а не в ней.

@@ -596,8 +596,29 @@ struct CalendarView: View {
                     RoundedRectangle(cornerRadius: 8).fill(isToday ? Look.accent : tint(date))
                 }
             }
-            .overlay(RoundedRectangle(cornerRadius: 8)
-                .strokeBorder(isSelected ? Look.accent : .clear, lineWidth: 1.5))
+            // Выбранный день — заметной рамкой (P1100, автор: «рамка очень
+            // незаметная и теряется в пестроте картинки»): синяя 3 точки, на
+            // снимке под ней ещё белая — читается на любом кадре.
+            .overlay {
+                if isSelected {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 8)
+                            .strokeBorder(Look.accent, lineWidth: 3)
+                        if shot != nil {
+                            RoundedRectangle(cornerRadius: 6)
+                                .inset(by: 3)
+                                .strokeBorder(Color.white.opacity(0.95), lineWidth: 1.5)
+                        }
+                    }
+                    .transition(.opacity)
+                }
+            }
+            .animation(.easeOut(duration: 0.15), value: isSelected)
+            // Касание — по всей клетке (P1100, автор: «превью дня реагирует
+            // только после 5–6 прикосновений»): бумага прошедшего дня и снимок
+            // касаний не ловят, и клетка отзывалась, только если попасть в
+            // само число.
+            .contentShape(RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
     }
