@@ -1,17 +1,87 @@
+    553 Thread_54890   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 553 start  (in dyld) + 6992  [0x1043184e4]
+    +   553 start_sim  (in dyld_sim) + 20  [0x10445b0e4]
+    +     553 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x10649bf08]  ChronothecaApp.swift:0
+    +       553 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x10649be5c]  /<compiler-generated>:0
+    +         553 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           553 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             553 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               553 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 553 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   553 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     553 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       529 __CFRunLoopRun  (in CoreFoundation) + 1884  [0x180421c6c]
+    +                       ! 529 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__  (in CoreFoundation) + 12  [0x180422a94]
+    +                       !   529 _dispatch_main_queue_callback_4CF  (in libdispatch.dylib) + 40  [0x180195890]
+    +                       !     529 _dispatch_main_queue_drain  (in libdispatch.dylib) + 1172  [0x180195d34]
+    +                       !       529 <deduplicated_symbol>  (in libdispatch.dylib) + 24  [0x1801bd748]
+    +                       !         529 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                       !           529 _dispatch_call_block_and_release  (in libdispatch.dylib) + 24  [0x1801866a0]
+    +                       !             529 -[AXBinaryMonitor _handleLoadedImagePath:]  (in AXCoreUtilities) + 356  [0x192abf750]
+    +                       !               529 -[AXBinaryMonitor _applyHandlerBlocks:handlerMap:]  (in AXCoreUtilities) + 172  [0x192abf574]
+    +                       !                 529 __54+[AXMobileQuickLookGlue accessibilityInitializeBundle]_block_invoke_4  (in QuickLook) + 116  [0x12f2951e4]
+    +                       !                   529 +[NSBundle bundleWithIdentifier:]  (in Foundation) + 32  [0x18103d4b8]
+    +                       !                     529 _CFBundleGetBundleWithIdentifier  (in CoreFoundation) + 232  [0x1803af954]
+    +                       !                       529 _CFBundleEnsureBundlesUpToDateWithHint  (in CoreFoundation) + 40  [0x1803b1924]
+    +                       !                         529 _CFBundleEnsureBundlesExistForImagePaths  (in CoreFoundation) + 60  [0x1803b25a4]
+    +                       !                           529 _CFBundleEnsureBundleExistsForImagePath  (in CoreFoundation) + 64  [0x1803b1ed0]
+    +                       !                             291 _CFBundleCreate  (in CoreFoundation) + 652  [0x1803afe88]
+    +                       !                             : 291 CFBundleGetInfoDictionary  (in CoreFoundation) + 44  [0x180537d8c]
+    +                       !                             :   291 _CFBundleRefreshInfoDictionaryAlreadyLocked  (in CoreFoundation) + 148  [0x180537e6c]
+    +                       !                             :     291 _CFBundleCopyInfoDictionaryInDirectoryWithVersion  (in CoreFoundation) + 1528  [0x180537220]
+    +                       !                             :       291 _CFDataCreateFromURL  (in CoreFoundation) + 80  [0x180491428]
+    +                       !                             :         291 _CFReadBytesFromFile  (in CoreFoundation) + 360  [0x1803ddda4]
+    +                       !                             :           291 read  (in libsystem_kernel.dylib) + 8  [0x1041956cc]
+    +                       !                             238 _CFBundleCreate  (in CoreFoundation) + 372  [0x1803afd70]
+    +                       !                               238 _CFBundleGetBundleVersionForURL  (in CoreFoundation) + 376  [0x1803b38a0]
+    +                       !                                 238 _CFIterateDirectory  (in CoreFoundation) + 96  [0x1803def78]
+    +                       !                                   238 readdir  (in libsystem_c.dylib) + 36  [0x1801303a4]
+    +                       !                                     238 _readdir_unlocked  (in libsystem_c.dylib) + 220  [0x1801302b0]
+    +                       !                                       238 __getdirentries64  (in libsystem_kernel.dylib) + 8  [0x104196670]
+    +                       24 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    +                         24 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    +                           24 mach_msg  (in libsystem_kernel.dylib) + 20  [0x104194ef0]
+    +                             24 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x10419cc44]
+    +                               24 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x1041a5e84]
+    +                                 24 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x104194b70]
 
 Sort by top of stack, same collapsed (when >= 5):
-        mach_msg2_trap  (in dyld)        713
-        invocation function for block in dyld4::Loader::applyCachePatchesToOverride(dyld4::RuntimeState&, dyld4::Loader const*, unsigned short, dyld4::Loader::DylibPatch const*, dyld4::DyldCacheDataConstLazyScopedWriter&) const  (in dyld_sim)        87
-        dyld3::MachOFile::trieWalk(Diagnostics&, unsigned char const*, unsigned char const*, char const*)  (in dyld_sim)        74
-        PatchTableV2::clientsExportsForImageAndClient(unsigned int, unsigned int) const  (in dyld_sim)        61
-        mach_o::UnsafeHeader::forEachLoadCommand(void (load_command const*, bool&) block_pointer) const  (in dyld_sim)        61
-        dyld3::MachOAnalyzer::withChainStarts(Diagnostics&, unsigned long long, void (dyld_chained_starts_in_image const*) block_pointer) const  (in dyld_sim)        50
-        strcmp  (in dyld_sim)        45
-        invocation function for block in dyld4::Loader::applyInterposingToDyldCache(dyld4::RuntimeState&)  (in dyld_sim)        43
-        PatchTableV4::forEachPatchableCacheUseOfExport(unsigned int, unsigned int, unsigned long long, unsigned long long (unsigned int) block_pointer, void (unsigned long long, dyld3::MachOFile::PointerMetaData, unsigned long long, bool) block_pointer) const  (in dyld_sim)        11
-        <deduplicated_symbol>  (in dyld)        6
-        invocation function for block in mach_o::UnsafeHeader::getDylibInstallName(char const**, mach_o::Version32*, mach_o::Version32*) const  (in dyld_sim)        5
-        mach_o::PointerFormat_DYLD_CHAINED_PTR_64::nextLocation(void const*) const  (in dyld_sim)        5
-
-Binary images description not available
-
+        __workq_kernreturn  (in libsystem_kernel.dylib)        4949
+        mach_msg2_trap  (in libsystem_kernel.dylib)        578
+        semaphore_wait_trap  (in libsystem_kernel.dylib)        511
+        read  (in libsystem_kernel.dylib)        291
+        __getdirentries64  (in libsystem_kernel.dylib)        238
+        generationCountFromListOfSources  (in CoreFoundation)        48
+        __semwait_signal  (in libsystem_kernel.dylib)        42
+        __CF_IS_OBJC  (in CoreFoundation)        26
+        pthread_getspecific  (in libsystem_pthread.dylib)        24
+        static PageTexture.smooth(_:_:_:_:_:)  (in Chronotheca.debug.dylib)        21
+        CFStringFindWithOptionsAndLocale  (in CoreFoundation)        20
+        objc_msgSend  (in libobjc.A.dylib)        18
+        os_unfair_lock_lock  (in libsystem_platform.dylib)        14
+        start_wqthread  (in libsystem_pthread.dylib)        13
+        pthread_setspecific  (in libsystem_pthread.dylib)        11
+        -[__NSDictionaryM objectForKey:]  (in CoreFoundation)        10
+        os_log_type_enabled  (in libsystem_trace.dylib)        10
+        -[_CFXPreferences copyAppValueForKey:identifier:container:configurationURL:]  (in CoreFoundation)        9
+        -[__NSArrayM getObjects:range:]  (in CoreFoundation)        9
+        Array.subscript.getter  (in libswiftCore.dylib)        9
+        _CFStringGetCStringPtrInternal  (in CoreFoundation)        9
+        normalizeQuintuplet  (in CoreFoundation)        9
+        -[_CFXPreferencesHandle copyPrefs]  (in CoreFoundation)        8
+        static PageTexture.grey.getter  (in Chronotheca.debug.dylib)        8
+        CFStringHashCString  (in CoreFoundation)        7
+        min<A>(_:_:)  (in libswiftCore.dylib)        7
+        objc_release  (in libobjc.A.dylib)        7
+        os_unfair_lock_unlock  (in libsystem_platform.dylib)        7
+        static PageTexture.makeAgedFolder(size:band:seed:tab:share:light:)  (in Chronotheca.debug.dylib)        7
+        -[CFPrefsSearchListSource alreadylocked_copyValueForKey:]  (in CoreFoundation)        6
+        CFRelease  (in CoreFoundation)        6
+        __CFStringEqual  (in CoreFoundation)        6
+        objc_retainAutoreleasedReturnValue  (in libobjc.A.dylib)        6
+        -[CFPrefsSearchListSource alreadylocked_getDictionary:]  (in CoreFoundation)        5
+        CFStringGetLength  (in CoreFoundation)        5
+        _Block_object_dispose  (in libsystem_blocks.dylib)        5
+        _CFStringCreateIndirectASCIITaggedPointerString  (in CoreFoundation)        5
+        _swift_isClassOrObjCExistentialType  (in libswiftCore.dylib)        5
+        swift::LockingConcurrentMap<(anonymous namespace)::TupleCacheEntry, (anonymous namespace)::TupleCacheStorage>::getOrInsert<(anonymous namespace)::TupleCacheEntry::Key, swift::MetadataRequest&, swift::TargetValueWitnessTable<swift::InProcess> const*&>((anonymous namespace)::TupleCacheEntry::Key, swift::MetadataRequest&, swift::TargetValueWitnessTable<swift::InProcess> const*&)  (in libswiftCore.dylib)        5
