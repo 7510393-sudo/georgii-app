@@ -1,4 +1,14 @@
-# RollingDays в App Store — тексты и порядок (17.10, сверено 14.11)
+# RollingDays в App Store — тексты и порядок (17.10, сверено 14.11 и 28.11)
+
+**Сверено 28.11 со сборкой 370** (P1104): описание — простыми знаками
+(«-» вместо «•» и «—», «...» вместо «…»), как его принял App Store
+Connect 19.11. Исправлено: управление планом (номер подержать и вести:
+вверх-вниз — порядок, вправо — на другой день); «How did it go?» →
+«How the day went» — строка под каждым из трёх первых дел; календарь —
+год и месяц (списка больше нет, вместо него — картотека); добавлена
+картотека дней (тянуть «Сегодня» вниз — прошлое, вверх — будущее);
+карта — «своя карта мест», без «значков» (значок один — стрелка, P609);
+в заметках проверяющим — мультфильм на первом запуске (P1057).
 
 **Сверено 14.11 с приложением после сборки 289** (P950): цена по P908
 (£14,99 — цена первого года, £24,99 с iPad; одна покупка на все
@@ -45,42 +55,46 @@ Plan the morning. Remember the evening. One page a day in your own files — no 
 
 RollingDays is a diary and a day planner on one page.
 
-Plan the day in the morning. Answer "How did it go?" in the evening. Write, add a photo, a voice note or a place. Turn the page.
+Plan the day in the morning. In the evening, write how it went. Add a photo, a voice note or a place. Turn the page.
 
 YOUR ENTRIES ARE YOUR FILES
-Every day is a plain text file in a folder you choose — iCloud Drive or On My iPhone. No account, no server of ours, no special format. Delete the app and your entries stay. Open them in any text editor, on a Mac, in Obsidian — in twenty years.
+Every day is a plain text file in a folder you choose - iCloud Drive or On My iPhone. No account, no server of ours, no special format. Delete the app and your entries stay. Open them in any text editor, on a Mac, in Obsidian - in twenty years.
 
 ONE PAGE FOR THE WHOLE DAY
-• A plan with numbered tasks: tap the number to mark done, swipe to move to another day, long-press to reorder.
-• Time and a reminder for a task.
-• "How did it go?" — a short answer under every task.
-• Repeating tasks and habits.
-• Your iPhone Calendar events shown in the plan.
-• Below the plan — the diary of the day.
+- A plan with numbered tasks: tap the number to mark a task done. Hold the number and drag it up or down to reorder, or to the right to move the task to another day.
+- Time, repeat and a reminder for a task.
+- "How the day went" - a line for each of the day's first three tasks.
+- Repeating tasks and habits.
+- Your iPhone Calendar events shown in the plan.
+- Below the plan - the diary of the day.
+
+YOUR DAYS AS CARDS
+- Pull today's page down and the past opens as a deck of cards; pull it up for the days ahead.
+- Tap a card to open its day. Swipe the open day up or down and it goes back to its place.
 
 WHAT GOES INTO A DAY
-• Photos, videos, voice notes (with text), files.
-• Places: a point in the text, your own map with icons.
-• Steps and sleep from Health, if you allow it.
+- Photos, videos, voice notes (with text), files.
+- Places: a point in the text and your own map of places. Days with places appear on the map with their photos.
+- Steps and sleep from Health, if you allow it.
 
 FIND AND REMEMBER
-• Search across everything — only plans, only diary, only photos, only places.
-• Calendar by year, month and list.
-• "Back then…" — what happened on this day in earlier years.
-• A PDF book of any period.
+- Search across everything - only plans, only diary, only photos, only places.
+- Calendar by year and month, with a photo for each day.
+- "Back then..." - what happened on this day in earlier years.
+- A PDF book of any period.
 
 SAFE BY DESIGN
-• Backup with byte-for-byte check — once you pick the place, it updates itself every week.
-• A 30-day trash for days, photos and files.
-• A photo you take in the app also goes to your Photos at full size.
-• Your entries are never overwritten: if a file was changed elsewhere, both versions are kept.
-• Face ID / passcode lock.
+- Backup with byte-for-byte check - once you pick the place, it updates itself every week.
+- A 30-day trash for days, photos and files.
+- A photo you take in the app also goes to your Photos at full size.
+- Your entries are never overwritten: if a file was changed elsewhere, both versions are kept.
+- Face ID / passcode lock.
 
 MOVE IN, MOVE OUT
 Import from Day One, Diarium, Journey, Markdown and text files. Because your entries are files, leaving is as easy.
 
 FAIR PRICE
-Start a free month — the whole app, from the day you choose. After that, one purchase, like a notebook. No subscription. One purchase for all your Apple devices: when the iPad version comes, it is included. Without the purchase you can always read, search and take your entries with you.
+Start a free month - the whole app, from the day you choose. After that, one purchase, like a notebook. No subscription. One purchase for all your Apple devices: when the iPad version comes, it is included. Without the purchase you can always read, search and take your entries with you.
 
 Eleven languages: English, Russian, Ukrainian, German, French, Spanish, Italian, Portuguese, Dutch, Japanese, Georgian.
 
@@ -96,27 +110,31 @@ First release.
 
 RollingDays — дневник и планировщик дня на одной странице.
 
-Утром — план. Вечером — «Как прошло?». Запись, снимок, голос, место. Страница перевёрнута.
+Утром — план. Вечером — как прошёл день. Запись, снимок, голос, место. Страница перевёрнута.
 
 ЗАПИСИ — ВАШИ ФАЙЛЫ
 Каждый день — обычный текстовый файл в папке, которую выбрали вы: iCloud Drive или «На iPhone». Без учётной записи, без нашего сервера, без особого формата. Удалили приложение — записи остались. Их откроет любой текстовый редактор, Mac, Obsidian — и через двадцать лет.
 
 ВЕСЬ ДЕНЬ НА ОДНОЙ СТРАНИЦЕ
-• План с номерами: касание по номеру — сделано, вправо — на другой день, долгое нажатие — переставить.
-• Время и напоминание у дела.
-• «Как прошло?» — короткий ответ под каждым делом.
+• План с номерами: касание по номеру — сделано; подержать номер и вести вверх-вниз — переставить, вправо — на другой день.
+• Время, повтор и напоминание у дела.
+• «Итоги дня» — строка под каждым из трёх первых дел.
 • Повторяющиеся дела и привычки.
 • События Календаря iPhone — в плане.
 • Ниже плана — дневник дня.
 
+ДНИ — КАРТОЧКИ
+• Потяните страницу «Сегодня» вниз — откроется прошлое, карточками; вверх — будущие дни.
+• Касание по карточке — её день. Смахнули открытый день вверх или вниз — он вернулся на место.
+
 ЧТО ПОПАДАЕТ В ДЕНЬ
 • Снимки, видео, голосовые записи (с расшифровкой), файлы.
-• Места: точка в тексте, своя карта со значками.
+• Места: точка в тексте и своя карта мест; дни с местами — на карте, со своими снимками.
 • Шаги и сон из «Здоровья» — если вы разрешите.
 
 НАЙТИ И ВСПОМНИТЬ
 • Поиск по всему — только по плану, только по дневнику, только снимки, места.
-• Календарь: год, месяц, список.
+• Календарь: год и месяц, у каждого дня — его снимок.
 • «А вот когда-то…» — запись этого же числа в прошлые годы.
 • PDF-книга за любой срок.
 
@@ -189,7 +207,8 @@ RollingDays — дневник и планировщик дня на одной 
 
 ```
 RollingDays is a diary and day planner. No account is needed.
-On first launch tap "Start" to create a folder (iCloud Drive or On My iPhone).
+On first launch a short animation shows the gestures (tap "Close").
+Then tap "Start" to create a folder (iCloud Drive or On My iPhone).
 Sample days are added so every screen can be seen.
 To write, tap "Start the free month" on the first sheet
 (non-consumable "30-day Trial", free). After 30 days a one-time
