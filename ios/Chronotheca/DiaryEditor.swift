@@ -227,6 +227,7 @@ struct DiaryEditor: UIViewRepresentable {
             view.attributedText = Self.styled(text, size: size, serif: serif, stamped: stamped,
                                               resolve: resolve)
             view.typingAttributes = Self.body(size, serif: serif)
+            context.coordinator.remember(view)
             view.selectedRange = selection.location <= (view.text as NSString).length
                 ? selection
                 : NSRange(location: (view.text as NSString).length, length: 0)
@@ -2273,6 +2274,15 @@ struct DiaryEditor: UIViewRepresentable {
 
         /// Длина текста при прошлой правке — для следа диктовки (P1088).
         private var lastLength = 0
+        /// Текст при прошлой правке — откуда началась тихая диктовка (P1092).
+        private var lastText: NSString = ""
+
+        /// Поле переписано из записи — запомнить его как «прежний текст»,
+        /// чтобы первая правка после этого не казалась диктовкой (P1092).
+        func remember(_ view: UITextView) {
+            lastLength = view.textStorage.length
+            lastText = NSString(string: view.textStorage.string)
+        }
         /// Правку спрашивали через `shouldChangeTextIn` — значит, она с
         /// клавиатуры, вставка или подсказка, а не тихая диктовка (P1091).
         private var asked = false
@@ -2302,11 +2312,21 @@ struct DiaryEditor: UIViewRepresentable {
             if !asked, !placing, grown > 1 {
                 Self.spokenSeen = Date()
                 StampTrace.note("диктовка: слова пришли без клавиатуры")
+                // Где правка началась — по совпадающему началу прежнего и
+                // нового текста (P1092, «Замеры» автора по 364: «не с начала
+                // строки»): диктовка не дописывает слова в хвост, а
+                // переписывает всю фразу заново, и «курсор минус прибавка»
+                // попадал в середину первой строки.
+                let now = view.textStorage.string as NSString
+                var from = 0
+                let common = min(lastText.length, now.length)
+                while from < common, lastText.character(at: from) == now.character(at: from) { from += 1 }
                 let sel = view.selectedRange
-                noteDictation(view, at: max(0, sel.location - grown), end: NSMaxRange(sel))
+                noteDictation(view, at: min(from, sel.location), end: NSMaxRange(sel))
             }
             asked = false
             lastLength = length
+            lastText = NSString(string: view.textStorage.string)
             // Диктовка пишет — запомнить её строку; отпустила — время в
             // начало строки, если его там нет (P869).
             if Self.dictating(view), !placing {
