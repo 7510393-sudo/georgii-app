@@ -44,11 +44,11 @@ enum GlyphArt {
             context.cgContext.saveGState()
             context.cgContext.setShadow(offset: CGSize(width: 0, height: 0.6), blur: 1.2,
                                         color: UIColor.black.withAlphaComponent(0.35).cgColor)
-            fill.setFill()
+            GlyphArt.fill.setFill()
             round.fill()
             context.cgContext.restoreGState()
             round.lineWidth = 1
-            edge.setStroke()
+            GlyphArt.edge.setStroke()
             round.stroke()
         }
     }()
