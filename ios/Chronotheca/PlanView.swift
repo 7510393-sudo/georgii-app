@@ -734,10 +734,12 @@ struct PlanView: View {
                         faded: false,
                         bellColor: Look.accent,
                         stripe: e.color.map { Color(cgColor: $0) },
-                        onTime: { open(e) },
-                        onBell: { open(e) },
+                        // Касание по событию Календарь не открывает (P1116,
+                        // автор: «всё должно быть единообразно»): в Календарь —
+                        // через «⋯» → «Перейти в календарь».
                         onCheck: { checkEvent(e) },
                         onLift: { eventLift(e, $0) },
+                        onMenu: { askingEvent = e },
                         lifted: up || photoToEvent == e.key || shell.eventHover == e.key,
                         past: store.isPast,
                         swipe: up && eventSlide < 0 ? eventSlide : 0,
@@ -756,8 +758,6 @@ struct PlanView: View {
         .offset(x: up ? eventSlide : 0, y: up ? eventDrag : 0)
         .shadow(color: .black.opacity(up && eventDrag != 0 ? 0.18 : 0), radius: 8, x: 3, y: 3)
         .zIndex(up ? 1 : 0)
-        .contentShape(Rectangle())
-        .onTapGesture { open(e) }
     }
 
     /// Событие в окне Календаря: посмотреть, поправить, напоминание.
@@ -1048,7 +1048,11 @@ struct PlanView: View {
         // Другое время или день — в окне события от Apple (P669): переносом
         // на день, как у дела, событие не ходит — приложение в Календарь само
         // не пишет (P376).
-        Button(T("Другое время или день", "Another time or day")) {
+        Button(e.row.done ? T("Не сделано", "Not done") : T("Сделано", "Done")) {
+            askingEvent = nil
+            checkEvent(e)
+        }
+        Button(T("Перейти в календарь", "Open in Calendar")) {
             askingEvent = nil
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { open(e) }
         }

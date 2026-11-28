@@ -111,34 +111,18 @@ struct PlanRowLine: View {
         VStack(alignment: .leading, spacing: 2) {
             // Голова стоит поверх отступа первой строки названия (P177);
             // остальные строки — из-под времени (P1115).
-            ZStack(alignment: Alignment(horizontal: .leading,
-                                        vertical: .firstTextBaseline)) {
-                title.opacity(ghost ? 0 : 1)
-                head
-            }
-            // «⋯» — только у дела, которое сейчас пишут (P1113, как «ⓘ» в
-            // «Напоминаниях»): у остальных значка нет, страница не пестрит.
-            if typing, let onMenu {
-                HStack {
-                    Spacer(minLength: 0)
-                    Button(action: onMenu) {
-                        Image(systemName: "ellipsis")
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundStyle(Look.inkSoft)
-                            .frame(width: 30, height: 30)
-                            .background(Circle().fill(Look.inkFaint.opacity(0.18)))
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(T("Действия дела", "Task actions"))
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                ZStack(alignment: Alignment(horizontal: .leading,
+                                            vertical: .firstTextBaseline)) {
+                    title.opacity(ghost ? 0 : 1)
+                    head
                 }
-                .padding(.trailing, -8)
-                .transition(.opacity)
+                menuButton
             }
         }
-        .animation(.easeOut(duration: 0.2), value: typing)
         // Корешка «Детали» справа нет — название идёт до контура (P408).
         // Плашка уже с боков — и содержимое отступает вместе с ней (P413).
-        .padding(.trailing, 20)
+        .padding(.trailing, 14)
         .padding(.leading, 18)
         // Плашка — только у поднятого дела (P793), и ложится на саму
         // запись, поровну над ней и под ней (P957): прежде она шла во всю
@@ -180,18 +164,39 @@ struct PlanRowLine: View {
         }
     }
 
+    /// «⋯» — у каждого дела всегда, справа от первой строки (P1116, автор:
+    /// «ничто не должно менять размер и место; три точки — всегда, в
+    /// неактивном состоянии полупрозрачные»; вместо «⋯» строкой ниже у
+    /// одного правимого дела P1113). Место под неё есть и у пустой строки
+    /// следующего дела — ширина названия одна у всех строк и страниц (P114).
+    private var menuButton: some View {
+        Button { onMenu?() } label: {
+            Image(systemName: "ellipsis")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(Look.inkSoft)
+                .frame(width: 26, height: 26)
+                .background(Circle().fill(Look.inkFaint.opacity(0.18)))
+                .opacity(typing ? 1 : 0.45)
+        }
+        .buttonStyle(.plain)
+        .opacity(ghost ? 0 : 1)
+        .allowsHitTesting(!ghost && onMenu != nil)
+        .accessibilityLabel(T("Действия дела", "Task actions"))
+        .alignmentGuide(.firstTextBaseline) { $0[.bottom] - PlanTitle.above - 1 }
+    }
+
     /// Плашка дела (P1113, вариант C; автор: «человек не понимает, что
     /// запись в плане — одна общая плашка»; частично отменяет «дело — прямо
     /// по клетке, без плашки» P793): лёгкая заливка чуть темнее бумаги,
-    /// растёт с текстом. Дело, которое пишут, — светлее, с кромкой и тенью.
+    /// растёт с текстом. Кромка — у всех (P1116); дело, которое пишут, —
+    /// только другого цвета, без тени и без перемены размера.
     /// Поднятое — синей рамкой, как прежде (`contour`).
     @ViewBuilder private var plate: some View {
         if !lifted && !ghost {
             let shape = RoundedRectangle(cornerRadius: 10)
             shape
                 .fill(typing ? Look.plateLight : Look.ink.opacity(row.done ? 0.035 : 0.06))
-                .overlay { if typing { shape.strokeBorder(Look.inkFaint.opacity(0.55), lineWidth: 1) } }
-                .shadow(color: .black.opacity(typing ? 0.12 : 0), radius: 3, x: 0, y: 2)
+                .overlay(shape.strokeBorder(Look.inkFaint.opacity(typing ? 0.75 : 0.45), lineWidth: 0.8))
                 .padding(.leading, 10)
                 .padding(.trailing, 10)
                 .padding(.vertical, -Self.plateRoom)
