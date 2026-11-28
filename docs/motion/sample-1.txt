@@ -1,42 +1,41 @@
-    164 Thread_28251   DispatchQueue_1: com.apple.main-thread  (serial)
 
 Sort by top of stack, same collapsed (when >= 5):
-        __wait4_nocancel  (in libsystem_kernel.dylib)        73
-        clang::DiagnosticConsumer::finish()  (in clang)        25
-        llvm::cl::opt<llvm::TargetLibraryInfoImpl::VectorLibrary, false, llvm::cl::parser<llvm::TargetLibraryInfoImpl::VectorLibrary>>::~opt()  (in clang)        11
-        llvm::cl::opt<unsigned int, true, llvm::cl::parser<unsigned int>>::~opt()  (in clang)        6
-        llvm::GenericSyncDependenceAnalysis<llvm::GenericSSAContext<llvm::Function>>::DivergenceDescriptor::~DivergenceDescriptor()  (in clang)        5
-        llvm::cl::opt<unsigned long, false, llvm::cl::parser<unsigned long>>::~opt()  (in clang)        5
 
 Binary Images:
-       0x102718000 -        0x1091b3557 +clang (21.0.0 - 2100.1.1.101) <777BDC46-ED30-3304-BE16-8999AD75C762> /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
-       0x1831f4000 -        0x183246b4b  libobjc.A.dylib (951.7) <74772A34-83D8-3B3B-82A0-B5678E177C8D> /usr/lib/libobjc.A.dylib
-       0x183247000 -        0x18327c115  libdyld.dylib (1387.2) <41529082-1172-3CFC-8ADF-A682ABE693F8> /usr/lib/system/libdyld.dylib
-       0x18327d000 -        0x183330523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
-       0x183331000 -        0x183334228  libsystem_blocks.dylib (96) <974D6EDA-1213-3D11-B95D-267A66BADDCF> /usr/lib/system/libsystem_blocks.dylib
-       0x183335000 -        0x18338955f  libxpc.dylib (3102.160.5.700.1) <4E6ADFFF-C2F0-3404-B820-46F7AE2554FF> /usr/lib/system/libxpc.dylib
-       0x18338a000 -        0x1833aaa1f  libsystem_trace.dylib (1861.160.4.700.1) <CFC3D51E-6886-3520-9DCB-C11E276E416D> /usr/lib/system/libsystem_trace.dylib
-       0x1833ab000 -        0x1834596b7  libcorecrypto.dylib (1922.160.10.700.1) <1AB30A65-3FE6-3A5A-9078-796D9D590B7C> /usr/lib/system/libcorecrypto.dylib
-       0x18345a000 -        0x1834aa257  libsystem_malloc.dylib (812.160.5) <8CF02A42-BC33-38BF-B14A-FA9B13B3CA3F> /usr/lib/system/libsystem_malloc.dylib
-       0x1834ab000 -        0x1834f223f  libdispatch.dylib (1542.160.2) <7202DA41-6AF6-3268-9EA3-00013AF42D10> /usr/lib/system/libdispatch.dylib
-       0x1834f3000 -        0x1834f5ffb  libsystem_featureflags.dylib (103) <2E4939D0-6A88-38BC-B0A3-612870FBC436> /usr/lib/system/libsystem_featureflags.dylib
-       0x1834f6000 -        0x1835771e7  libsystem_c.dylib (1752.160.4) <8CA64BC9-6B11-3685-84AE-F0AF4247B0C8> /usr/lib/system/libsystem_c.dylib
-       0x183578000 -        0x183608ae7  libc++.1.dylib (2100.43) <04D82867-1CBD-3AC4-B744-B27DCD09692F> /usr/lib/libc++.1.dylib
-       0x183609000 -        0x18362375f  libc++abi.dylib (2100.43) <45F8930E-87C7-3EE1-9638-31B9F476CF68> /usr/lib/libc++abi.dylib
-       0x183624000 -        0x1836612f7  libsystem_kernel.dylib (12377.161.15.701.48) <ABE830C7-CBE9-3FEC-8F6D-97E5C691BD54> /usr/lib/system/libsystem_kernel.dylib
-       0x183662000 -        0x18366eb3b  libsystem_pthread.dylib (539.100.4) <275D7230-23C1-32EF-B22B-14F61E30AA89> /usr/lib/system/libsystem_pthread.dylib
-       0x18366f000 -        0x183677963  libsystem_platform.dylib (375.120.2) <8BC876D3-95BB-3D23-B7CB-0948531E49EB> /usr/lib/system/libsystem_platform.dylib
-       0x183678000 -        0x1836a76eb  libsystem_info.dylib (600) <309040CE-F9D3-3BC0-8464-C9F9C96B2F90> /usr/lib/system/libsystem_info.dylib
-       0x18764f000 -        0x187658e5f  libsystem_darwin.dylib (1752.160.4) <51EF635C-A89E-336B-8409-4E44C2443F55> /usr/lib/system/libsystem_darwin.dylib
-       0x187ab8000 -        0x187aca1b6  libsystem_notify.dylib (348.160.3) <455CFD7F-6F0F-3F8B-83CC-C0B5172E4A00> /usr/lib/system/libsystem_notify.dylib
-       0x189d8d000 -        0x189da7f7b  libsystem_networkextension.dylib (2226.161.1.700.2) <76849D08-8FBB-3D8A-A1C5-23FE8D7EDD7D> /usr/lib/system/libsystem_networkextension.dylib
-       0x189e2a000 -        0x189e41fdf  libsystem_asl.dylib (406) <C2379107-E507-325E-BADE-A9E32156D38A> /usr/lib/system/libsystem_asl.dylib
-       0x18b9e7000 -        0x18b9ef387  libsystem_symptoms.dylib (2169.160.3.701.1) <23506ADC-641A-348A-BBEF-590787FD73FC> /usr/lib/system/libsystem_symptoms.dylib
-       0x18fc8c000 -        0x18fcc4373  libsystem_containermanager.dylib (725.160.3.701.2) <FEB99D23-5EDA-3471-9982-D5EABEB0444B> /usr/lib/system/libsystem_containermanager.dylib
-       0x1910a0000 -        0x1910a45d7  libsystem_configuration.dylib (1405.160.3.702.2) <2B64BA6F-6B26-3743-A977-D485645E6408> /usr/lib/system/libsystem_configuration.dylib
-       0x1910a5000 -        0x1910ab99f  libsystem_sandbox.dylib (2680.160.6.701.1) <48D7EC25-49F3-3557-B08C-58CBF6A9495B> /usr/lib/system/libsystem_sandbox.dylib
-       0x192700000 -        0x1927031db  libquarantine.dylib (196.160.2.701.3) <DA61E1C2-CAC1-3573-84F7-C90BB204A615> /usr/lib/system/libquarantine.dylib
-       0x192e9f000 -        0x192ea5d03  libsystem_coreservices.dylib (191.5.1) <65440E1E-5462-330D-B538-F16B45F4275C> /usr/lib/system/libsystem_coreservices.dylib
-       0x19341f000 -        0x19342dd97  libz.1.dylib (100.120.1) <1CF4E698-325F-3ED4-84E3-7FFBA3ED965B> /usr/lib/libz.1.dylib
-       0x19342e000 -        0x19346ba77  libsystem_m.dylib (3312.100.1) <9BFFB8D5-AB8F-3396-AF0F-98A8A4BFBD42> /usr/lib/system/libsystem_m.dylib
-       0x19346d000 -        0x193470527  libmacho.dylib (1387.2) <A482169A-B97C-30E5-8A3A-2E98DFBA74E7> /usr/lib/system/libmacho.dylib
+       0x10476c000 -        0x104772d4f +appintentsmetadataprocessor (304.30.4) <D967653C-2453-32D7-A45F-E9FEEB224499> /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor
+       0x10478c000 -        0x1049064af  com.apple.AppIntentsMetadataExtractor (1.0 - 1) <48A152E2-4ACA-3D99-89FD-C7FA1B8DB90B> /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/AppIntentsMetadataExtractor.framework/Versions/A/AppIntentsMetadataExtractor
+       0x104bb4000 -        0x104bc877f +libSwiftDiagnostics.dylib (6.3.3.1.3) <A962B095-F756-391A-B841-CE6C5D8F2152> /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/libSwiftDiagnostics.dylib
+       0x104d14000 -        0x104dac99f  com.apple.AppIntentSchemas (1.0 - 3501.4.47) <B358EABA-7BA0-310F-8D47-68114778C7B9> /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/AppIntentSchemas.framework/Versions/A/AppIntentSchemas
+       0x1053b8000 -        0x1055797ef  com.apple.LinkMetadataDT (1.0 - 300.5.12) <CA96B506-495F-3E53-AA7F-D94B9E49F718> /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/LinkMetadataDT.framework/Versions/A/LinkMetadataDT
+       0x1056a4000 -        0x10578504f +libSwiftParser.dylib (6.3.3.1.3) <DECFD293-084D-39F7-9AEA-D4E3D5D0B864> /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/libSwiftParser.dylib
+       0x1063cc000 -        0x1067108d7 +libSwiftSyntax.dylib (6.3.3.1.3) <7D147BC2-9831-3D06-8AF3-247266B9C065> /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/libSwiftSyntax.dylib
+       0x18daa8000 -        0x18dafab4b  libobjc.A.dylib (951.7) <74772A34-83D8-3B3B-82A0-B5678E177C8D> /usr/lib/libobjc.A.dylib
+       0x18dafb000 -        0x18db30115  libdyld.dylib (1387.2) <41529082-1172-3CFC-8ADF-A682ABE693F8> /usr/lib/system/libdyld.dylib
+       0x18db31000 -        0x18dbe4523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
+       0x18dbe5000 -        0x18dbe8228  libsystem_blocks.dylib (96) <974D6EDA-1213-3D11-B95D-267A66BADDCF> /usr/lib/system/libsystem_blocks.dylib
+       0x18dbe9000 -        0x18dc3d55f  libxpc.dylib (3102.160.5.700.1) <4E6ADFFF-C2F0-3404-B820-46F7AE2554FF> /usr/lib/system/libxpc.dylib
+       0x18dc3e000 -        0x18dc5ea1f  libsystem_trace.dylib (1861.160.4.700.1) <CFC3D51E-6886-3520-9DCB-C11E276E416D> /usr/lib/system/libsystem_trace.dylib
+       0x18dc5f000 -        0x18dd0d6b7  libcorecrypto.dylib (1922.160.10.700.1) <1AB30A65-3FE6-3A5A-9078-796D9D590B7C> /usr/lib/system/libcorecrypto.dylib
+       0x18dd0e000 -        0x18dd5e257  libsystem_malloc.dylib (812.160.5) <8CF02A42-BC33-38BF-B14A-FA9B13B3CA3F> /usr/lib/system/libsystem_malloc.dylib
+       0x18dd5f000 -        0x18dda623f  libdispatch.dylib (1542.160.2) <7202DA41-6AF6-3268-9EA3-00013AF42D10> /usr/lib/system/libdispatch.dylib
+       0x18dda7000 -        0x18dda9ffb  libsystem_featureflags.dylib (103) <2E4939D0-6A88-38BC-B0A3-612870FBC436> /usr/lib/system/libsystem_featureflags.dylib
+       0x18ddaa000 -        0x18de2b1e7  libsystem_c.dylib (1752.160.4) <8CA64BC9-6B11-3685-84AE-F0AF4247B0C8> /usr/lib/system/libsystem_c.dylib
+       0x18de2c000 -        0x18debcae7  libc++.1.dylib (2100.43) <04D82867-1CBD-3AC4-B744-B27DCD09692F> /usr/lib/libc++.1.dylib
+       0x18debd000 -        0x18ded775f  libc++abi.dylib (2100.43) <45F8930E-87C7-3EE1-9638-31B9F476CF68> /usr/lib/libc++abi.dylib
+       0x18ded8000 -        0x18df152f7  libsystem_kernel.dylib (12377.161.15.701.48) <ABE830C7-CBE9-3FEC-8F6D-97E5C691BD54> /usr/lib/system/libsystem_kernel.dylib
+       0x18df16000 -        0x18df22b3b  libsystem_pthread.dylib (539.100.4) <275D7230-23C1-32EF-B22B-14F61E30AA89> /usr/lib/system/libsystem_pthread.dylib
+       0x18df23000 -        0x18df2b963  libsystem_platform.dylib (375.120.2) <8BC876D3-95BB-3D23-B7CB-0948531E49EB> /usr/lib/system/libsystem_platform.dylib
+       0x18df2c000 -        0x18df5b6eb  libsystem_info.dylib (600) <309040CE-F9D3-3BC0-8464-C9F9C96B2F90> /usr/lib/system/libsystem_info.dylib
+       0x18df5c000 -        0x18e4ba91f  com.apple.CoreFoundation (6.9 - 5026.6.7.5) <F9299355-BB41-3A69-9DD7-FB7B89839B49> /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation
+       0x18e4bb000 -        0x18e7d67bf  com.apple.LaunchServices (1141.1 - 1141.1) <DB0B028A-82D8-38F4-BD09-EFA205C2EB4D> /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/LaunchServices
+       0x18e7d7000 -        0x18e9bf95f  com.apple.gpusw.MetalTools (1.0 - 1) <448A8AA5-CAAA-3679-AE59-2CB9CB6BD76E> /System/Library/PrivateFrameworks/MetalTools.framework/Versions/A/MetalTools
+       0x18e9c0000 -        0x18f1ba4bf  libBLAS.dylib (1551.160.2) <B5581F3E-1353-3AAC-ACE4-4CA5802DF7D8> /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib
+       0x18f1bb000 -        0x18f2ca35f  com.apple.Lexicon-framework (1.0 - 195.12) <0F92E2F0-D2E3-3400-9928-1CEC60289BCB> /System/Library/PrivateFrameworks/Lexicon.framework/Versions/A/Lexicon
+       0x18f2cb000 -        0x18f43a38f  libSparse.dylib (184.160.6) <CBED7FA3-B725-3CEE-9775-F254209C18D9> /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libSparse.dylib
+       0x18f43b000 -        0x18f4ce10f  com.apple.SystemConfiguration (1.21 - 1.21) <A6E634C1-2104-3A1F-90E5-48100F18B457> /System/Library/Frameworks/SystemConfiguration.framework/Versions/A/SystemConfiguration
+       0x18f4cf000 -        0x18f50357b  libCRFSuite.dylib (55) <9A072938-7418-3917-A4DE-85A86FBD5242> /usr/lib/libCRFSuite.dylib
+       0x18f7cc000 -        0x1907b28df  com.apple.Foundation (6.9 - 5026.6.7.5) <49A6A088-0B56-326B-A449-26304D8AA0FE> /System/Library/Frameworks/Foundation.framework/Versions/C/Foundation
+       0x190963000 -        0x190a83cbf  com.apple.CoreDisplay (291.4 - 291.4) <C8480063-4EF4-38EC-B30C-3AC2458A4DFD> /System/Library/Frameworks/CoreDisplay.framework/Versions/A/CoreDisplay
+       0x190a84000 -        0x190e473bf  com.apple.audio.AudioToolboxCore (1.0 - 1556.709.4) <634D846F-E0F8-3DC5-9367-8ECED905C42A> /System/Library/PrivateFrameworks/AudioToolboxCore.framework/Versions/A/AudioToolboxCore
+       0x190e48000 -        0x191071ebf  com.apple.CoreText (877.20.0.2 - 877.20.0.2) <18A7C5C7-3C80-3CF8-9C9B-08F0FB314115> /System/Library/Frameworks/CoreText.framework/Versions/A/CoreText
+       0x191072000 -        0x19180c19f  com.apple.audio.CoreAudio (5.0 - 5.0) <B9D3847F-0B2E-3AEB-853E-878E9131CAC0> /System/Library/Frameworks/CoreAudio.framework/Versions/A/CoreAudio
