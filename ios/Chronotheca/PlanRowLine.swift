@@ -44,6 +44,8 @@ struct PlanRowLine: View {
     /// дальше его ведут пальцем (P362). Отклик — сразу, как нажатие стало
     /// долгим, а не когда палец убрали (P361).
     var onLift: ((Lift) -> Void)?
+    /// «⋯» у дела, которое сейчас пишут (P1113, вариант C) — меню дела.
+    var onMenu: (() -> Void)? = nil
 
     /// Дело поднято (P362): контур синий и ярче (P374).
     var lifted = false
@@ -110,7 +112,26 @@ struct PlanRowLine: View {
                 title.opacity(ghost ? 0 : 1)
                 head
             }
+            // «⋯» — только у дела, которое сейчас пишут (P1113, как «ⓘ» в
+            // «Напоминаниях»): у остальных значка нет, страница не пестрит.
+            if typing, let onMenu {
+                HStack {
+                    Spacer(minLength: 0)
+                    Button(action: onMenu) {
+                        Image(systemName: "ellipsis")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundStyle(Look.inkSoft)
+                            .frame(width: 30, height: 30)
+                            .background(Circle().fill(Look.inkFaint.opacity(0.18)))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(T("Действия дела", "Task actions"))
+                }
+                .padding(.trailing, -8)
+                .transition(.opacity)
+            }
         }
+        .animation(.easeOut(duration: 0.2), value: typing)
         // Корешка «Детали» справа нет — название идёт до контура (P408).
         // Плашка уже с боков — и содержимое отступает вместе с ней (P413).
         .padding(.trailing, 20)
@@ -120,6 +141,7 @@ struct PlanRowLine: View {
         // высоту строки, где нижняя клетка — пустой просвет, и запись
         // оказывалась прижата к верху рамки.
         .background { contour }
+        .background { plate }
         .background { swipePlate }
         // Строчка письма — на линии клетки (P795): сверху ровно столько,
         // чтобы низ букв лёг на первую линию; строка в одну строчку — две
@@ -150,6 +172,26 @@ struct PlanRowLine: View {
                 .padding(.leading, 10)
                 .padding(.trailing, 10)
                 .padding(.vertical, -Self.plateRoom)
+                .allowsHitTesting(false)
+        }
+    }
+
+    /// Плашка дела (P1113, вариант C; автор: «человек не понимает, что
+    /// запись в плане — одна общая плашка»; частично отменяет «дело — прямо
+    /// по клетке, без плашки» P793): лёгкая заливка чуть темнее бумаги,
+    /// растёт с текстом. Дело, которое пишут, — светлее, с кромкой и тенью.
+    /// Поднятое — синей рамкой, как прежде (`contour`).
+    @ViewBuilder private var plate: some View {
+        if !lifted && !ghost {
+            let shape = RoundedRectangle(cornerRadius: 10)
+            shape
+                .fill(typing ? Look.plateLight : Look.ink.opacity(row.done ? 0.035 : 0.06))
+                .overlay { if typing { shape.strokeBorder(Look.inkFaint.opacity(0.55), lineWidth: 1) } }
+                .shadow(color: .black.opacity(typing ? 0.12 : 0), radius: 3, x: 0, y: 2)
+                .padding(.leading, 10)
+                .padding(.trailing, 10)
+                .padding(.vertical, -Self.plateRoom)
+                .animation(.easeOut(duration: 0.2), value: typing)
                 .allowsHitTesting(false)
         }
     }

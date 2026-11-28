@@ -250,6 +250,10 @@ struct PlanView: View {
                     holdMenu = nil
                     toggle($store.planRows[i])
                 }
+                Button(T("Время и повтор", "Time and repeat")) {
+                    holdMenu = nil
+                    openRoller(id)
+                }
                 Button(T("Перенести на другой день", "Move to another day")) {
                     holdMenu = nil
                     Feel.paper()
@@ -448,6 +452,8 @@ struct PlanView: View {
                 store.checkSeries(id)
             },
             onLift: { lift(row, $0) },
+            // «⋯» у правимого дела — то же меню, что по долгому нажатию (P1113).
+            onMenu: { holdMenu = id },
             // Поднятое дело обведено синим — тем же, что и всё, что можно
             // взять пальцем (P203, P362); и дело, под которое ляжет
             // несомый снимок (P377).
