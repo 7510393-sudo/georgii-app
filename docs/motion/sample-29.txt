@@ -1,0 +1,188 @@
+    1257 Thread_156529   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 1257 start  (in dyld) + 6992  [0x1031f84e4]
+    +   1257 start_sim  (in dyld_sim) + 20  [0x1030370e4]
+    +     1257 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x1052dbf08]  ChronothecaApp.swift:0
+    +       1257 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1052dbe5c]  /<compiler-generated>:0
+    +         1257 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           1257 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             1257 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               1257 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 1257 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   1257 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     1257 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       1246 __CFRunLoopRun  (in CoreFoundation) + 760  [0x180421808]
+    +                       ! 1246 __CFRunLoopDoSources0  (in CoreFoundation) + 220  [0x180422634]
+    +                       !   1246 __CFRunLoopDoSource0  (in CoreFoundation) + 168  [0x180422ea4]
+    +                       !     1246 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__  (in CoreFoundation) + 24  [0x180422f5c]
+    +                       !       1246 UC::DriverCore::continueProcessing()  (in UpdateCycle) + 80  [0x2343d22c0]
+    +                       !         1246 schedulerStepScheduledMainSectionContinue  (in UIKitCore) + 56  [0x1863b6064]
+    +                       !           1246 _UIUpdateSequenceRunNext  (in UIKitCore) + 120  [0x18590339c]
+    +                       !             1246 updateCycleEntry  (in UIKitCore) + 172  [0x186359f9c]
+    +                       !               1246 __processEventQueue  (in UIKitCore) + 4916  [0x186361bc4]
+    +                       !                 1245 __dispatchPreprocessedEventFromEventQueue  (in UIKitCore) + 3528  [0x18635f730]
+    +                       !                 : 1245 __NSDictionaryEnumerate  (in CoreFoundation) + 468  [0x18040bd40]
+    +                       !                 :   1245 CFBasicHashApply  (in CoreFoundation) + 136  [0x1804f26c4]
+    +                       !                 :     1245 ____NSDictionaryEnumerate_block_invoke_2  (in CoreFoundation) + 52  [0x18040c04c]
+    +                       !                 :       1245 __NSDICTIONARY_IS_CALLING_OUT_TO_A_BLOCK__  (in CoreFoundation) + 16  [0x18040baf4]
+    +                       !                 :         1245 ____updateTouchesWithDigitizerEventAndDetermineIfShouldSend_block_invoke.50  (in UIKitCore) + 108  [0x18635dd5c]
+    +                       !                 :           1245 _AddTouchToEventAndDetermineIfNeedsCancel  (in UIKitCore) + 304  [0x18635d864]
+    +                       !                 :             1245 -[UITouchesEvent _addTouch:forDelayedDelivery:]  (in UIKitCore) + 756  [0x1869cbfdc]
+    +                       !                 :               1245 -[UITouchesEvent _addGestureRecognizersFromContainer:toTouch:forContinuation:]  (in UIKitCore) + 124  [0x1869cbb14]
+    +                       !                 :                 1245 -[UITouchesEvent _collectGestureRecognizersFromContainer:withBlock:]  (in UIKitCore) + 240  [0x1869cb398]
+    +                       !                 :                   1245 __68-[UITouchesEvent _collectGestureRecognizersFromContainer:withBlock:]_block_invoke  (in UIKitCore) + 272  [0x1869cb7d8]
+    +                       !                 :                     1244 __78-[UITouchesEvent _addGestureRecognizersFromContainer:toTouch:forContinuation:]_block_invoke  (in UIKitCore) + 328  [0x1869cbc88]
+    +                       !                 :                     | 1244 -[UIGestureRecognizer _shouldReceiveTouch:forEvent:recognizerView:]  (in UIKitCore) + 576  [0x185f218d4]
+    +                       !                 :                     |   1244 -[UIGestureRecognizer _delegateShouldReceiveTouch:forEvent:]  (in UIKitCore) + 372  [0x185f21dac]
+    +                       !                 :                     |     1243 -[UITextInteraction gestureRecognizer:shouldReceiveTouch:]  (in UIKitCore) + 212  [0x1867be1f8]
+    +                       !                 :                     |     + 1243 -[UITextSelectionInteraction interaction_gestureRecognizer:shouldReceiveTouch:]  (in UIKitCore) + 236  [0x1867c863c]
+    +                       !                 :                     |     +   1243 -[UITextInteraction interaction_gestureRecognizer:shouldReceiveTouch:]  (in UIKitCore) + 400  [0x1867be088]
+    +                       !                 :                     |     +     1243 -[UITextSelectionDisplayInteraction _isManagedSelectionSubview:]  (in UIKitCore) + 72  [0x185ef7cd4]
+    +                       !                 :                     |     +       1243 -[UITextSelectionDisplayInteraction _allManagedSubviews]  (in UIKitCore) + 24  [0x185ef3fc8]
+    +                       !                 :                     |     +         1243 -[UITextSelectionDisplayInteraction _managedSubviewsAboveText]  (in UIKitCore) + 68  [0x185ef3ecc]
+    +                       !                 :                     |     +           1236 -[UITextSelectionDisplayInteraction _managedViewForType:]  (in UIKitCore) + 104  [0x185ef3e24]
+    +                       !                 :                     |     +           ! 1236 -[UIViewController view]  (in UIKitCore) + 20  [0x185c4a3b8]
+    +                       !                 :                     |     +           !   1236 -[UIViewController loadViewIfRequired]  (in UIKitCore) + 148  [0x185c49dc4]
+    +                       !                 :                     |     +           !     1236 -[_UICursorAccessoryViewController loadView]  (in UIKitCore) + 36  [0x185f34364]
+    +                       !                 :                     |     +           !       1235 -[_UICursorAccessoryHostView initWithCursorItemDataSource:]  (in UIKitCore) + 160  [0x18587e554]
+    +                       !                 :                     |     +           !       : 1235 -[_UICursorAccessoryView initWithDataSource:]  (in UIKitCore) + 108  [0x1865da47c]
+    +                       !                 :                     |     +           !       :   1234 -[UIVisualEffectView initWithEffect:]  (in UIKitCore) + 156  [0x185854198]
+    +                       !                 :                     |     +           !       :   | 1233 -[UIVisualEffectView _updateEffectsFromLegacyEffect]  (in UIKitCore) + 200  [0x185855518]
+    +                       !                 :                     |     +           !       :   | + 1230 -[UIVisualEffectView _configureEffects]  (in UIKitCore) + 432  [0x185856374]
+    +                       !                 :                     |     +           !       :   | + ! 1230 -[UIVisualEffectView _effectDescriptorForEffects:usage:]  (in UIKitCore) + 192  [0x185855c7c]
+    +                       !                 :                     |     +           !       :   | + !   1230 -[UIBlurEffect _updateEffectDescriptor:forEnvironment:usage:]  (in UIKitCore) + 80  [0x185830a0c]
+    +                       !                 :                     |     +           !       :   | + !     1230 -[_UIBlurEffectCoreMaterialImpl _updateEffectDescriptor:forEnvironment:usage:]  (in UIKitCore) + 156  [0x185833810]
+    +                       !                 :                     |     +           !       :   | + !       1229 _UICoreMaterialUpdateBlurEffectDescriptor  (in UIKitCore) + 120  [0x1861ecbbc]
+    +                       !                 :                     |     +           !       :   | + !       : 1229 _lookupBlurEffectDescription  (in UIKitCore) + 348  [0x1861ecab0]
+    +                       !                 :                     |     +           !       :   | + !       :   1229 MTMaterialCreateDictionaryRepresentation  (in CoreMaterial) + 124  [0x19d685cc8]
+    +                       !                 :                     |     +           !       :   | + !       :     1229 MTMaterialSettingsForRecipeFromBundle  (in CoreMaterial) + 120  [0x19d68427c]
+    +                       !                 :                     |     +           !       :   | + !       :       1229 _SharedMaterialSettingsForRecipeWithNameFromBundle  (in CoreMaterial) + 852  [0x19d684c60]
+    +                       !                 :                     |     +           !       :   | + !       :         1229 -[NSMutableDictionary(NSMutableDictionary) initWithContentsOfURL:error:]  (in Foundation) + 36  [0x181075a50]
+    +                       !                 :                     |     +           !       :   | + !       :           1229 +[NSDictionary(NSDictionary) newWithContentsOf:immutable:error:]  (in Foundation) + 108  [0x18106b190]
+    +                       !                 :                     |     +           !       :   | + !       :             1229 -[NSData(NSData) initWithContentsOfFile:options:maxLength:error:]  (in Foundation) + 144  [0x181059990]
+    +                       !                 :                     |     +           !       :   | + !       :               1229 @objc static NSData._readBytes(fromPath:maxLength:bytes:length:didMap:options:reportProgress:)  (in Foundation) + 96  [0x180ab6960]
+    +                       !                 :                     |     +           !       :   | + !       :                 1229 specialized static NSData._readBytes(fromPath:maxLength:bytes:length:didMap:options:reportProgress:)  (in Foundation) + 144  [0x180ab8fcc]
+    +                       !                 :                     |     +           !       :   | + !       :                   1229 readBytesFromFile(path:reportProgress:maxLength:options:attributesToRead:attributes:)  (in Foundation) + 5764  [0x180ab54a0]
+    +                       !                 :                     |     +           !       :   | + !       :                     1229 readBytesFromFileDescriptor(_:path:buffer:length:readUntilLength:reportProgress:)  (in Foundation) + 352  [0x180ab7538]
+    +                       !                 :                     |     +           !       :   | + !       :                       1229 read  (in libsystem_kernel.dylib) + 8  [0x102eed6cc]
+    +                       !                 :                     |     +           !       :   | + !       1 _UICoreMaterialUpdateBlurEffectDescriptor  (in UIKitCore) + 0  [0x1861ecb44]
+    +                       !                 :                     |     +           !       :   | + 3 -[UIVisualEffectView _configureEffects]  (in UIKitCore) + 284  [0x1858562e0]
+    +                       !                 :                     |     +           !       :   | +   2 -[UIVisualEffectView _ensureBackgroundHost]  (in UIKitCore) + 64  [0x185853f74]
+    +                       !                 :                     |     +           !       :   | +   : 2 -[_UIVisualEffectSubview initWithFrame:]  (in UIKitCore) + 44  [0x1869365ec]
+    +                       !                 :                     |     +           !       :   | +   :   2 -[UIView initWithFrame:]  (in UIKitCore) + 124  [0x186a811f0]
+    +                       !                 :                     |     +           !       :   | +   :     2 UIViewCommonInitWithFrame  (in UIKitCore) + 1172  [0x186a816d8]
+    +                       !                 :                     |     +           !       :   | +   :       2 -[CALayer init]  (in QuartzCore) + 100  [0x18cf9748c]
+    +                       !                 :                     |     +           !       :   | +   :         1 CA::Layer::class_state(objc_class*)  (in QuartzCore) + 68  [0x18cfabb28]
+    +                       !                 :                     |     +           !       :   | +   :         | 1 classDescription(objc_class*)  (in QuartzCore) + 244  [0x18d05cb40]
+    +                       !                 :                     |     +           !       :   | +   :         |   1 classDescription_locked(objc_class*)  (in QuartzCore) + 3388  [0x18d05d9c4]
+    +                       !                 :                     |     +           !       :   | +   :         |     1 +[CABackdropLayer defaultValueForKey:]  (in QuartzCore) + 52  [0x18d044534]
+    +                       !                 :                     |     +           !       :   | +   :         |       1 CAInternAtom  (in QuartzCore) + 72  [0x18d083d9c]
+    +                       !                 :                     |     +           !       :   | +   :         |         1 _CFStringGetCStringPtrInternal  (in CoreFoundation) + 212  [0x18044e394]
+    +                       !                 :                     |     +           !       :   | +   :         1 CA::Layer::class_state(objc_class*)  (in QuartzCore) + 508  [0x18cfabce0]
+    +                       !                 :                     |     +           !       :   | +   :           1 __sel_registerName(char const*, bool, bool)  (in libobjc.A.dylib) + 44  [0x180059580]
+    +                       !                 :                     |     +           !       :   | +   :             1 dyld4::APIs::_dyld_get_objc_selector(char const*)  (in dyld_sim) + 52  [0x1030319b0]
+    +                       !                 :                     |     +           !       :   | +   :               1 objc::StringHashTable::tryGetIndex(char const*) const  (in dyld_sim) + 128  [0x103033ed0]
+    +                       !                 :                     |     +           !       :   | +   1 -[UIVisualEffectView _ensureBackgroundHost]  (in UIKitCore) + 88  [0x185853f8c]
+    +                       !                 :                     |     +           !       :   | +     1 -[_UIVisualEffectHost initWithContentView:]  (in UIKitCore) + 0  [0x18584d440]
+    +                       !                 :                     |     +           !       :   | 1 -[UIVisualEffectView _updateEffectsFromLegacyEffect]  (in UIKitCore) + 60  [0x18585548c]
+    +                       !                 :                     |     +           !       :   |   1 _UIVisualEffectViewUpgradeLegacyEffect  (in UIKitCore) + 104  [0x185854964]
+    +                       !                 :                     |     +           !       :   |     1 -[__NSPlaceholderArray initWithCapacity:]  (in CoreFoundation) + 0  [0x1803a78bc]
+    +                       !                 :                     |     +           !       :   1 -[UIVisualEffectView initWithEffect:]  (in UIKitCore) + 92  [0x185854158]
+    +                       !                 :                     |     +           !       :     1 -[UIVisualEffectView _commonInit]  (in UIKitCore) + 420  [0x185853f20]
+    +                       !                 :                     |     +           !       :       1 -[UIVisualEffectView _setIsContentViewStatic:]  (in UIKitCore) + 100  [0x185857d00]
+    +                       !                 :                     |     +           !       :         1 -[_UITraitOverrides setNSIntegerValue:forTrait:]  (in UIKitCore) + 40  [0x1865be130]
+    +                       !                 :                     |     +           !       :           1 +[UITraitCollection _traitTokenForNSIntegerTrait:]  (in UIKitCore) + 48  [0x185ff0048]
+    +                       !                 :                     |     +           !       :             1 _UITraitTokenForTraitLocked  (in UIKitCore) + 108  [0x18646cda4]
+    +                       !                 :                     |     +           !       :               1 +[_UIVisualEffectIsContentStaticTrait name]  (in UIKitCore) + 0  [0x1863b24bc]
+    +                       !                 :                     |     +           !       1 -[_UICursorAccessoryHostView initWithCursorItemDataSource:]  (in UIKitCore) + 0  [0x18587e4b4]
+    +                       !                 :                     |     +           7 -[UITextSelectionDisplayInteraction _managedViewForType:]  (in UIKitCore) + 144  [0x185ef3e4c]
+    +                       !                 :                     |     +             6 -[UITextSelectionDisplayInteraction cursorView]  (in UIKitCore) + 72  [0x185ef3738]
+    +                       !                 :                     |     +             : 6 -[UITextSelectionDisplayInteraction setCursorView:]  (in UIKitCore) + 140  [0x185ef37e0]
+    +                       !                 :                     |     +             :   5 -[UITextCursorAssertionController _updateSubjectWithAssertionState]  (in UIKitCore) + 792  [0x1866c8030]
+    +                       !                 :                     |     +             :   | 5 -[UITextSelectionDisplayInteraction(Assertions) setCursorBlinks:]  (in UIKitCore) + 44  [0x1865d8e94]
+    +                       !                 :                     |     +             :   |   5 -[_UITextCursorBlinkAnimation setEnabled:]  (in UIKitCore) + 236  [0x186373420]
+    +                       !                 :                     |     +             :   |     5 -[CALayer addAnimation:forKey:]  (in QuartzCore) + 156  [0x18cf9ba10]
+    +                       !                 :                     |     +             :   |       5 -[CAAnimation delegate]  (in QuartzCore) + 48  [0x18cff30a4]
+    +                       !                 :                     |     +             :   |         5 CAObject_defaultValueForAtom  (in QuartzCore) + 36  [0x18d05e1f8]
+    +                       !                 :                     |     +             :   |           5 classDescription(objc_class*)  (in QuartzCore) + 244  [0x18d05cb40]
+    +                       !                 :                     |     +             :   |             4 classDescription_locked(objc_class*)  (in QuartzCore) + 292  [0x18d05cdac]
+    +                       !                 :                     |     +             :   |             + 4 classDescription_locked(objc_class*)  (in QuartzCore) + 292  [0x18d05cdac]
+    +                       !                 :                     |     +             :   |             +   1 classDescription_locked(objc_class*)  (in QuartzCore) + 2316  [0x18d05d594]
+    +                       !                 :                     |     +             :   |             +   ! 1 __sel_registerName(char const*, bool, bool)  (in libobjc.A.dylib) + 44  [0x180059580]
+    +                       !                 :                     |     +             :   |             +   !   1 dyld4::APIs::_dyld_get_objc_selector(char const*)  (in dyld_sim) + 52  [0x1030319b0]
+    +                       !                 :                     |     +             :   |             +   !     1 objc::StringHashTable::tryGetIndex(char const*) const  (in dyld_sim) + 100  [0x103033eb4]
+    +                       !                 :                     |     +             :   |             +   1 classDescription_locked(objc_class*)  (in QuartzCore) + 2776  [0x18d05d760]
+    +                       !                 :                     |     +             :   |             +   ! 1 CFDictionaryCreate  (in CoreFoundation) + 132  [0x1803d6688]
+    +                       !                 :                     |     +             :   |             +   !   1 __CFBasicHashRehash  (in CoreFoundation) + 288  [0x1804f2d64]
+    +                       !                 :                     |     +             :   |             +   !     1 _xzm_xzone_malloc_tiny  (in libsystem_malloc.dylib) + 804  [0x1801ee674]
+    +                       !                 :                     |     +             :   |             +   1 classDescription_locked(objc_class*)  (in QuartzCore) + 3352  [0x18d05d9a0]
+    +                       !                 :                     |     +             :   |             +   ! 1 +[CAAnimation defaultValueForKey:]  (in QuartzCore) + 160  [0x18cff364c]
+    +                       !                 :                     |     +             :   |             +   !   1 objc_msgSend  (in libobjc.A.dylib) + 52  [0x18003ac34]
+    +                       !                 :                     |     +             :   |             +   1 classDescription_locked(objc_class*)  (in QuartzCore) + 952  [0x18d05d040]
+    +                       !                 :                     |     +             :   |             1 classDescription_locked(objc_class*)  (in QuartzCore) + 676  [0x18d05cf2c]
+    +                       !                 :                     |     +             :   |               1 class_copyPropertyList  (in libobjc.A.dylib) + 612  [0x180051128]
+    +                       !                 :                     |     +             :   1 -[UITextCursorAssertionController _updateSubjectWithAssertionState]  (in UIKitCore) + 0  [0x1866c7d18]
+    +                       !                 :                     |     +             1 -[UITextSelectionDisplayInteraction cursorView]  (in UIKitCore) + 56  [0x185ef3728]
+    +                       !                 :                     |     +               1 __trampolines  (in libMainThreadChecker.dylib) + 38864  [0x10333a010]
+    +                       !                 :                     |     1 -[UITextInteraction gestureRecognizer:shouldReceiveTouch:]  (in UIKitCore) + 80  [0x1867be174]
+    +                       !                 :                     |       1 -[UITextInteractionAssistant(UITextInteractionAssistant_Internal) setAutomaticSelectionCommandsSuppressedForPointerTouchType:]  (in UIKitCore) + 0  [0x1867f1510]
+    +                       !                 :                     1 __78-[UITouchesEvent _addGestureRecognizersFromContainer:toTouch:forContinuation:]_block_invoke  (in UIKitCore) + 52  [0x1869cbb74]
+    +                       !                 :                       1 -[UIGestureRecognizer isEnabled]  (in UIKitCore) + 56  [0x185f1ce58]
+    +                       !                 :                         1 _objc_msgSend_uncached  (in libobjc.A.dylib) + 64  [0x18003af00]
+    +                       !                 :                           1 lookUpImpOrForward  (in libobjc.A.dylib) + 348  [0x180053430]
+    +                       !                 :                             1 cache_getImp  (in libobjc.A.dylib) + 8  [0x18003afc8]
+    +                       !                 1 __dispatchPreprocessedEventFromEventQueue  (in UIKitCore) + 2864  [0x18635f498]
+    +                       !                   1 _UIEventHIDEnumerateChildren  (in UIKitCore) + 172  [0x186b8e9a0]
+    +                       !                     1 ____updateTouchesWithDigitizerEventAndDetermineIfShouldSend_block_invoke.28  (in UIKitCore) + 360  [0x18635a57c]
+    +                       !                       1 __startNewUITouch  (in UIKitCore) + 3484  [0x18635bff4]
+    +                       !                         1 +[_UISTouchAuthenticationRecord(UIKit) authenticationRecordForTouch:]  (in UIKitCore) + 436  [0x186246984]
+    +                       !                           1 _dispatch_once_callout  (in libdispatch.dylib) + 28  [0x180188fa4]
+    +                       !                             1 _dispatch_client_callout  (in libdispatch.dylib) + 12  [0x1801a0e98]
+    +                       !                               1 ___UITouchAuthenticationIsEnabledForCurrentProcess_block_invoke  (in UIKitCore) + 92  [0x186246710]
+    +                       !                                 1 +[_UISTouchAuthenticationRecord shouldAuthenticateServiceBundleId:]  (in UIKitServices) + 0  [0x18ccf4538]
+    +                       11 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    +                         11 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    +                           11 mach_msg  (in libsystem_kernel.dylib) + 20  [0x102eecef0]
+    +                             11 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x102ef4c44]
+    +                               11 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x102efde84]
+    +                                 11 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x102eecb70]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __workq_kernreturn  (in libsystem_kernel.dylib)        12958
+        mach_msg2_trap  (in libsystem_kernel.dylib)        1855
+        semaphore_wait_trap  (in libsystem_kernel.dylib)        1245
+        read  (in libsystem_kernel.dylib)        1232
+        __ulock_wait2  (in libsystem_kernel.dylib)        1081
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        955
+        getattrlistbulk  (in libsystem_kernel.dylib)        366
+        invocation function for block in dyld4::APIs::_dyld_get_image_name(unsigned int)  (in dyld_sim)        176
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib)        73
+        malloc_size  (in libsystem_malloc.dylib)        65
+        <deduplicated_symbol>  (in dyld_sim)        55
+        -[NSURL(NSURL) release]  (in Foundation)        49
+        getContextDescriptor(swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib)        34
+        _swift_class_getSuperclass  (in libswiftCore.dylib)        25
+        CreateStringFromFileSystemRepresentationByAddingPercentEscapes  (in CoreFoundation)        24
+        getSuperclassForMaybeIncompleteMetadata(swift::TargetMetadata<swift::InProcess> const*, std::optional<swift::MetadataState>, bool)  (in libswiftCore.dylib)        23
+        <deduplicated_symbol>  (in Foundation)        19
+        DYLD-STUB$$pthread_getspecific  (in libobjc.A.dylib)        19
+        performOnMetadataCache<swift::MetadataResponse, swift_checkMetadataState::CheckStateCallbacks>(swift::TargetMetadata<swift::InProcess> const*, swift_checkMetadataState::CheckStateCallbacks&&)  (in libswiftCore.dylib)        16
+        swift::equalContexts(swift::TargetContextDescriptor<swift::InProcess> const*, swift::TargetContextDescriptor<swift::InProcess> const*)  (in libswiftCore.dylib)        15
+        dyld4::APIs::_dyld_find_protocol_conformance(void const*, void const*, void const*) const  (in dyld_sim)        13
+        __semwait_signal  (in libsystem_kernel.dylib)        12
+        tryCast(swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*&, swift::TargetMetadata<swift::InProcess> const*&, bool, bool, bool)  (in libswiftCore.dylib)        12
+        swift_getObjCClassMetadata  (in libswiftCore.dylib)        11
+        -[__NSCFConstantString retain]  (in CoreFoundation)        10
+        objc_msgSend  (in libobjc.A.dylib)        10
+        <deduplicated_symbol>  (in libswiftCore.dylib)        8
+        swift::TargetMetadata<swift::InProcess>::isCanonicalStaticallySpecializedGenericMetadata() const  (in libswiftCore.dylib)        8
+        NextEntryFromParent  (in CoreServicesInternal)        7
+        __CFURLSetResourceInfoPtr  (in CoreFoundation)        7
+        swift::ParsedTypeIdentity::parse(swift::TargetTypeContextDescriptor<swift::InProcess> const*)  (in libswiftCore.dylib)        7
+        -[NSURLDirectoryEnumerator nextObject]  (in Foundation)        6
+        SwiftHashTable::equal<SwiftForeignTypeProtocolConformanceLookupKey, SwiftForeignTypeProtocolConformanceLocationKey>(SwiftForeignTypeProtocolConformanceLocationKey const&, SwiftForeignTypeProtocolConformanceLookupKey const&, unsigned char const*) const  (in dyld_sim)        6
+        -[__NSCFBoolean release]  (in CoreFoundation)        5
+        -[__NSCFNumber longValue]  (in CoreFoundation)        5
+        _free  (in libsystem_malloc.dylib)        5
+        createBaseCacheWithPathAndAttributes(__CFAllocator const*, unsigned char const*, unsigned int, unsigned char, unsigned char, attrlist const*, void const*, unsigned char, void**, __CFError**)  (in CoreServicesInternal)        5
+        getCache(swift::TargetTypeContextDescriptor<swift::InProcess> const&)  (in libswiftCore.dylib)        5
+        memcmp  (in dyld_sim)        5
