@@ -117,7 +117,13 @@ struct PlanRowLine: View {
                     title.opacity(ghost ? 0 : 1)
                     head
                 }
-                menuButton
+                // Место под «⋯» — без высоты: кнопка выше строки письма и
+                // в ряду сдвигала всё дело с линий клетки (P1117; так было
+                // в 377).
+                Color.clear.frame(width: Self.menuSize, height: 1)
+            }
+            .overlay(alignment: .topTrailing) {
+                menuButton.offset(y: Self.menuDrop)
             }
         }
         // Корешка «Детали» справа нет — название идёт до контура (P408).
@@ -174,7 +180,7 @@ struct PlanRowLine: View {
             Image(systemName: "ellipsis")
                 .font(.system(size: 14, weight: .bold))
                 .foregroundStyle(Look.inkSoft)
-                .frame(width: 26, height: 26)
+                .frame(width: Self.menuSize, height: Self.menuSize)
                 .background(Circle().fill(Look.inkFaint.opacity(0.18)))
                 .opacity(typing ? 1 : 0.45)
         }
@@ -182,21 +188,26 @@ struct PlanRowLine: View {
         .opacity(ghost ? 0 : 1)
         .allowsHitTesting(!ghost && onMenu != nil)
         .accessibilityLabel(T("Действия дела", "Task actions"))
-        .alignmentGuide(.firstTextBaseline) { $0[.bottom] - PlanTitle.above - 1 }
+    }
+
+    static let menuSize: CGFloat = 26
+    /// «⋯» — серединой на середине букв первой строки, а не на её верху.
+    static var menuDrop: CGFloat {
+        PlanTitle.baseline - PlanTitle.size * 0.35 - menuSize / 2
     }
 
     /// Плашка дела (P1113, вариант C; автор: «человек не понимает, что
     /// запись в плане — одна общая плашка»; частично отменяет «дело — прямо
-    /// по клетке, без плашки» P793): лёгкая заливка чуть темнее бумаги,
-    /// растёт с текстом. Кромка — у всех (P1116); дело, которое пишут, —
+    /// по клетке, без плашки» P793): лёгкая заливка светлее бумаги
+    /// (P1117; прежде темнее), растёт с текстом. Кромка — у всех (P1116); дело, которое пишут, —
     /// только другого цвета, без тени и без перемены размера.
     /// Поднятое — синей рамкой, как прежде (`contour`).
     @ViewBuilder private var plate: some View {
         if !lifted && !ghost {
             let shape = RoundedRectangle(cornerRadius: 10)
             shape
-                .fill(typing ? Look.plateLight : Look.ink.opacity(row.done ? 0.035 : 0.06))
-                .overlay(shape.strokeBorder(Look.inkFaint.opacity(typing ? 0.75 : 0.45), lineWidth: 0.8))
+                .fill(Look.planPlate(typing ? 1 : (row.done ? 0.35 : 0.6)))
+                .overlay(shape.strokeBorder(Look.inkFaint.opacity(typing ? 0.9 : 0.65), lineWidth: 0.75))
                 .padding(.leading, 10)
                 .padding(.trailing, 10)
                 .padding(.vertical, -Self.plateRoom)

@@ -165,6 +165,15 @@ enum Look {
     /// Плашка дела (P413): желтоватая, как стикер, светлее у левого
     /// верхнего угла — свет падает оттуда.
     static let plateLight  = Color(light: 0xFFF9E3, dark: 0x3A3426)
+    /// Плашка дела в плане (P1117, автор: «тон плашек не темнее, а светлее
+    /// страницы»): белая дымка поверх бумаги — клетка сквозь неё видна.
+    /// Сильнее — у дела, которое пишут; слабее — у сделанного.
+    static func planPlate(_ strength: Double) -> Color {
+        Color(uiColor: UIColor { trait in
+            UIColor.white.withAlphaComponent(trait.userInterfaceStyle == .dark
+                ? strength * 0.14 : strength * 0.6)
+        })
+    }
     static var stickerEdge: Color { Scheme.current.stickerEdge }
     /// Выбранный вариант в настройках (P600) — чуть тронут чернилами, а не
     /// голубой цвет iPhone (P670).
