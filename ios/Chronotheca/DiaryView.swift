@@ -44,6 +44,10 @@ struct DiaryView: View {
                 guard store.canEditPlan else { return shell.closed(store.closedReason) }
                 shell.asks.newTask += 1
             } : nil,
+            onEmptyTap: !store.isFuture ? {
+                guard store.canEditDiary else { return shell.closed(store.closedReason) }
+                DiaryEditor.active?.focusEnd()
+            } : nil,
             inCloud: store.away.contains(.diary),
             weather: store.weather,
             // Полоска одна на всю страницу (P408) и лежит в файле дневника
@@ -265,6 +269,8 @@ struct DiaryPage: View {
     /// Касание по закрытому тексту будущего дня (P424) — только над
     /// текстом, не над нижней строкой (P994).
     var onClosedTap: (() -> Void)? = nil
+    /// Касание по пустому месту под записью дня, где пишут (P1110).
+    var onEmptyTap: (() -> Void)? = nil
     private var stripOn: Bool { editable || stripEditable }
     /// Файл дневника лежит в iCloud и ещё не скачан: страница пуста не
     /// потому, что день пуст (решение P182).
@@ -454,6 +460,9 @@ struct DiaryPage: View {
         .background {
             if let onClosedTap {
                 Color.black.opacity(0.001).onTapGesture(perform: onClosedTap)
+            } else if let onEmptyTap {
+                // Пустое место под записью — курсор в её конец (P1110).
+                Color.black.opacity(0.001).onTapGesture(perform: onEmptyTap)
             }
         }
     }

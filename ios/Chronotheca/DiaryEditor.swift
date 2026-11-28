@@ -2261,6 +2261,17 @@ struct DiaryEditor: UIViewRepresentable {
         /// нечего — поле подобрало себе высоту по тексту, как в дневнике, —
         /// едет вся страница, ровно настолько, насколько курсор зашёл под
         /// клавиатуру (решение P175).
+        /// Касание по пустому месту под записью (P1110, автор: «логично, если
+        /// я нажал на любое место дневника, даже внизу, — курсор на строке,
+        /// готовой к печати»): как в «Заметках» — курсор в конец записи,
+        /// клавиатура.
+        func focusEnd() {
+            guard let view, view.isEditable else { return }
+            if !view.isFirstResponder { view.becomeFirstResponder() }
+            view.selectedRange = NSRange(location: view.textStorage.length, length: 0)
+            DispatchQueue.main.async { [weak self] in self?.showCaret(animated: true) }
+        }
+
         func showCaret(animated: Bool) {
             guard let view, view.isFirstResponder, let window = view.window,
                   let top = keyboardTop, let end = view.selectedTextRange?.end
