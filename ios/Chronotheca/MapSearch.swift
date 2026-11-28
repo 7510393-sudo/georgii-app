@@ -373,8 +373,8 @@ struct MapSearch: View {
             return T("Карты Apple просят подождать: слишком много поисков подряд. ", "Apple Maps asks to wait: too many searches in a row. ")
                 + "(\(ns.domain) \(ns.code))"
         }
-        return T("Карты Apple ответили ошибкой: ", "Apple Maps returned an error: ")
-            + "\(ns.domain) \(ns.code)"
+        return T("Карты Apple сейчас не ответили — попробуйте чуть позже. ", "Apple Maps didn’t answer just now — try again a little later. ")
+            + "(\(ns.domain) \(ns.code))"
     }
 }
 

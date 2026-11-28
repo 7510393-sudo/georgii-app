@@ -243,7 +243,7 @@ struct DayPage: View {
             DispatchQueue.global(qos: .userInitiated).async {
                 let url = PDFBook.make(.init(from: date, to: date), vault: vault)
                 DispatchQueue.main.async {
-                    if let url { Share.present([url]) } else { shell.say(T("В этом дне пока пусто — PDF не из чего собрать.", "This day is still empty — nothing to make a PDF from.")) }
+                    if let url { Share.present([url]) } else { shell.say(T("В этом дне пока пусто — PDF соберётся, когда появится запись.", "This day is still empty — the PDF will come once there is an entry.")) }
                 }
             }
         } label: {

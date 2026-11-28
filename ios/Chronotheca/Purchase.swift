@@ -142,8 +142,8 @@ final class Purchase: ObservableObject {
         case .owned: return T("куплено — навсегда", "purchased — for good")
         case .trial(let n): return T("пробный месяц: впереди дней — \(n)", "trial month: \(n) days ahead")
         case .notStarted: return T("пробный месяц не начат", "trial month not started")
-        case .expired: return T("месяц прошёл — записи читаются, писать новое после покупки",
-                                "the month is over — entries are readable; writing needs the purchase")
+        case .expired: return T("месяц позади — всё читается, писать дальше — после покупки",
+                                "the month is over — everything reads; writing on needs the purchase")
         case .unavailable: return T("покупка пока недоступна — всё открыто", "purchase not available yet — everything is open")
         }
     }
@@ -163,22 +163,28 @@ struct PurchaseSheet: View {
                     Text(headline)
                         .font(Look.serif(22, weight: .semibold))
                         .foregroundStyle(Look.ink)
-                    Text(T("Месяц — всё приложение целиком, без урезаний. Потом — одна покупка за \(purchase.priceText), навсегда, без подписки.",
-                           "A month of the whole app, nothing held back. Then one purchase of \(purchase.priceText), for good, no subscription."))
-                    Text(T("Не купили — ничего не теряете: всё написанное читается всегда, файлы остаются в вашей папке. Нельзя будет только писать новое.",
-                           "If you don't buy, you lose nothing: everything you wrote stays readable, and the files stay in your folder. Only writing new entries stops."))
-                        .foregroundStyle(Look.inkSoft)
+                    // Тон — на одной стороне с человеком (P1112, `docs/91`).
+                    if purchase.state == .expired {
+                        Text(T("Надеемся, он был хорошим. Всё написанное — ваше и читается как прежде. Чтобы писать дальше — одна покупка, навсегда.",
+                               "We hope it was a good one. Everything you wrote is yours and reads as before. To keep writing — one purchase, for good."))
+                    } else {
+                        Text(T("Попробуйте всё целиком, месяц, без урезаний. Понравится — одна покупка за \(purchase.priceText), навсегда и без подписки.",
+                               "Try the whole app for a month, nothing held back. If you like it — one purchase of \(purchase.priceText), for good, no subscription."))
+                        Text(T("Решите не покупать — ничего не потеряете: всё написанное остаётся вашим, в вашей папке, и читается всегда.",
+                               "Decide not to buy and you lose nothing: everything you wrote stays yours, in your folder, readable forever."))
+                            .foregroundStyle(Look.inkSoft)
+                    }
                     if purchase.state == .notStarted {
                         // P1108 (тестировщик закрыл окно на первом запуске и
                         // не понял, почему не пишется).
-                        Text(T("Пока месяц не начат, записи можно читать, но не писать.",
-                               "Until the month is started, you can read your entries but not write."))
+                        Text(T("Чтобы писать, начните месяц — он ни к чему не обязывает. Читать можно и без него.",
+                               "To write, start the month — it commits you to nothing. Reading works without it."))
                             .font(Look.sans(15, weight: .semibold))
                             .foregroundStyle(Look.ink)
                         Button {
                             Task { await purchase.buy(purchase.trial) }
                         } label: {
-                            Text(T("Начать бесплатный месяц", "Start the free month")).frame(maxWidth: .infinity)
+                            Text(T("Дайте попробовать — месяц бесплатно", "Let me try — a month free")).frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.borderedProminent)
                         .disabled(purchase.busy || purchase.trial == nil)
@@ -187,7 +193,9 @@ struct PurchaseSheet: View {
                         Button {
                             Task { await purchase.buy(purchase.full) }
                         } label: {
-                            Text(T("Купить навсегда — \(purchase.priceText)", "Buy for good — \(purchase.priceText)"))
+                            Text(purchase.state == .expired
+                                 ? T("Остаюсь — \(purchase.priceText) навсегда", "I'm staying — \(purchase.priceText) for good")
+                                 : T("Сразу навсегда — \(purchase.priceText)", "For good right away — \(purchase.priceText)"))
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.bordered)
@@ -214,7 +222,7 @@ struct PurchaseSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(T("Закрыть", "Close")) { dismiss() }
+                    Button(closeTitle) { dismiss() }
                 }
             }
             .offerCodeRedemption(isPresented: $redeeming) { _ in
@@ -223,12 +231,20 @@ struct PurchaseSheet: View {
         }
     }
 
+    private var closeTitle: String {
+        switch purchase.state {
+        case .expired: return T("Пока только читать", "Just reading for now")
+        case .notStarted: return T("Не сейчас", "Not now")
+        default: return T("Закрыть", "Close")
+        }
+    }
+
     private var headline: String {
         switch purchase.state {
         case .owned: return T("Куплено. Спасибо!", "Purchased. Thank you!")
-        case .expired: return T("Пробный месяц прошёл", "The trial month is over")
+        case .expired: return T("Месяц пролетел", "The month flew by")
         case .trial(let n): return T("Пробный месяц: впереди дней — \(n)", "Trial month: \(n) days ahead")
-        default: return T("Месяц бесплатно", "A month for free")
+        default: return T("Месяц — в подарок", "A month on us")
         }
     }
 }

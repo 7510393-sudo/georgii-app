@@ -497,7 +497,7 @@ struct RootView: View {
                     store.syncUpcomingReminders()
                     shell.say(T("День в корзине. Вернуть — Настройки → Корзина.", "The day is in the trash. Restore it in Settings → Trash."))
                 } else {
-                    shell.say(T("Тут нечего убирать.", "Nothing to remove here."))
+                    shell.say(T("Здесь пока пусто — убирать нечего.", "Nothing here yet — nothing to remove."))
                 }
             }
         } message: {

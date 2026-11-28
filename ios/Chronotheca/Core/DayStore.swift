@@ -75,13 +75,14 @@ final class DayStore: ObservableObject {
     /// Почему в этот день писать нельзя.
     var closedReason: String {
         if !away.isEmpty {
-            return T("Запись ещё загружается из iCloud. Как только придёт — её можно будет править.",
-                     "This entry is still downloading from iCloud. You can edit it once it arrives.")
+            return T("Запись ещё едет из iCloud — как только доедет, можно писать.",
+                     "This entry is still on its way from iCloud — you can write as soon as it arrives.")
         }
         // Прежде любая другая причина звучала как «день не наступил» —
         // и на сегодняшнем дне тоже (P1105).
         if Vault.newer { return Vault.newerReason }
-        return T("Этот день ещё не наступил.", "This day has not come yet.")
+        return T("Этот день ещё впереди — дневник откроется, когда он наступит. А дела на него можно писать уже сейчас.",
+                 "This day is still ahead — the diary opens when it comes. Tasks for it can be written now.")
     }
 
     /// Заголовок дня: ближние дни зовутся по имени, дальние — днём недели.

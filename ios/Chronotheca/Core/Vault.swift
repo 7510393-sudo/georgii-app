@@ -94,8 +94,8 @@ final class Vault: ObservableObject {
 
     /// Причина отказа в записи для архива новее приложения.
     static var newerReason: String {
-        T("Эту папку вела более новая версия приложения — записи здесь только читаются.",
-          "This folder was kept by a newer version of the app, so entries here are read-only.")
+        T("Эту папку вела более новая версия RollingDays. Обновите приложение — и пишите дальше; пока всё читается.",
+          "This folder was kept by a newer version of RollingDays. Update the app to keep writing; meanwhile everything reads.")
     }
     @Published private(set) var problem: String?
 
@@ -1349,7 +1349,7 @@ final class Vault: ObservableObject {
     /// (решение P200).
     func addPhoto(_ data: Data, for date: Date) -> String? {
         guard let photo = Photo.stored(from: data) else {
-            problem = T("Эту фотографию не удалось прочитать.", "This photo could not be read.")
+            problem = T("Эта фотография не открылась — может быть, она ещё в iCloud. Попробуйте чуть позже.", "This photo didn't open — it may still be in iCloud. Try again a little later.")
             return nil
         }
         return addAttachment(photo.data, to: .photos, name: Vault.moment(date) + "." + photo.ext, for: date)

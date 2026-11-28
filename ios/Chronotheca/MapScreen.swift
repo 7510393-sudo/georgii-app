@@ -521,7 +521,7 @@ struct MapScreen: View {
         // (P404; прежде такая не сохранялась и пропадала с карты, P284).
         guard let stored = Places.save(place, in: vault) else {
             selected = place
-            return shell.say(T("Место не записалось. Проверьте папку в настройках.", "The place was not saved. Check the folder in Settings."))
+            return shell.say(T("Место не записалось — похоже, папка сейчас недоступна. Загляните в Настройки → «Хранилище».", "The place wasn’t saved — the folder seems unavailable right now. Have a look at Settings → Storage."))
         }
         places.removeAll { $0.id == place.id || ($0.file != nil && $0.file == place.file) }
         places.append(stored)
