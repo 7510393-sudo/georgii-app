@@ -62,7 +62,7 @@ final class DayStoreTests: XCTestCase {
     func testДневникБудущегоДняЗакрыт() {
         let завтра = store(1)
         XCTAssertFalse(завтра.canEditDiary)
-        XCTAssertTrue(завтра.closedReason.contains(T("не наступил", "not come yet")))
+        XCTAssertTrue(завтра.closedReason.contains(T("ещё впереди", "still ahead")))
     }
 
     func testЗаголовкиБлижнихДней() {
