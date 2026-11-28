@@ -4,10 +4,9 @@ import UIKit
 /// Название дела: одна полоса текста во всю ширину строки.
 ///
 /// Первая строка отступает вправо — под ней стоят номер, время и
-/// колокольчик. Все остальные идут из-под времени, во всю ширину до
-/// закладки. Иначе длинное название складывается в узкий столбик рядом с
-/// двумя другими столбиками — времён и колокольчиков, — и страница читается
-/// не строками, а колонками (решение P177).
+/// колокольчик. Перенесённые строки идут под началом названия (P1111,
+/// тестировщик: «вторая строка начинается под временем — выбивается»;
+/// отменяет «из-под времени» P177), как и строки после «Ввода» (P1052).
 ///
 /// Отступ первой строки задаётся числом и должен в точности равняться
 /// ширине головы строки: номер, время и колокольчик стоят поверх него.
@@ -21,10 +20,8 @@ struct PlanTitle: UIViewRepresentable {
 
     @Binding var text: String
 
-    /// Отступ первой строки — ширина головы строки.
+    /// Отступ строк названия — ширина головы строки.
     var indent: CGFloat
-    /// Отступ остальных строк — из-под времени, правее номера.
-    var wrap: CGFloat
 
     var faded = false
     /// Можно ли ставить курсор и править.
@@ -155,7 +152,7 @@ struct PlanTitle: UIViewRepresentable {
     private var style: [NSAttributedString.Key: Any] {
         let paragraph = NSMutableParagraphStyle()
         paragraph.firstLineHeadIndent = indent
-        paragraph.headIndent = wrap
+        paragraph.headIndent = indent
         // Расстояние между строками задаёт попечитель раскладки — у первой
         // строки оно своё. Здесь ноль, чтобы оно не сложилось дважды.
         paragraph.lineSpacing = 0
@@ -180,8 +177,8 @@ struct PlanTitle: UIViewRepresentable {
 
     /// Строки после «Ввода» — новые абзацы прямо под названием дела, с тем
     /// же отступом, что первая строка (P1052, автор: «да, под название»;
-    /// прежде шли из-под времени, как перенесённые, P652). Перенос самой
-    /// первой строки по-прежнему из-под времени (P177).
+    /// прежде шли из-под времени, как перенесённые, P652). Перенос первой
+    /// строки — тоже под названием (P1111).
     func continuationStyle() -> NSParagraphStyle {
         let paragraph = NSMutableParagraphStyle()
         paragraph.firstLineHeadIndent = indent
@@ -214,7 +211,7 @@ struct PlanTitle: UIViewRepresentable {
         view.typingAttributes = style
         // Кнопочки каждый раз рисуются заново и на равенство не проверишь —
         // сверяется текст и то, от чего зависит вид.
-        let look = "\(indent)|\(wrap)|\(faded)|\(text.isEmpty)|\(editable)"
+        let look = "\(indent)|\(faded)|\(text.isEmpty)|\(editable)"
         guard DiaryEditor.plain(view.attributedText) != shown || coordinator.look != look
         else { return }
         coordinator.look = look
