@@ -1,34 +1,35 @@
-Проверки движения, 2026-11-28 11:22 UTC, коммит 15bf327
+Проверки движения, 2026-11-28 12:11 UTC, коммит d237d0e
 
 /Users/runner/work/georgii-app/georgii-app/ios/ChronothecaUITests/MovementTests.swift:873: error: -[ChronothecaUITests.MovementTests testBigArchiveStaysQuick] : Failed to get matching snapshots: Timed out while evaluating UI query.
-Test Case '-[ChronothecaUITests.MovementTests testBigArchiveStaysQuick]' failed (199.164 seconds).
-Test Case '-[ChronothecaUITests.MovementTests testCalendarManySwipes]' passed (57.235 seconds).
-Test Case '-[ChronothecaUITests.MovementTests testCalendarStaysPut]' passed (78.015 seconds).
-Test Case '-[ChronothecaUITests.MovementTests testFoundCardsAboveKeyboard]' passed (113.649 seconds).
-Test Case '-[ChronothecaUITests.MovementTests testFutureCardAfterMap]' passed (112.986 seconds).
-Test Case '-[ChronothecaUITests.MovementTests testKeyboardKeepsScreen]' passed (36.762 seconds).
-Test Case '-[ChronothecaUITests.MovementTests testPastCardBottom]' passed (54.347 seconds).
-Test Case '-[ChronothecaUITests.MovementTests testPastCardStaysPut]' passed (256.091 seconds).
-Test Case '-[ChronothecaUITests.MovementTests testPlusOpensMenu]' passed (38.739 seconds).
-Test Case '-[ChronothecaUITests.MovementTests testRibbonFromDay]' passed (72.340 seconds).
-Test Case '-[ChronothecaUITests.MovementTests testSettingsOverCalendar]' passed (52.914 seconds).
-Test Case '-[ChronothecaUITests.MovementTests testSlow1PastCardTodayAtEdge]' passed (155.388 seconds).
-Test Case '-[ChronothecaUITests.MovementTests testSlow2FutureCardAfterMap]' passed (138.761 seconds).
-Test Case '-[ChronothecaUITests.MovementTests testSlow3TomorrowClosesBySwipe]' passed (123.751 seconds).
-Test Case '-[ChronothecaUITests.MovementTests testSlow4CloseAndPullAtOnce]' passed (116.119 seconds).
-Test Case '-[ChronothecaUITests.MovementTests testStripCarryKeepsSheet]' passed (81.319 seconds).
-Test Case '-[ChronothecaUITests.MovementTests testSwipeLikeFinger]' passed (37.127 seconds).
-Test Case '-[ChronothecaUITests.MovementTests testSwipeSections]' passed (34.908 seconds).
-Test Case '-[ChronothecaUITests.MovementTests testSwipeWithKeyboard]' passed (31.895 seconds).
-Test Case '-[ChronothecaUITests.MovementTests testTodayRemembersDay]' passed (25.546 seconds).
-Test Case '-[ChronothecaUITests.MovementTests testTodayReturnsFromPast]' passed (16.750 seconds).
+Test Case '-[ChronothecaUITests.MovementTests testBigArchiveStaysQuick]' failed (124.479 seconds).
+/Users/runner/work/georgii-app/georgii-app/ios/ChronothecaUITests/MovementTests.swift:714: error: -[ChronothecaUITests.MovementTests testCalendarManySwipes] : XCTAssertEqual failed: ("December 2026") is not equal to ("November 2026") - после трёх вверх и трёх вниз месяц не вернулся: ["November 2026", "December 2026", "January 2027", "February 2027", "January 2027", "January 2027", "December 2026"]
+Test Case '-[ChronothecaUITests.MovementTests testCalendarManySwipes]' failed (71.862 seconds).
+Test Case '-[ChronothecaUITests.MovementTests testCalendarStaysPut]' passed (59.107 seconds).
+Test Case '-[ChronothecaUITests.MovementTests testFoundCardsAboveKeyboard]' passed (79.820 seconds).
+Test Case '-[ChronothecaUITests.MovementTests testFutureCardAfterMap]' passed (103.956 seconds).
+Test Case '-[ChronothecaUITests.MovementTests testKeyboardKeepsScreen]' passed (35.325 seconds).
+Test Case '-[ChronothecaUITests.MovementTests testPastCardBottom]' passed (42.050 seconds).
+Test Case '-[ChronothecaUITests.MovementTests testPastCardStaysPut]' passed (181.871 seconds).
+Test Case '-[ChronothecaUITests.MovementTests testPlusOpensMenu]' passed (25.348 seconds).
+Test Case '-[ChronothecaUITests.MovementTests testRibbonFromDay]' passed (67.173 seconds).
+Test Case '-[ChronothecaUITests.MovementTests testSettingsOverCalendar]' passed (44.864 seconds).
+Test Case '-[ChronothecaUITests.MovementTests testSlow1PastCardTodayAtEdge]' passed (130.830 seconds).
+Test Case '-[ChronothecaUITests.MovementTests testSlow2FutureCardAfterMap]' passed (158.918 seconds).
+Test Case '-[ChronothecaUITests.MovementTests testSlow3TomorrowClosesBySwipe]' passed (142.612 seconds).
+Test Case '-[ChronothecaUITests.MovementTests testSlow4CloseAndPullAtOnce]' passed (141.669 seconds).
+Test Case '-[ChronothecaUITests.MovementTests testStripCarryKeepsSheet]' passed (112.645 seconds).
+Test Case '-[ChronothecaUITests.MovementTests testSwipeLikeFinger]' passed (41.367 seconds).
+Test Case '-[ChronothecaUITests.MovementTests testSwipeSections]' passed (39.605 seconds).
+Test Case '-[ChronothecaUITests.MovementTests testSwipeWithKeyboard]' passed (38.378 seconds).
+Test Case '-[ChronothecaUITests.MovementTests testTodayRemembersDay]' passed (29.403 seconds).
+Test Case '-[ChronothecaUITests.MovementTests testTodayReturnsFromPast]' passed (23.493 seconds).
 
-замер календарь много: November 2026 → December 2026 → January 2027 → February 2027 → January 2027 → December 2026 → November 2026
+замер календарь много: November 2026 → December 2026 → January 2027 → February 2027 → January 2027 → January 2027 → December 2026
 замер календарь: открыт — November 2026 · месяц вверх — December 2026 · месяц вниз — November 2026 · год — 2026 · год вверх — 2027 · год вниз — 2026 · после «Дневника» — 2026 · снова месяц — November 2026
 замер поиск с клавиатурой: верх клавиатуры 583, корешки находок: -1456 -1331 -1206 -1081 -956 -831 -706 -581 -456 -331 -206 -84 32 146 254 359
 замер поиск с клавиатурой: нижняя карточка до поиска 643, после «Отменить» 643
-замер карточка будущего: 2026 December 21 MO на 401
-замер после закрытия будущего: 2026 December 22 TU 484; 2026 December 16 WE 18; 2026 December 17 TH 91; 2026 December 18 FR 165; 2026 December 19 SA 241; 2026 December 20 SU 320; 2026 December 21 MO 401; 2026 December 23 WE 570; 2026 December 24 TH 658; 2026 December 25 FR 749
+замер карточка будущего: 2026 December 21 MO на 432
+замер после закрытия будущего: 2026 December 22 TU 516; 2026 December 16 WE 45; 2026 December 17 TH 118; 2026 December 18 FR 193; 2026 December 19 SA 270; 2026 December 20 SU 350; 2026 December 21 MO 432; 2026 December 23 WE 603; 2026 December 24 TH 692; 2026 December 25 FR 783
 замер уголки: нет строки
 замер прошлый день: открыт today
 замер карточка прошлого: 2026 November 23 MO на 393
@@ -42,16 +43,16 @@ Test Case '-[ChronothecaUITests.MovementTests testTodayReturnsFromPast]' passed 
 замер медленно 1: 2026 November 23 MO: было 393, стало 393 → 393 → 393 → 393
 замер медленно 1: состояние картотека(прошлое), «Сегодня» на 660 из 708, скрыта 0
 замер медленно 2: картотека открыта за 0 движ.
-замер медленно 2: карточка 2026 December 10 TH на 419
+замер медленно 2: карточка 2026 December 10 TH на 430
 замер медленно 2: закрыт за 1 движ.
-замер медленно 2: 2026 December 10 TH: было 419, стало 419 → 419 → 419 → 419
+замер медленно 2: 2026 December 10 TH: было 430, стало 430 → 430 → 430 → 430
 замер медленно 2: состояние картотека(будущее), «Сегодня» на -728 из 708, скрыта 0
 замер медленно 3: картотека открыта за 0 движ.
-замер медленно 3: карточка 2026 December 7 MO на 126
+замер медленно 3: карточка 2026 December 6 SU на 92
 замер медленно 3: закрыт за 1 движ.
-замер медленно 3: 2026 December 7 MO: было 126, стало 126 → 126 → 126 → 126
+замер медленно 3: 2026 December 6 SU: было 92, стало 92 → 92 → 92 → 92
 замер медленно 3: состояние картотека(будущее), «Сегодня» на -728 из 708, скрыта 0
 замер медленно 4: картотека открыта за 2 движ.
 замер медленно 4: карточка 2026 November 24 TU на 317
-замер медленно 4: 2026 November 24 TU: 317 → 317 → 317
+замер медленно 4: 2026 November 24 TU: 404 → 404 → 404
 замер медленно 4: состояние картотека(прошлое), «Сегодня» на 660 из 708, скрыта 0
