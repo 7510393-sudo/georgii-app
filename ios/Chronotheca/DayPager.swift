@@ -281,6 +281,7 @@ struct DayPage: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.75)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .layoutPriority(1)
             Image(systemName: "ellipsis")
                 .font(.system(size: 15, weight: .bold))
@@ -289,6 +290,17 @@ struct DayPage: View {
                 .background(Circle().fill(Look.inkFaint.opacity(0.16)))
                 .accessibilityHidden(true)
         }
+        // «⋯» — всегда у правого края корешка (P1114, автор по 373: «в
+        // сегодняшнем дне всё в порядке, в прошлом и будущем не на том
+        // месте»): прежде она шла сразу за текстом — у короткой даты
+        // посреди корешка, у длинной — за его краем, на плече листа.
+        .frame(width: Self.titleWidth, alignment: .leading)
+    }
+
+    /// Ширина имени дня с «⋯»: корешок листа (`folder.tabShare` ширины) без
+    /// отступа слева (8 + 14) и зазора до его скругления справа.
+    private static var titleWidth: CGFloat {
+        UIScreen.main.bounds.width * folder.tabShare - 22 - 14
     }
 
     /// Шаг назад и вперёд по всей странице, плану и дневнику разом (P408) —
