@@ -659,8 +659,13 @@ struct TodayGrip: View {
             .contentShape(Rectangle())
             .onTapGesture { go() }
             .gesture(DragGesture(minimumDistance: 10).onEnded { drag in
+                // Быстрый короткий взмах — тоже (P1105, тестировщик по 371:
+                // «поднимается только при медленном плавном движении, на
+                // классический быстрый не реагирует»): в счёт и путь, куда
+                // палец летел, как у смахивания листа (P1074).
                 let pulled = up ? -drag.translation.height : drag.translation.height
-                if pulled > 30 { go() }
+                let flung = up ? -drag.predictedEndTranslation.height : drag.predictedEndTranslation.height
+                if pulled > 30 || (pulled > 12 && flung > 80) { go() }
             })
             .accessibilityElement()
             .accessibilityLabel(T("Вернуться в день", "Back to the day"))

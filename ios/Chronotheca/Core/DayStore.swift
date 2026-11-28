@@ -78,6 +78,9 @@ final class DayStore: ObservableObject {
             return T("Запись ещё загружается из iCloud. Как только придёт — её можно будет править.",
                      "This entry is still downloading from iCloud. You can edit it once it arrives.")
         }
+        // Прежде любая другая причина звучала как «день не наступил» —
+        // и на сегодняшнем дне тоже (P1105).
+        if Vault.newer { return Vault.newerReason }
         return T("Этот день ещё не наступил.", "This day has not come yet.")
     }
 

@@ -338,7 +338,7 @@ struct PlanView: View {
     /// по ней — новое дело и курсор в нём; по времени или колокольчику —
     /// новое дело и сразу ролик.
     private func add(roller: Bool = false) {
-        guard let id = store.addTask() else { return shell.say(store.closedReason) }
+        guard let id = store.addTask() else { return shell.closed(store.closedReason) }
         if roller { openRoller(id) } else { typingIn = id }
     }
 
@@ -535,7 +535,7 @@ struct PlanView: View {
         let id = row.wrappedValue.id
         switch phase {
         case .began:
-            guard store.canEditPlan else { return shell.say(store.closedReason) }
+            guard store.canEditPlan else { return shell.closed(store.closedReason) }
             if typingIn != nil {
                 hideKeyboard()
                 typingIn = nil
@@ -766,7 +766,7 @@ struct PlanView: View {
     /// Событие сделано или снова не сделано — касанием по номеру, как
     /// дело (P383).
     private func checkEvent(_ e: DayEvents.Shown) {
-        guard store.canEditPlan else { return shell.say(store.closedReason) }
+        guard store.canEditPlan else { return shell.closed(store.closedReason) }
         markEvent(e) { $0.done.toggle() }
         if !e.row.done { Feel.done() } else { Feel.light() }
     }
@@ -778,7 +778,7 @@ struct PlanView: View {
     private func eventLift(_ e: DayEvents.Shown, _ phase: Lift) {
         switch phase {
         case .began:
-            guard store.canEditPlan else { return shell.say(store.closedReason) }
+            guard store.canEditPlan else { return shell.closed(store.closedReason) }
             if typingIn != nil {
                 hideKeyboard()
                 typingIn = nil
@@ -866,7 +866,7 @@ struct PlanView: View {
     private func carryPhoto(_ link: String, from row: UUID, _ phase: Lift, at spot: CGPoint) {
         switch phase {
         case .began:
-            guard store.canEditPlan else { return shell.say(store.closedReason) }
+            guard store.canEditPlan else { return shell.closed(store.closedReason) }
             if typingIn != nil {
                 hideKeyboard()
                 typingIn = nil
@@ -1115,7 +1115,7 @@ struct PlanView: View {
     /// «Ввод» в названии: ввод переходит к делу ниже.
 
     private func openRoller(_ id: UUID) {
-        guard store.canEditPlan else { return shell.say(store.closedReason) }
+        guard store.canEditPlan else { return shell.closed(store.closedReason) }
         // Ролик встаёт на место клавиатуры, а не поверх неё: два разных
         // способа ввода разом на экране не помещаются, и человеку пришлось
         // бы сперва убирать клавиатуру самому (решение P176).
@@ -1124,7 +1124,7 @@ struct PlanView: View {
     }
 
     private func toggle(_ row: Binding<PlanRow>) {
-        guard store.canEditPlan else { return shell.say(store.closedReason) }
+        guard store.canEditPlan else { return shell.closed(store.closedReason) }
         row.wrappedValue.done.toggle()
         // Сделано — довольный толчок; снято — лёгкий (P267).
         if row.wrappedValue.done { Feel.done() } else { Feel.light() }

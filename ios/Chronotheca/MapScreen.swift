@@ -578,7 +578,7 @@ struct MapScreen: View {
             }
             return (ok, store.closedReason)
         }
-        guard written else { return shell.say(reason) }
+        guard written else { return shell.closed(reason) }
         Feel.light()
         // Показаны свои места — подсказать, где теперь искать точку (P996).
         shell.say(mapState.entries ? T("Отправлено в дневник", "Sent to the diary")

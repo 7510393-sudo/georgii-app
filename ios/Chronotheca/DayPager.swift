@@ -631,7 +631,7 @@ struct AttachBar: View {
     /// Вложение кладётся в ряд внизу страницы, в файл дневника — и в
     /// будущем дне тоже (P961). В закрытый день — нельзя, и об этом говорится.
     private func open(_ show: () -> Void) {
-        guard store.canEditStrip else { return shell.say(store.closedReason) }
+        guard store.canEditStrip else { return shell.closed(store.closedReason) }
         show()
     }
 
@@ -670,7 +670,7 @@ struct AttachBar: View {
     /// и в будущем дне тоже (P615, P961). Место узнаётся только по этому
     /// нажатию (A9).
     private func notePlaceHere() {
-        guard store.canEditStrip else { return shell.say(store.closedReason) }
+        guard store.canEditStrip else { return shell.closed(store.closedReason) }
         Feel.light()
         Locator.shared.current { location in
             DispatchQueue.main.async {

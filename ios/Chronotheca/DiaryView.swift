@@ -41,7 +41,7 @@ struct DiaryView: View {
             // (P1063, вместо слов «день не наступил», P424: тестировщик решил,
             // что и план не пишется). Нижнюю строку оно не закрывает (P994).
             onClosedTap: store.isFuture ? {
-                guard store.canEditPlan else { return shell.say(store.closedReason) }
+                guard store.canEditPlan else { return shell.closed(store.closedReason) }
                 shell.asks.newTask += 1
             } : nil,
             inCloud: store.away.contains(.diary),
