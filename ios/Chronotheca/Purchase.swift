@@ -50,7 +50,13 @@ final class Purchase: ObservableObject {
     var state: State {
         if owned { return .owned }
         guard full != nil else { return .unavailable }
-        guard let trialStart else { return .notStarted }
+        guard let trialStart else {
+            // Пробный месяц у Apple не нашёлся (нет в этой стране, не
+            // одобрен, сеть) — начать его нечем: кнопка «Начать бесплатный
+            // месяц» серая. Прежде такой человек был заперт насовсем (P1105,
+            // тестировщик по 371: «весь текст не даёт себя редактировать»).
+            return trial == nil ? .unavailable : .notStarted
+        }
         let passed = Calendar.current.dateComponents([.day], from: trialStart, to: Date()).day ?? 0
         let left = Self.trialDays - passed
         return left > 0 ? .trial(daysLeft: left) : .expired
