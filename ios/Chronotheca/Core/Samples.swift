@@ -129,11 +129,11 @@ enum Samples {
         SamplesText.text(.todayPlan) ?? T("""
         - [ ] 09:00 Это дело-образец: коснитесь его и пишите своё
               «Ввод» — к следующему делу.
-        - [ ] Потяните лист вверх — в будущих днях всё о делах
+        - [ ] Долистайте до конца и потяните лист вверх — в будущих днях всё о делах
         """, """
         - [ ] 09:00 This is a sample task: tap it and write your own
               Return takes you to the next task.
-        - [ ] Pull the sheet up — the days ahead tell you all about tasks
+        - [ ] Scroll to the end and pull the sheet up — the days ahead tell you all about tasks
         """)
     }
 
@@ -150,6 +150,8 @@ enum Samples {
         Где лежат записи. Всё — обычные файлы в вашей папке: их видно в «Файлах», они открываются любым редактором и остаются, даже если удалить приложение. Резервная копия — в настройках, одной кнопкой.
 
         Образцы — два дня в прошлом и два в будущем. Сотрите их, как обычный текст, или уберите день целиком: коснитесь названия дня наверху → «Убрать день в корзину».
+
+        Здесь страница кончается. Потяните лист вверх отсюда — в будущих днях всё о делах.
         """, """
         Today my RollingDays begins. In the morning, a plan; in the evening, the day's outcome: a line under each task about how it went.
 
@@ -162,6 +164,8 @@ enum Samples {
         Where your entries live. Everything is plain files in your folder: you can see them in Files, open them in any editor, and they stay even if you delete the app. Backup is in the settings, one button.
 
         The samples are two days in the past and two ahead. Erase them like any text, or move the whole day to the trash: tap the day’s name at the top → “Move the day to the trash”.
+
+        This is the end of the page. Pull the sheet up from here — the days ahead tell you all about tasks.
         """)
     }
 

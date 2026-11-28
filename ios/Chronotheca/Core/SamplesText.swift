@@ -46,7 +46,7 @@ enum SamplesText {
         .todayPlan: """
         - [ ] 09:00 Das ist eine Beispielaufgabe: tippen Sie darauf und schreiben Sie Ihre eigene
               Die Eingabetaste führt zur nächsten Aufgabe.
-        - [ ] Ziehen Sie das Blatt nach oben — die kommenden Tage erklären alles über Aufgaben
+        - [ ] Scrollen Sie bis zum Ende und ziehen Sie das Blatt nach oben — die kommenden Tage erklären alles über Aufgaben
         """,
         .todayDiary: """
         Heute beginnt meine RollingDays. Morgens ein Plan, abends der Rückblick auf den Tag: unter jeder Aufgabe eine Zeile, wie es gelaufen ist.
@@ -60,6 +60,8 @@ enum SamplesText {
         Wo Ihre Einträge liegen. Alles sind gewöhnliche Dateien in Ihrem Ordner: Sie sehen sie in „Dateien“, öffnen sie mit jedem Editor, und sie bleiben, selbst wenn Sie die App löschen. Die Sicherung ist in den Einstellungen, mit einer Taste.
 
         Die Beispiele sind zwei Tage in der Vergangenheit und zwei in der Zukunft. Löschen Sie sie wie jeden Text oder legen Sie den ganzen Tag in den Papierkorb: Tippen Sie oben auf den Namen des Tages → „Tag in den Papierkorb“.
+
+        Hier endet die Seite. Ziehen Sie das Blatt von hier aus nach oben — die kommenden Tage erklären alles über Aufgaben.
         """,
         .todayTitle: "Meine RollingDays beginnt!",
         .tomorrowPlan: """
@@ -119,7 +121,7 @@ enum SamplesText {
         .todayPlan: """
         - [ ] 09:00 Esta es una tarea de ejemplo: tócala y escribe la tuya
               Intro te lleva a la siguiente tarea.
-        - [ ] Desliza la hoja hacia arriba: los próximos días lo explican todo sobre las tareas
+        - [ ] Baja hasta el final y desliza la hoja hacia arriba: los próximos días lo explican todo sobre las tareas
         """,
         .todayDiary: """
         Hoy empieza mi RollingDays. Por la mañana, un plan; por la noche, el resumen del día: bajo cada tarea, una línea sobre cómo fue.
@@ -133,6 +135,8 @@ enum SamplesText {
         Dónde viven sus entradas. Todo son archivos normales en su carpeta: los ve en «Archivos», se abren con cualquier editor y se quedan aunque borre la app. La copia de seguridad está en los ajustes, con un botón.
 
         Los ejemplos son dos días en el pasado y dos en el futuro. Bórralos como cualquier texto o lleva el día entero a la papelera: toca el nombre del día arriba → «Mover el día a la papelera».
+
+        Aquí termina la página. Desliza la hoja hacia arriba desde aquí: los próximos días lo explican todo sobre las tareas.
         """,
         .todayTitle: "¡Empiezo mi RollingDays!",
         .tomorrowPlan: """
@@ -192,7 +196,7 @@ enum SamplesText {
         .todayPlan: """
         - [ ] 09:00 Ceci est une tâche d’exemple : touchez-la et écrivez la vôtre
               Retour passe à la tâche suivante.
-        - [ ] Tirez la feuille vers le haut : les jours à venir expliquent tout sur les tâches
+        - [ ] Faites défiler jusqu’au bout et tirez la feuille vers le haut : les jours à venir expliquent tout sur les tâches
         """,
         .todayDiary: """
         Aujourd’hui commence ma RollingDays. Le matin, un plan ; le soir, le bilan du jour : sous chaque tâche, une ligne sur la façon dont elle s’est passée.
@@ -206,6 +210,8 @@ enum SamplesText {
         Où vivent vos notes. Ce sont de simples fichiers dans votre dossier : vous les voyez dans « Fichiers », ils s’ouvrent avec n’importe quel éditeur et restent même si vous supprimez l’app. La sauvegarde est dans les réglages, en un bouton.
 
         Les exemples sont deux jours dans le passé et deux à venir. Effacez-les comme n’importe quel texte, ou mettez tout le jour à la corbeille : touchez le nom du jour en haut → « Mettre le jour à la corbeille ».
+
+        Ici, la page se termine. Tirez la feuille vers le haut d’ici : les jours à venir expliquent tout sur les tâches.
         """,
         .todayTitle: "Je commence ma RollingDays !",
         .tomorrowPlan: """
@@ -265,7 +271,7 @@ enum SamplesText {
         .todayPlan: """
         - [ ] 09:00 Questo è un impegno di esempio: toccalo e scrivi il tuo
               Invio passa all’impegno successivo.
-        - [ ] Trascina il foglio verso l’alto: i prossimi giorni spiegano tutto sugli impegni
+        - [ ] Scorri fino in fondo e trascina il foglio verso l’alto: i prossimi giorni spiegano tutto sugli impegni
         """,
         .todayDiary: """
         Oggi comincia la mia RollingDays. Al mattino un piano, la sera il bilancio del giorno: sotto ogni attività, una riga su com’è andata.
@@ -279,6 +285,8 @@ enum SamplesText {
         Dove stanno le tue note. Sono normali file nella tua cartella: li vedi in «File», si aprono con qualsiasi editor e restano anche se elimini l’app. Il backup è nelle impostazioni, con un pulsante.
 
         Gli esempi sono due giorni nel passato e due nel futuro. Cancellali come qualsiasi testo o sposta l’intero giorno nel cestino: tocca il nome del giorno in alto → «Sposta il giorno nel cestino».
+
+        Qui finisce la pagina. Trascina il foglio verso l’alto da qui: i prossimi giorni spiegano tutto sugli impegni.
         """,
         .todayTitle: "Comincio la mia RollingDays!",
         .tomorrowPlan: """
@@ -338,7 +346,7 @@ enum SamplesText {
         .todayPlan: """
         - [ ] 09:00 Dit is een voorbeeldtaak: tik erop en schrijf je eigen
               Return gaat naar de volgende taak.
-        - [ ] Trek het blad omhoog: de komende dagen vertellen alles over taken
+        - [ ] Scrol naar het einde en trek het blad omhoog: de komende dagen vertellen alles over taken
         """,
         .todayDiary: """
         Vandaag begint mijn RollingDays. ’s Ochtends een plan, ’s avonds de terugblik op de dag: onder elke taak een regel over hoe het ging.
@@ -352,6 +360,8 @@ enum SamplesText {
         Waar je aantekeningen staan. Alles zijn gewone bestanden in je map: je ziet ze in „Bestanden”, ze openen in elke editor en ze blijven, ook als je de app verwijdert. De back-up staat in de instellingen, met één knop.
 
         De voorbeelden zijn twee dagen in het verleden en twee in de toekomst. Wis ze als gewone tekst of zet de hele dag in de prullenmand: tik bovenaan op de naam van de dag → ‘Dag naar de prullenmand’.
+
+        Hier eindigt de pagina. Trek het blad vanaf hier omhoog: de komende dagen vertellen alles over taken.
         """,
         .todayTitle: "Mijn RollingDays begint!",
         .tomorrowPlan: """
@@ -411,7 +421,7 @@ enum SamplesText {
         .todayPlan: """
         - [ ] 09:00 Esta é uma tarefa de exemplo: toque nela e escreva a sua
               Enter passa para a tarefa seguinte.
-        - [ ] Puxe a folha para cima: os próximos dias explicam tudo sobre as tarefas
+        - [ ] Deslize até ao fim e puxe a folha para cima: os próximos dias explicam tudo sobre as tarefas
         """,
         .todayDiary: """
         Hoje começa a minha RollingDays. De manhã, um plano; à noite, o balanço do dia: sob cada tarefa, uma linha sobre como foi.
@@ -425,6 +435,8 @@ enum SamplesText {
         Onde ficam as suas anotações. Tudo são ficheiros comuns na sua pasta: aparecem em «Arquivos», abrem em qualquer editor e ficam mesmo que apague a app. A cópia de segurança está nos ajustes, com um botão.
 
         Os exemplos são dois dias no passado e dois no futuro. Apague-os como qualquer texto ou mande o dia inteiro para o lixo: toque no nome do dia em cima → «Mover o dia para o lixo».
+
+        Aqui acaba a página. Puxe a folha para cima a partir daqui: os próximos dias explicam tudo sobre as tarefas.
         """,
         .todayTitle: "Começo a minha RollingDays!",
         .tomorrowPlan: """
@@ -484,7 +496,7 @@ enum SamplesText {
         .todayPlan: """
         - [ ] 09:00 Це справа-зразок: торкніться її і пишіть свою
               «Ввід» — до наступної справи.
-        - [ ] Потягніть аркуш угору — у майбутніх днях усе про справи
+        - [ ] Догорніть до кінця й потягніть аркуш угору — у майбутніх днях усе про справи
         """,
         .todayDiary: """
         Сьогодні починається RollingDays. Уранці — план, увечері — підсумки дня: під кожною справою рядок про те, що вийшло.
@@ -498,6 +510,8 @@ enum SamplesText {
         Де лежать записи. Усе — звичайні файли у вашій теці: їх видно у «Файлах», вони відкриваються будь-яким редактором і лишаються, навіть якщо видалити застосунок. Резервна копія — в налаштуваннях, однією кнопкою.
 
         Зразки — два дні в минулому і два в майбутньому. Зітріть їх, як звичайний текст, або приберіть день цілком: торкніться назви дня вгорі → «Прибрати день у кошик».
+
+        Тут сторінка закінчується. Потягніть аркуш угору звідси — у майбутніх днях усе про справи.
         """,
         .todayTitle: "Починаю RollingDays!",
         .tomorrowPlan: """
@@ -557,7 +571,7 @@ enum SamplesText {
         .todayPlan: """
         - [ ] 09:00 ეს ნიმუში საქმეა: შეეხეთ და დაწერეთ თქვენი
               „Enter“ — შემდეგ საქმეზე.
-        - [ ] გადაწიეთ ფურცელი ზემოთ — მომავალ დღეებში ყველაფერია საქმეებზე
+        - [ ] ჩაიარეთ ბოლომდე და გადაწიეთ ფურცელი ზემოთ — მომავალ დღეებში ყველაფერია საქმეებზე
         """,
         .todayDiary: """
         დღეს იწყება RollingDays. დილით — გეგმა, საღამოს — დღის შედეგები: ყოველი საქმის ქვეშ ერთი სტრიქონი იმაზე, რა გამოვიდა.
@@ -571,6 +585,8 @@ enum SamplesText {
         სად ინახება ჩანაწერები. ყველაფერი ჩვეულებრივი ფაილებია თქვენს საქაღალდეში: ისინი ჩანს „ფაილებში“, იხსნება ნებისმიერი რედაქტორით და რჩება, აპის წაშლის შემთხვევაშიც კი. სარეზერვო ასლი — პარამეტრებში, ერთი ღილაკით.
 
         ნიმუშები ორი დღეა წარსულში და ორი მომავალში. წაშალეთ ისინი როგორც ჩვეულებრივი ტექსტი, ან მთელი დღე სანაგვეში გადაიტანეთ: შეეხეთ დღის სახელს ზემოთ → „დღის სანაგვეში გადატანა“.
+
+        აქ გვერდი მთავრდება. აქედან გადაწიეთ ფურცელი ზემოთ — მომავალ დღეებში ყველაფერია საქმეებზე.
         """,
         .todayTitle: "ვიწყებ RollingDays-ს!",
         .tomorrowPlan: """
@@ -630,7 +646,7 @@ enum SamplesText {
         .todayPlan: """
         - [ ] 09:00 これはサンプルの予定です：タップして自分の予定を書きましょう
               リターンで次の予定へ。
-        - [ ] 紙を上に引くと、これからの日に予定の使い方があります
+        - [ ] 最後までスクロールして紙を上に引くと、これからの日に予定の使い方があります
         """,
         .todayDiary: """
         今日から私のRollingDaysが始まる。朝は予定、夜は一日のふり返り: それぞれの予定の下に、どうだったかを一行。
@@ -644,6 +660,8 @@ enum SamplesText {
         記録の保存場所。すべてあなたのフォルダの普通のファイルです: 「ファイル」で見え、どんなエディタでも開け、アプリを削除しても残ります。バックアップは設定からボタンひとつで。
 
         サンプルは過去の二日と未来の二日です。ふつうの文字と同じく消すか、日をまるごとゴミ箱へ：上の日の名前をタップ →「この日をゴミ箱へ」。
+
+        ここでページは終わりです。ここから紙を上に引くと、これからの日に予定の使い方があります。
         """,
         .todayTitle: "RollingDaysを始めます!",
         .tomorrowPlan: """
