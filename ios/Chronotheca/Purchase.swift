@@ -169,6 +169,12 @@ struct PurchaseSheet: View {
                            "If you don't buy, you lose nothing: everything you wrote stays readable, and the files stay in your folder. Only writing new entries stops."))
                         .foregroundStyle(Look.inkSoft)
                     if purchase.state == .notStarted {
+                        // P1108 (тестировщик закрыл окно на первом запуске и
+                        // не понял, почему не пишется).
+                        Text(T("Пока месяц не начат, записи можно читать, но не писать.",
+                               "Until the month is started, you can read your entries but not write."))
+                            .font(Look.sans(15, weight: .semibold))
+                            .foregroundStyle(Look.ink)
                         Button {
                             Task { await purchase.buy(purchase.trial) }
                         } label: {
