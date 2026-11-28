@@ -1,441 +1,363 @@
-    599 Thread_189669   DispatchQueue_1: com.apple.main-thread  (serial)
-    + 599 start  (in dyld) + 6992  [0x1052d44e4]
-    +   599 start_sim  (in dyld_sim) + 20  [0x10503f0e4]
-    +     599 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x10724bf08]  ChronothecaApp.swift:0
-    +       599 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x10724be5c]  /<compiler-generated>:0
-    +         599 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
-    +           599 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
-    +             599 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
-    +               599 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
-    +                 599 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
-    +                   599 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
-    +                     599 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
-    +                       409 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
-    +                       ! 408 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
-    +                       ! : 408 mach_msg  (in libsystem_kernel.dylib) + 20  [0x104ef4ef0]
-    +                       ! :   408 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x104efcc44]
-    +                       ! :     408 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x104f05e84]
-    +                       ! :       408 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x104ef4b70]
-    +                       ! 1 __CFRunLoopServiceMachPort  (in CoreFoundation) + 168  [0x1804227cc]
-    +                       !   1 voucher_mach_msg_revert  (in libdispatch.dylib) + 0  [0x1801ae29c]
-    +                       159 __CFRunLoopRun  (in CoreFoundation) + 2100  [0x180421d44]
-    +                       ! 159 __CFRunLoopDoSource1  (in CoreFoundation) + 476  [0x180422c78]
-    +                       !   159 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE1_PERFORM_FUNCTION__  (in CoreFoundation) + 56  [0x180423628]
-    +                       !     159 __CFMachPortPerform  (in CoreFoundation) + 164  [0x1803e6c50]
-    +                       !       159 UC::DriverCore::continueProcessing()  (in UpdateCycle) + 80  [0x2343d22c0]
-    +                       !         158 schedulerStepScheduledMainSectionContinue  (in UIKitCore) + 56  [0x1863b6064]
-    +                       !         : 158 _UIUpdateSequenceRunNext  (in UIKitCore) + 120  [0x18590339c]
-    +                       !         :   117 ???  (in UIKitCore)  load address 0x185289000 + 0x169788  [0x1853f2788]
-    +                       !         :   | 117 ???  (in UIKitCore)  load address 0x185289000 + 0x169c88  [0x1853f2c88]
-    +                       !         :   |   117 static ViewGraphHostUpdate.dispatchImmediately<A>(_:)  (in SwiftUICore) + 40  [0x1d3a49218]
-    +                       !         :   |     117 static Update.dispatchImmediately<A>(reason:_:)  (in SwiftUICore) + 332  [0x1d3d0a8c4]
-    +                       !         :   |       117 ???  (in UIKitCore)  load address 0x185289000 + 0x1ea30  [0x1852a7a30]
-    +                       !         :   |         117 ???  (in UIKitCore)  load address 0x185289000 + 0x169994  [0x1853f2994]
-    +                       !         :   |           117 ???  (in UIKitCore)  load address 0x185289000 + 0xac264  [0x185335264]
-    +                       !         :   |             117 partial apply for closure #1 in closure #1 in _UIHostingView.beginTransaction()  (in SwiftUI) + 64  [0x1d295e28c]
-    +                       !         :   |               117 static Update.ensure<A>(_:)  (in SwiftUICore) + 96  [0x1d3d0a2f0]
-    +                       !         :   |                 117 closure #1 in static Update.ensure<A>(_:)  (in SwiftUICore) + 48  [0x1d3d0b718]
-    +                       !         :   |                   117 partial apply for closure #1 in closure #1 in closure #1 in _UIHostingView.beginTransaction()  (in SwiftUI) + 20  [0x1d295e2b0]
-    +                       !         :   |                     117 closure #1 in closure #1 in closure #1 in _UIHostingView.beginTransaction()  (in SwiftUI) + 144  [0x1d2954830]
-    +                       !         :   |                       117 ViewGraphRootValueUpdater.updateGraph<A>(body:)  (in SwiftUICore) + 136  [0x1d43bf084]
-    +                       !         :   |                         117 ViewGraphRootValueUpdater._updateViewGraph<A>(body:)  (in SwiftUICore) + 200  [0x1d43c079c]
-    +                       !         :   |                           117 <deduplicated_symbol>  (in SwiftUICore) + 20  [0x1d41904c0]
-    +                       !         :   |                             117 <deduplicated_symbol>  (in SwiftUI) + 20  [0x1d2954860]
-    +                       !         :   |                               117 GraphHost.flushTransactions()  (in SwiftUICore) + 176  [0x1d3f322dc]
-    +                       !         :   |                                 112 specialized GraphHost.runTransaction(_:do:id:)  (in SwiftUICore) + 352  [0x1d3f4ca50]
-    +                       !         :   |                                 + 110 AG::Subgraph::update(unsigned int)  (in AttributeGraph) + 952  [0x1c42da590]
-    +                       !         :   |                                 + ! 107 AG::Graph::UpdateStack::update()  (in AttributeGraph) + 488  [0x1c42cb6c0]
-    +                       !         :   |                                 + ! : 90 partial apply for implicit closure #1 in closure #1 in closure #1 in Attribute.init<A>(_:)  (in SwiftUICore) + 28  [0x1d3a882d4]
-    +                       !         :   |                                 + ! : | 72 DynamicBody.updateValue()  (in SwiftUICore) + 840  [0x1d3d0744c]
-    +                       !         :   |                                 + ! : | + 70 closure #1 in DynamicBody.updateValue()  (in SwiftUICore) + 936  [0x1d3d07af4]
-    +                       !         :   |                                 + ! : | + ! 70 protocol witness for BodyAccessor.updateBody(of:changed:) in conformance ViewBodyAccessor<A>  (in SwiftUICore) + 12  [0x1d3be116c]
-    +                       !         :   |                                 + ! : | + !   70 ViewBodyAccessor.updateBody(of:changed:)  (in SwiftUICore) + 180  [0x1d3be0cc4]
-    +                       !         :   |                                 + ! : | + !     69 closure #1 in ViewBodyAccessor.updateBody(of:changed:)  (in SwiftUICore) + 864  [0x1d3be1054]
-    +                       !         :   |                                 + ! : | + !     : 51 protocol witness for View.body.getter in conformance SearchView  (in Chronotheca.debug.dylib) + 52  [0x1077ad8bc]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : | 51 SearchView.body.getter  (in Chronotheca.debug.dylib) + 532  [0x10778d340]  SearchView.swift:38
-    +                       !         :   |                                 + ! : | + !     : |   26 SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 344  [0x10778d9ec]  SearchView.swift:262
-    +                       !         :   |                                 + ! : | + !     : |   + 26 SearchView.found.getter  (in Chronotheca.debug.dylib) + 420  [0x10779055c]  SearchView.swift:79
-    +                       !         :   |                                 + ! : | + !     : |   +   23 _ArrayProtocol.filter(_:)  (in libswiftCore.dylib) + 464  [0x1982709b4]
-    +                       !         :   |                                 + ! : | + !     : |   +   ! 23 implicit closure #2 in implicit closure #1 in SearchView.found.getter  (in Chronotheca.debug.dylib) + 48  [0x1077909c8]  SearchView.swift:0
-    +                       !         :   |                                 + ! : | + !     : |   +   !   14 SearchView.kept(_:)  (in Chronotheca.debug.dylib) + 172  [0x107790a88]  SearchView.swift:238
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : 11 Collection.map<A, B>(_:)  (in Chronotheca.debug.dylib) + 1012  [0x10715f8c0]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | 10 closure #1 in SearchView.kept(_:)  (in Chronotheca.debug.dylib) + 52  [0x1077944d4]  SearchView.swift:238
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + 4 static Diary.kind(of:)  (in Chronotheca.debug.dylib) + 96  [0x1073237ec]  Diary.swift:196
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + ! 2 -[NSString(NSPathUtilities) pathExtension]  (in Foundation) + 320  [0x18110091c]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + ! : 2 +[NSPathStore2 pathStoreWithCharacters:length:]  (in Foundation) + 64  [0x1810fe308]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + ! :   2 NSAllocateObject  (in Foundation) + 24  [0x1810f32a0]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + ! :     1 class_createInstance  (in libobjc.A.dylib) + 72  [0x180057034]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + ! :     | 1 _xzm_xzone_thread_cache_fill_and_malloc  (in libsystem_malloc.dylib) + 112  [0x1801ef7fc]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + ! :     |   1 _xzm_xzone_find_and_malloc_from_freelist_chunk  (in libsystem_malloc.dylib) + 280  [0x1801f019c]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + ! :     |     1 _xzm_xzone_malloc_from_freelist_chunk  (in libsystem_malloc.dylib) + 588  [0x1801efee4]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + ! :     1 class_createInstance  (in libobjc.A.dylib) + 12  [0x180056ff8]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + ! 1 -[NSString(NSPathUtilities) pathExtension]  (in Foundation) + 184  [0x181100894]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + ! : 1 _NSTransmutePathSlashes  (in Foundation) + 140  [0x1810fe0dc]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + ! 1 -[NSString(NSPathUtilities) pathExtension]  (in Foundation) + 280  [0x1811008f4]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + !   1 _NSStartOfPathExtension  (in Foundation) + 104  [0x1810ff330]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + !     1 _CFGetPathExtensionRangesFromPathComponentUniChars  (in CoreFoundation) + 196  [0x1804934f4]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + 2 static Diary.kind(of:)  (in Chronotheca.debug.dylib) + 68  [0x1073237d0]  Diary.swift:196
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + ! 1 DYLD-STUB$$String._bridgeToObjectiveCImpl()  (in Foundation) + 4  [0x18123ac68]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + ! 1 String._bridgeToObjectiveCImpl()  (in libswiftCore.dylib) + 288  [0x1982feb34]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + !   1 _CFNonObjCRetain  (in CoreFoundation) + 0  [0x180424a5c]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + 2 static Diary.kind(of:)  (in Chronotheca.debug.dylib) + 176  [0x10732383c]  Diary.swift:196
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + ! 1 String.lowercased()  (in libswiftCore.dylib) + 972  [0x1983e6b64]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + ! : 1 String.UTF8View._foreignDistance(from:to:)  (in libswiftCore.dylib) + 132  [0x19840c5a4]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + ! :   1 -[NSString(NSStringOtherEncodings) getBytes:maxLength:usedLength:encoding:options:range:remainingRange:]  (in Foundation) + 84  [0x18114b560]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + ! :     1 DYLD-STUB$$CFStringConvertNSStringEncodingToEncoding  (in Foundation) + 0  [0x18123d730]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + ! 1 String.lowercased()  (in libswiftCore.dylib) + 1176  [0x1983e6c30]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + !   1 _StringGuts.foreignErrorCorrectedScalar(startingAt:)  (in libswiftCore.dylib) + 40  [0x1983f1b68]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + !     1 objc_msgSend  (in libobjc.A.dylib) + 0  [0x18003ac00]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + 1 static Diary.kind(of:)  (in Chronotheca.debug.dylib) + 192  [0x10732384c]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | + 1 static Diary.kind(of:)  (in Chronotheca.debug.dylib) + 316  [0x1073238c8]  Diary.swift:196
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | +   1 outlined destroy of String  (in Chronotheca.debug.dylib) + 0  [0x107169ef0]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | 1 closure #1 in SearchView.kept(_:)  (in Chronotheca.debug.dylib) + 64  [0x1077944e0]  SearchView.swift:238
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : 1 Collection.map<A, B>(_:)  (in Chronotheca.debug.dylib) + 912  [0x10715f85c]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | 1 protocol witness for Collection.subscript.read in conformance [A]  (in libswiftCore.dylib) + 44  [0x19825c618]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : |   1 DYLD-STUB$$malloc_type_malloc  (in libswiftCore.dylib) + 4  [0x19852e120]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : 1 Collection.map<A, B>(_:)  (in Chronotheca.debug.dylib) + 952  [0x10715f884]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : | 1 initializeBufferWithCopyOfBuffer for Character  (in libswiftCore.dylib) + 28  [0x19850a5c0]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : |   1 objcRetainAndReturn(void*)  (in libswiftCore.dylib) + 0  [0x1981dc794]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : 1 Collection.map<A, B>(_:)  (in Chronotheca.debug.dylib) + 980  [0x10715f8a0]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   1 <deduplicated_symbol>  (in libswiftCore.dylib) + 28  [0x198491b4c]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :     1 Array.subscript.read  (in libswiftCore.dylib) + 32  [0x19825c7c0]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :       1 objc_msgSend  (in libobjc.A.dylib) + 52  [0x18003ac34]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   8 SearchView.kept(_:)  (in Chronotheca.debug.dylib) + 276  [0x107790af0]  SearchView.swift:239
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : 8 SearchState.find.getter  (in Chronotheca.debug.dylib) + 100  [0x10778a8b0]  SearchState.swift:0
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   6 static Published.subscript.getter  (in Combine) + 172  [0x1c3288ba8]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   | 5 specialized static Published.access<A>(_:keyPath:storage:)  (in Combine) + 140  [0x1c3289610]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   | + 5 swift_dynamicCast  (in libswiftCore.dylib) + 92  [0x19818405c]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   | +   5 tryCast(swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*&, swift::TargetMetadata<swift::InProcess> const*&, bool, bool, bool)  (in libswiftCore.dylib) + 796  [0x1981845fc]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   | +     4 tryCastToConstrainedOpaqueExistential(swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*&, swift::TargetMetadata<swift::InProcess> const*&, bool, bool, bool)  (in libswiftCore.dylib) + 56  [0x198185874]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   | +     ! 4 _conformsToProtocols(swift::OpaqueValue const*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetExistentialTypeMetadata<swift::InProcess> const*, swift::TargetWitnessTable<swift::InProcess> const**, bool)  (in libswiftCore.dylib) + 172  [0x198186838]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   | +     !   4 swift::_conformsToProtocolInContext(swift::OpaqueValue const*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptorRef<swift::InProcess>, swift::TargetWitnessTable<swift::InProcess> const**, bool)  (in libswiftCore.dylib) + 36  [0x19817f2b0]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   | +     !     4 swift::_conformsToProtocol(swift::OpaqueValue const*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptorRef<swift::InProcess>, swift::TargetWitnessTable<swift::InProcess> const**, swift::ConformanceExecutionContext*)  (in libswiftCore.dylib) + 48  [0x19817f170]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   | +     !       4 swift_conformsToProtocolWithExecutionContext  (in libswiftCore.dylib) + 68  [0x1981d1b30]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   | +     !         2 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib) + 428,1796  [0x1981d318c,0x1981d36e4]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   | +     !         1 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib) + 184  [0x1981d3098]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   | +     !         : 1 swift_getObjCClassMetadata  (in libswiftCore.dylib) + 404  [0x1981993c4]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   | +     !         1 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib) + 540  [0x1981d31fc]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   | +     !           1 dyld4::APIs::_dyld_find_protocol_conformance(void const*, void const*, void const*) const  (in dyld_sim) + 224  [0x10503a0bc]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   | +     !             1 <deduplicated_symbol>  (in dyld_sim) + 20  [0x10503d9e4]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   | +     !               1 <deduplicated_symbol>  (in dyld_sim) + 48  [0x10503da58]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   | +     1 tryCastToConstrainedOpaqueExistential(swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetMetadata<swift::InProcess> const*&, swift::TargetMetadata<swift::InProcess> const*&, bool, bool, bool)  (in libswiftCore.dylib) + 36  [0x198185860]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   | 1 specialized static Published.access<A>(_:keyPath:storage:)  (in Combine) + 440  [0x1c328973c]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   |   1 outlined destroy of Observable?  (in Combine) + 56  [0x1c328a09c]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   |     1 destroy for ClosedRange<>.Index  (in libswiftCore.dylib) + 28  [0x19851fdd0]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   1 static Published.subscript.getter  (in Combine) + 84  [0x1c3288b50]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   | 1 __swift_instantiateGenericMetadata  (in Combine) + 32  [0x1c3262d38]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   |   1 DYLD-STUB$$swift_getGenericMetadata  (in Combine) + 4  [0x1c32ea594]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :   1 static Published.subscript.getter  (in Combine) + 220  [0x1c3288bd8]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :     1 swift_cvw_initWithCopyImpl(swift::OpaqueValue*, swift::OpaqueValue*, swift::TargetMetadata<swift::InProcess> const*)  (in libswiftCore.dylib) + 512  [0x19817872c]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :       1 multiPayloadEnumGeneric<&handleRefCountsInitWithCopy(swift::TargetMetadata<swift::InProcess> const*, swift::LayoutStringReader1&, unsigned long&, unsigned char*, unsigned char*)>(swift::TargetMetadata<swift::InProcess> const*, swift::LayoutStringReader1&, unsigned long&, unsigned char*, unsigned char*)  (in libswiftCore.dylib) + 312  [0x19817b798]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   :         1 _platform_memmove  (in libsystem_platform.dylib) + 0  [0x104f770b0]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   1 SearchView.kept(_:)  (in Chronotheca.debug.dylib) + 256  [0x107790adc]  SearchView.swift:239
-    +                       !         :   |                                 + ! : | + !     : |   +   !     1 swift_retain  (in libswiftCore.dylib) + 4  [0x19818cae8]
-    +                       !         :   |                                 + ! : | + !     : |   +   2 _ArrayProtocol.filter(_:)  (in libswiftCore.dylib) + 408  [0x19827097c]
-    +                       !         :   |                                 + ! : | + !     : |   +   ! 2 protocol witness for IteratorProtocol.next() in conformance IndexingIterator<A>  (in libswiftCore.dylib) + 308  [0x1982b03d8]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   2 protocol witness for Collection.subscript.read in conformance [A]  (in libswiftCore.dylib) + 68  [0x19825c630]
-    +                       !         :   |                                 + ! : | + !     : |   +   !     2 Array.subscript.read  (in libswiftCore.dylib) + 164  [0x19825c6f4]
-    +                       !         :   |                                 + ! : | + !     : |   +   !       1 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 204  [0x10716fe9c]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |   +   !       : 1 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 8  [0x1981dc780]
-    +                       !         :   |                                 + ! : | + !     : |   +   !       1 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 332  [0x10716ff1c]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |   +   !         1 swift_retain  (in libswiftCore.dylib) + 48  [0x19818cb14]
-    +                       !         :   |                                 + ! : | + !     : |   +   1 _ArrayProtocol.filter(_:)  (in libswiftCore.dylib) + 488  [0x1982709cc]
-    +                       !         :   |                                 + ! : | + !     : |   +     1 type metadata accessor for ContiguousArray  (in libswiftCore.dylib) + 0  [0x1984ed8dc]
-    +                       !         :   |                                 + ! : | + !     : |   8 SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 1348  [0x10778ddd8]  SearchView.swift:273
-    +                       !         :   |                                 + ! : | + !     : |   + 4 SearchView.entries(_:_:)  (in Chronotheca.debug.dylib) + 2420  [0x107792e3c]  SearchView.swift:177
-    +                       !         :   |                                 + ! : | + !     : |   + ! 2 Array.append(_:)  (in libswiftCore.dylib) + 76  [0x19825e120]
-    +                       !         :   |                                 + ! : | + !     : |   + ! : 2 Array._reserveCapacityAssumingUniqueBuffer(oldCount:)  (in libswiftCore.dylib) + 108  [0x19825de34]
-    +                       !         :   |                                 + ! : | + !     : |   + ! :   1 _ArrayBuffer._consumeAndCreateNew(bufferIsUnique:minimumCapacity:growForAppend:)  (in libswiftCore.dylib) + 224  [0x1982542b0]
-    +                       !         :   |                                 + ! : | + !     : |   + ! :   | 1 swift_allocObject  (in libswiftCore.dylib) + 56  [0x19818bf80]
-    +                       !         :   |                                 + ! : | + !     : |   + ! :   1 _ArrayBuffer._consumeAndCreateNew(bufferIsUnique:minimumCapacity:growForAppend:)  (in libswiftCore.dylib) + 356  [0x198254334]
-    +                       !         :   |                                 + ! : | + !     : |   + ! :     1 _platform_memmove  (in libsystem_platform.dylib) + 100  [0x104f77114]
-    +                       !         :   |                                 + ! : | + !     : |   + ! 2 _platform_memmove  (in libsystem_platform.dylib) + 224  [0x104f77190]
-    +                       !         :   |                                 + ! : | + !     : |   + 2 SearchView.entries(_:_:)  (in Chronotheca.debug.dylib) + 1960  [0x107792c70]  SearchView.swift:0
-    +                       !         :   |                                 + ! : | + !     : |   + ! 1 EnumeratedSequence.Iterator.next()  (in libswiftCore.dylib) + 232  [0x1982f67c8]
-    +                       !         :   |                                 + ! : | + !     : |   + ! : 1 protocol witness for IteratorProtocol.next() in conformance IndexingIterator<A>  (in libswiftCore.dylib) + 392  [0x1982b042c]
-    +                       !         :   |                                 + ! : | + !     : |   + ! :   1 <deduplicated_symbol>  (in libswiftCore.dylib) + 28  [0x198491b4c]
-    +                       !         :   |                                 + ! : | + !     : |   + ! :     1 _xzm_free  (in libsystem_malloc.dylib) + 592  [0x1801ea660]
-    +                       !         :   |                                 + ! : | + !     : |   + ! :       1 pthread_getspecific  (in libsystem_pthread.dylib) + 0  [0x105245aa4]
-    +                       !         :   |                                 + ! : | + !     : |   + ! 1 EnumeratedSequence.Iterator.next()  (in libswiftCore.dylib) + 252  [0x1982f67dc]
-    +                       !         :   |                                 + ! : | + !     : |   + !   1 getEnumTagSinglePayload for Archive.Day  (in Chronotheca.debug.dylib) + 0  [0x107170618]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |   + 1 SearchView.entries(_:_:)  (in Chronotheca.debug.dylib) + 2428  [0x107792e44]  SearchView.swift:178
-    +                       !         :   |                                 + ! : | + !     : |   + ! 1 outlined destroy of Archive.Day  (in Chronotheca.debug.dylib) + 216  [0x10716c2f0]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |   + !   1 swift_release  (in libswiftCore.dylib) + 48  [0x19818c83c]
-    +                       !         :   |                                 + ! : | + !     : |   + 1 SearchView.entries(_:_:)  (in Chronotheca.debug.dylib) + 3516  [0x107793284]  SearchView.swift:218
-    +                       !         :   |                                 + ! : | + !     : |   +   1 SearchView.plan(_:)  (in Chronotheca.debug.dylib) + 472  [0x10779426c]  SearchView.swift:859
-    +                       !         :   |                                 + ! : | + !     : |   +     1 static DayEvents.cachedItems(for:)  (in Chronotheca.debug.dylib) + 64  [0x10725d534]  DayEvents.swift:96
-    +                       !         :   |                                 + ! : | + !     : |   +       1 static Vault.stamp(_:)  (in Chronotheca.debug.dylib) + 44  [0x1078ebdd4]  Vault.swift:1422
-    +                       !         :   |                                 + ! : | + !     : |   +         1 static Vault.stampFormat.getter  (in Chronotheca.debug.dylib) + 596  [0x107904a94]  Vault.swift:1435
-    +                       !         :   |                                 + ! : | + !     : |   +           1 @objc NSMutableDictionary.subscript.getter  (in Foundation) + 0  [0x180f6a340]
-    +                       !         :   |                                 + ! : | + !     : |   4 SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 464  [0x10778da64]  SearchView.swift:262
-    +                       !         :   |                                 + ! : | + !     : |   + 4 Array.init<A>(_:)  (in libswiftCore.dylib) + 32  [0x19825a778]
-    +                       !         :   |                                 + ! : | + !     : |   +   2 protocol witness for Sequence._copyToContiguousArray() in conformance DefaultIndices<A>  (in libswiftCore.dylib) + 48  [0x198443a58]
-    +                       !         :   |                                 + ! : | + !     : |   +   ! 2 _copyCollectionToContiguousArray<A>(_:)  (in libswiftCore.dylib) + 448  [0x1982621dc]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   1 Sequence._copySequenceContents(initializing:)  (in libswiftCore.dylib) + 364  [0x1983b8940]
-    +                       !         :   |                                 + ! : | + !     : |   +   !   : 1 getEnumTagSinglePayload for Archive.Day  (in Chronotheca.debug.dylib) + 0  [0x107170618]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |   +   !   1 Sequence._copySequenceContents(initializing:)  (in libswiftCore.dylib) + 440  [0x1983b898c]
-    +                       !         :   |                                 + ! : | + !     : |   +   !     1 _platform_memmove  (in libsystem_platform.dylib) + 280  [0x104f771c8]
-    +                       !         :   |                                 + ! : | + !     : |   +   2 protocol witness for Sequence._copyToContiguousArray() in conformance DefaultIndices<A>  (in libswiftCore.dylib) + 72  [0x198443a70]
-    +                       !         :   |                                 + ! : | + !     : |   +     2 swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::doDecrementSlow<(swift::PerformDeinit)1>(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)  (in libswiftCore.dylib) + 164  [0x19818faec]
-    +                       !         :   |                                 + ! : | + !     : |   +       2 _swift_release_dealloc  (in libswiftCore.dylib) + 44  [0x19818efc8]
-    +                       !         :   |                                 + ! : | + !     : |   +         2 _ContiguousArrayStorage.__deallocating_deinit  (in libswiftCore.dylib) + 44  [0x1982c6bac]
-    +                       !         :   |                                 + ! : | + !     : |   +           2 swift_arrayDestroy  (in libswiftCore.dylib) + 172  [0x198175dd0]
-    +                       !         :   |                                 + ! : | + !     : |   +             1 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 96  [0x10716fd44]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |   +             : 1 swift_release  (in libswiftCore.dylib) + 56  [0x19818c844]
-    +                       !         :   |                                 + ! : | + !     : |   +             1 destroy for Archive.Day  (in Chronotheca.debug.dylib) + 164  [0x10716fd88]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |   +               1 DYLD-STUB$$swift_bridgeObjectRelease  (in Chronotheca.debug.dylib) + 4  [0x10791c1e4]
-    +                       !         :   |                                 + ! : | + !     : |   4 SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 556  [0x10778dac0]  SearchView.swift:263
-    +                       !         :   |                                 + ! : | + !     : |   + 3 _ArrayProtocol.filter(_:)  (in libswiftCore.dylib) + 408  [0x19827097c]
-    +                       !         :   |                                 + ! : | + !     : |   + ! 1 protocol witness for Collection.subscript.read in conformance [A]  (in libswiftCore.dylib) + 92  [0x19825c648]
-    +                       !         :   |                                 + ! : | + !     : |   + ! 1 protocol witness for IteratorProtocol.next() in conformance IndexingIterator<A>  (in libswiftCore.dylib) + 308  [0x1982b03d8]
-    +                       !         :   |                                 + ! : | + !     : |   + ! : 1 protocol witness for Collection.subscript.read in conformance [A]  (in libswiftCore.dylib) + 68  [0x19825c630]
-    +                       !         :   |                                 + ! : | + !     : |   + ! :   1 Array.subscript.read  (in libswiftCore.dylib) + 164  [0x19825c6f4]
-    +                       !         :   |                                 + ! : | + !     : |   + ! :     1 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 44  [0x10716fdfc]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |   + ! :       1 swift_bridgeObjectRetain  (in libswiftCore.dylib) + 0  [0x1981dc778]
-    +                       !         :   |                                 + ! : | + !     : |   + ! 1 protocol witness for IteratorProtocol.next() in conformance IndexingIterator<A>  (in libswiftCore.dylib) + 380  [0x1982b0420]
-    +                       !         :   |                                 + ! : | + !     : |   + !   1 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 404  [0x10716ff64]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |   + 1 _ArrayProtocol.filter(_:)  (in libswiftCore.dylib) + 504  [0x1982709dc]
-    +                       !         :   |                                 + ! : | + !     : |   +   1 DYLD-STUB$$memcpy  (in libswiftCore.dylib) + 4  [0x19852e174]
-    +                       !         :   |                                 + ! : | + !     : |   4 SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 1628  [0x10778def0]  SearchView.swift:278
-    +                       !         :   |                                 + ! : | + !     : |   + 1 Collection.map<A, B>(_:)  (in Chronotheca.debug.dylib) + 980  [0x10715f8a0]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |   + ! 1 <deduplicated_symbol>  (in libswiftCore.dylib) + 28  [0x198491b4c]
-    +                       !         :   |                                 + ! : | + !     : |   + !   1 Array.subscript.read  (in libswiftCore.dylib) + 32  [0x19825c7c0]
-    +                       !         :   |                                 + ! : | + !     : |   + !     1 destroy for SearchView.Entry  (in Chronotheca.debug.dylib) + 20  [0x1077d4b70]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |   + 1 Collection.map<A, B>(_:)  (in Chronotheca.debug.dylib) + 1152  [0x10715f94c]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |   + ! 1 destroy for SearchView.Entry  (in Chronotheca.debug.dylib) + 348  [0x1077d4cb8]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |   + !   1 swift_release  (in libswiftCore.dylib) + 16  [0x19818c81c]
-    +                       !         :   |                                 + ! : | + !     : |   + 1 Collection.map<A, B>(_:)  (in Chronotheca.debug.dylib) + 1192  [0x10715f974]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |   + ! 1 dispatch thunk of Collection.formIndex(after:)  (in libswiftCore.dylib) + 0  [0x19850ce30]
-    +                       !         :   |                                 + ! : | + !     : |   + 1 Collection.map<A, B>(_:)  (in Chronotheca.debug.dylib) + 624  [0x10715f73c]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |   3 SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 884  [0x10778dc08]  SearchView.swift:267
-    +                       !         :   |                                 + ! : | + !     : |   + 3 _ArrayProtocol.filter(_:)  (in libswiftCore.dylib) + 408  [0x19827097c]
-    +                       !         :   |                                 + ! : | + !     : |   +   3 protocol witness for IteratorProtocol.next() in conformance IndexingIterator<A>  (in libswiftCore.dylib) + 308  [0x1982b03d8]
-    +                       !         :   |                                 + ! : | + !     : |   +     1 Array.subscript.read  (in libswiftCore.dylib) + 192  [0x19825c710]
-    +                       !         :   |                                 + ! : | + !     : |   +     1 protocol witness for Collection.subscript.read in conformance [A]  (in libswiftCore.dylib) + 44  [0x19825c618]
-    +                       !         :   |                                 + ! : | + !     : |   +     ! 1 _xzm_xzone_malloc  (in libsystem_malloc.dylib) + 24  [0x1801e9bf8]
-    +                       !         :   |                                 + ! : | + !     : |   +     1 protocol witness for Collection.subscript.read in conformance [A]  (in libswiftCore.dylib) + 68  [0x19825c630]
-    +                       !         :   |                                 + ! : | + !     : |   +       1 Array.subscript.read  (in libswiftCore.dylib) + 164  [0x19825c6f4]
-    +                       !         :   |                                 + ! : | + !     : |   +         1 initializeWithCopy for Archive.Day  (in Chronotheca.debug.dylib) + 576  [0x107170010]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |   1 SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 944  [0x10778dc44]  SearchView.swift:267
-    +                       !         :   |                                 + ! : | + !     : |   + 1 SearchView.ahead(_:from:)  (in Chronotheca.debug.dylib) + 1136  [0x107791bac]  SearchView.swift:141
-    +                       !         :   |                                 + ! : | + !     : |   +   1 Dictionary.init<A>(_:uniquingKeysWith:)  (in libswiftCore.dylib) + 204  [0x1982d0148]
-    +                       !         :   |                                 + ! : | + !     : |   +     1 specialized _NativeDictionary.merge<A>(_:isUnique:uniquingKeysWith:)  (in libswiftCore.dylib) + 380  [0x1984f5c4c]
-    +                       !         :   |                                 + ! : | + !     : |   +       1 <deduplicated_symbol>  (in libswiftCore.dylib) + 0  [0x198252a0c]
-    +                       !         :   |                                 + ! : | + !     : |   1 SearchView.ribbonList.getter  (in Chronotheca.debug.dylib) + 1708  [0x10778df40]  SearchView.swift:278
-    +                       !         :   |                                 + ! : | + !     : |     1 Set.init<A>(_:)  (in libswiftCore.dylib) + 652  [0x1983c105c]
-    +                       !         :   |                                 + ! : | + !     : |       1 protocol witness for IteratorProtocol.next() in conformance IndexingIterator<A>  (in libswiftCore.dylib) + 392  [0x1982b042c]
-    +                       !         :   |                                 + ! : | + !     : |         1 <deduplicated_symbol>  (in libswiftCore.dylib) + 28  [0x198491b4c]
-    +                       !         :   |                                 + ! : | + !     : |           1 _xzm_free  (in libsystem_malloc.dylib) + 592  [0x1801ea660]
-    +                       !         :   |                                 + ! : | + !     : |             1 pthread_getspecific  (in libsystem_pthread.dylib) + 0  [0x105245aa4]
-    +                       !         :   |                                 + ! : | + !     : 6 protocol witness for View.body.getter in conformance SearchCard<A>  (in Chronotheca.debug.dylib) + 12  [0x1077af5d4]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : | 6 SearchCard.body.getter  (in Chronotheca.debug.dylib) + 592  [0x1077ae508]  SearchView.swift:1159
-    +                       !         :   |                                 + ! : | + !     : |   6 VStack.init(alignment:spacing:content:)  (in SwiftUICore) + 72  [0x1d3a08160]
-    +                       !         :   |                                 + ! : | + !     : |     6 _VariadicView.Tree.init(_:content:)  (in SwiftUICore) + 112  [0x1d3cfd904]
-    +                       !         :   |                                 + ! : | + !     : |       6 <deduplicated_symbol>  (in SwiftUICore) + 88  [0x1d393df24]
-    +                       !         :   |                                 + ! : | + !     : |         6 closure #1 in SearchCard.body.getter  (in Chronotheca.debug.dylib) + 800  [0x1077aea24]  SearchView.swift:1173
-    +                       !         :   |                                 + ! : | + !     : |           6 closure #1 in SearchView.piece(_:sample:)  (in Chronotheca.debug.dylib) + 164  [0x1077a40f8]  SearchView.swift:734
-    +                       !         :   |                                 + ! : | + !     : |             6 SearchView.row(_:)  (in Chronotheca.debug.dylib) + 468  [0x1077a43a0]  SearchView.swift:981
-    +                       !         :   |                                 + ! : | + !     : |               6 Button.init(action:label:)  (in SwiftUI) + 128  [0x1d34e9bc8]
-    +                       !         :   |                                 + ! : | + !     : |                 6 closure #2 in SearchView.row(_:)  (in Chronotheca.debug.dylib) + 460  [0x1077ab0e8]  SearchView.swift:984
-    +                       !         :   |                                 + ! : | + !     : |                   6 HStack.init(alignment:spacing:content:)  (in SwiftUICore) + 72  [0x1d3c1365c]
-    +                       !         :   |                                 + ! : | + !     : |                     6 _VariadicView.Tree.init(_:content:)  (in SwiftUICore) + 112  [0x1d3cfd904]
-    +                       !         :   |                                 + ! : | + !     : |                       6 <deduplicated_symbol>  (in SwiftUICore) + 88  [0x1d393df24]
-    +                       !         :   |                                 + ! : | + !     : |                         3 closure #1 in closure #2 in SearchView.row(_:)  (in Chronotheca.debug.dylib) + 424  [0x1077ab3cc]  SearchView.swift:985
-    +                       !         :   |                                 + ! : | + !     : |                         + 3 VStack.init(alignment:spacing:content:)  (in SwiftUICore) + 72  [0x1d3a08160]
-    +                       !         :   |                                 + ! : | + !     : |                         +   3 _VariadicView.Tree.init(_:content:)  (in SwiftUICore) + 112  [0x1d3cfd904]
-    +                       !         :   |                                 + ! : | + !     : |                         +     3 <deduplicated_symbol>  (in SwiftUICore) + 88  [0x1d393df24]
-    +                       !         :   |                                 + ! : | + !     : |                         +       1 closure #1 in closure #1 in closure #2 in SearchView.row(_:)  (in Chronotheca.debug.dylib) + 2776  [0x1077ac1d0]  SearchView.swift:1004
-    +                       !         :   |                                 + ! : | + !     : |                         +       ! 1 Archive.Day.preview.getter  (in Chronotheca.debug.dylib) + 412  [0x10715f294]  Archive.swift:60
-    +                       !         :   |                                 + ! : | + !     : |                         +       !   1 _ArrayProtocol.filter(_:)  (in libswiftCore.dylib) + 464  [0x1982709b4]
-    +                       !         :   |                                 + ! : | + !     : |                         +       !     1 closure #2 in Archive.Day.preview.getter  (in Chronotheca.debug.dylib) + 100  [0x10715fbac]  Archive.swift:60
-    +                       !         :   |                                 + ! : | + !     : |                         +       !       1 static Diary.links(in:)  (in Chronotheca.debug.dylib) + 244  [0x107322cf0]  Diary.swift:156
-    +                       !         :   |                                 + ! : | + !     : |                         +       !         1 static Diary.pictures(in:)  (in Chronotheca.debug.dylib) + 312  [0x107321958]  Diary.swift:119
-    +                       !         :   |                                 + ! : | + !     : |                         +       !           1 StringProtocol.contains<A>(_:)  (in Foundation) + 52  [0x180fb008c]
-    +                       !         :   |                                 + ! : | + !     : |                         +       !             1 StringProtocol.range<A>(of:options:range:locale:)  (in Foundation) + 1684  [0x180faf788]
-    +                       !         :   |                                 + ! : | + !     : |                         +       !               1 specialized _StringCompareOptionsIterable._range<A>(of:toHalfWidth:diacriticsInsensitive:caseFold:anchored:backwards:)  (in Foundation) + 132  [0x180fb25dc]
-    +                       !         :   |                                 + ! : | + !     : |                         +       !                 1 specialized BidirectionalCollection._range<A>(of:anchored:backwards:)  (in Foundation) + 772  [0x180d3be70]
-    +                       !         :   |                                 + ! : | + !     : |                         +       !                   1 Substring.index(_:offsetBy:)  (in libswiftCore.dylib) + 516  [0x198411174]
-    +                       !         :   |                                 + ! : | + !     : |                         +       1 closure #1 in closure #1 in closure #2 in SearchView.row(_:)  (in Chronotheca.debug.dylib) + 184  [0x1077ab7b0]  SearchView.swift:990
-    +                       !         :   |                                 + ! : | + !     : |                         +       ! 1 static Geo.stripped(_:)  (in Chronotheca.debug.dylib) + 1368  [0x1075b9218]  Places.swift:210
-    +                       !         :   |                                 + ! : | + !     : |                         +       !   1 static CharacterSet.controlCharacters.getter  (in Foundation) + 28  [0x18088f8a8]
-    +                       !         :   |                                 + ! : | + !     : |                         +       !     1 -[__NSCFCharacterSet retain]  (in CoreFoundation) + 0  [0x1803f50cc]
-    +                       !         :   |                                 + ! : | + !     : |                         +       1 closure #1 in closure #1 in closure #2 in SearchView.row(_:)  (in Chronotheca.debug.dylib) + 1564  [0x1077abd14]  SearchView.swift:997
-    +                       !         :   |                                 + ! : | + !     : |                         +         1 Collection.prefix(_:)  (in libswiftCore.dylib) + 424  [0x198285a4c]
-    +                       !         :   |                                 + ! : | + !     : |                         +           1 protocol witness for Collection.endIndex.getter in conformance [A]  (in libswiftCore.dylib) + 0  [0x19825c5bc]
-    +                       !         :   |                                 + ! : | + !     : |                         2 closure #1 in closure #2 in SearchView.row(_:)  (in Chronotheca.debug.dylib) + 432  [0x1077ab3d4]  SearchView.swift:1013
-    +                       !         :   |                                 + ! : | + !     : |                         + 2 static Search.body.getter  (in Chronotheca.debug.dylib) + 168  [0x10778f468]  SearchView.swift:1104
-    +                       !         :   |                                 + ! : | + !     : |                         +   1 static Prefs.serifUIFont(_:)  (in Chronotheca.debug.dylib) + 272  [0x107691434]  Preferences.swift:111
-    +                       !         :   |                                 + ! : | + !     : |                         +   ! 1 static Prefs.fontKey.getter  (in Chronotheca.debug.dylib) + 160  [0x10768f82c]  Preferences.swift:48
-    +                       !         :   |                                 + ! : | + !     : |                         +   !   1 -[NSUserDefaults(NSUserDefaults) stringForKey:]  (in Foundation) + 16  [0x18116752c]
-    +                       !         :   |                                 + ! : | + !     : |                         +   !     1 -[NSUserDefaults(NSUserDefaults) objectForKey:]  (in Foundation) + 56  [0x181167208]
-    +                       !         :   |                                 + ! : | + !     : |                         +   !       1 _CFPreferencesCopyAppValueWithContainerAndConfiguration  (in CoreFoundation) + 108  [0x18052b3dc]
-    +                       !         :   |                                 + ! : | + !     : |                         +   !         1 -[_CFXPreferences copyAppValueForKey:identifier:container:configurationURL:]  (in CoreFoundation) + 128  [0x1805289f8]
-    +                       !         :   |                                 + ! : | + !     : |                         +   !           1 -[_CFXPreferences withSearchListForIdentifier:container:cloudConfigurationURL:perform:]  (in CoreFoundation) + 136  [0x18054bee4]
-    +                       !         :   |                                 + ! : | + !     : |                         +   !             1 normalizeQuintuplet  (in CoreFoundation) + 396  [0x1804ee91c]
-    +                       !         :   |                                 + ! : | + !     : |                         +   !               1 __108-[_CFXPreferences(SearchListAdditions) withSearchListForIdentifier:container:cloudConfigurationURL:perform:]_block_invoke  (in CoreFoundation) + 348  [0x1804ef088]
-    +                       !         :   |                                 + ! : | + !     : |                         +   !                 1 __76-[_CFXPreferences copyAppValueForKey:identifier:container:configurationURL:]_block_invoke  (in CoreFoundation) + 28  [0x180528a70]
-    +                       !         :   |                                 + ! : | + !     : |                         +   !                   1 -[CFPrefsSource copyValueForKey:]  (in CoreFoundation) + 40  [0x18047a678]
-    +                       !         :   |                                 + ! : | + !     : |                         +   !                     1 -[CFPrefsSearchListSource alreadylocked_copyValueForKey:]  (in CoreFoundation) + 144  [0x1804ec2e8]
-    +                       !         :   |                                 + ! : | + !     : |                         +   !                       1 -[CFPrefsSearchListSource alreadylocked_getDictionary:]  (in CoreFoundation) + 384  [0x18054b7f8]
-    +                       !         :   |                                 + ! : | + !     : |                         +   !                         1 -[CFPrefsSearchListSource alreadylocked_generationCountFromListOfSources:count:]  (in CoreFoundation) + 68  [0x18054bc6c]
-    +                       !         :   |                                 + ! : | + !     : |                         +   !                           1 generationCountFromListOfSources  (in CoreFoundation) + 288  [0x1804ed90c]
-    +                       !         :   |                                 + ! : | + !     : |                         +   1 static Prefs.serifUIFont(_:)  (in Chronotheca.debug.dylib) + 416  [0x1076914c4]  Preferences.swift:111
-    +                       !         :   |                                 + ! : | + !     : |                         1 closure #1 in closure #2 in SearchView.row(_:)  (in Chronotheca.debug.dylib) + 808  [0x1077ab54c]  SearchView.swift:1015
-    +                       !         :   |                                 + ! : | + !     : |                           1 SearchView.preview(_:of:)  (in Chronotheca.debug.dylib) + 572  [0x1077ac980]  SearchView.swift:1038
-    +                       !         :   |                                 + ! : | + !     : |                             1 static Search.body.getter  (in Chronotheca.debug.dylib) + 168  [0x10778f468]  SearchView.swift:1104
-    +                       !         :   |                                 + ! : | + !     : |                               1 static Prefs.serifUIFont(_:)  (in Chronotheca.debug.dylib) + 644  [0x1076915a8]  Preferences.swift:113
-    +                       !         :   |                                 + ! : | + !     : |                                 1 -[UIFontDescriptor fontDescriptorWithDesign:]  (in UIFoundation) + 228  [0x1851b1bc0]
-    +                       !         :   |                                 + ! : | + !     : |                                   1 _NSDictionaryI_mutableCopyWithZone  (in CoreFoundation) + 184  [0x1803ce15c]
-    +                       !         :   |                                 + ! : | + !     : |                                     1 __NSDictionaryM_new  (in CoreFoundation) + 424  [0x1805320b4]
-    +                       !         :   |                                 + ! : | + !     : |                                       1 -[__NSCFString isEqual:]  (in CoreFoundation) + 168  [0x1803f2d60]
-    +                       !         :   |                                 + ! : | + !     : |                                         1 __CFStringEqual  (in CoreFoundation) + 172  [0x180446a50]
-    +                       !         :   |                                 + ! : | + !     : 3 Button.body.getter  (in SwiftUI) + 208  [0x1d34ea7b4]
-    +                       !         :   |                                 + ! : | + !     : | 3 swift_getOpaqueTypeMetadataImpl(swift::MetadataRequest, void const* const*, swift::TargetOpaqueTypeDescriptor<swift::InProcess> const*, unsigned int)  (in libswiftCore.dylib) + 204  [0x1981b9400]
-    +                       !         :   |                                 + ! : | + !     : |   3 swift_getTypeByMangledName  (in libswiftCore.dylib) + 272  [0x1981b7090]
-    +                       !         :   |                                 + ! : | + !     : |     3 swift_getTypeByMangledNameImpl(swift::MetadataRequest, __swift::__runtime::llvm::StringRef, void const* const*, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>)  (in libswiftCore.dylib) + 1016  [0x1981bcd58]
-    +                       !         :   |                                 + ! : | + !     : |       3 swift_getTypeByMangledNode  (in libswiftCore.dylib) + 272  [0x1981b8ab0]
-    +                       !         :   |                                 + ! : | + !     : |         2 swift_getTypeByMangledNodeImpl(swift::MetadataRequest, swift::Demangle::__runtime::Demangler&, swift::Demangle::__runtime::Node*, void const* const*, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>)  (in libswiftCore.dylib) + 576  [0x1981bc55c]
-    +                       !         :   |                                 + ! : | + !     : |         + 1 swift::Demangle::__runtime::TypeDecoder<(anonymous namespace)::DecodedMetadataBuilder>::decodeMangledType(swift::Demangle::__runtime::Node*, unsigned int, bool)  (in libswiftCore.dylib) + 892  [0x1981c0a0c]
-    +                       !         :   |                                 + ! : | + !     : |         + ! 1 swift::Demangle::__runtime::TypeDecoder<(anonymous namespace)::DecodedMetadataBuilder>::decodeGenericArgs(swift::Demangle::__runtime::Node*, unsigned int, __swift::__runtime::llvm::SmallVectorImpl<swift::MetadataPackOrValue>&)  (in libswiftCore.dylib) + 352  [0x1981c5e08]
-    +                       !         :   |                                 + ! : | + !     : |         + !   1 swift::Demangle::__runtime::TypeDecoder<(anonymous namespace)::DecodedMetadataBuilder>::decodeMangledType(swift::Demangle::__runtime::Node*, unsigned int, bool)  (in libswiftCore.dylib) + 6928  [0x1981c21a0]
-    +                       !         :   |                                 + ! : | + !     : |         + !     1 (anonymous namespace)::DecodedMetadataBuilder::createGenericTypeParameterType(unsigned int, unsigned int) const  (in libswiftCore.dylib) + 56  [0x1981c84d4]
-    +                       !         :   |                                 + ! : | + !     : |         + !       1 std::__function::__func<swift_getOpaqueTypeMetadataImpl(swift::MetadataRequest, void const* const*, swift::TargetOpaqueTypeDescriptor<swift::InProcess> const*, unsigned int)::$_0, void const* (unsigned int, unsigned int)>::operator()(unsigned int&&, unsigned int&&)  (in libswiftCore.dylib) + 44  [0x1981beba8]
-    +                       !         :   |                                 + ! : | + !     : |         + !         1 swift::SubstGenericParametersFromMetadata::setup() const  (in libswiftCore.dylib) + 240  [0x1981bb6e0]
-    +                       !         :   |                                 + ! : | + !     : |         + !           1 swift::SubstGenericParametersFromMetadata::buildDescriptorPath(swift::TargetContextDescriptor<swift::InProcess> const*, swift::Demangle::__runtime::Demangler&) const  (in libswiftCore.dylib) + 292  [0x1981baca8]
-    +                       !         :   |                                 + ! : | + !     : |         + !             1 swift::SubstGenericParametersFromMetadata::buildDescriptorPath(swift::TargetContextDescriptor<swift::InProcess> const*, swift::Demangle::__runtime::Demangler&) const  (in libswiftCore.dylib) + 292  [0x1981baca8]
-    +                       !         :   |                                 + ! : | + !     : |         + !               1 swift::SubstGenericParametersFromMetadata::buildDescriptorPath(swift::TargetContextDescriptor<swift::InProcess> const*, swift::Demangle::__runtime::Demangler&) const  (in libswiftCore.dylib) + 228  [0x1981bac68]
-    +                       !         :   |                                 + ! : | + !     : |         + !                 1 _findExtendedTypeContextDescriptor(swift::TargetContextDescriptor<swift::InProcess> const*, swift::Demangle::__runtime::Demangler&, swift::Demangle::__runtime::Node**)  (in libswiftCore.dylib) + 96  [0x1981b651c]
-    +                       !         :   |                                 + ! : | + !     : |         + !                   1 swift::Demangle::__runtime::makeSymbolicMangledNameStringRef(char const*)  (in libswiftCore.dylib) + 60  [0x1981e3ec4]
-    +                       !         :   |                                 + ! : | + !     : |         + 1 swift::Demangle::__runtime::TypeDecoder<(anonymous namespace)::DecodedMetadataBuilder>::decodeMangledType(swift::Demangle::__runtime::Node*, unsigned int, bool)  (in libswiftCore.dylib) + 9492  [0x1981c2ba4]
-    +                       !         :   |                                 + ! : | + !     : |         +   1 (anonymous namespace)::DecodedMetadataBuilder::createBoundGenericType(swift::TargetContextDescriptor<swift::InProcess> const*, __swift::__runtime::llvm::ArrayRef<swift::MetadataPackOrValue>, swift::MetadataPackOrValue) const  (in libswiftCore.dylib) + 496  [0x1981c60fc]
-    +                       !         :   |                                 + ! : | + !     : |         +     1 __swift_instantiateGenericMetadata  (in SwiftUICore) + 32  [0x1d390955c]
-    +                       !         :   |                                 + ! : | + !     : |         +       1 _swift_getGenericMetadata(swift::MetadataRequest, void const* const*, swift::TargetTypeContextDescriptor<swift::InProcess> const*)  (in libswiftCore.dylib) + 260  [0x198198e88]
-    +                       !         :   |                                 + ! : | + !     : |         +         1 swift::LockingConcurrentMap<swift::GenericCacheEntry, swift::LockingConcurrentMapStorage<swift::GenericCacheEntry, (unsigned short)14>>::getOrInsert<swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)  (in libswiftCore.dylib) + 84  [0x1981a97ac]
-    +                       !         :   |                                 + ! : | + !     : |         +           1 swift::StableAddressConcurrentReadableHashMap<swift::GenericCacheEntry, swift::TaggedMetadataAllocator<(unsigned short)14>, swift::Mutex>::getOrInsert<swift::MetadataCacheKey, swift::MetadataWaitQueue::Worker&, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataWaitQueue::Worker&, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)  (in libswiftCore.dylib) + 184  [0x1981a9af4]
-    +                       !         :   |                                 + ! : | + !     : |         +             1 swift::ConcurrentReadableHashMap<swift::HashMapElementWrapper<swift::GenericCacheEntry>, swift::Mutex>::find<swift::MetadataCacheKey>(swift::MetadataCacheKey const&, swift::ConcurrentReadableHashMap<swift::HashMapElementWrapper<swift::GenericCacheEntry>, swift::Mutex>::IndexStorage, unsigned long, swift::HashMapElementWrapper<swift::GenericCacheEntry>*)  (in libswiftCore.dylib) + 260  [0x1981a7f10]
-    +                       !         :   |                                 + ! : | + !     : |         +               1 swift::MetadataCacheKey::operator==(swift::MetadataCacheKey const&) const  (in libswiftCore.dylib) + 440  [0x1981a7d3c]
-    +                       !         :   |                                 + ! : | + !     : |         1 swift_getTypeByMangledNodeImpl(swift::MetadataRequest, swift::Demangle::__runtime::Demangler&, swift::Demangle::__runtime::Node*, void const* const*, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>)  (in libswiftCore.dylib) + 200  [0x1981bc3e4]
-    +                       !         :   |                                 + ! : | + !     : 3 protocol witness for View.body.getter in conformance ButtonBehavior<A>  (in SwiftUI) + 48  [0x1d2dabd68]
-    +                       !         :   |                                 + ! : | + !     : | 1 ButtonBehavior.body.getter  (in SwiftUI) + 500  [0x1d2daaba8]
-    +                       !         :   |                                 + ! : | + !     : | + 1 <deduplicated_symbol>  (in SwiftUI) + 8  [0x1d274111c]
-    +                       !         :   |                                 + ! : | + !     : | 1 ButtonBehavior.body.getter  (in SwiftUI) + 884  [0x1d2daad28]
-    +                       !         :   |                                 + ! : | + !     : | + 1 static ImprovedButtonGestureFeature.isEnabled.getter  (in SwiftUICore) + 12  [0x1d3b8cd24]
-    +                       !         :   |                                 + ! : | + !     : | +   1 specialized static ImprovedButtonGestureFeature.isEnabled.getter  (in SwiftUICore) + 300  [0x1d3b8dbec]
-    +                       !         :   |                                 + ! : | + !     : | +     1 dyld_program_sdk_at_least  (in libdyld.dylib) + 0  [0x18007af7c]
-    +                       !         :   |                                 + ! : | + !     : | 1 ButtonBehavior.body.getter  (in SwiftUI) + 2116  [0x1d2dab1f8]
-    +                       !         :   |                                 + ! : | + !     : |   1 _swift_getKeyPath(pattern:arguments:)  (in libswiftCore.dylib) + 112  [0x19836e7e4]
-    +                       !         :   |                                 + ! : | + !     : |     1 _getKeyPathClassAndInstanceSizeFromPattern(_:_:)  (in libswiftCore.dylib) + 72  [0x19836e990]
-    +                       !         :   |                                 + ! : | + !     : |       1 specialized _walkKeyPathPattern<A>(_:walker:)  (in libswiftCore.dylib) + 120  [0x19836f3e4]
-    +                       !         :   |                                 + ! : | + !     : |         1 _resolveKeyPathGenericArgReference(_:genericEnvironment:arguments:)  (in libswiftCore.dylib) + 240  [0x19836ee3c]
-    +                       !         :   |                                 + ! : | + !     : |           1 swift_getTypeByMangledNameInEnvironment  (in libswiftCore.dylib) + 156  [0x1981b6e14]
-    +                       !         :   |                                 + ! : | + !     : |             1 swift_getTypeByMangledName  (in libswiftCore.dylib) + 272  [0x1981b7090]
-    +                       !         :   |                                 + ! : | + !     : |               1 swift_getTypeByMangledNameImpl(swift::MetadataRequest, __swift::__runtime::llvm::StringRef, void const* const*, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>)  (in libswiftCore.dylib) + 1016  [0x1981bcd58]
-    +                       !         :   |                                 + ! : | + !     : |                 1 swift_getTypeByMangledNode  (in libswiftCore.dylib) + 272  [0x1981b8ab0]
-    +                       !         :   |                                 + ! : | + !     : |                   1 swift_getTypeByMangledNodeImpl(swift::MetadataRequest, swift::Demangle::__runtime::Demangler&, swift::Demangle::__runtime::Node*, void const* const*, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>)  (in libswiftCore.dylib) + 576  [0x1981bc55c]
-    +                       !         :   |                                 + ! : | + !     : |                     1 swift::Demangle::__runtime::TypeDecoder<(anonymous namespace)::DecodedMetadataBuilder>::decodeMangledType(swift::Demangle::__runtime::Node*, unsigned int, bool)  (in libswiftCore.dylib) + 9492  [0x1981c2ba4]
-    +                       !         :   |                                 + ! : | + !     : |                       1 (anonymous namespace)::DecodedMetadataBuilder::createBoundGenericType(swift::TargetContextDescriptor<swift::InProcess> const*, __swift::__runtime::llvm::ArrayRef<swift::MetadataPackOrValue>, swift::MetadataPackOrValue) const  (in libswiftCore.dylib) + 204  [0x1981c5fd8]
-    +                       !         :   |                                 + ! : | + !     : |                         1 _gatherGenericParameters(swift::TargetContextDescriptor<swift::InProcess> const*, __swift::__runtime::llvm::ArrayRef<swift::MetadataPackOrValue>, swift::TargetMetadata<swift::InProcess> const*, __swift::__runtime::llvm::SmallVectorImpl<unsigned int>&, __swift::__runtime::llvm::SmallVectorImpl<void const*>&, swift::Demangle::__runtime::Demangler&)  (in libswiftCore.dylib) + 1472  [0x1981ba2a8]
-    +                       !         :   |                                 + ! : | + !     : |                           1 swift::_checkGenericRequirements(__swift::__runtime::llvm::ArrayRef<swift::GenericParamDescriptor>, __swift::__runtime::llvm::ArrayRef<swift::TargetGenericRequirementDescriptor<swift::InProcess>>, __swift::__runtime::llvm::SmallVectorImpl<void const*>&, std::function<void const* (unsigned int, unsigned int)>, std::function<void const* (unsigned int, unsigned int)>, std::function<swift::TargetWitnessTable<swift::InProcess> const* (swift::TargetMetadata<swift::InProcess> const*, unsigned int)>, swift::ConformanceExecutionContext*)  (in libswiftCore.dylib) + 6448  [0x1981cff40]
-    +                       !         :   |                                 + ! : | + !     : |                             1 swift::_conformsToProtocol(swift::OpaqueValue const*, swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptorRef<swift::InProcess>, swift::TargetWitnessTable<swift::InProcess> const**, swift::ConformanceExecutionContext*)  (in libswiftCore.dylib) + 48  [0x19817f170]
-    +                       !         :   |                                 + ! : | + !     : |                               1 swift_conformsToProtocolWithExecutionContext  (in libswiftCore.dylib) + 68  [0x1981d1b30]
-    +                       !         :   |                                 + ! : | + !     : |                                 1 swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib) + 540  [0x1981d31fc]
-    +                       !         :   |                                 + ! : | + !     : |                                   1 dyld4::APIs::_dyld_find_protocol_conformance(void const*, void const*, void const*) const  (in dyld_sim) + 160  [0x10503a07c]
-    +                       !         :   |                                 + ! : | + !     : |                                     1 <deduplicated_symbol>  (in dyld_sim) + 20  [0x10503d9e4]
-    +                       !         :   |                                 + ! : | + !     : |                                       1 <deduplicated_symbol>  (in dyld_sim) + 116  [0x10503da9c]
-    +                       !         :   |                                 + ! : | + !     : 2 protocol witness for View.body.getter in conformance DayPage  (in Chronotheca.debug.dylib) + 12  [0x1072760ac]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : | 2 DayPage.body.getter  (in Chronotheca.debug.dylib) + 796  [0x10726a2a0]  DayPager.swift:76
-    +                       !         :   |                                 + ! : | + !     : |   2 VStack.init(alignment:spacing:content:)  (in SwiftUICore) + 72  [0x1d3a08160]
-    +                       !         :   |                                 + ! : | + !     : |     2 _VariadicView.Tree.init(_:content:)  (in SwiftUICore) + 112  [0x1d3cfd904]
-    +                       !         :   |                                 + ! : | + !     : |       2 <deduplicated_symbol>  (in SwiftUICore) + 88  [0x1d393df24]
-    +                       !         :   |                                 + ! : | + !     : |         1 closure #1 in DayPage.body.getter  (in Chronotheca.debug.dylib) + 524  [0x10726abd8]  DayPager.swift:78
-    +                       !         :   |                                 + ! : | + !     : |         + 1 DayPage.heading.getter  (in Chronotheca.debug.dylib) + 668  [0x10726b1f0]  DayPager.swift:186
-    +                       !         :   |                                 + ! : | + !     : |         +   1 VStack.init(alignment:spacing:content:)  (in SwiftUICore) + 72  [0x1d3a08160]
-    +                       !         :   |                                 + ! : | + !     : |         +     1 _VariadicView.Tree.init(_:content:)  (in SwiftUICore) + 112  [0x1d3cfd904]
-    +                       !         :   |                                 + ! : | + !     : |         +       1 <deduplicated_symbol>  (in SwiftUICore) + 88  [0x1d393df24]
-    +                       !         :   |                                 + ! : | + !     : |         +         1 closure #1 in DayPage.heading.getter  (in Chronotheca.debug.dylib) + 300  [0x10726e6dc]  DayPager.swift:193
-    +                       !         :   |                                 + ! : | + !     : |         +           1 HStack.init(alignment:spacing:content:)  (in SwiftUICore) + 72  [0x1d3c1365c]
-    +                       !         :   |                                 + ! : | + !     : |         +             1 _VariadicView.Tree.init(_:content:)  (in SwiftUICore) + 112  [0x1d3cfd904]
-    +                       !         :   |                                 + ! : | + !     : |         +               1 <deduplicated_symbol>  (in SwiftUICore) + 88  [0x1d393df24]
-    +                       !         :   |                                 + ! : | + !     : |         +                 1 closure #1 in closure #1 in DayPage.heading.getter  (in Chronotheca.debug.dylib) + 340  [0x10726e8c8]  DayPager.swift:194
-    +                       !         :   |                                 + ! : | + !     : |         +                   1 DayPage.titleMenu.getter  (in Chronotheca.debug.dylib) + 784  [0x10726ed80]  DayPager.swift:219
-    +                       !         :   |                                 + ! : | + !     : |         +                     1 T(_:_:)  (in Chronotheca.debug.dylib) + 76  [0x107449be8]  Lang.swift:41
-    +                       !         :   |                                 + ! : | + !     : |         +                       1 static Lang.code.getter  (in Chronotheca.debug.dylib) + 12  [0x107449598]  Lang.swift:19
-    +                       !         :   |                                 + ! : | + !     : |         +                         1 static Lang.phone.getter  (in Chronotheca.debug.dylib) + 300  [0x1074496cc]  Lang.swift:24
-    +                       !         :   |                                 + ! : | + !     : |         +                           1 Collection.prefix(while:)  (in libswiftCore.dylib) + 648  [0x1982b2f6c]
-    +                       !         :   |                                 + ! : | + !     : |         +                             1 closure #1 in static Lang.phone.getter  (in Chronotheca.debug.dylib) + 0  [0x1074498a4]  Lang.swift:24
-    +                       !         :   |                                 + ! : | + !     : |         1 closure #1 in DayPage.body.getter  (in Chronotheca.debug.dylib) + 720  [0x10726ac9c]  DayPager.swift:80
-    +                       !         :   |                                 + ! : | + !     : |           1 DayPage.content.getter  (in Chronotheca.debug.dylib) + 1148  [0x10726b91c]  DayPager.swift:371
-    +                       !         :   |                                 + ! : | + !     : |             1 PageAsks.freshStart.getter  (in Chronotheca.debug.dylib) + 100  [0x107522c94]  PageAsks.swift:0
-    +                       !         :   |                                 + ! : | + !     : |               1 static Published.subscript.getter  (in Combine) + 200  [0x1c3288bc4]
-    +                       !         :   |                                 + ! : | + !     : |                 1 swift_getAtKeyPath  (in libswiftCore.dylib) + 20  [0x19836d830]
-    +                       !         :   |                                 + ! : | + !     : |                   1 KeyPath._projectReadOnly(from:)  (in libswiftCore.dylib) + 76  [0x19836a180]
-    +                       !         :   |                                 + ! : | + !     : |                     1 __swift_instantiateGenericMetadata  (in libswiftCore.dylib) + 32  [0x1985279c0]
-    +                       !         :   |                                 + ! : | + !     : |                       1 _swift_getGenericMetadata(swift::MetadataRequest, void const* const*, swift::TargetTypeContextDescriptor<swift::InProcess> const*)  (in libswiftCore.dylib) + 260  [0x198198e88]
-    +                       !         :   |                                 + ! : | + !     : |                         1 swift::LockingConcurrentMap<swift::GenericCacheEntry, swift::LockingConcurrentMapStorage<swift::GenericCacheEntry, (unsigned short)14>>::getOrInsert<swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)  (in libswiftCore.dylib) + 84  [0x1981a97ac]
-    +                       !         :   |                                 + ! : | + !     : |                           1 swift::StableAddressConcurrentReadableHashMap<swift::GenericCacheEntry, swift::TaggedMetadataAllocator<(unsigned short)14>, swift::Mutex>::getOrInsert<swift::MetadataCacheKey, swift::MetadataWaitQueue::Worker&, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&>(swift::MetadataCacheKey, swift::MetadataWaitQueue::Worker&, swift::MetadataRequest&, swift::TargetTypeContextDescriptor<swift::InProcess> const*&, void const* const*&)  (in libswiftCore.dylib) + 184  [0x1981a9af4]
-    +                       !         :   |                                 + ! : | + !     : |                             1 swift::ConcurrentReadableHashMap<swift::HashMapElementWrapper<swift::GenericCacheEntry>, swift::Mutex>::find<swift::MetadataCacheKey>(swift::MetadataCacheKey const&, swift::ConcurrentReadableHashMap<swift::HashMapElementWrapper<swift::GenericCacheEntry>, swift::Mutex>::IndexStorage, unsigned long, swift::HashMapElementWrapper<swift::GenericCacheEntry>*)  (in libswiftCore.dylib) + 228  [0x1981a7ef0]
-    +                       !         :   |                                 + ! : | + !     : 2 protocol witness for View.body.getter in conformance PlanRowLine  (in Chronotheca.debug.dylib) + 12  [0x1075f3f7c]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : | 2 PlanRowLine.body.getter  (in Chronotheca.debug.dylib) + 188  [0x1075e48b0]  PlanRowLine.swift:0
-    +                       !         :   |                                 + ! : | + !     : |   2 implicit closure #2 in implicit closure #1 in PlanRowLine.body.getter  (in Chronotheca.debug.dylib) + 140  [0x1075e49f8]  PlanRowLine.swift:0
-    +                       !         :   |                                 + ! : | + !     : |     2 Layout.callAsFunction<A>(_:)  (in Chronotheca.debug.dylib) + 312  [0x1074c653c]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |       2 _VariadicView.Tree.init(_:content:)  (in SwiftUICore) + 112  [0x1d3cfd904]
-    +                       !         :   |                                 + ! : | + !     : |         2 closure #1 in Layout.callAsFunction<A>(_:)  (in Chronotheca.debug.dylib) + 116  [0x1074cf430]  /<compiler-generated>:0
-    +                       !         :   |                                 + ! : | + !     : |           2 closure #1 in PlanRowLine.body.getter  (in Chronotheca.debug.dylib) + 732  [0x1075e4ce4]  PlanRowLine.swift:110
-    +                       !         :   |                                 + ! : | + !     : |             2 VStack.init(alignment:spacing:content:)  (in SwiftUICore) + 72  [0x1d3a08160]
-    +                       !         :   |                                 + ! : | + !     : |               2 _VariadicView.Tree.init(_:content:)  (in SwiftUICore) + 112  [0x1d3cfd904]
-    +                       !         :   |                                 + ! : | + !     : |                 2 <deduplicated_symbol>  (in SwiftUICore) + 88  [0x1d393df24]
-    +                       !         :   |                                 + ! : | + !     : |                   2 closure #1 in closure #1 in PlanRowLine.body.getter  (in Chronotheca.debug.dylib) + 248  [0x1075e513c]  PlanRowLine.swift:114
-    +                       !         :   |                                 + ! : | + !     : |                     2 ZStack.init(alignment:content:)  (in SwiftUICore) + 60  [0x1d393dec0]
-    +                       !         :   |                                 + ! : | + !     : |                       2 _VariadicView.Tree.init(_:content:)  (in SwiftUICore) + 112  [0x1d3cfd904]
-    +                       !         :   |                                 + ! : | + !     : |                         2 <deduplicated_symbol>  (in SwiftUICore) + 88  [0x1d393df24]
-    +                       !         :   |                                 + ! : | + !     : |                           2 closure #1 in closure #1 in closure #1 in PlanRowLine.body.getter  (in Chronotheca.debug.dylib) + 412  [0x1075e5328]  PlanRowLine.swift:117
-    +                       !         :   |                                 + ! : | + !     : |                             2 PlanRowLine.head.getter  (in Chronotheca.debug.dylib) + 116  [0x1075e6250]  PlanRowLine.swift:225
-    +                       !         :   |                                 + ! : | + !     : |                               2 HStack.init(alignment:spacing:content:)  (in SwiftUICore) + 72  [0x1d3c1365c]
-    +                       !         :   |                                 + ! : | + !     : |                                 2 _VariadicView.Tree.init(_:content:)  (in SwiftUICore) + 112  [0x1d3cfd904]
-    +                       !         :   |                                 + ! : | + !     : |                                   2 <deduplicated_symbol>  (in SwiftUICore) + 88  [0x1d393df24]
-    +                       !         :   |                                 + ! : | + !     : |                                     1 closure #1 in PlanRowLine.head.getter  (in Chronotheca.debug.dylib) + 760  [0x1075e9174]  PlanRowLine.swift:226
-    +                       !         :   |                                 + ! : | + !     : |                                     + 1 PlanRowLine.badge.getter  (in Chronotheca.debug.dylib) + 2616  [0x1075ea070]  PlanRowLine.swift:253
-    +                       !         :   |                                 + ! : | + !     : |                                     +   1 ModifiedContent<>.accessibilityAddTraits(_:)  (in SwiftUI) + 200  [0x1d3506e24]
-    +                       !         :   |                                 + ! : | + !     : |                                     +     1 ModifiedContent<>.update(isEnabled:body:)  (in SwiftUI) + 100  [0x1d3068048]
-    +                       !         :   |                                 + ! : | + !     : |                                     +       1 closure #1 in ModifiedContent<>.accessibilityTraits(_:)  (in SwiftUI) + 216  [0x1d3508758]
+    197 Thread_213137   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 197 start  (in dyld) + 6992  [0x1023f84e4]
+    +   197 start_sim  (in dyld_sim) + 20  [0x10267f0e4]
+    +     197 __debug_main_executable_dylib_entry_point  (in Chronotheca.debug.dylib) + 12  [0x1046cff08]  ChronothecaApp.swift:0
+    +       197 static ChronothecaApp.$main()  (in Chronotheca.debug.dylib) + 40  [0x1046cfe5c]  /<compiler-generated>:0
+    +         197 static App.main()  (in SwiftUI) + 148  [0x1d2c5f094]
+    +           197 runApp<A>(_:)  (in SwiftUI) + 180  [0x1d2ecdd18]
+    +             197 closure #1 in KitRendererCommon(_:)  (in SwiftUI) + 164  [0x1d2ecdfa4]
+    +               197 UIApplicationMain  (in UIKitCore) + 120  [0x186b9f910]
+    +                 197 -[UIApplication _run]  (in UIKitCore) + 776  [0x1864a54cc]
+    +                   197 GSEventRunModal  (in GraphicsServices) + 116  [0x1933599c0]
+    +                     197 _CFRunLoopRunSpecificWithOptions  (in CoreFoundation) + 496  [0x18041c904]
+    +                       150 __CFRunLoopRun  (in CoreFoundation) + 1128  [0x180421978]
+    +                       ! 150 __CFRunLoopServiceMachPort  (in CoreFoundation) + 156  [0x1804227c0]
+    +                       !   150 mach_msg  (in libsystem_kernel.dylib) + 20  [0x102530ef0]
+    +                       !     150 mach_msg_overwrite  (in libsystem_kernel.dylib) + 484  [0x102538c44]
+    +                       !       150 mach_msg2_internal  (in libsystem_kernel.dylib) + 72  [0x102541e84]
+    +                       !         150 mach_msg2_trap  (in libsystem_kernel.dylib) + 8  [0x102530b70]
+    +                       45 __CFRunLoopRun  (in CoreFoundation) + 2280  [0x180421df8]
+    +                       ! 45 __CFRunLoopDoBlocks  (in CoreFoundation) + 340  [0x1804224b4]
+    +                       !   45 __CFRUNLOOP_IS_CALLING_OUT_TO_A_BLOCK__  (in CoreFoundation) + 20  [0x180422d28]
+    +                       !     43 __XCTPerformOnMainRunLoop_block_invoke  (in XCTAutomationSupport) + 392  [0x10440bca4]
+    +                       !     : 36 __90-[XCTElementQuery matchingSnapshotsInSnapshotTree:relatedElements:noMatchesMessage:error:]_block_invoke  (in XCTAutomationSupport) + 156  [0x1043eea24]
+    +                       !     : | 36 +[XCTRuntimeIssueContext captureIssuesWithContext:inScope:]  (in XCTAutomationSupport) + 196  [0x1043f87ec]
+    +                       !     : |   35 __90-[XCTElementQuery matchingSnapshotsInSnapshotTree:relatedElements:noMatchesMessage:error:]_block_invoke_2  (in XCTAutomationSupport) + 328  [0x1043eeb90]
+    +                       !     : |   + 35 -[XCTElementQuery _firstMatchingSnapshotForInput:transformersSubarrays:relatedElements:noMatchesMessage:error:]  (in XCTAutomationSupport) + 256  [0x1043ef23c]
+    +                       !     : |   +   32 -[XCTElementQuery _firstMatchingSnapshotForInput:transformers:relatedElements:noMatchesMessage:error:]  (in XCTAutomationSupport) + 848  [0x1043ef884]
+    +                       !     : |   +   ! 27 -[XCTFilteringTransformerIterator nextMatch]  (in XCTAutomationSupport) + 100  [0x1043e8758]
+    +                       !     : |   +   ! : 20 -[NSComparisonPredicate evaluateWithObject:substitutionVariables:]  (in Foundation) + 276  [0x18104d1bc]
+    +                       !     : |   +   ! : | 20 -[NSKeyPathExpression expressionValueWithObject:context:]  (in Foundation) + 216  [0x18109e7bc]
+    +                       !     : |   +   ! : |   20 -[NSFunctionExpression expressionValueWithObject:context:]  (in Foundation) + 2388  [0x181085144]
+    +                       !     : |   +   ! : |     20 -[NSObject(NSKeyValueCoding) valueForKey:]  (in Foundation) + 260  [0x1810aad78]
+    +                       !     : |   +   ! : |       20 _NSGetUnsignedLongLongValueWithMethod  (in Foundation) + 72  [0x1810a5930]
+    +                       !     : |   +   ! : |         13 -[XCElementSnapshot elementType]  (in XCTAutomationSupport) + 932  [0x104402d04]
+    +                       !     : |   +   ! : |         + 13 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     : |   +   ! : |         +   13 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     : |   +   ! : |         +     13 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !     : |   +   ! : |         +       13 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !     : |   +   ! : |         +         13 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !     : |   +   ! : |         +           13 writev  (in libsystem_kernel.dylib) + 8  [0x102534600]
+    +                       !     : |   +   ! : |         4 -[XCElementSnapshot elementType]  (in XCTAutomationSupport) + 200  [0x104402a28]
+    +                       !     : |   +   ! : |         + 4 -[XCTAutomationSession attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 76  [0x104412ca4]
+    +                       !     : |   +   ! : |         +   4 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 264  [0x1043eacc8]
+    +                       !     : |   +   ! : |         +     4 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     : |   +   ! : |         +       4 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     : |   +   ! : |         +         4 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !     : |   +   ! : |         +           4 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !     : |   +   ! : |         +             4 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !     : |   +   ! : |         +               4 writev  (in libsystem_kernel.dylib) + 8  [0x102534600]
+    +                       !     : |   +   ! : |         3 -[XCElementSnapshot elementType]  (in XCTAutomationSupport) + 1248  [0x104402e40]
+    +                       !     : |   +   ! : |           3 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     : |   +   ! : |             3 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     : |   +   ! : |               3 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !     : |   +   ! : |                 3 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !     : |   +   ! : |                   3 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !     : |   +   ! : |                     3 writev  (in libsystem_kernel.dylib) + 8  [0x102534600]
+    +                       !     : |   +   ! : 7 -[NSComparisonPredicate evaluateWithObject:substitutionVariables:]  (in Foundation) + 300  [0x18104d1d4]
+    +                       !     : |   +   ! :   7 -[NSKeyPathExpression expressionValueWithObject:context:]  (in Foundation) + 216  [0x18109e7bc]
+    +                       !     : |   +   ! :     7 -[NSFunctionExpression expressionValueWithObject:context:]  (in Foundation) + 2388  [0x181085144]
+    +                       !     : |   +   ! :       7 -[NSObject(NSKeyValueCoding) valueForKey:]  (in Foundation) + 260  [0x1810aad78]
+    +                       !     : |   +   ! :         3 -[XCElementSnapshot identifiers]  (in XCTAutomationSupport) + 344  [0x1043fffa8]
+    +                       !     : |   +   ! :         + 2 -[XCElementSnapshot placeholderValue]  (in XCTAutomationSupport) + 112  [0x10440472c]
+    +                       !     : |   +   ! :         + ! 1 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 264  [0x104402270]
+    +                       !     : |   +   ! :         + ! : 1 -[XCTAutomationSession attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 76  [0x104412ca4]
+    +                       !     : |   +   ! :         + ! :   1 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 524  [0x1043eadcc]
+    +                       !     : |   +   ! :         + ! :     1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     : |   +   ! :         + ! :       1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     : |   +   ! :         + ! :         1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !     : |   +   ! :         + ! :           1 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !     : |   +   ! :         + ! :             1 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !     : |   +   ! :         + ! :               1 writev  (in libsystem_kernel.dylib) + 8  [0x102534600]
+    +                       !     : |   +   ! :         + ! 1 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 636  [0x1044023e4]
+    +                       !     : |   +   ! :         + !   1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     : |   +   ! :         + !     1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     : |   +   ! :         + !       1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !     : |   +   ! :         + !         1 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !     : |   +   ! :         + !           1 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !     : |   +   ! :         + !             1 writev  (in libsystem_kernel.dylib) + 8  [0x102534600]
+    +                       !     : |   +   ! :         + 1 -[XCElementSnapshot placeholderValue]  (in XCTAutomationSupport) + 56  [0x1044046f4]
+    +                       !     : |   +   ! :         +   1 -[XCElementSnapshot value]  (in XCTAutomationSupport) + 204  [0x104404398]
+    +                       !     : |   +   ! :         +     1 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 636  [0x1044023e4]
+    +                       !     : |   +   ! :         +       1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     : |   +   ! :         +         1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     : |   +   ! :         +           1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !     : |   +   ! :         +             1 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !     : |   +   ! :         +               1 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !     : |   +   ! :         +                 1 writev  (in libsystem_kernel.dylib) + 8  [0x102534600]
+    +                       !     : |   +   ! :         2 -[XCElementSnapshot identifiers]  (in XCTAutomationSupport) + 168  [0x1043ffef8]
+    +                       !     : |   +   ! :         + 2 -[XCElementSnapshot label]  (in XCTAutomationSupport) + 80  [0x10440498c]
+    +                       !     : |   +   ! :         +   1 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 264  [0x104402270]
+    +                       !     : |   +   ! :         +   ! 1 -[XCTAutomationSession attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 76  [0x104412ca4]
+    +                       !     : |   +   ! :         +   !   1 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 524  [0x1043eadcc]
+    +                       !     : |   +   ! :         +   !     1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     : |   +   ! :         +   !       1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     : |   +   ! :         +   !         1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !     : |   +   ! :         +   !           1 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !     : |   +   ! :         +   !             1 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !     : |   +   ! :         +   !               1 writev  (in libsystem_kernel.dylib) + 8  [0x102534600]
+    +                       !     : |   +   ! :         +   1 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 636  [0x1044023e4]
+    +                       !     : |   +   ! :         +     1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     : |   +   ! :         +       1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     : |   +   ! :         +         1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !     : |   +   ! :         +           1 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !     : |   +   ! :         +             1 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !     : |   +   ! :         +               1 writev  (in libsystem_kernel.dylib) + 8  [0x102534600]
+    +                       !     : |   +   ! :         1 -[XCElementSnapshot identifiers]  (in XCTAutomationSupport) + 292  [0x1043fff74]
+    +                       !     : |   +   ! :         + 1 -[XCElementSnapshot truncatedValueString]  (in XCTAutomationSupport) + 52  [0x104404250]
+    +                       !     : |   +   ! :         +   1 -[XCElementSnapshot value]  (in XCTAutomationSupport) + 204  [0x104404398]
+    +                       !     : |   +   ! :         +     1 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 264  [0x104402270]
+    +                       !     : |   +   ! :         +       1 -[XCTAutomationSession attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 76  [0x104412ca4]
+    +                       !     : |   +   ! :         +         1 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 264  [0x1043eacc8]
+    +                       !     : |   +   ! :         +           1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     : |   +   ! :         +             1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     : |   +   ! :         +               1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !     : |   +   ! :         +                 1 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !     : |   +   ! :         +                   1 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !     : |   +   ! :         +                     1 writev  (in libsystem_kernel.dylib) + 8  [0x102534600]
+    +                       !     : |   +   ! :         1 -[XCElementSnapshot identifiers]  (in XCTAutomationSupport) + 512  [0x104400050]
+    +                       !     : |   +   ! :           1 -[XCElementSnapshot identifier]  (in XCTAutomationSupport) + 68  [0x104404ae4]
+    +                       !     : |   +   ! :             1 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 264  [0x104402270]
+    +                       !     : |   +   ! :               1 -[XCTAutomationSession attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 76  [0x104412ca4]
+    +                       !     : |   +   ! :                 1 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 264  [0x1043eacc8]
+    +                       !     : |   +   ! :                   1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     : |   +   ! :                     1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     : |   +   ! :                       1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !     : |   +   ! :                         1 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !     : |   +   ! :                           1 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !     : |   +   ! :                             1 writev  (in libsystem_kernel.dylib) + 8  [0x102534600]
+    +                       !     : |   +   ! 5 -[XCTFilteringTransformerIterator nextMatch]  (in XCTAutomationSupport) + 124  [0x1043e8770]
+    +                       !     : |   +   !   5 -[XCTElementSnapshotDescendantsEnumerator nextObject]  (in XCTAutomationSupport) + 140  [0x10440a334]
+    +                       !     : |   +   !     5 -[XCElementSnapshot childEnumerator]  (in XCTAutomationSupport) + 16  [0x104407254]
+    +                       !     : |   +   !       5 -[XCElementSnapshot children]  (in XCTAutomationSupport) + 124  [0x1044052f8]
+    +                       !     : |   +   !         4 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 636  [0x1044023e4]
+    +                       !     : |   +   !         | 4 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     : |   +   !         |   4 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     : |   +   !         |     4 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !     : |   +   !         |       4 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !     : |   +   !         |         4 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !     : |   +   !         |           4 writev  (in libsystem_kernel.dylib) + 8  [0x102534600]
+    +                       !     : |   +   !         1 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 264  [0x104402270]
+    +                       !     : |   +   !           1 -[XCTAutomationSession attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 76  [0x104412ca4]
+    +                       !     : |   +   !             1 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 524  [0x1043eadcc]
+    +                       !     : |   +   !               1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     : |   +   !                 1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     : |   +   !                   1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !     : |   +   !                     1 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !     : |   +   !                       1 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !     : |   +   !                         1 writev  (in libsystem_kernel.dylib) + 8  [0x102534600]
+    +                       !     : |   +   2 -[XCTElementQuery _firstMatchingSnapshotForInput:transformers:relatedElements:noMatchesMessage:error:]  (in XCTAutomationSupport) + 1216  [0x1043ef9f4]
+    +                       !     : |   +   ! 2 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     : |   +   !   2 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     : |   +   !     2 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !     : |   +   !       2 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !     : |   +   !         2 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !     : |   +   !           2 writev  (in libsystem_kernel.dylib) + 8  [0x102534600]
+    +                       !     : |   +   1 -[XCTElementQuery _firstMatchingSnapshotForInput:transformers:relatedElements:noMatchesMessage:error:]  (in XCTAutomationSupport) + 560  [0x1043ef764]
+    +                       !     : |   +     1 -[XCTElementFilteringTransformer iteratorForInput:]  (in XCTAutomationSupport) + 56  [0x1043e84d4]
+    +                       !     : |   +       1 -[XCTFilteringTransformerIterator initWithInput:filteringTransformer:]  (in XCTAutomationSupport) + 248  [0x1043e869c]
+    +                       !     : |   +         1 -[XCElementSnapshot descendantEnumerator]  (in XCTAutomationSupport) + 36  [0x1044072a8]
+    +                       !     : |   +           1 -[XCTElementSnapshotDescendantsEnumerator initWithElementSnapshot:]  (in XCTAutomationSupport) + 112  [0x10440a26c]
+    +                       !     : |   +             1 -[XCElementSnapshot childEnumerator]  (in XCTAutomationSupport) + 16  [0x104407254]
+    +                       !     : |   +               1 -[XCElementSnapshot children]  (in XCTAutomationSupport) + 124  [0x1044052f8]
+    +                       !     : |   +                 1 -[XCElementSnapshot _fetchSimpleValueForKey:]  (in XCTAutomationSupport) + 264  [0x104402270]
+    +                       !     : |   +                   1 -[XCTAutomationSession attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 76  [0x104412ca4]
+    +                       !     : |   +                     1 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 524  [0x1043eadcc]
+    +                       !     : |   +                       1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     : |   +                         1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     : |   +                           1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !     : |   +                             1 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !     : |   +                               1 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !     : |   +                                 1 writev  (in libsystem_kernel.dylib) + 8  [0x102534600]
+    +                       !     : |   1 __90-[XCTElementQuery matchingSnapshotsInSnapshotTree:relatedElements:noMatchesMessage:error:]_block_invoke_2  (in XCTAutomationSupport) + 228  [0x1043eeb2c]
+    +                       !     : |     1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     : |       1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     : |         1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !     : |           1 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !     : |             1 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !     : |               1 writev  (in libsystem_kernel.dylib) + 8  [0x102534600]
+    +                       !     : 4 __56-[XCTElementSnapshotRequest loadSnapshotAndReturnError:]_block_invoke_2  (in XCTAutomationSupport) + 52  [0x1043f27e0]
+    +                       !     : | 3 -[XCTElementSnapshotRequest(PlatformImplementation) accessibilitySnapshotOrError:]  (in XCTAutomationSupport) + 940  [0x1043f4ad4]
+    +                       !     : | + 3 -[XCTAccessibilityFramework userTestingSnapshotForElement:options:error:]  (in XCTAutomationSupport) + 376  [0x1043eb444]
+    +                       !     : | +   3 AXUIElementCopyParameterizedAttributeValue  (in AXRuntime) + 92  [0x1938ed258]
+    +                       !     : | +     3 AXUIElementCopyParameterizedAttributeValueRecursive  (in AXRuntime) + 616  [0x1938ed554]
+    +                       !     : | +       3 _AXXMIGCopyParameterizedAttributeValue  (in AXRuntime) + 432  [0x1938f3c28]
+    +                       !     : | +         3 _handleNonMainThreadCallback  (in AXRuntime) + 52  [0x1938f35e0]
+    +                       !     : | +           3 ___AXXMIGCopyParameterizedAttributeValue_block_invoke  (in AXRuntime) + 60  [0x1938f3de0]
+    +                       !     : | +             3 _copyParameterizedAttributeValueCallback  (in UIAccessibility) + 360  [0x195268268]
+    +                       !     : | +               3 -[UIApplicationAccessibility _iosAccessibilityAttributeValue:forParameter:]  (in UIKit) + 1596  [0x1119f86c4]
+    +                       !     : | +                 3 -[NSObject(AXPrivCategory) _iosAccessibilityAttributeValue:forParameter:]  (in UIAccessibility) + 1440  [0x1952885b0]
+    +                       !     : | +                   3 -[NSObject(UIAccessibilityAutomation) _accessibilityUserTestingSnapshotWithOptions:]  (in UIAccessibility) + 884  [0x1952b95d4]
+    +                       !     : | +                     2 -[NSObject(UIAccessibilityAutomation) _accessibilityUserTestingSnapshotDescendantsWithAttributes:maxDepth:maxChildren:maxArrayCount:honorsModalViews:]  (in UIAccessibility) + 732  [0x1952b7fe4]
+    +                       !     : | +                     ! 2 -[NSObject(AXPrivCategory) _iosAccessibilityAttributeValue:]  (in UIAccessibility) + 9608  [0x19528db54]
+    +                       !     : | +                     !   2 -[NSObject(UIAccessibilityAutomation) _accessibilityUserTestingChildrenCount]  (in UIAccessibility) + 176  [0x1952b766c]
+    +                       !     : | +                     !     2 -[AccessibilityNodeAccessibility automationElements]  (in SwiftUI) + 160  [0x121eb1a74]
+    +                       !     : | +                     !       2 @objc AccessibilityNode.accessibilityUserInputLabels.getter  (in SwiftUI) + 40  [0x1d2df22c4]
+    +                       !     : | +                     !         2 AccessibilityNode.automationElements.getter  (in SwiftUI) + 340  [0x1d2df2458]
+    +                       !     : | +                     !           2 AccessibilityNode.supplementaryLinkElements.getter  (in SwiftUI) + 132  [0x1d3041978]
+    +                       !     : | +                     !             2 AccessibilityNode.linkRotor.getter  (in SwiftUI) + 1068  [0x1d30415b4]
+    +                       !     : | +                     !               2 specialized AccessibilityNode.resolvedAttributedTexts(_:options:separator:)  (in SwiftUI) + 1396  [0x1d304ee14]
+    +                       !     : | +                     !                 2 static AccessibilityCore.textsResolvedToAttributedText(_:in:options:idiom:separator:)  (in SwiftUICore) + 220  [0x1d3990318]
+    +                       !     : | +                     !                   2 static AccessibilityCore.textResolvedToAttributedText(_:in:options:idiom:)  (in SwiftUICore) + 256  [0x1d398e838]
+    +                       !     : | +                     !                     2 Text.resolveAttributedString(in:includeDefaultAttributes:options:idiom:)  (in SwiftUICore) + 512  [0x1d3c0ace0]
+    +                       !     : | +                     !                       2 specialized Text.resolve<A>(into:in:with:)  (in SwiftUICore) + 396  [0x1d3990dc0]
+    +                       !     : | +                     !                         1 specialized ResolvedTextContainer.append<A>(_:in:with:)  (in SwiftUICore) + 368  [0x1d41b32c8]
+    +                       !     : | +                     !                         : 1 Text.Style.nsAttributes(content:environment:includeDefaultAttributes:with:properties:)  (in SwiftUICore) + 2664  [0x1d3c0bbc4]
+    +                       !     : | +                     !                         :   1 specialized ObjectCache.subscript.getter  (in SwiftUICore) + 144  [0x1d39f6c1c]
+    +                       !     : | +                     !                         :     1 specialized closure #1 in ObjectCache.subscript.getter  (in SwiftUICore) + 828  [0x1d39f9120]
+    +                       !     : | +                     !                         1 specialized ResolvedTextContainer.append<A>(_:in:with:)  (in SwiftUICore) + 424  [0x1d41b3300]
+    +                       !     : | +                     !                           1 Text.Resolved.append(_:with:in:)  (in SwiftUICore) + 636  [0x1d41b4e9c]
+    +                       !     : | +                     !                             1 -[NSConcreteMutableAttributedString initWithString:attributes:]  (in Foundation) + 212  [0x181033904]
+    +                       !     : | +                     !                               1 -[NSAttributedString(_NSPresentationIntentDirtying) _willRequireIntentResolutionWhenContainingAttributes:]  (in Foundation) + 76  [0x1810327d0]
+    +                       !     : | +                     !                                 1 -[NSAttributeDictionary objectForKey:]  (in UIFoundation) + 264  [0x18517a734]
+    +                       !     : | +                     1 -[NSObject(UIAccessibilityAutomation) _accessibilityUserTestingSnapshotDescendantsWithAttributes:maxDepth:maxChildren:maxArrayCount:honorsModalViews:]  (in UIAccessibility) + 908  [0x1952b8094]
+    +                       !     : | +                       1 -[NSObject(AXPrivCategory) _iosAccessibilityAttributeValue:]  (in UIAccessibility) + 200  [0x19528b694]
+    +                       !     : | +                         1 -[UITextViewAccessibility automationElements]  (in UIKit) + 280  [0x111aefd64]
+    +                       !     : | +                           1 -[NSObject(UIAccessibilitySafeCategory) safeValueForKey:]  (in AXCoreUtilities) + 188  [0x192abbecc]
+    +                       !     : | +                             1 -[NSObject(UIAccessibilitySafeCategory) _accessibilityPerformSafeValueKeyBlock:withKey:onClass:]  (in AXCoreUtilities) + 84  [0x192abc4f0]
+    +                       !     : | +                               1 DYLD-STUB$$objc_release_x19  (in AXCoreUtilities) + 4  [0x192b57c58]
+    +                       !     : | 1 -[XCTElementSnapshotRequest(PlatformImplementation) accessibilitySnapshotOrError:]  (in XCTAutomationSupport) + 668  [0x1043f49c4]
+    +                       !     : |   1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     : |     1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     : |       1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !     : |         1 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !     : |           1 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !     : |             1 writev  (in libsystem_kernel.dylib) + 8  [0x102534600]
+    +                       !     : 3 __62-[XCTAutomationSession attributesForElement:attributes:reply:]_block_invoke.271  (in XCTAutomationSupport) + 76  [0x104410b88]
+    +                       !     :   2 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 360  [0x1043ead28]
+    +                       !     :   + 2 -[XCTAccessibilityFramework attributes:forElement:error:]  (in XCTAutomationSupport) + 128  [0x1043ebf2c]
+    +                       !     :   +   2 AXUIElementCopyMultipleAttributeValues  (in AXRuntime) + 584  [0x1938ee088]
+    +                       !     :   +     2 _AXXMIGCopyMultipleAttributeValues  (in AXRuntime) + 596  [0x1938f3960]
+    +                       !     :   +       2 _handleNonMainThreadCallback  (in AXRuntime) + 52  [0x1938f35e0]
+    +                       !     :   +         2 ___AXXMIGCopyMultipleAttributeValues_block_invoke  (in AXRuntime) + 60  [0x1938f3a60]
+    +                       !     :   +           2 _copyMultipleAttributeValuesCallback  (in UIAccessibility) + 552  [0x1952685b4]
+    +                       !     :   +             2 -[NSObject(AXPrivCategory) _iosAccessibilityAttributeValue:]  (in UIAccessibility) + 7192  [0x19528d1e4]
+    +                       !     :   +               1 -[NSObject(AXPrivCategory) _accessibilityVisiblePointHitTestingAnyElement:shouldCheckAllWindows:]  (in UIAccessibility) + 124  [0x195282c84]
+    +                       !     :   +               ! 1 _UIAXObjectIsBehindKeyboardWithIntersectionType  (in UIAccessibility) + 76  [0x1952b178c]
+    +                       !     :   +               !   1 AXUIKeyboardIsOnScreen  (in AccessibilityUIUtilities) + 172  [0x1d5ae3670]
+    +                       !     :   +               !     1 AXUIAllKeyboardWindows  (in AccessibilityUIUtilities) + 376  [0x1d5ae2fe0]
+    +                       !     :   +               !       1 -[NSObject(UIAccessibilitySafeCategory) safeBoolForKey:]  (in AXCoreUtilities) + 96  [0x192abb5e0]
+    +                       !     :   +               !         1 -[NSObject(UIAccessibilitySafeCategory_Private) _safeValidatedValueForKey:expectedClass:possibleExpectedTypeEncodings:]  (in AXCoreUtilities) + 64  [0x192abb078]
+    +                       !     :   +               !           1 -[NSObject(UIAccessibilitySafeCategory) safeValueForKey:]  (in AXCoreUtilities) + 188  [0x192abbecc]
+    +                       !     :   +               !             1 -[NSObject(UIAccessibilitySafeCategory) _accessibilityPerformSafeValueKeyBlock:withKey:onClass:]  (in AXCoreUtilities) + 76  [0x192abc4e8]
+    +                       !     :   +               !               1 __57-[NSObject(UIAccessibilitySafeCategory) safeValueForKey:]_block_invoke  (in AXCoreUtilities) + 28  [0x192abc208]
+    +                       !     :   +               !                 1 -[NSObject(NSKeyValueCoding) valueForKey:]  (in Foundation) + 216  [0x1810aad4c]
+    +                       !     :   +               !                   1 +[NSObject(NSKeyValueCodingPrivate) _createValueGetterWithContainerClassID:key:]  (in Foundation) + 324  [0x1810ae6e0]
+    +                       !     :   +               !                     1 NSKeyValueMethodForPattern  (in Foundation) + 204  [0x1810aab14]
+    +                       !     :   +               !                       1 __sel_registerName(char const*, bool, bool)  (in libobjc.A.dylib) + 44  [0x180059580]
+    +                       !     :   +               !                         1 dyld4::APIs::_dyld_get_objc_selector(char const*)  (in dyld_sim) + 52  [0x1026799b0]
+    +                       !     :   +               !                           1 objc::StringHashTable::tryGetIndex(char const*) const  (in dyld_sim) + 148  [0x10267bee4]
+    +                       !     :   +               !                             1 strcmp  (in dyld_sim) + 4  [0x1026aaf98]
+    +                       !     :   +               1 -[NSObject(AXPrivCategory) _accessibilityVisiblePointHitTestingAnyElement:shouldCheckAllWindows:]  (in UIAccessibility) + 2572  [0x195283614]
+    +                       !     :   +                 1 _AXUIElementCopyElementAtPositionWithParams  (in AXRuntime) + 900  [0x1938ef68c]
+    +                       !     :   +                   1 _AXXMIGCopyElementAtPosition  (in AXRuntime) + 184  [0x1938f4470]
+    +                       !     :   +                     1 _handleNonMainThreadCallback  (in AXRuntime) + 52  [0x1938f35e0]
+    +                       !     :   +                       1 ___AXXMIGCopyElementAtPosition_block_invoke  (in AXRuntime) + 68  [0x1938f45c8]
+    +                       !     :   +                         1 _copyElementAtPositionCallback  (in UIAccessibility) + 2120  [0x1952678b0]
+    +                       !     :   +                           1 -[UIWindowAccessibility _accessibilityHitTest:withEvent:]  (in UIKit) + 668  [0x111b0cb30]
+    +                       !     :   +                             1 -[UIViewAccessibility _accessibilityHitTest:withEvent:]  (in UIKit) + 604  [0x111affc50]
+    +                       !     :   +                               1 -[UIViewAccessibility __accessibilityHitTest:withEvent:]  (in UIKit) + 1796  [0x111afc8e8]
+    +                       !     :   +                                 1 +[UIAccessibilityHitTestOptions defaultOptions]  (in UIAccessibility) + 0  [0x1952c37c0]
+    +                       !     :   1 -[XCTAccessibilityFramework attributesForElement:attributes:error:]  (in XCTAutomationSupport) + 264  [0x1043eacc8]
+    +                       !     :     1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     :       1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     :         1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !     :           1 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !     :             1 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !     :               1 writev  (in libsystem_kernel.dylib) + 8  [0x102534600]
+    +                       !     1 __XCTPerformOnMainRunLoop_block_invoke  (in XCTAutomationSupport) + 124  [0x10440bb98]
+    +                       !     : 1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !     :   1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !     :     1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !     :       1 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !     :         1 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !     :           1 writev  (in libsystem_kernel.dylib) + 8  [0x102534600]
+    +                       !     1 __XCTPerformOnMainRunLoop_block_invoke  (in XCTAutomationSupport) + 376  [0x10440bc94]
+    +                       !       1 _os_log_impl  (in libsystem_trace.dylib) + 20  [0x1800b74e4]
+    +                       !         1 _os_log  (in libsystem_trace.dylib) + 156  [0x1800b4280]
+    +                       !           1 _os_log_impl_flatten_and_send  (in libsystem_trace.dylib) + 9660  [0x1800b6854]
+    +                       !             1 _os_log_impl_mirror_to_stderr  (in libsystem_trace.dylib) + 552  [0x1800b7180]
+    +                       !               1 _os_trace_writev  (in libsystem_trace.dylib) + 92  [0x1800b93cc]
+    +                       !                 1 writev  (in libsystem_kernel.dylib) + 8  [0x102534600]
+    +                       2 __CFRunLoopRun  (in CoreFoundation) + 760  [0x180421808]
+    +                         2 __CFRunLoopDoSources0  (in CoreFoundation) + 220  [0x180422634]
+    +                           2 __CFRunLoopDoSource0  (in CoreFoundation) + 168  [0x180422ea4]
+    +                             2 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__  (in CoreFoundation) + 24  [0x180422f5c]
+    +                               2 UC::DriverCore::continueProcessing()  (in UpdateCycle) + 80  [0x2343d22c0]
+    +                                 2 schedulerStepScheduledMainSectionContinue  (in UIKitCore) + 56  [0x1863b6064]
+    +                                   2 _UIUpdateSequenceRunNext  (in UIKitCore) + 120  [0x18590339c]
+    +                                     2 __setupUpdateSequence_block_invoke_2  (in UIKitCore) + 372  [0x1863b5c0c]
+    +                                       2 _UIApplicationFlushCATransaction  (in UIKitCore) + 48  [0x1864a3b50]
+    +                                         2 CA::Transaction::flush_as_runloop_observer(bool)  (in QuartzCore) + 68  [0x18cefa1a4]
+    +                                           2 CA::Transaction::commit()  (in QuartzCore) + 632  [0x18cef88f0]
+    +                                             2 CA::Context::commit_transaction(CA::Transaction*, double, double*)  (in QuartzCore) + 560  [0x18cecacc8]
+    +                                               2 CA::Layer::layout_and_display_if_needed(CA::Transaction*)  (in QuartzCore) + 156  [0x18cfb2978]
+    +                                                 2 CA::Layer::update_if_needed_(CA::Transaction*, CA::LayerUpdateReason)  (in QuartzCore) + 600  [0x18cfa6d94]
+    +                                                   2 CA::Layer::perform_update_(CA::Layer*, CALayer*, unsigned int, CA::LayerUpdateReason, CA::Transaction*)  (in QuartzCore) + 456  [0x18cfa7548]
+    +                                                     2 -[UIView(CALayerDelegate) layoutSublayersOfLayer:]  (in UIKitCore) + 2648  [0x186ab0548]
+    +                                                       2 ???  (in UIKitCore)  load address 0x185289000 + 0x3c511c  [0x18564e11c]
+    +                                                         2 ???  (in UIKitCore)  load address 0x185289000 + 0x3c4d74  [0x18564dd74]
+    +                                                           2 @objc _UIHostingView.layoutSubviews()  (in SwiftUI) + 32  [0x1d3474ac0]
+    +                                                             2 _UIHostingView.layoutSubviews()  (in SwiftUI) + 80  [0x1d3474a8c]
+    +                                                               2 ???  (in UIKitCore)  load address 0x185289000 + 0x14c250  [0x1853d5250]
+    +                                                                 2 ViewGraphRootValueUpdater.render(interval:updateDisplayList:targetTimestamp:)  (in SwiftUICore) + 460  [0x1d43be2c0]
+    +                                                                   2 closure #1 in ViewGraphRootValueUpdater.render(interval:updateDisplayList:targetTimestamp:)  (in SwiftUICore) + 712  [0x1d43bfbc0]
+    +                                                                     2 ViewGraph.updateOutputs(at:)  (in SwiftUICore) + 156  [0x1d43c5ac0]
+    +                                                                       2 specialized GraphHost.runTransaction(_:do:id:)  (in SwiftUICore) + 324  [0x1d3f37cfc]
+    +                                                                         1 AG::Subgraph::update(unsigned int)  (in AttributeGraph) + 952  [0x1c42da590]
+    +                                                                         : 1 AG::Graph::UpdateStack::update()  (in AttributeGraph) + 488  [0x1c42cb6c0]
+    +                                                                         :   1 specialized implicit closure #1 in closure #1 in closure #1 in Attribute.init<A>(_:)  (in SwiftUICore) + 20  [0x1d404c8b0]
+    +                                                                         :     1 specialized ShapeStyleResolver.updateValue()  (in SwiftUICore) + 412  [0x1d3ff3430]
+    +                                                                         :       1 PropertyList.Tracker.hasDifferentUsedValues(_:)  (in SwiftUICore) + 76  [0x1d423fb90]
+    +                                                                         :         1 swift_retain  (in libswiftCore.dylib) + 32  [0x19818cb04]
+    +                                                                         1 AG::Subgraph::update(unsigned int)  (in AttributeGraph) + 1520  [0x1c42da7c8]
+    +                                                                           1 AG::Graph::invalidate_subgraphs()  (in AttributeGraph) + 320  [0x1c42d7dd8]
+    +                                                                             1 AG::Subgraph::invalidate_now(AG::Graph&)  (in AttributeGraph) + 1184  [0x1c42d8384]
+    +                                                                               1 destroy for BaseViewList.Init  (in SwiftUICore) + 20  [0x1d3e5a96c]
+    +                                                                                 1 swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::doDecrementSlow<(swift::PerformDeinit)1>(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)  (in libswiftCore.dylib) + 164  [0x19818faec]
+    +                                                                                   1 _swift_release_dealloc  (in libswiftCore.dylib) + 44  [0x19818efc8]
+    +                                                                                     1 ???  (in SwiftUICore)  load address 0x1d38ba000 + 0x59adc8  [0x1d3e54dc8]
+    +                                                                                       1 swift::RefCounts<swift::RefCountBitsT<(swift::RefCountInlinedness)1>>::doDecrementSlow<(swift::PerformDeinit)1>(swift::RefCountBitsT<(swift::RefCountInlinedness)1>, unsigned int)  (in libswiftCore.dylib) + 164  [0x19818faec]
+    +                                                                                         1 _swift_release_dealloc  (in libswiftCore.dylib) + 44  [0x19818efc8]
+    +                                                                                           1 ???  (in SwiftUICore)  load address 0x1d38ba000 + 0x9a132c  [0x1d425b32c]
 
 Sort by top of stack, same collapsed (when >= 5):
-        __workq_kernreturn  (in libsystem_kernel.dylib)        1779
-        mach_msg2_trap  (in libsystem_kernel.dylib)        1437
-        _platform_memmove  (in libsystem_platform.dylib)        15
-        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        9
-        swift_retain  (in libswiftCore.dylib)        7
-        AG::Graph::propagate_dirty(AG::AttributeID)  (in AttributeGraph)        6
-        swift_release  (in libswiftCore.dylib)        6
-        AG::Graph::remove_output_edge<AG::Node>(AG::data::ptr<AG::Node>, AG::AttributeID)  (in AttributeGraph)        5
-        objc_msgSend  (in libobjc.A.dylib)        5
+        __workq_kernreturn  (in libsystem_kernel.dylib)        903
+        mach_msg2_trap  (in libsystem_kernel.dylib)        347
+        start_wqthread  (in libsystem_pthread.dylib)        197
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)::$_2::operator()((anonymous namespace)::ConformanceSection const&) const::'lambda'(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&)::operator()(swift::TargetProtocolConformanceDescriptor<swift::InProcess> const&) const  (in libswiftCore.dylib)        168
+        __semwait_signal  (in libsystem_kernel.dylib)        155
+        writev  (in libsystem_kernel.dylib)        78
+        semaphore_timedwait_trap  (in libsystem_kernel.dylib)        43
+        semaphore_wait_trap  (in libsystem_kernel.dylib)        42
+        swift_conformsToProtocolMaybeInstantiateSuperclasses(swift::TargetMetadata<swift::InProcess> const*, swift::TargetProtocolDescriptor<swift::InProcess> const*, bool)  (in libswiftCore.dylib)        12
+        _swift_class_getSuperclass  (in libswiftCore.dylib)        6
 
 Binary Images:
-       0x104ee0000 -        0x104ee3507 +com.kobiashvili.diary (1.0 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/7F81FA48-EEA2-44A5-AC62-55FB6DDF82EA/data/Containers/Bundle/Application/BADD77A3-7571-451F-BD3B-C3F310A07DF4/Chronotheca.app/Chronotheca
-       0x104ef4000 -        0x104f2eee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
-       0x104f74000 -        0x104f7c3d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
-       0x105034000 -        0x105082e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
-       0x1050f0000 -        0x10513365f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
-       0x105244000 -        0x10525010b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
-       0x1052b4000 -        0x105367523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
-       0x10540c000 -        0x1054a52af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
-       0x105bbc000 -        0x105bbedff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
-       0x105bd8000 -        0x105be003f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
-       0x105cec000 -        0x105cecb99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
-       0x105cfc000 -        0x105d0739f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
-       0x105d20000 -        0x105d23e5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
-       0x105d40000 -        0x105d4949f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
-       0x105d64000 -        0x105d6ab7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
-       0x105d84000 -        0x105d8b2df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
-       0x105da4000 -        0x105da86ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
-       0x105fd8000 -        0x105fdb1ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
-       0x106224000 -        0x10623d27f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
-       0x106274000 -        0x106279407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
-       0x10632c000 -        0x106587bbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
-       0x107000000 -        0x1070537bf  com.apple.dt.XCTAutomationSupport (26.5 - 24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
-       0x1070b4000 -        0x1070ee15f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
-       0x10715c000 -        0x107a29b17 +Chronotheca.debug.dylib (0) <2534B902-510D-3E0E-97A1-D3F5177B9DA0> /Users/*/Library/Developer/CoreSimulator/Devices/7F81FA48-EEA2-44A5-AC62-55FB6DDF82EA/data/Containers/Bundle/Application/BADD77A3-7571-451F-BD3B-C3F310A07DF4/Chronotheca.app/Chronotheca.debug.dylib
-       0x10880c000 -        0x108832f5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
-       0x108858000 -        0x10887acff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
-       0x108af4000 -        0x108b63cbf  com.apple.UIUnderstanding (1.0 - 1) <576E64EB-8AA4-3B1E-A89D-365C4DE0C7C8> /Volumes/*/UIUnderstanding.framework/UIUnderstanding
-       0x108be0000 -        0x108be57df  com.apple.LinkPresentation.axbundle (1.0 - 1.0) <7BAD0605-47F6-3470-9C28-AE38795FEC45> /Volumes/*/LinkPresentation
+       0x10239c000 -        0x10239f507 +com.kobiashvili.diary (1.0 - 1) <E9FC584A-5BFC-3F44-BE11-655633B0906C> /Users/*/Library/Developer/CoreSimulator/Devices/7F81FA48-EEA2-44A5-AC62-55FB6DDF82EA/data/Containers/Bundle/Application/3EB6A6FB-E547-4B0F-A912-C8DA45430903/Chronotheca.app/Chronotheca
+       0x1023d8000 -        0x10248b523  dyld (1.0.0 - 1387.2) <57F4E7E7-A497-38BB-A3D2-A459C622460B> /usr/lib/dyld
+       0x102530000 -        0x10256aee7  libsystem_kernel.dylib (12377.161.15.701.48) <8FEA541A-C0CB-3E96-A6D0-19942C9B5C5D> /usr/lib/system/libsystem_kernel.dylib
+       0x1025b0000 -        0x1025b83d3  libsystem_platform.dylib (375.120.2) <BF77EE79-A9D5-3EA9-AE07-7442B40F0EE9> /usr/lib/system/libsystem_platform.dylib
+       0x102674000 -        0x1026c2e9b +dyld_sim (1378) <BA544D9A-46AB-3C59-A00F-ABA1479D2079> /Volumes/*/dyld_sim
+       0x102730000 -        0x10277365f +libMainThreadChecker.dylib (64575.39.1) <7AF2E14E-10E0-3A05-A5DF-9775C2C6A88E> /Volumes/*/libMainThreadChecker.dylib
+       0x102884000 -        0x10291d2af +libRPAC.dylib (103) <843AE2A4-B2F6-3BA2-992E-095C9632DF73> /Volumes/*/libRPAC.dylib
+       0x102f3c000 -        0x102f4810b  libsystem_pthread.dylib (539.100.4) <83AB28F7-C547-3BAC-841D-62F58D543A57> /usr/lib/system/libsystem_pthread.dylib
+       0x103078000 -        0x103078b99  com.apple.accessibility.AXAssetLoader (1.0 - 1) <F99C05FD-527C-3111-A9A3-211A079CD65A> /Volumes/*/AXGuestPassServices.framework/AXGuestPassServices
+       0x10308c000 -        0x10309403f +libobjc-trampolines.dylib (951.7) <75FA6778-178F-394F-9C63-711780430596> /Volumes/*/libobjc-trampolines.dylib
+       0x1031a0000 -        0x1031ab39f  com.apple.AXFrontBoardUtils (1.0 - 1) <95E7BFAD-DF50-32F1-9E64-1AF971F7B4A4> /Volumes/*/AXFrontBoardUtils.framework/AXFrontBoardUtils
+       0x1031c4000 -        0x1031c6dff  com.apple.accessibility.SpeakTypingServices (1.0 - 1) <FCA9C32B-F9D0-392D-A442-65BCDC6521E0> /Volumes/*/SpeakTypingServices.framework/SpeakTypingServices
+       0x1031e4000 -        0x1031ed49f  com.apple.accessibility.AccessibilityUI (1.0 - 1) <62D9FC79-3F71-3256-A479-4221C156C030> /Volumes/*/AccessibilityUI.framework/AccessibilityUI
+       0x103208000 -        0x10320eb7f  com.apple.accessibility.AccessibilityUIShared (1.0 - 1) <C22EBBB2-7D2B-3377-B210-6F707509F76E> /Volumes/*/AccessibilityUIShared.framework/AccessibilityUIShared
+       0x103228000 -        0x10322f2df  com.apple.dt.AutomationMode (1.0 - 1) <87AC4F92-DBBE-3B84-968E-BC3FE8B019E7> /Volumes/*/AutomationMode.framework/AutomationMode
+       0x103254000 -        0x103257e5f  com.apple.SpeakThisServices (1.0 - 1) <3F7B53EF-0F58-39E9-92B9-00BC6C0F6666> /Volumes/*/SpeakThisServices.framework/SpeakThisServices
+       0x103744000 -        0x10375d27f  com.apple.AccessibilitySettingsLoader (1.0 - 1.0) <B2090025-27E4-3129-91FA-FA07DA8B138D> /Volumes/*/AccessibilitySettingsLoader.bundle/AccessibilitySettingsLoader
+       0x1037a4000 -        0x1039ffbbf  com.apple.StoreKit.SwiftUI (1.0 - 1) <5400B057-B7FC-35F2-ADDD-38399A1BF545> /Volumes/*/_StoreKit_SwiftUI.framework/_StoreKit_SwiftUI
+       0x104020000 -        0x104025407  com.apple.dt.XCTestSupport (26.5 - 24901) <271A9F93-0E1C-3276-B809-3C747131ADE8> /Volumes/*/XCTestSupport.framework/XCTestSupport
+       0x10403c000 -        0x1040406ff  com.apple.FileProviderOverride (4018.120.24 - 4018.120.24) <402BACAC-DB5A-3A76-82E4-08E8C3CB0832> /Volumes/*/FileProvider.framework/OverrideBundles/FileProviderOverride.bundle/FileProviderOverride
+       0x10410c000 -        0x10412ecff  com.apple.accessibility.AccessibilityPlatformTranslation (1.0 - 545.18) <D8718C84-DC1D-3FDA-807E-0A4C12A9FB1F> /Volumes/*/AccessibilityPlatformTranslation.framework/AccessibilityPlatformTranslation
+       0x104188000 -        0x10418b1ff  com.apple.icloud.drive.fileprovider.override (1.0 - 4479.122.1) <FB6099B4-4064-3395-9B8E-A8633A8683BF> /Volumes/*/FileProvider.framework/OverrideBundles/iCloudDriveFileProviderOverride.bundle/iCloudDriveFileProviderOverride
+       0x1041a4000 -        0x1041caf5f  com.apple.dt.instruments.DTXConnectionServices (16.0 - 64575.73.1) <A2674411-8F4F-3D47-96EF-48502EC139F7> /Volumes/*/DTXConnectionServices.framework/DTXConnectionServices
+       0x1041f0000 -        0x10422a15f  com.apple.accessibility.AccessibilityAudit (1.0 - 187.40) <09FA43BA-70DE-3AAD-AAD0-26359AD27945> /Volumes/*/AccessibilityAudit.framework/AccessibilityAudit
+       0x104320000 -        0x10434e27f  com.apple.gpusw.MetalSerializer (1.0 - 1) <19460939-4BCE-3E8D-8868-5388DD78ACE3> /Volumes/*/MetalSerializer.framework/MetalSerializer
+       0x1043e4000 -        0x1044377bf  com.apple.dt.XCTAutomationSupport (26.5 - 24901) <711229F6-7A68-3A82-A27A-0439C2E1D62A> /Volumes/*/XCTAutomationSupport.framework/XCTAutomationSupport
+       0x104498000 -        0x104507cbf  com.apple.UIUnderstanding (1.0 - 1) <576E64EB-8AA4-3B1E-A89D-365C4DE0C7C8> /Volumes/*/UIUnderstanding.framework/UIUnderstanding
