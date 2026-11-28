@@ -4,9 +4,10 @@ import UIKit
 /// Название дела: одна полоса текста во всю ширину строки.
 ///
 /// Первая строка отступает вправо — под ней стоят номер, время и
-/// колокольчик. Перенесённые строки идут под началом названия (P1111,
-/// тестировщик: «вторая строка начинается под временем — выбивается»;
-/// отменяет «из-под времени» P177), как и строки после «Ввода» (P1052).
+/// колокольчик. Все остальные строки — перенесённые и после «Ввода» —
+/// идут из-под времени, во всю ширину плашки (P1115, автор: «чтобы больше
+/// места использовать; структурирование и так есть контуром и цветом»;
+/// отменяет «под началом названия» P1111 и P1052).
 ///
 /// Отступ первой строки задаётся числом и должен в точности равняться
 /// ширине головы строки: номер, время и колокольчик стоят поверх него.
@@ -20,8 +21,10 @@ struct PlanTitle: UIViewRepresentable {
 
     @Binding var text: String
 
-    /// Отступ строк названия — ширина головы строки.
+    /// Отступ первой строки — ширина головы строки.
     var indent: CGFloat
+    /// Отступ остальных строк — из-под времени, правее номера (P1115).
+    var wrap: CGFloat
 
     var faded = false
     /// Можно ли ставить курсор и править.
@@ -113,6 +116,7 @@ struct PlanTitle: UIViewRepresentable {
         context.coordinator.parent = self
         context.coordinator.open = context.environment.openPoint
         (view as? TitleView)?.indent = indent
+        (view as? TitleView)?.wrap = wrap
         view.isEditable = editable
         view.isSelectable = editable
         apply(to: view, context.coordinator)
@@ -152,7 +156,7 @@ struct PlanTitle: UIViewRepresentable {
     private var style: [NSAttributedString.Key: Any] {
         let paragraph = NSMutableParagraphStyle()
         paragraph.firstLineHeadIndent = indent
-        paragraph.headIndent = indent
+        paragraph.headIndent = wrap
         // Расстояние между строками задаёт попечитель раскладки — у первой
         // строки оно своё. Здесь ноль, чтобы оно не сложилось дважды.
         paragraph.lineSpacing = 0
@@ -175,14 +179,12 @@ struct PlanTitle: UIViewRepresentable {
         return out
     }
 
-    /// Строки после «Ввода» — новые абзацы прямо под названием дела, с тем
-    /// же отступом, что первая строка (P1052, автор: «да, под название»;
-    /// прежде шли из-под времени, как перенесённые, P652). Перенос первой
-    /// строки — тоже под названием (P1111).
+    /// Строки после «Ввода» — из-под времени, как перенесённые (P1115;
+    /// прежде под названием, P1052).
     func continuationStyle() -> NSParagraphStyle {
         let paragraph = NSMutableParagraphStyle()
-        paragraph.firstLineHeadIndent = indent
-        paragraph.headIndent = indent
+        paragraph.firstLineHeadIndent = wrap
+        paragraph.headIndent = wrap
         paragraph.lineSpacing = 0
         return paragraph
     }
@@ -211,7 +213,7 @@ struct PlanTitle: UIViewRepresentable {
         view.typingAttributes = style
         // Кнопочки каждый раз рисуются заново и на равенство не проверишь —
         // сверяется текст и то, от чего зависит вид.
-        let look = "\(indent)|\(faded)|\(text.isEmpty)|\(editable)"
+        let look = "\(indent)|\(wrap)|\(faded)|\(text.isEmpty)|\(editable)"
         guard DiaryEditor.plain(view.attributedText) != shown || coordinator.look != look
         else { return }
         coordinator.look = look
@@ -386,6 +388,7 @@ struct PlanTitle: UIViewRepresentable {
 /// (решение P193).
 final class TitleView: UITextView {
     var indent: CGFloat = 0
+    var wrap: CGFloat = 0
 
     override func caretRect(for position: UITextPosition) -> CGRect {
         var r = super.caretRect(for: position)
@@ -398,7 +401,7 @@ final class TitleView: UITextView {
         let at = offset(from: beginningOfDocument, to: position)
         if at > 0, at <= ns.length, ns.character(at: at - 1) == 10,
            at == ns.length || ns.character(at: at) == 10 {
-            r.origin.x = textContainerInset.left + textContainer.lineFragmentPadding + indent
+            r.origin.x = textContainerInset.left + textContainer.lineFragmentPadding + wrap
         }
         return r
     }

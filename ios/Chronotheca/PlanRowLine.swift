@@ -94,6 +94,10 @@ struct PlanRowLine: View {
     /// Отступ первой строки названия: через полторы клетки за временем (P874).
     static let indent = headWidth + bellWidth
 
+    /// Откуда идут строки ниже первой: из-под времени, правее номера
+    /// (P1115). Номера остаются столбиком — за них дело берут.
+    static let wrap = badgeWidth + gap
+
     /// Дело сейчас держат за номер. Сбрасывается и тогда, когда жест
     /// оборвался сам, — тогда дело опускается на место.
     @GestureState private var holding = false
@@ -106,7 +110,7 @@ struct PlanRowLine: View {
         GridSnap(top: true) {
         VStack(alignment: .leading, spacing: 2) {
             // Голова стоит поверх отступа первой строки названия (P177);
-            // перенесённые строки — под началом названия (P1111).
+            // остальные строки — из-под времени (P1115).
             ZStack(alignment: Alignment(horizontal: .leading,
                                         vertical: .firstTextBaseline)) {
                 title.opacity(ghost ? 0 : 1)
@@ -399,6 +403,7 @@ struct PlanRowLine: View {
         // прежде — бледными строками под делом, P408).
         PlanTitle(text: text ?? .constant(row.fullTitle),
                   indent: Self.indent,
+                  wrap: Self.wrap,
                   faded: faded,
                   editable: text != nil && typing,
                   typing: typing,
