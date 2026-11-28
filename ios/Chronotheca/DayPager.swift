@@ -210,8 +210,8 @@ struct DayPage: View {
     }
 
     /// Имя дня и дата. Касание по ним на открытой странице — действия дня
-    /// (P632; прежде они были в уголке с тремя точками). Стрелка ▾ стоит и
-    /// на соседних страницах: иначе при листании строка меняла бы ширину.
+    /// (P632; прежде они были в уголке с тремя точками), «⋯» рядом — то же
+    /// меню (P1106).
     @ViewBuilder private var titleMenu: some View {
         if live {
             Menu { dayActions } label: { titleBlock }
@@ -256,7 +256,12 @@ struct DayPage: View {
         }
     }
 
+    /// Имя дня, дата и «⋯» (P1106, тестировщик: «удалила день, только
+    /// прочитав в инструкции; было бы удобно что-то вроде трёх точек»;
+    /// вместо едва заметной «▾» за датой). Меню — по касанию и на имя, и на
+    /// «⋯». На соседних страницах «⋯» тоже есть — одним кодом (P114).
     private var titleBlock: some View {
+        HStack(alignment: .center, spacing: 8) {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(live ? store.title : DayPage.title(for: date))
                         .font(.system(size: 21, weight: .semibold))
@@ -271,12 +276,19 @@ struct DayPage: View {
                         .foregroundColor(Look.inkSoft)
                      + Text(DayPage.named(date) ? ",  " + Ru.weekday(date) : "")
                         .foregroundColor(Ru.dayColor(date))
-                        .tracking(0.4)
-                     + Text(" ▾").foregroundColor(Look.inkFaint))
+                        .tracking(0.4))
                         .font(Look.sans(12.5))
                         .lineLimit(1)
                         .minimumScaleFactor(0.75)
                 }
+                .layoutPriority(1)
+            Image(systemName: "ellipsis")
+                .font(.system(size: 15, weight: .bold))
+                .foregroundStyle(Look.inkSoft)
+                .frame(width: 30, height: 30)
+                .background(Circle().fill(Look.inkFaint.opacity(0.16)))
+                .accessibilityHidden(true)
+        }
     }
 
     /// Шаг назад и вперёд по всей странице, плану и дневнику разом (P408) —
